@@ -4,7 +4,8 @@ import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser'; // 引入 TypeScript 解析器
 import pluginReact from 'eslint-plugin-react';
 import unusedImport from 'eslint-plugin-unused-imports';
-
+import pluginPrettier from 'eslint-plugin-prettier';
+import prettierConfig from 'eslint-config-prettier';
 export default [
   // Global language options for the entire project
   { 
@@ -37,9 +38,10 @@ export default [
     plugins: {
       "@typescript-eslint": tseslint, // 手动注册 TypeScript ESLint 插件
       "unused-imports": unusedImport, // 注册 unused imports 插件
+      "prettier": pluginPrettier, // 注册 Prettier 插件
     },
     rules: {
-      // 'prettier/prettier': 'error',
+      'prettier/prettier': 'error',
 
       // 检测并删除未使用的导入
       'unused-imports/no-unused-imports-ts': 'warn',
@@ -66,6 +68,7 @@ export default [
       'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }], // 最多有2个空行，文件末尾不能有空行
       'react-native/no-inline-styles': 'off',
       'object-property-newline': 'off',
+      ...prettierConfig.rules
     },
   },
 

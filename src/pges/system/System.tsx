@@ -1,9 +1,5 @@
-import React from 'react';
+import React from 'react'
 
 export default function System() {
-  return (
-    <div>
-      Sys Settings
-    </div>
-  );
+  return <div>Sys Settings</div>
 }
