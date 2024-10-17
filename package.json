@@ -16,10 +16,12 @@
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
+  "main": "public/electron.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "electron-start": "ELECTRON_START_URL=http://localhost:3000 electron .",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {},
@@ -42,6 +44,7 @@
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "autoprefixer": "^10.4.20",
+    "electron": "^33.0.1",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-define-config": "^2.1.0",
@@ -50,8 +53,10 @@
     "eslint-plugin-react": "^7.37.1",
     "eslint-plugin-unused-imports": "^3.2.0",
     "globals": "^15.11.0",
+    "path-browserify": "^1.0.1",
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",
+    "react-app-rewired": "^2.2.1",
     "tailwindcss": "^3.4.14",
     "typescript-eslint": "^8.9.0"
   }

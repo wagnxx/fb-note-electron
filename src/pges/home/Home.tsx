@@ -1,24 +1,33 @@
 import React, { useMemo, useState } from 'react'
 import PageLayout, { MenuItem } from '../../components/layout/PageLayut'
 import System from '../system/System'
+import { Empty } from 'antd'
+import { isElectron } from '../../utils/utilsSystem'
 
-const menuConfig = [
+// 检查是否在 Electron 环境中
+console.log('isElectron:::', isElectron())
+// 配置菜单
+const menuConfig: MenuItem[] = [
   {
     key: 'System',
     label: 'System',
-    component: System,
+    component: isElectron()
+      ? System
+      : () => <Empty description={'The web platform cannot be supported.'} />, // 根据环境选择组件
   },
 ]
 
 export default function Home() {
-  const [componentKey, setComponentKey] = useState<string>()
+  const [componentKey, setComponentKey] = useState<string>('')
 
+  // 根据当前选中的组件键查找组件
   const CurrentComponent = useMemo(() => {
     if (!componentKey) return null
     const foundItem = menuConfig.find(item => item.key === componentKey)
     return foundItem ? foundItem.component : null // 返回组件类型
   }, [componentKey])
 
+  // 处理菜单项选择
   const onMenuItemSelectedHandler = (info: MenuItem) => {
     setComponentKey(info.key)
   }

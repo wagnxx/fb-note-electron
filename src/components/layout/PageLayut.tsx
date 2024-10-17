@@ -6,10 +6,10 @@ const { Header, Content, Footer, Sider } = Layout
 
 export type MenuItem = {
   key: string
-  icon?: React.FunctionComponentElement<
-    Omit<AntdIconProps, 'ref'> & React.RefAttributes<HTMLSpanElement>
-  >
+  icon?: React.FunctionComponentElement<Omit<AntdIconProps, 'ref'>>
   label?: string
+  component?: React.ComponentType // 组件可以是任意 ReactNode 类型
+  children?: MenuItem[] // 添加 children 属性以支持子菜单
 }
 
 export type PageLayoutProps = {
@@ -26,13 +26,13 @@ const PageLayout: React.FC<PageLayoutProps> = ({ menu, onMenuItemSelected, child
   return (
     <Layout style={{ height: '100vh' }}>
       <Sider
-        breakpoint="lg"
+        breakpoint="md"
         collapsedWidth="0"
         onBreakpoint={broken => {
-          console.log(broken)
+          // console.log(broken)
         }}
         onCollapse={(collapsed, type) => {
-          console.log(collapsed, type)
+          // console.log(collapsed, type)
         }}
       >
         <div className="demo-logo-vertical" />
@@ -47,20 +47,21 @@ const PageLayout: React.FC<PageLayoutProps> = ({ menu, onMenuItemSelected, child
       <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }} />
         <Content style={{ margin: '24px 16px 0' }} className={'flex-1 h-full'}>
+          {children ? children : <Empty />}
+          {/*
           <div
             style={{
-              padding: 16,
+              // padding: 16,
               minHeight: 'calc(100vh - 80px)',
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
             }}
           >
-            {children ? children : <Empty />}
-          </div>
+          </div> */}
         </Content>
-        <Footer style={{ textAlign: 'center' }}>
+        {/* <Footer style={{ textAlign: 'center' }}>
           Ant Design ©{new Date().getFullYear()} Created by Ant UED
-        </Footer>
+        </Footer> */}
       </Layout>
     </Layout>
   )
