@@ -14,15 +14,21 @@ type CpProps = {
   onFinish: FormProps<SettingFormFieldType>['onFinish']
   onFinishFailed: FormProps<SettingFormFieldType>['onFinishFailed']
   disabled?: boolean
+  initialValues?: SettingFormFieldType
 }
 
-const SettingForm: React.FC<CpProps> = ({ onFinish, onFinishFailed, disabled }) => (
+const SettingForm: React.FC<CpProps> = ({
+  onFinish,
+  onFinishFailed,
+  disabled,
+  initialValues = { address: '127.0.0.1', port: '0' },
+}) => (
   <Form
     name="basic"
     labelCol={{ span: 24 }}
     wrapperCol={{ span: 24 }}
     style={{ maxWidth: 600 }}
-    initialValues={{ remember: true }}
+    initialValues={initialValues}
     autoComplete="off"
     size="small"
     disabled={disabled}

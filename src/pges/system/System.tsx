@@ -1,10 +1,10 @@
 import { Collapse, CollapseProps, Flex, FormProps, Splitter, Switch, theme } from 'antd'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import SettingForm, { SettingFormFieldType } from './components/SettingForm'
 import { isElectron } from '../../utils/utilsSystem'
 
 // 通过 preload 暴露的安全 IPC API
-const { ipcRenderer } = window.electron || {}
+const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
 const { useToken } = theme
 
@@ -36,6 +36,7 @@ export default function System() {
   const [proxySwitchChecked, setProxySwitchChecked] = useState(false)
   const [isSocksServerRunning, setIsSocksServerRunning] = useState(false)
   const [consoleOutput, setConsoleOutput] = useState<string[]>([])
+  const [initialSocks5Values, setInitialSocks5Values] = useState<SettingFormFieldType>({})
 
   const { token } = useToken()
 
@@ -53,9 +54,9 @@ export default function System() {
     }
 
     // 确保 ipcRenderer 事件监听器存在
-    ipcRenderer.on('socks-service-output', handleServiceOutput)
-    ipcRenderer.on('socks-service-error', handleServiceOutput)
-    ipcRenderer.on('socks-service-stopped', handleServiceOutput)
+    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, handleServiceOutput)
+    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_ERROR, handleServiceOutput)
+    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, handleServiceOutput)
     ipcRenderer.on('socks-service-status', handleServiceStatus) // 监听服务状态
 
     return () => {
@@ -66,19 +67,41 @@ export default function System() {
     }
   }, [])
 
+  const hasExecuted = useRef(false)
+
   useEffect(() => {
     const checkServiceStatus = async () => {
       if (isElectron()) {
-        const isRunning = await ipcRenderer?.invoke('check-socks-service', null)
-        console.log('Is SOCKS service running:', isRunning)
-        // 处理服务状态，比如更新 UI 或状态
-        if (typeof isRunning === 'boolean') {
-          setIsSocksServerRunning(isRunning)
-        }
+        try {
+          const serviceInfo: any = await ipcRenderer?.invoke(
+            IPC_ACTIONS.GET_SOCKS_SERVICE_INFO,
+            null,
+          )
+
+          setIsSocksServerRunning(serviceInfo?.isRunning || false)
+          let message: string = ''
+          if (serviceInfo?.isRunning) {
+            console.log('serviceinfo :::', serviceInfo)
+            message += 'Socks service checked successfully \n'
+            message += JSON.stringify(serviceInfo, null, 2)
+            setInitialSocks5Values({
+              address: serviceInfo.host,
+              port: serviceInfo.port,
+            })
+          } else {
+            message = `Socks service checked failed: ${serviceInfo?.message}`
+          }
+          setConsoleOutput(prevOutput => [...prevOutput, message])
+        } catch (error) {}
       }
     }
 
-    checkServiceStatus()
+    if (!hasExecuted.current) {
+      // 只在第一次渲染时执行
+      hasExecuted.current = true
+      // 你的逻辑
+      checkServiceStatus()
+    }
   }, [])
 
   const items: CollapseProps['items'] = [
@@ -104,7 +127,13 @@ export default function System() {
     {
       key: '2',
       label: 'Socks5',
-      children: <SettingForm onFinish={onFinishOfSocks5} onFinishFailed={onFinishFailed} />,
+      children: (
+        <SettingForm
+          initialValues={initialSocks5Values}
+          onFinish={onFinishOfSocks5}
+          onFinishFailed={onFinishFailed}
+        />
+      ),
       extra: (
         <Switch
           disabled
