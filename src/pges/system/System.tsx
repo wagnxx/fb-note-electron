@@ -34,7 +34,7 @@ const onFinishOfSocks5: FormProps<SettingFormFieldType>['onFinish'] = values => 
 
 export default function System() {
   const [proxySwitchChecked, setProxySwitchChecked] = useState(false)
-  const [socks5SwitchChecked, setSocks5SwitchChecked] = useState(false)
+  const [isSocksServerRunning, setIsSocksServerRunning] = useState(false)
   const [consoleOutput, setConsoleOutput] = useState<string[]>([])
 
   const { token } = useToken()
@@ -45,16 +45,40 @@ export default function System() {
       setConsoleOutput(prevOutput => [...prevOutput, data])
     }
 
+    const handleServiceStatus = (status: { success: boolean; message: string }) => {
+      const outputMessage = status.success
+        ? `Socks service started successfully: ${status.message}`
+        : `Failed to start socks service: ${status.message}`
+      setConsoleOutput(prevOutput => [...prevOutput, outputMessage])
+    }
+
     // 确保 ipcRenderer 事件监听器存在
     ipcRenderer.on('socks-service-output', handleServiceOutput)
     ipcRenderer.on('socks-service-error', handleServiceOutput)
     ipcRenderer.on('socks-service-stopped', handleServiceOutput)
+    ipcRenderer.on('socks-service-status', handleServiceStatus) // 监听服务状态
 
     return () => {
       ipcRenderer.removeListener('socks-service-output', handleServiceOutput)
       ipcRenderer.removeListener('socks-service-error', handleServiceOutput)
       ipcRenderer.removeListener('socks-service-stopped', handleServiceOutput)
+      ipcRenderer.removeListener('socks-service-status', handleServiceStatus) // 移除服务状态监听器
     }
+  }, [])
+
+  useEffect(() => {
+    const checkServiceStatus = async () => {
+      if (isElectron()) {
+        const isRunning = await ipcRenderer?.invoke('check-socks-service', null)
+        console.log('Is SOCKS service running:', isRunning)
+        // 处理服务状态，比如更新 UI 或状态
+        if (typeof isRunning === 'boolean') {
+          setIsSocksServerRunning(isRunning)
+        }
+      }
+    }
+
+    checkServiceStatus()
   }, [])
 
   const items: CollapseProps['items'] = [
@@ -80,18 +104,12 @@ export default function System() {
     {
       key: '2',
       label: 'Socks5',
-      children: (
-        <SettingForm
-          onFinish={onFinishOfSocks5}
-          onFinishFailed={onFinishFailed}
-          // disabled={!socks5SwitchChecked}
-        />
-      ),
+      children: <SettingForm onFinish={onFinishOfSocks5} onFinishFailed={onFinishFailed} />,
       extra: (
         <Switch
           disabled
-          checked={socks5SwitchChecked}
-          onChange={val => setSocks5SwitchChecked(val)}
+          checked={isSocksServerRunning}
+          // onChange={val => setSocks5SwitchChecked(val)}
           onClick={stopPropagationHandler}
         />
       ),
@@ -118,10 +136,8 @@ export default function System() {
             style={{
               backgroundColor: token.colorBgSolid,
               padding: token.padding,
-              // borderRadius: token.borderRadius,
               color: token.colorTextLightSolid,
               fontSize: token.fontSize,
-              // backgroundColor: '#f5f5f5',
               height: 'calc(100% - 40px)',
               overflowY: 'scroll',
             }}

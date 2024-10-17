@@ -1,19 +1,22 @@
-/* eslint-disable  */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
+const { exec } = require('child_process');
+const { SERVICE_NAMES, IPC_ACTIONS } = require('./constant');
 
-let socksProcess; // 保存 SOCKS 进程引用
+let socksProcess;
+
 
 function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'), // 通过 preload 文件安全地暴露 Node.js API
-      contextIsolation: true, // 开启上下文隔离
-      enableRemoteModule: false, // 禁用远程模块
-      nodeIntegration: false, // 禁用 Node.js 集成
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false, // 确保安全性
+      contextIsolation: true,
     },
   });
 
@@ -23,35 +26,29 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-  // 监听渲染进程发来的启动 SOCKS 服务请求
-  ipcMain.on('start-socks-service', (event, arg) => {
-    console.log('received message from renderIPC', arg);
-    event.sender.send('socks-service-output', 'SOCKS 服务准备运行');
-  
+  // 启动 SOCKS 服务
+  ipcMain.on(IPC_ACTIONS.START_SOCKS_SERVICE, (event, { host, port }) => {
     if (!socksProcess) {
-      socksProcess = spawn('node', ['./my-socks-service.js']); // 替换为实际的服务启动命令
+      socksProcess = spawn('node', [path.join(__dirname, SERVICE_NAMES.socks5), host, port]);
 
       // 将子进程的输出通过 IPC 发送到渲染进程
       socksProcess.stdout.on('data', (data) => {
         console.log(`SOCKS 服务输出: ${data}`);
-        // 发送数据到渲染进程
-        event.sender.send('socks-service-output', data.toString());
+        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, data.toString());
       });
 
       socksProcess.stderr.on('data', (data) => {
         console.error(`SOCKS 服务错误: ${data}`);
-        // 发送错误到渲染进程
-        event.sender.send('socks-service-error', data.toString());
+        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, data.toString());
       });
 
       socksProcess.on('close', (code) => {
         console.log(`SOCKS 服务已停止，退出码: ${code}`);
         socksProcess = null;
-        event.sender.send('socks-service-stopped', `SOCKS 服务已停止，退出码: ${code}`);
+        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, `SOCKS 服务已停止，退出码: ${code}`);
       });
 
       console.log('SOCKS 服务已启动');
-      event.sender.send('socks-service-output', 'SOCKS 服务已启动');
     } else {
       console.log('SOCKS 服务已经在运行');
       event.sender.send('socks-service-output', 'SOCKS 服务已经在运行');
@@ -59,7 +56,7 @@ app.whenReady().then(() => {
   });
 
   // 监听停止服务的请求
-  ipcMain.on('stop-socks-service', (event) => {
+  ipcMain.on(IPC_ACTIONS.STOP_SOCKS_SERVICE, (event) => {
     if (socksProcess) {
       socksProcess.kill();
       socksProcess = null;
@@ -69,6 +66,11 @@ app.whenReady().then(() => {
       console.log('SOCKS 服务未运行');
       event.sender.send('socks-service-output', 'SOCKS 服务未运行');
     }
+  });
+
+  ipcMain.handle(IPC_ACTIONS.CHECK_SOCKS_SERVICE, async () => {
+    const serviceName = `node ${SERVICE_NAMES.socks5}`;
+    return await checkService(serviceName);
   });
 
   app.on('activate', () => {
@@ -82,3 +84,21 @@ app.on('window-all-closed', () => {
     socksProcess.kill();
   }
 });
+
+
+/**
+ * 检查指定服务是否正在运行
+ * @param {string} serviceName - 
+ * @returns {Promise<boolean>} - 返回一个 Promise，表示服务是否在运行
+ */
+function checkService(serviceName) {
+  return new Promise((resolve, reject) => {
+    exec(`pgrep -f ${serviceName}`, (error, stdout) => {
+      if (error) {
+        return reject(error);
+      }
+      const isRunning = stdout.trim() !== '';
+      resolve(isRunning);
+    });
+  });
+}
