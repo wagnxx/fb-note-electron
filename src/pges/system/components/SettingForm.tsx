@@ -17,6 +17,19 @@ type CpProps = {
   initialValues?: SettingFormFieldType
 }
 
+const isValidIP = (ip: string) => {
+  const validIps = ['localhost']
+  if (validIps.includes(ip)) return true
+  const pattern =
+    /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+  return pattern.test(ip)
+}
+
+const isValidPort = (port: string) => {
+  const portNum = parseInt(port, 10)
+  return portNum >= 1 && portNum <= 65535
+}
+
 const SettingForm: React.FC<CpProps> = ({
   onFinish,
   onFinishFailed,
@@ -38,14 +51,34 @@ const SettingForm: React.FC<CpProps> = ({
     <Form.Item<SettingFormFieldType>
       label="Address"
       name="address"
-      rules={[{ required: true, message: 'Please input your address!' }]}
+      rules={[
+        { required: true, message: 'Please input your address!' },
+        {
+          validator: (_, value) => {
+            if (isValidIP(value)) {
+              return Promise.resolve()
+            }
+            return Promise.reject(new Error('Invalid IP address!'))
+          },
+        },
+      ]}
     >
       <Input />
     </Form.Item>
     <Form.Item<SettingFormFieldType>
       label="Port"
       name="port"
-      rules={[{ required: true, message: 'Please input your port!' }]}
+      rules={[
+        { required: true, message: 'Please input your port!' },
+        {
+          validator: (_, value) => {
+            if (isValidPort(value)) {
+              return Promise.resolve()
+            }
+            return Promise.reject(new Error('Invalid port number!'))
+          },
+        },
+      ]}
     >
       <Input />
     </Form.Item>

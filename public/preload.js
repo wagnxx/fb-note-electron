@@ -14,6 +14,7 @@ const IPC_ACTIONS = {
   STOP_SOCKS_SERVICE: 'stop-socks-service',
   CHECK_SOCKS_SERVICE: 'check-socks-service',
   GET_SOCKS_SERVICE_INFO: 'get-socks-service-info',
+  GET_LOGS: 'get-logs',
 }
 
 
@@ -36,7 +37,13 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.on(channel, (event, ...args) => func(...args));
     },
     invoke: (channel, data) => {
-      const validChannels = [IPC_ACTIONS.CHECK_SOCKS_SERVICE, IPC_ACTIONS.GET_SOCKS_SERVICE_INFO];
+
+      const validChannels = [
+          IPC_ACTIONS.CHECK_SOCKS_SERVICE,
+          IPC_ACTIONS.GET_SOCKS_SERVICE_INFO,
+          IPC_ACTIONS.GET_LOGS
+        ];
+
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, data);
       }

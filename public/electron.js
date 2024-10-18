@@ -6,7 +6,20 @@ const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
 const { SERVICE_NAMES, IPC_ACTIONS } = require('./constants');
-const { message } = require('antd');
+const { createLogger, format, transports } = require('winston');
+
+const LOG_FILE_PATH =  path.join(__dirname, 'logs/error.log')
+// 创建日志记录器
+const logger = createLogger({
+  level: 'error',
+  format: format.combine(
+    format.timestamp(),
+    format.json()
+  ),
+  transports: [
+    new transports.File({ filename: LOG_FILE_PATH })
+  ],
+});
 
 let socksProcess;
 
@@ -42,6 +55,7 @@ app.whenReady().then(() => {
 
       socksProcess.stderr.on('data', (data) => {
         console.error(`SOCKS 服务错误: ${data}`);
+        logger.error(data.toString())
         event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, data.toString());
       });
 
@@ -87,6 +101,11 @@ app.whenReady().then(() => {
     const serviceName = `node ${SERVICE_NAMES.socks5}`;
     return await checkService(serviceName);
   });
+  ipcMain.handle(IPC_ACTIONS.GET_LOGS, async () => {
+    return await getLogs();
+  });
+
+
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -98,6 +117,17 @@ app.on('window-all-closed', () => {
   if (socksProcess) {
     socksProcess.kill();
   }
+});
+
+
+ // 捕获未处理的异常
+process.on('uncaughtException', (error) => {
+  logger.error(error);
+});
+
+// 捕获未处理的拒绝
+process.on('unhandledRejection', (error) => {
+  logger.error(error);
 });
 
 
@@ -118,35 +148,23 @@ function checkService(serviceName) {
   });
 }
 
-// function getSocksServiceInfo(serviceName) {
-//   return new Promise((resolve, reject) => {
-//     exec(`pgrep -f ${serviceName}`, (error, stdout) => {
-//       if (error) {
-//         return resolve({ isRunning: false, message:error.message });
-//       }
-      
-//       const pids = stdout.trim().split('\n').filter(Boolean);
-//       if (pids.length === 0) {
-//         return resolve({ isRunning: false, message: 'pids.length === 0' });
-//       }
-      
-//       const pid = pids[0]; // 只取第一个 PID
+function getLogs() {
+  try {
+    const data = fs.readFileSync(LOG_FILE_PATH, 'utf-8');
+    const lines = data.split('\n').filter(line => line.trim());
+    const logs = lines.map(line => {
+      try {
+        return JSON.parse(line);
+      } catch (parseErr) {
+        return { error: `无法解析日志行: ${parseErr.message}`, line };
+      }
+    });
+    return { logs };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
 
-//       exec(`ps -o args= -p ${pid}`, (error, stdout) => {
-//         if (error) {
-//           // 在这里处理无效 PID 的情况
-//           console.error(`Failed to get args for PID ${pid}:`, error.message);
-//           return resolve({ isRunning: false, message: error.message });
-//         }
-        
-//         const args = stdout.trim().split(' ').slice(1); // 从第二个参数开始
-//         const host = args[0]; // 第一个参数是 host
-//         const port = args[1]; // 第二个参数是 port
-//         resolve({ isRunning: true, host, port });
-//       });
-//     });
-//   });
-// }
 function getSocksServiceInfo() {
   const pidFile = path.join(__dirname, 'socks_service.pid');
   const infoFile = path.join(__dirname, 'socks_service_info.json');

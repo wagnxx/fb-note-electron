@@ -42,6 +42,7 @@ if (!host || !port) {
 startSocksServer(host, parseInt(port), (error, successMessage) => {
   if (error) {
     console.error(error);
+    process.send({ type: 'socks-service-error', message: err.message });
     process.exit(1);
   } else {
     console.log(successMessage);
