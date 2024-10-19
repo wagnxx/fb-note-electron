@@ -1,0 +1,105 @@
+{
+  "name": "fb-note-electron",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A desktop app for managing notes and tasks.",
+  "author": "wagnxx",
+  "dependencies": {
+    "@ant-design/colors": "^7.1.0",
+    "@ant-design/icons": "^5.5.1",
+    "@ant-design/icons-svg": "^4.4.2",
+    "@babel/runtime": "^7.25.7",
+    "@ctrl/tinycolor": "^4.1.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.113",
+    "antd": "^5.21.4",
+    "classnames": "^2.5.1",
+    "rc-util": "^5.43.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-scripts": "5.0.1",
+    "regenerator-runtime": "^0.14.1",
+    "socks": "^2.8.3",
+    "socks5": "^1.0.1",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4",
+    "winston": "^3.15.0"
+  },
+  "main": "electron/main.js",
+  "scripts": {
+    "start:web": "react-app-rewired start",
+    "build:web": "react-app-rewired build",
+    "test:web": "react-app-rewired test",
+    "start:ele": "ELECTRON_START_URL=http://localhost:3000 electron .",
+    "build:socks": "pkg electron/socks-server.js --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --out=electron/build-service/socks-server",
+    "build:ele": "electron-builder",
+    "pack": "node packager.js",
+    "eject": "react-scripts eject"
+  },
+  "build": {
+    "productName": "fb-note-electron",
+    "appId": "fb.note.electron",
+    "asar": true,
+    "files": [
+      "electron/**/*",
+      "public/**/*",
+      "build/**/*",
+      "electron/build-service/socks-server-*"
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "electron/assets/icons/icon.icns"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "electron/assets/icons/icon.ico"
+    }
+  },
+  "eslintConfig": {},
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.12.0",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "autoprefixer": "^10.4.20",
+    "electron": "^33.0.1",
+    "electron-builder": "^25.1.8",
+    "electron-packager": "^17.1.2",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-define-config": "^2.1.0",
+    "eslint-plugin-jest": "^28.6.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-unused-imports": "^3.2.0",
+    "globals": "^15.11.0",
+    "path-browserify": "^1.0.1",
+    "postcss": "^8.4.47",
+    "prettier": "^3.3.3",
+    "react-app-rewired": "^2.2.1",
+    "socks5-server": "^0.1.1",
+    "tailwindcss": "^3.4.14",
+    "typescript-eslint": "^8.9.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "appId": "fb.note.electron",
+  "productName": "fb-note-electron",
+  "files": [
+    "electron/**/*",
+    "public/**/*",
+    "build/**/*",
+    "electron/build-service/socks-server-*"
+  ],
+  "directories": {
+    "buildResources": "electron",
+    "output": "dist"
+  },
+  "mac": {
+    "target": [
+      "dmg"
+    ],
+    "icon": "electron/assets/icons/icon.icns"
+  },
+  "win": {
+    "target": [
+      "nsis"
+    ],
+    "icon": "electron/assets/icons/icon.ico"
+  },
+  "asar": true
+}
