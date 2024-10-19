@@ -1,46 +1,20 @@
-# Getting Started with Create React App
+# 项目简介
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 技术实现
+本项目采用 **Electron** 和 **React** 技术栈，旨在为用户提供一个便捷的桌面应用，帮助管理生活中的琐碎事务。
 
-## Available Scripts
+## 功能概述
+目前，应用包含一个 **SOCKS Server** 服务，未来计划扩展更多功能。我们的目标是将软件打造为一个全面的管理工具，简化用户的日常操作和开发工作。
 
-In the project directory, you can run:
+## 项目背景
+开发该应用的初衷源于对现有工具的不满。手机上的书签、笔记等功能仅限于本地记录，缺乏云端同步，跨设备使用时常常导致数据丢失。为了解决这一问题，我最初开发了 **fb-note-rn**，基于 React Native 进行移动端跨平台开发。然而，将 RN 代码迁移到 Web/Electron 的过程非常繁琐，因此决定独立开发该桌面应用，以便更好地支持多平台操作。
 
-### `npm start`
+## 功能规划
+在应用的未来发展中，我们计划增加以下模块：
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **系统级别操作**：提供可视化界面，简化开发人员在终端中输入命令的繁琐过程。
+- **学习工具**：例如英语单词本和日志记录，方便用户记录学习进度。
+- **日常记录**：帮助用户整理生活中的重要事项，提升管理效率。
+- **工具整合**：整合多种实用工具，提升用户体验。
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+虽然未来功能的具体细节尚未确定，但我们致力于将应用打造成一个多功能的个人管理工具，满足开发、学习和日常记录的需求。

@@ -8,7 +8,20 @@ const { exec } = require('child_process');
 const { SERVICE_NAMES, IPC_ACTIONS } = require('./constants');
 const { createLogger, format, transports } = require('winston');
 
+
+const isDev = process.env.ELECTRON_START_URL !== undefined;
+const platform = process.platform
+
+const SOCKS_RELATIVE_PATH = isDev 
+  ? 'socks-server.js' 
+  : platform === 'win32' 
+    ? 'build-service/socks-server-win.exe' 
+    : platform === 'darwin' 
+      ? 'build-service/socks-server-macos' 
+      : 'build-service/socks-server-linux';
+
 const LOG_FILE_PATH =  path.join(__dirname, 'logs/error.log')
+
 // 创建日志记录器
 const logger = createLogger({
   level: 'error',
@@ -35,7 +48,16 @@ function createWindow() {
     },
   });
 
-  win.loadURL('http://localhost:3000'); // 替换为你的 React 应用或 URL
+  // 判断是否在开发环境
+ 
+
+  if (isDev) {
+    // 开发环境，加载 React 开发服务器
+    win.loadURL(process.env.ELECTRON_START_URL);
+  } else {
+    // 生产环境，加载打包后的 React 应用
+    win.loadFile(path.join(__dirname, '../build/index.html'));
+  }
   
 }
 
@@ -49,7 +71,14 @@ app.whenReady().then(() => {
       if (!socksProcess) {
         console.log("address, port", address, port);
         
-        socksProcess = spawn('node', [path.join(__dirname, SERVICE_NAMES.socks5), address, port]);
+        if (isDev) {
+
+          socksProcess = spawn('node', [path.join(__dirname,  SOCKS_RELATIVE_PATH), address, port]);
+        } else {
+          socksProcess = spawn(path.join(__dirname, SOCKS_RELATIVE_PATH), [address, port], {
+            stdio: 'inherit', // 继承父进程的输入输出
+          });
+        }
         // 将子进程的输出通过 IPC 发送到渲染进程
         socksProcess.stdout.on('data', (data) => {
           console.log(`SOCKS 服务输出: ${data}`);

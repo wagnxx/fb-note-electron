@@ -2,9 +2,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 // from constans.js file
-const SERVICE_NAMES = {
-  socks5: 'my-socks-service.js'
-}
+
 
 const IPC_ACTIONS = {
   START_SOCKS_SERVICE: 'start-socks-service',
@@ -21,7 +19,6 @@ const IPC_ACTIONS = {
 
 
 contextBridge.exposeInMainWorld('electron', {
-  SERVICE_NAMES,
   IPC_ACTIONS,
 
   ipcRenderer: {

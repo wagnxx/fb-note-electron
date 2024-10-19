@@ -1,7 +1,3 @@
-const SERVICE_NAMES = {
-  socks5: 'my-socks-service.js'
-}
-
 const IPC_ACTIONS = {
   START_SOCKS_SERVICE: 'start-socks-service',
   SOCKS_SERVICE_OUTPUT: 'socks-service-output',
@@ -16,6 +12,5 @@ const IPC_ACTIONS = {
 
 
 module.exports = {
-  SERVICE_NAMES,
   IPC_ACTIONS
 }
