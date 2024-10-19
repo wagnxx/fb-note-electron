@@ -33,7 +33,7 @@ const menuConfig: MenuItem[] = [
 ]
 
 export default function Home() {
-  const [componentKey, setComponentKey] = useState<string>('System-Logs')
+  const [componentKey, setComponentKey] = useState<string>('System-Proxies')
 
   // 根据当前选中的组件键查找组件
   const CurrentComponent = useMemo(() => {

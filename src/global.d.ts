@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // global.d.ts
 
 declare global {

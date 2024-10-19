@@ -6,12 +6,13 @@ import pluginReact from 'eslint-plugin-react';
 import unusedImport from 'eslint-plugin-unused-imports';
 import pluginPrettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
+
 export default [
   // Global language options for the entire project
   { 
     languageOptions: { 
       globals: {
-
         ...globals.browser,
         module: 'readonly',
       },
@@ -39,6 +40,8 @@ export default [
       "@typescript-eslint": tseslint, // 手动注册 TypeScript ESLint 插件
       "unused-imports": unusedImport, // 注册 unused imports 插件
       "prettier": pluginPrettier, // 注册 Prettier 插件
+      "react": pluginReact,
+      "react-hooks": reactHooks, // 注册 react-hooks 插件
     },
     rules: {
       'prettier/prettier': 'error',
@@ -56,13 +59,15 @@ export default [
       // 关闭默认的未使用变量检测规则
       '@typescript-eslint/no-unused-vars': 'off',
       'no-unused-vars': 'off',
+
+      // React Hooks 规则
+      'react-hooks/rules-of-hooks': 'error', // 检查 Hooks 的规则
+      'react-hooks/exhaustive-deps': 'warn', // 检查依赖项
+
       // 其他 ESLint 规则
-      // quotes: ['error', 'single'], // 使用单引号
-  
       indent: 'off', // 不使用 indent 规则
       'no-tabs': 'off',
       'keyword-spacing': ['error', { before: true, after: true }], // 冒号后面必须有一个空格
-      // 'space-before-function-paren': ['error', 'always'], // 函数名与括号之间有一个空格
       'space-before-function-paren': 0,
       'object-curly-spacing': ['error', 'always'],
       'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }], // 最多有2个空行，文件末尾不能有空行
@@ -71,20 +76,4 @@ export default [
       ...prettierConfig.rules
     },
   },
-
-  // React-specific recommendations
-  {
-    files: ["**/*.jsx", "**/*.tsx"],
-    plugins: {
-      "react": pluginReact,
-    },
-    settings: {
-      react: {
-        version: "detect",  // 自动检测 React 版本
-      },
-    },
-    rules: {
-      // 在此处可以添加 React 相关的自定义规则
-    },
-  }
 ];

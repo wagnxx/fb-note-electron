@@ -1,8 +1,13 @@
 import { Collapse, CollapseProps, Flex, FormProps, Splitter, Switch, theme } from 'antd'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import SettingForm, { SettingFormFieldType } from './components/SettingForm'
 import { isElectron } from '../../utils/utilsSystem'
 
+// 定义枚举
+enum ACTIONS {
+  INTERNAL_STOP = 'internal-stop',
+  INTERNAL_START = 'internal-start',
+}
 // 通过 preload 暴露的安全 IPC API
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
@@ -33,16 +38,49 @@ const onFinishOfSocks5: FormProps<SettingFormFieldType>['onFinish'] = values => 
 }
 
 export default function System() {
-  const [proxySwitchChecked, setProxySwitchChecked] = useState(false)
   const [isSocksServerRunning, setIsSocksServerRunning] = useState(false)
   const [consoleOutput, setConsoleOutput] = useState<string[]>([])
-  const [initialSocks5Values, setInitialSocks5Values] = useState<SettingFormFieldType>({})
+  const [initialSocks5Values, setInitialSocks5Values] = useState<SettingFormFieldType>()
 
   const { token } = useToken()
 
+  const onSocksSwitchChanged = useCallback((val: boolean) => {
+    if (val) return
+    ipcRenderer?.send(IPC_ACTIONS.STOP_SOCKS_SERVICE, { action: ACTIONS.INTERNAL_STOP })
+  }, [])
+
+  const checkServiceStatus = useCallback(async () => {
+    if (isElectron()) {
+      try {
+        const serviceinfo: any = await ipcRenderer?.invoke(IPC_ACTIONS.GET_SOCKS_SERVICE_INFO, null)
+
+        setIsSocksServerRunning(serviceinfo?.isRunning || false)
+        if (serviceinfo.host && serviceinfo.port) {
+          setInitialSocks5Values({
+            address: serviceinfo.host,
+            port: serviceinfo.port,
+          })
+        }
+
+        let message: string = ''
+        if (serviceinfo?.isRunning) {
+          console.log('serviceinfo :::', serviceinfo)
+          message += 'Socks service checked successfully \n'
+          message += JSON.stringify(serviceinfo, null, 2)
+        } else {
+          message = `Socks service checked failed: ${serviceinfo?.message}`
+        }
+        setConsoleOutput(prevOutput => [...prevOutput, message])
+      } catch (error) {}
+    }
+  }, [])
+
   useEffect(() => {
-    const handleServiceOutput = (data: string) => {
-      console.log('received message from ipc:', data)
+    const handleServiceOutput = (data: string, action?: ACTIONS) => {
+      if (action === ACTIONS.INTERNAL_STOP) {
+        console.log('action::', action)
+        checkServiceStatus()
+      }
       setConsoleOutput(prevOutput => [...prevOutput, data])
     }
 
@@ -60,70 +98,25 @@ export default function System() {
     ipcRenderer.on('socks-service-status', handleServiceStatus) // 监听服务状态
 
     return () => {
-      ipcRenderer.removeListener('socks-service-output', handleServiceOutput)
-      ipcRenderer.removeListener('socks-service-error', handleServiceOutput)
-      ipcRenderer.removeListener('socks-service-stopped', handleServiceOutput)
+      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, handleServiceOutput)
+      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_ERROR, handleServiceOutput)
+      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, handleServiceOutput)
       ipcRenderer.removeListener('socks-service-status', handleServiceStatus) // 移除服务状态监听器
     }
-  }, [])
+  }, [checkServiceStatus])
 
   const hasExecuted = useRef(false)
 
   useEffect(() => {
-    const checkServiceStatus = async () => {
-      if (isElectron()) {
-        try {
-          const serviceInfo: any = await ipcRenderer?.invoke(
-            IPC_ACTIONS.GET_SOCKS_SERVICE_INFO,
-            null,
-          )
-
-          setIsSocksServerRunning(serviceInfo?.isRunning || false)
-          let message: string = ''
-          if (serviceInfo?.isRunning) {
-            console.log('serviceinfo :::', serviceInfo)
-            message += 'Socks service checked successfully \n'
-            message += JSON.stringify(serviceInfo, null, 2)
-            setInitialSocks5Values({
-              address: serviceInfo.host,
-              port: serviceInfo.port,
-            })
-          } else {
-            message = `Socks service checked failed: ${serviceInfo?.message}`
-          }
-          setConsoleOutput(prevOutput => [...prevOutput, message])
-        } catch (error) {}
-      }
-    }
-
     if (!hasExecuted.current) {
       // 只在第一次渲染时执行
       hasExecuted.current = true
       // 你的逻辑
       checkServiceStatus()
     }
-  }, [])
+  }, [checkServiceStatus])
 
   const items: CollapseProps['items'] = [
-    {
-      key: '1',
-      label: 'Proxy',
-      children: (
-        <SettingForm
-          onFinish={onFinishOfProxy}
-          onFinishFailed={onFinishFailed}
-          disabled={!proxySwitchChecked}
-        />
-      ),
-      extra: (
-        <Switch
-          disabled
-          checked={proxySwitchChecked}
-          onChange={val => setProxySwitchChecked(val)}
-          onClick={stopPropagationHandler}
-        />
-      ),
-    },
     {
       key: '2',
       label: 'Socks5',
@@ -136,9 +129,9 @@ export default function System() {
       ),
       extra: (
         <Switch
-          disabled
+          disabled={!isSocksServerRunning}
           checked={isSocksServerRunning}
-          // onChange={val => setSocks5SwitchChecked(val)}
+          onChange={onSocksSwitchChanged}
           onClick={stopPropagationHandler}
         />
       ),

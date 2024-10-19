@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-const { Socks5Server } = require('socks5-server');
+const { Socks5Server,AUTH_METHODS } = require('socks5-server');
 const path = require('path')
 const fs = require('fs')
 
@@ -9,13 +9,16 @@ const startSocksServer = (host, port, callback) => {
 
   // 创建并写入 PID 文件
   fs.writeFileSync(pidFile, process.pid.toString());
-  const server = new Socks5Server({ host, port });
+  const server = new Socks5Server({ timeout: 300000 });
+  server.registerAuth(AUTH_METHODS.NOAUTH);
+  // 处理连接
+  server.on('connection', (connection) => {
+    console.log('Client connected:', connection.remoteAddress);
+  });
 
   server.listen(port, host, () => {
     callback(null, `SOCKS5 Server running at ${host}:${port}`); // 成功回调
     fs.writeFileSync(infoFile, JSON.stringify({ host, port }));
-    // 发送成功信息到主进程
-    // process.send({ type: 'socks-service-started', message: `SOCKS5 Server running at ${host}:${port}` });
   });
 
   server.on('error', (err) => {

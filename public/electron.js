@@ -36,6 +36,7 @@ function createWindow() {
   });
 
   win.loadURL('http://localhost:3000'); // 替换为你的 React 应用或 URL
+  
 }
 
 app.whenReady().then(() => {
@@ -43,53 +44,61 @@ app.whenReady().then(() => {
 
   // 启动 SOCKS 服务
   ipcMain.on(IPC_ACTIONS.START_SOCKS_SERVICE, (event, { payload : {address, port} }) => {
-    if (!socksProcess) {
-      console.log("address, port", address, port);
-      socksProcess = spawn('node', [path.join(__dirname, SERVICE_NAMES.socks5), address, port]);
 
-      // 将子进程的输出通过 IPC 发送到渲染进程
-      socksProcess.stdout.on('data', (data) => {
-        console.log(`SOCKS 服务输出: ${data}`);
-        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, data.toString());
-      });
-
-      socksProcess.stderr.on('data', (data) => {
-        console.error(`SOCKS 服务错误: ${data}`);
-        logger.error(data.toString())
-        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, data.toString());
-      });
-
-      socksProcess.on('close', (code) => {
-        console.log(`SOCKS 服务已停止，退出码: ${code}`);
-        socksProcess = null;
-        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, `SOCKS 服务已停止，退出码: ${code}`);
-      });
-
-      socksProcess.on('message', (msg) => {
-        if (msg.type === IPC_ACTIONS.START_SOCKS_SERVICE) {
-          event.sender.send(IPC_ACTIONS.START_SOCKS_SERVICE, msg.message);
-        } else if (msg.type === IPC_ACTIONS.SOCKS_SERVICE_ERROR) {
-          event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, msg.message);
-        }
-      });
-
-      console.log('SOCKS 服务已启动');
-    } else {
-      console.log('SOCKS 服务已经在运行');
-      event.sender.send('socks-service-output', 'SOCKS 服务已经在运行');
+    try {
+      if (!socksProcess) {
+        console.log("address, port", address, port);
+        
+        socksProcess = spawn('node', [path.join(__dirname, SERVICE_NAMES.socks5), address, port]);
+        // 将子进程的输出通过 IPC 发送到渲染进程
+        socksProcess.stdout.on('data', (data) => {
+          console.log(`SOCKS 服务输出: ${data}`);
+          event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, data.toString());
+        });
+  
+        socksProcess.stderr.on('data', (data) => {
+          console.error(`SOCKS 服务错误: ${data}`);
+          logger.error(data.toString())
+          event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, data.toString());
+        });
+  
+        socksProcess.on('close', (code) => {
+          console.log(`SOCKS 服务已停止，退出码: ${code}`);
+          socksProcess = null;
+          event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, `SOCKS 服务已停止，退出码: ${code}`);
+        });
+  
+        socksProcess.on('message', (msg) => {
+          if (msg.type === IPC_ACTIONS.START_SOCKS_SERVICE) {
+            event.sender.send(IPC_ACTIONS.START_SOCKS_SERVICE, msg.message);
+          } else if (msg.type === IPC_ACTIONS.SOCKS_SERVICE_ERROR) {
+            event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, msg.message);
+          }
+        });
+  
+        console.log('SOCKS 服务已启动');
+      } else {
+        console.log('SOCKS 服务已经在运行');
+        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 服务已经在运行');
+      }
+    } catch (error) {
+     logger.error(error);
+     event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, '启动服务时发生错误')
     }
+    
+
   });
 
   // 监听停止服务的请求
-  ipcMain.on(IPC_ACTIONS.STOP_SOCKS_SERVICE, (event) => {
+  ipcMain.on(IPC_ACTIONS.STOP_SOCKS_SERVICE, (event, {action = null }) => {
     if (socksProcess) {
       socksProcess.kill();
       socksProcess = null;
       console.log('SOCKS 服务已停止');
-      event.sender.send('socks-service-stopped', 'SOCKS 服务已停止');
+      event.sender.send('socks-service-stopped', 'SOCKS 服务已停止', action);
     } else {
       console.log('SOCKS 服务未运行');
-      event.sender.send('socks-service-output', 'SOCKS 服务未运行');
+      event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 服务未运行', action);
     }
   });
 
@@ -169,22 +178,38 @@ function getSocksServiceInfo() {
   const pidFile = path.join(__dirname, 'socks_service.pid');
   const infoFile = path.join(__dirname, 'socks_service_info.json');
 
+  let data = {
+    host: '',
+    port: '',
+    isRunning: false
+  }
+
+  try {
+    
+    let jsonData = fs.readFileSync(infoFile, 'utf-8');
+    jsonData = JSON.parse(jsonData);
+    data.host = jsonData.host
+    data.port = jsonData.port
+  } catch (error) {}
+
   if (fs.existsSync(pidFile)) {
     const pid = parseInt(fs.readFileSync(pidFile, 'utf-8'), 10);
 
     try {
       process.kill(pid, 0); // 检查进程是否仍然存在
 
-      // 读取 host 和 port
-      const data = fs.readFileSync(infoFile, 'utf-8');
-      const { host, port } = JSON.parse(data);
-      return { isRunning: true, host, port };
+
+      data.isRunning = true
     } catch (err) {
+      const message = `Process with PID ${pid} is not running.`
       // 进程不存在
-      console.error(`Process with PID ${pid} is not running.`);
-      return { isRunning: false };
+      logger.error(message)
+      data.isRunning = false
+      data.message = message
     }
   } else {
-    return { isRunning: false ,message: 'no pid'};
+    data.isRunning = false
+    data.message = `no pid.` 
   }
+  return data
 }

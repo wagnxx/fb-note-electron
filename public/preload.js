@@ -25,8 +25,8 @@ contextBridge.exposeInMainWorld('electron', {
   IPC_ACTIONS,
 
   ipcRenderer: {
-    send: (channel, data) => {
-      ipcRenderer.send(channel, data);
+    send: (channel, ...data) => {
+      ipcRenderer.send(channel, ...data);
     },
     on: (channel, func) => {
       // 只允许特定的频道
