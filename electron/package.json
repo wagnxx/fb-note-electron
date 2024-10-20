@@ -13,8 +13,7 @@
     "appId": "fb.note.electron",
     "asar": true,
     "files": [
-      "./**/*",
-      "node_modules/**/*"
+      "./**/*"
     ],
     "extraResources": [
       {
@@ -24,10 +23,6 @@
       {
         "from": "../web-app/build",
         "to": "web-app/build"
-      },
-      {
-        "from": "node_modules/",
-        "to": "node_modules/"
       }
     ],
     "mac": {
@@ -46,10 +41,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "electron": "^33.0.1",
-    "electron-builder": "^25.1.8",
+  "dependencies": {
     "socks5-server": "^0.1.1",
     "winston": "^3.15.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.1",
+    "electron-builder": "^25.1.8"
   }
 }
