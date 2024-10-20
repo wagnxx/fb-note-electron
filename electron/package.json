@@ -13,12 +13,26 @@
     "appId": "fb.note.electron",
     "asar": true,
     "files": [
-      "./**/*"
+      "./assets/*",
+      "./main.js",
+      "./constants.js"
     ],
     "extraResources": [
       {
         "from": "preload.js",
-        "to": "."
+        "to": "./lib/preload/preload.js"
+      },
+      {
+        "from": "build-service",
+        "to": "./lib/build-service"
+      },
+      {
+        "from": "logs",
+        "to": "./lib/logs"
+      },
+      {
+        "from": "temps",
+        "to": "./lib/temps"
       },
       {
         "from": "../web-app/build",

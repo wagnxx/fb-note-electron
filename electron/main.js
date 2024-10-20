@@ -12,18 +12,20 @@ const { createLogger, format, transports } = require('winston');
 const isDev = process.env.ELECTRON_START_URL !== undefined;
 // const isDev = false
 const platform = process.platform
+const preloadPath = isDev ?  path.join(__dirname, 'preload.js') :   path.join(__dirname, '../lib/preload','preload.js')
 
 const SOCKS_RELATIVE_PATH = isDev 
   ? 'socks-server.js' 
   : platform === 'win32' 
-    ? 'build-service/socks-server-win.exe' 
+    ? '../lib/build-service/socks-server-win.exe' 
     : platform === 'darwin' 
-      ? 'build-service/socks-server-macos' 
-      : 'build-service/socks-server-linux';
+      ? '../lib/build-service/socks-server-macos' 
+      : '../lib/build-service/socks-server-linux';
 
-const LOG_FILE_PATH =  path.join(__dirname, 'logs/error.log')
-const pidFile = path.join(__dirname, 'temps', 'socks_service.pid');
-const infoFile = path.join(__dirname, 'temps', 'socks_service_info.json');
+const LOG_FILE_PATH = isDev ? path.join(__dirname, 'logs/error.log') : path.join(__dirname,'../lib', 'logs/error.log')
+const pidFile = isDev ? path.join(__dirname, 'temps', 'socks_service.pid'): path.join(__dirname, '../lib/temps', 'socks_service.pid');
+const infoFile = isDev ? path.join(__dirname, 'temps', 'socks_service_info.json'): path.join(__dirname, '../lib/temps', 'socks_service_info.json');
+
 // 创建日志记录器
 const logger = createLogger({
   level: 'error',
@@ -40,8 +42,6 @@ let socksProcess;
 
 
 function createWindow() {
-  let preloadPath = isDev ?  path.join(__dirname, 'preload.js') :   path.join(__dirname, '../preload.js')
-
   const win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -126,7 +126,7 @@ app.whenReady().then(() => {
         console.log('SOCKS 服务已启动');
       } else {
         console.log('SOCKS 服务已经在运行');
-        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 服务已经在运行');
+        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 服务已经在运行 pid:' + socksProcess.pid.toString());
       }
     } catch (error) {
      logger.error(error);
