@@ -5,3 +5,31 @@
 {"level":"error","message":"Process with PID 57498 is not running.","timestamp":"2024-10-19T12:41:25.305Z"}
 {"level":"error","timestamp":"2024-10-19T12:41:38.029Z"}
 {"level":"error","message":"Process with PID 57498 is not running.","timestamp":"2024-10-19T12:46:10.008Z"}
+{"level":"error","message":"Process with PID 24226 is not running.","timestamp":"2024-10-20T06:00:37.529Z"}
+{"level":"error","message":"Process with PID 24226 is not running.","timestamp":"2024-10-20T06:00:44.999Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:01:03.851Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:01:03.852Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:01:03.852Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:01:06.227Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:04:41.716Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:04:51.954Z"}
+{"level":"error","timestamp":"2024-10-20T06:04:55.094Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:05:09.516Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:05:10.593Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:06:41.009Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:07:26.661Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:18:33.868Z"}
+{"level":"error","timestamp":"2024-10-20T06:18:39.259Z"}
+{"level":"error","message":"Process with PID 24387 is not running.","timestamp":"2024-10-20T06:18:51.902Z"}
+{"level":"error","message":"Failed to read or parse /Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json: ENOENT: no such file or directory, open '/Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json'","timestamp":"2024-10-20T06:22:04.881Z"}
+{"level":"error","timestamp":"2024-10-20T06:22:10.710Z"}
+{"level":"error","message":"Failed to read or parse /Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json: ENOENT: no such file or directory, open '/Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json'","timestamp":"2024-10-20T06:22:17.983Z"}
+{"level":"error","message":"Failed to read or parse /Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json: ENOENT: no such file or directory, open '/Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json'","timestamp":"2024-10-20T06:24:28.364Z"}
+{"level":"error","timestamp":"2024-10-20T06:24:34.245Z"}
+{"level":"error","message":"Failed to read or parse /Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json: ENOENT: no such file or directory, open '/Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json'","timestamp":"2024-10-20T06:26:07.820Z"}
+{"level":"error","message":"Failed to read or parse /Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json: ENOENT: no such file or directory, open '/Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json'","timestamp":"2024-10-20T06:27:09.095Z"}
+{"level":"error","timestamp":"2024-10-20T06:27:19.060Z"}
+{"level":"error","message":"Failed to read or parse /Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json: ENOENT: no such file or directory, open '/Users/wagnxx/dt/playing/electron/fb-note-electron/electron/temps/socks_service_info.json'","timestamp":"2024-10-20T06:28:15.887Z"}
+{"level":"error","message":"Process with PID 25704 is not running.","timestamp":"2024-10-20T06:36:49.497Z"}
+{"level":"error","message":"Process with PID 25913 is not running.","timestamp":"2024-10-20T06:37:09.879Z"}
+{"level":"error","message":"Process with PID 25913 is not running.","timestamp":"2024-10-20T06:37:14.097Z"}

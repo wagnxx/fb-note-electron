@@ -2,3 +2,7 @@ dist
 node_modules
 
 .DS_Store
+
+electron/build-service
+electron/temps
+electron/logs

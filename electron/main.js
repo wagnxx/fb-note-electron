@@ -9,8 +9,8 @@ const { SERVICE_NAMES, IPC_ACTIONS } = require('./constants');
 const { createLogger, format, transports } = require('winston');
 
 
-// const isDev = process.env.ELECTRON_START_URL !== undefined;
-const isDev = false
+const isDev = process.env.ELECTRON_START_URL !== undefined;
+// const isDev = false
 const platform = process.platform
 
 const SOCKS_RELATIVE_PATH = isDev 
@@ -22,7 +22,8 @@ const SOCKS_RELATIVE_PATH = isDev
       : 'build-service/socks-server-linux';
 
 const LOG_FILE_PATH =  path.join(__dirname, 'logs/error.log')
-
+const pidFile = path.join(__dirname, 'temps', 'socks_service.pid');
+const infoFile = path.join(__dirname, 'temps', 'socks_service_info.json');
 // 创建日志记录器
 const logger = createLogger({
   level: 'error',
@@ -39,11 +40,13 @@ let socksProcess;
 
 
 function createWindow() {
+  let preloadPath = isDev ?  path.join(__dirname, 'preload.js') :   path.join(__dirname, '../preload.js')
+
   const win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: preloadPath,
       nodeIntegration: false, // 确保安全性
       contextIsolation: true,
     },
@@ -57,7 +60,7 @@ function createWindow() {
     win.loadURL(process.env.ELECTRON_START_URL);
   } else {
     // 生产环境，加载打包后的 React 应用
-    win.loadFile(path.join(__dirname, '../build/index.html'));
+    win.loadFile(path.join(__dirname, '../web-app/build/index.html'));
   }
   
 }
@@ -77,13 +80,27 @@ app.whenReady().then(() => {
           socksProcess = spawn('node', [path.join(__dirname,  SOCKS_RELATIVE_PATH), address, port]);
         } else {
           socksProcess = spawn(path.join(__dirname, SOCKS_RELATIVE_PATH), [address, port], {
-            stdio: 'inherit', // 继承父进程的输入输出
+            // stdio: 'inherit', // 继承父进程的输入输出
           });
         }
         // 将子进程的输出通过 IPC 发送到渲染进程
         socksProcess.stdout.on('data', (data) => {
-          console.log(`SOCKS 服务输出: ${data}`);
-          event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, data.toString());
+          const output = data.toString()
+          console.log(`SOCKS 服务输出: ${output}`);
+          event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, output);
+
+          try {
+            const parsedData = JSON.parse(output)
+            console.log('parsedData:::',parsedData);
+            if (parsedData?.type === 'write_pid_to_temp') {
+              const {host, port, pid } = parsedData
+              fs.writeFileSync(pidFile, pid);
+              fs.writeFileSync(infoFile, JSON.stringify({ host, port }));
+            }
+            
+          } catch (error) {
+            console.log('parse output error::', error); 
+          }
         });
   
         socksProcess.stderr.on('data', (data) => {
@@ -204,41 +221,37 @@ function getLogs() {
 }
 
 function getSocksServiceInfo() {
-  const pidFile = path.join(__dirname, 'socks_service.pid');
-  const infoFile = path.join(__dirname, 'socks_service_info.json');
-
   let data = {
     host: '',
     port: '',
-    isRunning: false
-  }
+    isRunning: false,
+    message: ''
+  };
 
   try {
-    
     let jsonData = fs.readFileSync(infoFile, 'utf-8');
     jsonData = JSON.parse(jsonData);
-    data.host = jsonData.host
-    data.port = jsonData.port
-  } catch (error) {}
+    data.host = jsonData.host;
+    data.port = jsonData.port;
+  } catch (error) {
+    logger.error(`Failed to read or parse ${infoFile}: ${error.message}`);
+  }
 
   if (fs.existsSync(pidFile)) {
     const pid = parseInt(fs.readFileSync(pidFile, 'utf-8'), 10);
-
+    
     try {
       process.kill(pid, 0); // 检查进程是否仍然存在
-
-
-      data.isRunning = true
+      data.isRunning = true;
     } catch (err) {
-      const message = `Process with PID ${pid} is not running.`
-      // 进程不存在
-      logger.error(message)
-      data.isRunning = false
-      data.message = message
+      const message = `Process with PID ${pid} is not running.`;
+      logger.error(message);
+      data.isRunning = false;
+      data.message = message;
     }
   } else {
-    data.isRunning = false
-    data.message = `no pid.` 
+    data.message = 'No PID file found.';
   }
-  return data
+  
+  return data;
 }

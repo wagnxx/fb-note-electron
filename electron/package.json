@@ -1,0 +1,55 @@
+{
+  "name": "electron",
+  "version": "1.0.0",
+  "description": "A desktop app for managing notes and tasks.",
+  "main": "main.js",
+  "scripts": {
+    "start:ele": "ELECTRON_START_URL=http://localhost:3000 electron .",
+    "build:socks": "mkdir -p ./build-service && pkg ./socks-server.js --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --out=./build-service/socks-server",
+    "build:ele": "electron-builder"
+  },
+  "build": {
+    "productName": "fb-note-electron",
+    "appId": "fb.note.electron",
+    "asar": true,
+    "files": [
+      "./**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "preload.js",
+        "to": "."
+      },
+      {
+        "from": "../web-app/build",
+        "to": "web-app/build"
+      },
+      {
+        "from": "node_modules/",
+        "to": "node_modules/"
+      }
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "assets/icons/icon.icns"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icons/icon.ico"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^33.0.1",
+    "electron-builder": "^25.1.8",
+    "socks5-server": "^0.1.1",
+    "winston": "^3.15.0"
+  }
+}
