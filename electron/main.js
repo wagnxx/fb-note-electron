@@ -100,7 +100,7 @@ app.whenReady().then(() => {
             }
             
           } catch (error) {
-            console.log('parse output error::', error); 
+            // console.log('parse output error::', error); 
           }
         });
   
@@ -164,17 +164,20 @@ app.whenReady().then(() => {
 
 
   app.on('activate', () => {
+    console.log('app window activate');
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('will-quite', () => {
   if (socksProcess) {
     socksProcess.kill();
   }
-});
-
+})
 
  // 捕获未处理的异常
 process.on('uncaughtException', (error) => {
