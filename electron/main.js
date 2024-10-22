@@ -70,7 +70,7 @@ app.whenReady().then(() => {
   createWindow();
 
   // 启动 SOCKS 服务
-  ipcMain.on(IPC_ACTIONS.START_SOCKS_SERVICE, (event, { payload : {address, port} }) => {
+  ipcMain.on(IPC_ACTIONS.START_SOCKS_SERVICE, (event, { payload : {address, port}, action = null }) => {
 
     try {
       if (!socksProcess) {
@@ -94,6 +94,7 @@ app.whenReady().then(() => {
             const parsedData = JSON.parse(output)
             console.log('parsedData:::',parsedData);
             if (parsedData?.type === 'write_pid_to_temp') {
+              event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 启动成功', action);
               const {host, port, pid } = parsedData
               fs.writeFileSync(pidFile, pid);
               fs.writeFileSync(infoFile, JSON.stringify({ host, port }));
@@ -173,7 +174,7 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-app.on('will-quite', () => {
+app.on('before-quit', () => {
   if (socksProcess) {
     socksProcess.kill();
   }

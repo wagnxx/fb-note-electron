@@ -31,7 +31,11 @@ const onFinishOfProxy: FormProps<SettingFormFieldType>['onFinish'] = values => {
 const onFinishOfSocks5: FormProps<SettingFormFieldType>['onFinish'] = values => {
   console.log('onFinishOfSocks5:', values)
   if (isElectron()) {
-    ipcRenderer?.send('start-socks-service', { type: 'socks5', payload: values })
+    ipcRenderer?.send('start-socks-service', {
+      type: 'socks5',
+      payload: values,
+      action: ACTIONS.INTERNAL_START,
+    })
   } else {
     console.warn('This feature is not supported in the web environment.')
   }
@@ -77,8 +81,8 @@ export default function System() {
 
   useEffect(() => {
     const handleServiceOutput = (data: string, action?: ACTIONS) => {
-      if (action === ACTIONS.INTERNAL_STOP) {
-        console.log('action::', action)
+      if (ACTIONS.INTERNAL_STOP === action || ACTIONS.INTERNAL_START === action) {
+        console.log('action is::', action)
         checkServiceStatus()
       }
       setConsoleOutput(prevOutput => [...prevOutput, data])
