@@ -141,10 +141,12 @@ app.whenReady().then(() => {
   // 监听停止服务的请求
   ipcMain.on(IPC_ACTIONS.STOP_SOCKS_SERVICE, (event, {action = null }) => {
     if (socksProcess) {
+      socksProcess.on('exit', () => {
+        console.log('SOCKS 服务已停止');
+        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 服务已停止', action);
+      })
       socksProcess.kill();
       socksProcess = null;
-      console.log('SOCKS 服务已停止');
-      event.sender.send('socks-service-stopped', 'SOCKS 服务已停止', action);
     } else {
       console.log('SOCKS 服务未运行');
       event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 服务未运行', action);
