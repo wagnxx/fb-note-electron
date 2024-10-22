@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
+require('dotenv').config()
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
@@ -8,23 +9,23 @@ const { exec } = require('child_process');
 const { SERVICE_NAMES, IPC_ACTIONS } = require('./constants');
 const { createLogger, format, transports } = require('winston');
 
-
+const SUPPORT_DIR = process.env.SUPPORT_DIR || 'support' 
 const isDev = process.env.ELECTRON_START_URL !== undefined;
 // const isDev = false
 const platform = process.platform
-const preloadPath = isDev ?  path.join(__dirname, 'preload.js') :   path.join(__dirname, '../lib/preload','preload.js')
+const preloadPath = isDev ?  path.join(__dirname, 'preload.js') :   path.join(__dirname, '..',SUPPORT_DIR,'/preload','preload.js')
 
 const SOCKS_RELATIVE_PATH = isDev 
   ? 'socks-server.js' 
   : platform === 'win32' 
-    ? '../lib/build-service/socks-server-win.exe' 
+    ? '../'+ SUPPORT_DIR +'/build-service/socks-server-win.exe' 
     : platform === 'darwin' 
-      ? '../lib/build-service/socks-server-macos' 
-      : '../lib/build-service/socks-server-linux';
+      ? '../'+ SUPPORT_DIR +'/build-service/socks-server-macos' 
+      : '../'+ SUPPORT_DIR +'/build-service/socks-server-linux';
 
-const LOG_FILE_PATH = isDev ? path.join(__dirname, 'logs/error.log') : path.join(__dirname,'../lib', 'logs/error.log')
-const pidFile = isDev ? path.join(__dirname, 'temps', 'socks_service.pid'): path.join(__dirname, '../lib/temps', 'socks_service.pid');
-const infoFile = isDev ? path.join(__dirname, 'temps', 'socks_service_info.json'): path.join(__dirname, '../lib/temps', 'socks_service_info.json');
+const LOG_FILE_PATH = isDev ? path.join(__dirname, 'logs/error.log') : path.join(__dirname,'..', SUPPORT_DIR, 'logs/error.log')
+const pidFile = isDev ? path.join(__dirname, 'temps', 'socks_service.pid'): path.join(__dirname, '..', SUPPORT_DIR,'/temps', 'socks_service.pid');
+const infoFile = isDev ? path.join(__dirname, 'temps', 'socks_service_info.json'): path.join(__dirname, '..',SUPPORT_DIR,'/temps', 'socks_service_info.json');
 
 // 创建日志记录器
 const logger = createLogger({

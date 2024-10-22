@@ -6,7 +6,8 @@
   "scripts": {
     "start:ele": "ELECTRON_START_URL=http://localhost:3000 electron .",
     "build:socks": "mkdir -p ./build-service && pkg ./socks-server.js --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --out=./build-service/socks-server",
-    "build:ele": "electron-builder"
+    "build:ele-simple": "electron-builder",
+    "build:ele": "electron-builder --config=electron.build.config.js"
   },
   "build": {
     "productName": "fb-note-electron",
@@ -20,19 +21,19 @@
     "extraResources": [
       {
         "from": "preload.js",
-        "to": "./lib/preload/preload.js"
+        "to": "./support/preload/preload.js"
       },
       {
         "from": "build-service",
-        "to": "./lib/build-service"
+        "to": "./support/build-service"
       },
       {
         "from": "logs",
-        "to": "./lib/logs"
+        "to": "./support/logs"
       },
       {
         "from": "temps",
-        "to": "./lib/temps"
+        "to": "./support/temps"
       },
       {
         "from": "../web-app/build",
@@ -57,6 +58,7 @@
   "license": "ISC",
   "dependencies": {
     "socks5-server": "^0.1.1",
+    "dotenv": "^16.4.5",
     "winston": "^3.15.0"
   },
   "devDependencies": {
