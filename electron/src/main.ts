@@ -1,31 +1,41 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-require('dotenv').config()
-const { app, BrowserWindow, ipcMain } = require('electron');
-const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs');
-const { exec } = require('child_process');
-const { SERVICE_NAMES, IPC_ACTIONS } = require('./constants');
-const { createLogger, format, transports } = require('winston');
+import { config } from 'dotenv';
+config();
+import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
+import { spawn, ChildProcess } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import { exec } from 'child_process';
+import { IPC_ACTIONS } from './constants';
+import { createLogger, format, transports } from 'winston';
 
-const SUPPORT_DIR = process.env.SUPPORT_DIR || 'support' 
+const SUPPORT_DIR = process.env.SUPPORT_DIR || 'support';
 const isDev = process.env.ELECTRON_START_URL !== undefined;
-// const isDev = false
-const platform = process.platform
-const preloadPath = isDev ?  path.join(__dirname, 'preload.js') :   path.join(__dirname, '..',SUPPORT_DIR,'/preload','preload.js')
+const platform = process.platform;
+const preloadPath = isDev
+  ? path.join(__dirname, '..', 'preload.js')
+  : path.join(__dirname, '../..', SUPPORT_DIR, 'preload', 'preload.js');
 
-const SOCKS_RELATIVE_PATH = isDev 
-  ? 'socks-server.js' 
-  : platform === 'win32' 
-    ? '../'+ SUPPORT_DIR +'/build-service/socks-server-win.exe' 
-    : platform === 'darwin' 
-      ? '../'+ SUPPORT_DIR +'/build-service/socks-server-macos' 
-      : '../'+ SUPPORT_DIR +'/build-service/socks-server-linux';
+const SOCKS_RELATIVE_PATH = isDev
+  ? '../socks-server.js'
+  : platform === 'win32'
+    ? path.join('../../', SUPPORT_DIR, 'build-service', 'socks-server-win.exe')
+    : platform === 'darwin'
+      ? path.join('../..', SUPPORT_DIR, 'build-service', 'socks-server-macos')
+      : path.join('../..', SUPPORT_DIR, 'build-service', 'socks-server-linux');
 
-const LOG_FILE_PATH = isDev ? path.join(__dirname, 'logs/error.log') : path.join(__dirname,'..', SUPPORT_DIR, 'logs/error.log')
-const pidFile = isDev ? path.join(__dirname, 'temps', 'socks_service.pid'): path.join(__dirname, '..', SUPPORT_DIR,'/temps', 'socks_service.pid');
-const infoFile = isDev ? path.join(__dirname, 'temps', 'socks_service_info.json'): path.join(__dirname, '..',SUPPORT_DIR,'/temps', 'socks_service_info.json');
+const LOG_FILE_PATH = isDev
+  ? path.join(__dirname, '..', 'logs/error.log')
+  : path.join(__dirname, '../..', SUPPORT_DIR, 'logs/error.log');
+
+const pidFile = isDev
+  ? path.join(__dirname, '..', 'temps', 'socks_service.pid')
+  : path.join(__dirname, '../..', SUPPORT_DIR, 'temps', 'socks_service.pid');
+
+const infoFile = isDev
+  ? path.join(__dirname, '..', 'temps', 'socks_service_info.json')
+  : path.join(__dirname, '../..', SUPPORT_DIR, 'temps', 'socks_service_info.json');
 
 // 创建日志记录器
 const logger = createLogger({
@@ -39,8 +49,7 @@ const logger = createLogger({
   ],
 });
 
-let socksProcess;
-
+let socksProcess: ChildProcess | null = null;
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -48,103 +57,80 @@ function createWindow() {
     height: 600,
     webPreferences: {
       preload: preloadPath,
-      nodeIntegration: false, // 确保安全性
+      nodeIntegration: false,
       contextIsolation: true,
     },
   });
 
-  // 判断是否在开发环境
- 
-
   if (isDev) {
-    // 开发环境，加载 React 开发服务器
-    win.loadURL(process.env.ELECTRON_START_URL);
+    win.loadURL(process.env.ELECTRON_START_URL!);
   } else {
-    // 生产环境，加载打包后的 React 应用
-    win.loadFile(path.join(__dirname, '../web-app/build/index.html'));
+    win.loadFile(path.join(__dirname, '../../web-app/build/index.html'));
   }
-  
 }
 
-app.whenReady().then(() => {
+app?.whenReady()?.then(() => {
   createWindow();
 
   // 启动 SOCKS 服务
-  ipcMain.on(IPC_ACTIONS.START_SOCKS_SERVICE, (event, { payload : {address, port}, action = null }) => {
-
+  ipcMain.on(IPC_ACTIONS.START_SOCKS_SERVICE, (event: IpcMainEvent, { payload: { address, port }, action = null }: { payload: { address: string, port: number }, action?: string | null }) => {
     try {
       if (!socksProcess) {
         console.log("address, port", address, port);
-        
-        if (isDev) {
 
-          socksProcess = spawn('node', [path.join(__dirname,  SOCKS_RELATIVE_PATH), address, port]);
-        } else {
-          socksProcess = spawn(path.join(__dirname, SOCKS_RELATIVE_PATH), [address, port], {
-            // stdio: 'inherit', // 继承父进程的输入输出
-          });
-        }
-        // 将子进程的输出通过 IPC 发送到渲染进程
-        socksProcess.stdout.on('data', (data) => {
-          const output = data.toString()
+        socksProcess = isDev
+          ? spawn('node', [path.join(__dirname, SOCKS_RELATIVE_PATH), address, port.toString()])
+          : spawn(path.join(__dirname, SOCKS_RELATIVE_PATH), [address, port.toString()]);
+
+        socksProcess.stdout?.on('data', (data) => {
+          const output = data.toString();
           console.log(`SOCKS 服务输出: ${output}`);
           event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, output);
 
           try {
-            const parsedData = JSON.parse(output)
-            console.log('parsedData:::',parsedData);
+            const parsedData = JSON.parse(output);
+            console.log('parsedData:::', parsedData);
             if (parsedData?.type === 'write_pid_to_temp') {
               event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 启动成功', action);
-              const {host, port, pid } = parsedData
+              const { host, port, pid } = parsedData;
               fs.writeFileSync(pidFile, pid);
               fs.writeFileSync(infoFile, JSON.stringify({ host, port }));
             }
-            
           } catch (error) {
             // console.log('parse output error::', error); 
           }
         });
-  
-        socksProcess.stderr.on('data', (data) => {
+
+        socksProcess.stderr?.on('data', (data) => {
           console.error(`SOCKS 服务错误: ${data}`);
-          logger.error(data.toString())
+          logger.error(data.toString());
           event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, data.toString());
         });
-  
+
         socksProcess.on('close', (code) => {
           console.log(`SOCKS 服务已停止，退出码: ${code}`);
           socksProcess = null;
           event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, `SOCKS 服务已停止，退出码: ${code}`);
         });
-  
-        socksProcess.on('message', (msg) => {
-          if (msg.type === IPC_ACTIONS.START_SOCKS_SERVICE) {
-            event.sender.send(IPC_ACTIONS.START_SOCKS_SERVICE, msg.message);
-          } else if (msg.type === IPC_ACTIONS.SOCKS_SERVICE_ERROR) {
-            event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, msg.message);
-          }
-        });
-  
+
         console.log('SOCKS 服务已启动');
       } else {
         console.log('SOCKS 服务已经在运行');
-        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 服务已经在运行 pid:' + socksProcess.pid.toString());
+        event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 服务已经在运行 pid:' + socksProcess?.pid?.toString());
       }
     } catch (error) {
-     logger.error(error);
-     event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, '启动服务时发生错误')
+      logger.error(error);
+      event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_ERROR, '启动服务时发生错误');
     }
-    
-
   });
 
   // 监听停止服务的请求
-  ipcMain.on(IPC_ACTIONS.STOP_SOCKS_SERVICE, (event, {action = null }) => {
+  ipcMain.on(IPC_ACTIONS.STOP_SOCKS_SERVICE, (event: IpcMainEvent, { action = null }: { action?: string | null }) => {
     if (socksProcess) {
       socksProcess.on('exit', () => {
         console.log('SOCKS 服务已停止');
         event.sender.send(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, 'SOCKS 服务已停止', action);
-      })
+      });
       socksProcess.kill();
       socksProcess = null;
     } else {
@@ -157,14 +143,12 @@ app.whenReady().then(() => {
     return await getSocksServiceInfo();
   });
   ipcMain.handle(IPC_ACTIONS.CHECK_SOCKS_SERVICE, async () => {
-    const serviceName = `node ${SERVICE_NAMES.socks5}`;
+    const serviceName = `node ${SOCKS_RELATIVE_PATH}`;
     return await checkService(serviceName);
   });
   ipcMain.handle(IPC_ACTIONS.GET_LOGS, async () => {
     return await getLogs();
   });
-
-
 
   app.on('activate', () => {
     console.log('app window activate');
@@ -180,9 +164,9 @@ app.on('before-quit', () => {
   if (socksProcess) {
     socksProcess.kill();
   }
-})
+});
 
- // 捕获未处理的异常
+// 捕获未处理的异常
 process.on('uncaughtException', (error) => {
   logger.error(error);
 });
@@ -192,13 +176,12 @@ process.on('unhandledRejection', (error) => {
   logger.error(error);
 });
 
-
 /**
  * 检查指定服务是否正在运行
  * @param {string} serviceName - 
  * @returns {Promise<boolean>} - 返回一个 Promise，表示服务是否在运行
  */
-function checkService(serviceName) {
+function checkService(serviceName: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
     exec(`pgrep -f ${serviceName}`, (error, stdout) => {
       if (error) {
@@ -218,17 +201,17 @@ function getLogs() {
       try {
         return JSON.parse(line);
       } catch (parseErr) {
-        return { error: `无法解析日志行: ${parseErr.message}`, line };
+        return { error: `无法解析日志行: ${(parseErr as Error).message}`, line };
       }
     });
     return { logs };
   } catch (err) {
-    return { error: err.message };
+    return { error: (err as Error).message };
   }
 }
 
 function getSocksServiceInfo() {
-  let data = {
+  const data = {
     host: '',
     port: '',
     isRunning: false,
@@ -236,17 +219,17 @@ function getSocksServiceInfo() {
   };
 
   try {
-    let jsonData = fs.readFileSync(infoFile, 'utf-8');
-    jsonData = JSON.parse(jsonData);
-    data.host = jsonData.host;
-    data.port = jsonData.port;
+    const jsonData = fs.readFileSync(infoFile, 'utf-8');
+    const parsedData = JSON.parse(jsonData);
+    data.host = parsedData.host;
+    data.port = parsedData.port;
   } catch (error) {
-    logger.error(`Failed to read or parse ${infoFile}: ${error.message}`);
+    logger.error(`Failed to read or parse ${infoFile}: ${(error as Error).message}`);
   }
 
   if (fs.existsSync(pidFile)) {
     const pid = parseInt(fs.readFileSync(pidFile, 'utf-8'), 10);
-    
+
     try {
       process.kill(pid, 0); // 检查进程是否仍然存在
       data.isRunning = true;
@@ -259,6 +242,6 @@ function getSocksServiceInfo() {
   } else {
     data.message = 'No PID file found.';
   }
-  
+
   return data;
 }

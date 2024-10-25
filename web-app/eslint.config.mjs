@@ -15,6 +15,7 @@ export default [
       globals: {
         ...globals.browser,
         module: 'readonly',
+        JSX: 'readonly',
       },
       parserOptions: {
         ecmaVersion: 2020,  // 支持 ES2020 语法
@@ -29,7 +30,7 @@ export default [
   // TypeScript-specific recommendations
   {
     files: ["**/*.ts", "**/*.tsx"],
-    ignores: ["**/*.config.js", "**/*.test.*"],
+    ignores: ["**/*.config.js", "**/*.test.*", "**/*.js"],
     languageOptions: {
       parser: tsParser,  // 设置 TypeScript 解析器
       parserOptions: {
@@ -42,6 +43,11 @@ export default [
       "prettier": pluginPrettier, // 注册 Prettier 插件
       "react": pluginReact,
       "react-hooks": reactHooks, // 注册 react-hooks 插件
+    },
+    settings: {
+      react: {
+        version: 'detect', // 自动检测 React 版本
+      },
     },
     rules: {
       'prettier/prettier': 'error',
@@ -63,6 +69,11 @@ export default [
       // React Hooks 规则
       'react-hooks/rules-of-hooks': 'error', // 检查 Hooks 的规则
       'react-hooks/exhaustive-deps': 'warn', // 检查依赖项
+
+      // React 规则
+      'react/jsx-uses-react': 'off', // 不再需要引入 React
+      'react/react-in-jsx-scope': 'off', // 不再需要引入 React
+      'react/prop-types': 'off', // 关闭 prop-types 检查，使用 TypeScript 检查
 
       // 其他 ESLint 规则
       indent: 'off', // 不使用 indent 规则

@@ -7,10 +7,12 @@ module.exports = {
   productName: 'fb-note-electron',
   appId: 'fb.note.electron',
   asar: true,
+  directories: {
+    output: "release" // 指定打包输出目录
+  },
   files: [
-    './assets/*',
-    './main.js',
-    './constants.js',
+    "dist/**/*",
+    'node_modules/**', // 需要测试 该选文件夹必选
     ".env"
   ],
   extraResources: [

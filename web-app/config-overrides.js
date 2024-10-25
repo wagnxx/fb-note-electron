@@ -2,11 +2,12 @@
 /* eslint-disable no-undef */
 // eslint-disable-next-line no-undef
 const webpack = require('webpack');
+const path = require('path');
 
 module.exports = {
   webpack: (config, env) => {
 
-    // config.output.publicPath = './';
+    config.output.publicPath =  process.env.REACT_APP_ENV === 'production' ? './' : '/';
     // 添加 fallback 配置
     config.resolve.fallback = {
       fs: false, // 禁用 fs
@@ -14,6 +15,16 @@ module.exports = {
       // 其他模块的 polyfill 配置
       // stream: require.resolve('stream-browserify'),
     };
+    
+    config.resolve.alias = {
+     '@': path.resolve(__dirname, 'src/'),
+     '@components': path.resolve(__dirname, 'src/components/'),
+     '@utils': path.resolve(__dirname, 'src/utils/'),
+     '@hooks': path.resolve(__dirname, 'src/hooks/')
+    }
+
+    config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
+
     config.plugins = [
         ...config.plugins,
         new webpack.DefinePlugin({

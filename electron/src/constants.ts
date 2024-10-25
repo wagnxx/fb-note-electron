@@ -1,0 +1,11 @@
+export const IPC_ACTIONS = {
+  START_SOCKS_SERVICE: 'start-socks-service' as const,
+  SOCKS_SERVICE_OUTPUT: 'socks-service-output' as const,
+  SOCKS_SERVICE_ERROR: 'socks-service-error' as const,
+  SOCKS_SERVICE_STOPPED: 'socks-service-stopped' as const,
+  STOP_SOCKS_SERVICE: 'stop-socks-service' as const,
+  CHECK_SOCKS_SERVICE: 'check-socks-service' as const,
+  GET_SOCKS_SERVICE_INFO: 'get-socks-service-info' as const,
+  GET_LOGS: 'get-logs' as const,
+  SUBPROCESS_ERROR: 'subprocess-errors' as const,
+} as const;

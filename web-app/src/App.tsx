@@ -1,7 +1,7 @@
 import React from 'react'
 import { ConfigProvider } from 'antd'
 import type { ThemeConfig } from 'antd'
-import Home from './pges/home/Home'
+import AppRoutes from '@/routes/AppRoutes'
 const config: ThemeConfig = {
   token: {
     colorPrimary: '#1890ff',
@@ -10,7 +10,7 @@ const config: ThemeConfig = {
 
 const App: React.FC = () => (
   <ConfigProvider theme={config}>
-    <Home />
+    <AppRoutes />
   </ConfigProvider>
 )
 
