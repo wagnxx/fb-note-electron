@@ -1,0 +1,493 @@
+[
+  {
+    "name": "bar",
+    "isPrefix": true,
+    "isSuffix": true,
+    "from": "①来源于中古拉丁语baa横木，由于该词根有“栏杆”的含义，所以作动词用它便有“阻拦/阻挠等含义：②来源于基础词ba“横木/酒吧/被告席，词根与之同形义，理解为：以前的酒吧和被告席都是被一条横木隔开的",
+    "extension": "条/杆/棒/酒吧/木条/律师/阻拦/栅栏/栏杆障碍物",
+    "group": [
+      {
+        "name": "embarrass",
+        "meaning": "vt. 使局促不安，使困窘",
+        "structurare": "em- 使动 + -bar(r)- 长木条 ---- 障碍物，困窘 + -ass 动词后缀，使动 ... "
+      },
+      {
+        "name": "embarrassment",
+        "meaning": "n. 尴尬",
+        "structurare": "-ment 名词后缀"
+      },
+      {
+        "name": "embarrassed",
+        "meaning": "adj. 尴尬的，困窘的",
+        "structurare": "-ed 形容词后缀，表...的，修饰主语是人",
+        "example": "She felt embarrassed when she forgot her lines"
+      },
+      {
+        "name": "unembarrassed",
+        "meaning": "adj. 不尴尬的",
+        "structurare": "-un 否定"
+      },
+      {
+        "name": "embarrassing",
+        "meaning": "adj. 令人尴尬的，令人难堪的",
+        "structurare": "-ing 形容词后缀，表令...的，修饰主语是人",
+        "example": "Forgetting my lines was an embarrassing moment."
+      },
+      {
+        "name": "embarrassingly",
+        "meaning": "adv. 使人尴尬地，令人难堪地",
+        "structurare": "-ly 副词后缀"
+      },
+      {
+        "name": "bar",
+        "meaning": "v. 摒除，阻挡 n. 条，棒；酒吧，障碍，法庭 vt. 禁止，阻拦  prep. 除...外",
+        "structurare": "词根直接表单词，英语思维：具体的事物常常引申出或代表整体的事物 ---- 提喻"
+      },
+      {
+        "name": "barrier",
+        "meaning": "n. 关卡，障碍",
+        "structurare": "-bar(r)- 长木条 ---- 栏杆 ---- 关卡 + -i- + -er 名词后缀，表物"
+      },
+      {
+        "name": "barrier-free",
+        "meaning": "n. 无障碍",
+        "structurare": "合成词"
+      },
+      {
+        "name": "balance",
+        "meaning": "n. 天平  v. 使平衡",
+        "structurare": "-bal- = -bar- 长木 ---- 秤杆 ---- 天平 + -ance 名词后缀"
+      },
+      {
+        "name": "balancing",
+        "meaning": "n. 平衡， 结算，调零装置",
+        "structurare": "-ing 动名词后缀"
+      },
+      {
+        "name": "balanced",
+        "meaning": "adj. 平衡的，和谐的，安定的",
+        "structurare": "-ed 形容词后缀"
+      },
+      {
+        "name": "unbalanced",
+        "meaning": "adj. 不平衡的，错乱的，不稳定的，收支不平衡的，未决算的",
+        "structurare": "-un 否定"
+      },
+      {
+        "name": "well-balanced",
+        "meaning": "adj. 匀称的，神智健全的，通情达理的，明智的",
+        "structurare": "合成词"
+      },
+      {
+        "name": "off-balance",
+        "meaning": "adj. 不平衡的 adv. 不平衡地",
+        "structurare": "合成词 off 脱下 ---- 失去"
+      },
+      {
+        "name": "unbalance",
+        "meaning": "vt. 使失去平衡，使精神紊乱 n. 【力】失衡，精神错乱",
+        "structurare": "-un 否定"
+      },
+      {
+        "name": "counterbalance",
+        "meaning": "n. 平衡力，自动抵消 vt. 使平衡，抵消",
+        "structurare": " counter- 反 ---- 抵消 + balance"
+      },
+      {
+        "name": "balancer",
+        "meaning": "n. 平衡器，称秤的人，走钢丝者",
+        "structurare": "-er 名词后缀，表人或物"
+      },
+      {
+        "name": "imbalance",
+        "meaning": "n. 不平衡，不安定",
+        "structurare": "im- 否定"
+      },
+      {
+        "name": "imbalanced",
+        "meaning": "adj. 不平衡的，比例失调的",
+        "structurare": "-ed 形容词后缀"
+      },
+      {
+        "name": "overbalance",
+        "meaning": "n. 超额，超量，不平衡 vt. 使失去平衡，使过重 vi. 失去平衡",
+        "structurare": "over- 超过"
+      },
+      {
+        "name": "abandon",
+        "meaning": "v. 放弃，抛弃",
+        "structurare": "a- 远离 + -ban- 长木条 ---- 捆绑 ---- 解绑 ---- 弃置 + -don 动词后缀"
+      },
+      {
+        "name": "abandoned",
+        "meaning": "adj. 被遗弃的",
+        "structurare": "-ed 形容词后缀，表被动"
+      },
+      {
+        "name": "abandonment",
+        "meaning": "n. 抛弃，放纵",
+        "structurare": "-ment 名词后缀"
+      },
+      {
+        "name": "ban",
+        "meaning": "vt. 禁止",
+        "structurare": "词根直接表单词"
+      },
+      {
+        "name": "banner",
+        "meaning": "n. 横幅图片的广告模式，旗帜，横幅，标语",
+        "structurare": "-ban(n)- 长木条 ---- 广告牌/牌匾 + -er 名词后缀，表物"
+      },
+      {
+        "name": "banquet",
+        "meaning": "n. 宴会",
+        "structurare": "-ban- 长木 ---- 长桌 ---- 晚宴 + -quet 名词后缀"
+      },
+      {
+        "name": "broadband",
+        "meaning": "n. 宽（频）带",
+        "structurare": "合成词：broad adj. 宽的 + band = -ban-"
+      },
+      {
+        "name": "barracks",
+        "meaning": "n. 兵营，营房，简陋的房子",
+        "structurare": "-bar(r)- 木板房 + -asks 名词后缀 = -s 复数名词后缀"
+      },
+      {
+        "name": "unbar",
+        "meaning": "vt. 打开，拔去",
+        "structurare": "-un 否定 + -bar- 长木条 ---- 门栓"
+      },
+      {
+        "name": "barred",
+        "meaning": "adj. 被禁止的，有条纹的",
+        "structurare": "-bar(r)- 禁止 + -ed 形容词后缀"
+      },
+      {
+        "name": "no-holds-barred",
+        "meaning": "adj. 无拘无束，没有任何限制的",
+        "structurare": "合成词： no + holds 拿 + barred"
+      },
+      {
+        "name": "barricade",
+        "meaning": "n. 街垒，路障",
+        "structurare": "-bar(r)- 障碍 + -ic + -ade名词后缀"
+      },
+      {
+        "name": "barrel",
+        "meaning": "vt. 把...装入桶内 n. 桶，枪管 vi. 快速移动",
+        "structurare": "-bar(r)- + -el = -al 名词后缀，可以动词化"
+      },
+      {
+        "name": "barreled",
+        "meaning": "adj. 桶装的，有管的",
+        "structurare": "-ed 形容词后缀"
+      },
+      {
+        "name": "embargo",
+        "meaning": "vt. 禁止出入港口，禁止或限制贸易 n. 禁令，禁止，封港令",
+        "structurare": "em- 使动 + -bar- 禁止 + go 走 "
+      },
+      {
+        "name": "bartender",
+        "meaning": "n. 酒吧间销售酒精饮料的人，酒吧间男招待",
+        "structurare": "bar 酒吧 + tender n. 服务人 "
+      },
+      {
+        "name": "barren",
+        "meaning": "adj. 贫瘠的，不结果的，不孕的，无价值的 n. 荒原，不毛之地",
+        "structurare": "-bar(r)- 长木 ---- 平板 ---- 荒芜 + -en 形容词或名词后缀（非常罕见，一般都是表动词） "
+      },
+      {
+        "name": "barrage",
+        "meaning": "n. 拦河坝，阻塞，弹幕，齐射式攻击 vt. 以密集火力攻击（或狙击）",
+        "structurare": "-bar(r)- 障碍 ---- 拦截 + -age 名词后缀，偶尔表动词 "
+      },
+      {
+        "name": "sidebar",
+        "meaning": "n. 工具栏，补充报道，（马鞍等等）横档，花絮",
+        "structurare": "合成词 "
+      },
+      {
+        "name": "barring",
+        "meaning": "prep. 除非，不包括，除...以外",
+        "structurare": "-bar(r)- 阻碍，排外 + -ing 偶尔做介词后缀 "
+      },
+      {
+        "name": "sandbar",
+        "meaning": "n. 沙洲，沙堤",
+        "structurare": "合成词 sand 沙子 + bar 堤坝"
+      },
+      {
+        "name": "barbell",
+        "meaning": "n. 杠铃",
+        "structurare": "合成词"
+      },
+      {
+        "name": "crowbar",
+        "meaning": "n. 撬棍，铁撬，起货钩",
+        "structurare": "合成词 crow 钩子 + bar 棍子"
+      },
+      {
+        "name": "barroom",
+        "meaning": "n. 酒吧间",
+        "structurare": "合成词"
+      },
+      {
+        "name": "toolbar",
+        "meaning": "n. 工具栏",
+        "structurare": "合成词"
+      },
+      {
+        "name": "barrette",
+        "meaning": "n. 条状发卡",
+        "structurare": "-bar(r)- 长木条 ---- 条状 + -ette 名词后缀，表小"
+      },
+      {
+        "name": "barstool",
+        "meaning": "n. 酒吧高脚凳",
+        "structurare": "合成词：bar + stool n. 凳子"
+      },
+      {
+        "name": "crossbar",
+        "meaning": "n. 闩，横木，球门的横木",
+        "structurare": "合成词：cross + -bar- 长条木 ---- 门栓"
+      },
+      {
+        "name": "barmaid",
+        "meaning": "n. 酒吧女侍",
+        "structurare": "合成词：maid 女仆"
+      },
+      {
+        "name": "barrister",
+        "meaning": "n. 律师，（加拿大）出庭律师，（英）（有资格出席高等法庭并辩护的）专门律师",
+        "structurare": "-bar(r)- 法庭 ---- 出庭人 + -ister 名词后缀，表人"
+      },
+      {
+        "name": "pork-barrel",
+        "meaning": "n. 放猪头的桶，（为讨好或报答支持者的）政治拨款",
+        "structurare": "合成词"
+      },
+      {
+        "name": "barman",
+        "meaning": "n. 酒吧店主，酒吧间招待员",
+        "structurare": "合成词"
+      },
+      {
+        "name": "minibar",
+        "meaning": "n. 小型条信号发生器",
+        "structurare": "-mini- 小 + -bar- 长木条 ---- 条状"
+      },
+      {
+        "name": "barrel-chested",
+        "meaning": "adj. 胸部发达的，胸部宽大的",
+        "structurare": "-mini- 小 + -bar- 长木条 ---- 条状"
+      },
+      {
+        "name": "double-barreld",
+        "meaning": "adj. （枪）双管的，（望远镜）双筒的",
+        "structurare": "合成词"
+      },
+      {
+        "name": "barrenness",
+        "meaning": "n. 不孕症，不育症，荒芜",
+        "structurare": "-ness 名词后缀"
+      },
+      {
+        "name": "taskbar",
+        "meaning": "n. 任务栏，人物条，工作列",
+        "structurare": "合成词"
+      },
+      {
+        "name": "barkeep",
+        "meaning": "n. （美）酒吧间老板，酒吧间招待 vi. （英）开酒吧，在酒吧当侍者",
+        "structurare": "合成词"
+      },
+      {
+        "name": "disbarment",
+        "meaning": "n. 【法】取消律师资格",
+        "structurare": "dis- 否定 + bar 出庭 ---- 律师资格 + -ment名词后缀"
+      },
+      {
+        "name": "bar-code",
+        "meaning": "n. 条形码 vt. 给...印（或标）上条形码",
+        "structurare": "合成词"
+      },
+      {
+        "name": "T-bar",
+        "meaning": "n. 丁字铁，丁字架",
+        "structurare": "合成词"
+      },
+      {
+        "name": "four-bar",
+        "meaning": "n. 四连杆组",
+        "structurare": "合成词"
+      },
+      {
+        "name": "barre",
+        "meaning": "n. 扶手杠（装在舞蹈演员练功房内墙上），（箱包的）横档",
+        "structurare": "合成词"
+      },
+      {
+        "name": "barista",
+        "meaning": "n. 咖啡师，咖啡吧员",
+        "structurare": "-bar- 酒吧 ---- 咖啡吧 + -ist + -a 名词后缀，表集合"
+      },
+      {
+        "name": "balk",
+        "meaning": "n. 障碍，错误 vt. 阻止，推诿，错过 vi. 犹豫， 突然止步不前",
+        "structurare": "-bal- 长木条 ---- 注音 + -k 注音，闩外来语直接带进来的"
+      },
+      {
+        "name": "balky",
+        "meaning": "adj. 停滞不前的，倔强的，不愿干的",
+        "structurare": "-y 形容词后缀"
+      },
+      {
+        "name": "balsa",
+        "meaning": "n. 一种轻质木材",
+        "structurare": "-bal- 木材 + -sa 名词后缀"
+      },
+      {
+        "name": "balkanization",
+        "meaning": "n. 巴尔干化，分割成小国，割据",
+        "structurare": "balk 障碍 ---- 分割 + -an + -ize + -ate + -ion 名词后缀"
+      },
+      {
+        "name": "baluster",
+        "meaning": "n. 栏杆，栏杆的支柱",
+        "structurare": "-bal- + -u- + -ster 名词后缀"
+      },
+      {
+        "name": "balkanized",
+        "meaning": "vt. 使分裂成若干对立的效果，使割据 vi. 分割成小国，割据",
+        "structurare": "balk + -an + -ize + -ed 表过去式和过去分词"
+      },
+      {
+        "name": "bank",
+        "meaning": "n. 银行，岸，浅谈，储库 vt. 将...存入银行，倾斜转弯 vi. 堆积，倾斜转弯",
+        "structurare": "bank 长板 ---- 银行"
+      },
+      {
+        "name": "banker",
+        "meaning": "n. 银行家，银行业者，掘土者",
+        "structurare": "bank + -er"
+      },
+      {
+        "name": "banking",
+        "meaning": "n. 银行业，银行业务，银行家的职业，筑堤",
+        "structurare": "bank + -ing 动名词后缀"
+      },
+      {
+        "name": "embankment",
+        "meaning": "n. 路堤，提防",
+        "structurare": "em- 使动 + bank 岸 + -ment 名词后缀"
+      },
+      {
+        "name": "riverbank",
+        "meaning": "n. 河堤",
+        "structurare": "合成词"
+      },
+      {
+        "name": "snowbank",
+        "meaning": "n. 雪堤，雪堆",
+        "structurare": "合成词"
+      },
+      {
+        "name": "bankroll",
+        "meaning": "vt. 提供资金，提供财务上的资助 n. 资金，钞票",
+        "structurare": "合成词 bank 银行 + roll 滚动（从银行拨款）"
+      },
+      {
+        "name": "banknote",
+        "meaning": "n. 纸币",
+        "structurare": "合成词 note n. 笔记，音符，票据，注解，纸币，便签，照会，调子"
+      },
+      {
+        "name": "databank",
+        "meaning": "n. 数据库",
+        "structurare": "合成词 data 数据 + bank 存储"
+      },
+      {
+        "name": "banked",
+        "meaning": "adj. 有坡面的，堆积的",
+        "structurare": "-ed 形容词后缀"
+      },
+      {
+        "name": "bankable",
+        "meaning": "adj. 银行能接受的",
+        "structurare": "bank + -able 形容词后缀"
+      },
+      {
+        "name": "interbank",
+        "meaning": "n. 同业银行，国际银行 adj. 管排间的，管束间的",
+        "structurare": "inter- 在...之间，互相"
+      },
+      {
+        "name": "mountebank",
+        "meaning": "n. 江湖郎中，骗子 vi. 行骗，走江湖卖假药的",
+        "structurare": "合成词：-mounte- 安装 + bank 假装 ---- 骗子（鲤鱼俗语）"
+      },
+      {
+        "name": "mountebank",
+        "meaning": "n. 江湖郎中，骗子 vi. 行骗，走江湖卖假药的",
+        "structurare": "合成词：-mounte- 安装 + bank 假装 ---- 骗子（鲤鱼俗语）"
+      },
+      {
+        "name": "nonbank",
+        "meaning": "adj. 非银行的，不由银行办理的，与银行无关的",
+        "structurare": "non- 否定"
+      },
+      {
+        "name": "bankbook",
+        "meaning": "n. 银行存折",
+        "structurare": "合成词 book n. 书籍，卷，账簿，名册，工作簿"
+      },
+      {
+        "name": "banish",
+        "meaning": "vt. 放逐，驱逐",
+        "structurare": "-ban- 长木条 ---- 拦截 ---- 驱逐在外 + -ish 动词后缀"
+      },
+      {
+        "name": "banishment",
+        "meaning": "n. 流放，充军，放逐",
+        "structurare": "-ment 名词后缀"
+      },
+      {
+        "name": "banned",
+        "meaning": "adj. 被禁的",
+        "structurare": "-ed 形容词后缀"
+      },
+      {
+        "name": "banal",
+        "meaning": "adj. 陈腐的，平庸的，老一套的",
+        "structurare": "-ban- 禁止 ---- 拒绝更新+ -al 形容词后缀"
+      },
+      {
+        "name": "banister",
+        "meaning": "n. 栏杆的支柱，楼梯的扶栏",
+        "structurare": "-ban- 栏杆 + -i- + -ster 名词后缀"
+      },
+      {
+        "name": "contraband",
+        "meaning": "n. 走私，走私货，战时禁运品 adj. 禁运的，非法买卖的",
+        "structurare": "contra- 反 + band 禁止 ---- 反禁止 ---- 走私"
+      },
+      {
+        "name": "banality",
+        "meaning": "n. 平凡，陈腐，陈词滥调",
+        "structurare": "-ty 名词后缀"
+      },
+      {
+        "name": "banning",
+        "meaning": "n. 禁止，禁令 adj. 禁止的",
+        "structurare": "-ing 形容词或动名词后缀"
+      },
+      {
+        "name": "banco",
+        "meaning": "n. 银行， 牛轭湖，审判官席",
+        "structurare": "来自意大利语"
+      }
+    ]
+  }
+]

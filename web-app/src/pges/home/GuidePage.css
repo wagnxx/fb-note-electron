@@ -1,0 +1,42 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #f0f2f5;
+  /* 设置背景颜色 */
+}
+
+.guide-page {
+  padding: 50px 20px;
+  text-align: center;
+}
+
+.guide-title {
+  font-size: 2rem;
+  color: #333;
+  /* 标题颜色 */
+  margin-bottom: 40px;
+}
+
+.guide-card {
+  background-color: #ffffff;
+  /* 卡片背景颜色 */
+  border-radius: 10px;
+  /* 圆角 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* 添加阴影 */
+  transition: transform 0.2s;
+  /* 过渡效果 */
+}
+
+.guide-card:hover {
+  transform: scale(1.05);
+  /* 鼠标悬停时的放大效果 */
+}
+
+.ant-card-head-title {
+  font-size: 1.5rem;
+  /* 卡片标题字体大小 */
+  color: #1890ff;
+  /* 标题颜色 */
+}

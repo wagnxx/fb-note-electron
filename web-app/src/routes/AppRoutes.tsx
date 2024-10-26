@@ -6,13 +6,16 @@ import UserProfilePage from '@/pges/user/Profile'
 // import ProductPage from '../pages/ProductPage'
 import PrivateRoute from './PrivateRoute'
 import NotFound from '@/pges/error/NotFound'
+import GuidePage from '@/pges/home/GuidePage'
+import Dict from '@/pges/dict/Dict'
 
 const AppRoutes: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        {/* <Route path="/products" element={<ProductPage />} /> */}
+        <Route path="/" element={<GuidePage />} />
+        <Route path="/system" element={<HomePage />} />
+        <Route path="/dict" element={<Dict />} />
 
         {/* 使用 PrivateRoute 包裹受保护的路由 */}
         <Route

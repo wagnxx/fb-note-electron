@@ -8,6 +8,5 @@ electron/build-service
 electron/temps
 electron/logs
 electron/release
-electron/logs/
 
 test/
