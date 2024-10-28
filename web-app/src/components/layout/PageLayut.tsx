@@ -27,10 +27,10 @@ const PageLayout: React.FC<PageLayoutProps> = ({ menu, onMenuItemSelected, child
 
   return (
     <Layout style={{ height: '100vh' }}>
-      <Sider breakpoint="lg" collapsedWidth="40" collapsed={collapsed} trigger={null}>
+      <Sider breakpoint="lg" collapsedWidth="40" collapsed={collapsed} trigger={null} theme="light">
         <div
           style={{
-            background: colorBgContainer,
+            // background: colorBgContainer,
             // padding: '10px',
             display: 'flex',
             justifyContent: collapsed ? 'center' : 'space-between',
@@ -51,7 +51,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ menu, onMenuItemSelected, child
         </div>
 
         <Menu
-          theme="dark"
+          theme="light"
           mode="inline"
           defaultSelectedKeys={['4']}
           items={menu}
