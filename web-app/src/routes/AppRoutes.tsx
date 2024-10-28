@@ -1,36 +1,47 @@
-// src/routes/AppRoutes.tsx
+// src/App.tsx
 import React from 'react'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import HomePage from '@/pges/home/Home'
-import UserProfilePage from '@/pges/user/Profile'
-// import ProductPage from '../pages/ProductPage'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import AuthLayout from './AuthLayout'
+import { standaloneRoutes, authRoutes, RouteConfig } from './routes'
 import PrivateRoute from './PrivateRoute'
-import NotFound from '@/pges/error/NotFound'
-import GuidePage from '@/pges/home/GuidePage'
-import Dict from '@/pges/dict/Dict'
+import { AuthProvider } from '@/context/AuthContext'
 
-const AppRoutes: React.FC = () => {
+const RoutesList: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<GuidePage />} />
-        <Route path="/system" element={<HomePage />} />
-        <Route path="/dict" element={<Dict />} />
+        {/* 渲染独立页面 */}
+        {standaloneRoutes.map(route => {
+          const { path, component: Component } = route
+          return <Route key={path} path={path} element={<Component />} />
+        })}
 
-        {/* 使用 PrivateRoute 包裹受保护的路由 */}
-        <Route
-          path="/user-profile"
-          element={
-            <PrivateRoute>
-              <UserProfilePage />
-            </PrivateRoute>
-          }
-        />
-
-        <Route path="*" element={<NotFound />} />
+        {/* 渲染带 AuthLayout 的页面 */}
+        <Route element={<AuthLayout />}>{authRoutes.map(route => renderAuthRoute(route))}</Route>
       </Routes>
     </Router>
   )
 }
 
-export default AppRoutes
+// 辅助函数用于递归渲染带 AuthLayout 的路由
+const renderAuthRoute = (route: RouteConfig, parentPath = '') => {
+  const { path, requiresAuth, component: Component, children } = route
+  const fullPath = `${parentPath}${path}`
+
+  return (
+    <React.Fragment key={fullPath}>
+      {requiresAuth ? (
+        <Route path={fullPath} element={<PrivateRoute element={<Component />} />} />
+      ) : (
+        <Route path={fullPath} element={<Component />} />
+      )}
+      {children && children.map(child => renderAuthRoute(child, fullPath))}
+    </React.Fragment>
+  )
+}
+
+export default () => (
+  <AuthProvider>
+    <RoutesList />
+  </AuthProvider>
+)

@@ -1,11 +1,9 @@
 import React from 'react'
 import { ConfigProvider } from 'antd'
-import { BrowserRouter as Router } from 'react-router-dom'
 import type { ThemeConfig } from 'antd'
 import { Provider } from 'react-redux'
 import store from '@/store/store' // 确保你导入了 Redux store
-import AuthLayout from './routes/AuthLayout'
-import { AuthProvider } from './context/AuthContext'
+import AppRoutes from './routes/AppRoutes'
 
 const config: ThemeConfig = {
   token: {
@@ -16,11 +14,7 @@ const config: ThemeConfig = {
 const App: React.FC = () => (
   <Provider store={store}>
     <ConfigProvider theme={config}>
-      <AuthProvider>
-        <Router>
-          <AuthLayout />
-        </Router>
-      </AuthProvider>
+      <AppRoutes />
     </ConfigProvider>
   </Provider>
 )

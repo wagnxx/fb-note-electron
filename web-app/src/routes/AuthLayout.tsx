@@ -1,34 +1,44 @@
 // src/components/AuthLayout.tsx
-import React from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
+import React, { ReactNode } from 'react'
+import { Link, Outlet } from 'react-router-dom'
 import { Button, Flex, Layout, Menu } from 'antd'
 import { useAuth } from '../context/AuthContext'
-import PrivateRoute from './PrivateRoute'
-import routes from './routes'
+import { authRoutes, RouteConfig } from './routes'
 
 const { Header, Content } = Layout
+
+type MenuItem = {
+  key: string
+  label: ReactNode
+  children?: MenuItem[]
+}
 
 const AuthLayout: React.FC = () => {
   const { isAuthenticated, login, logout } = useAuth()
 
-  const menuItems = routes
-    .map(route => {
-      const { requiresAuth, path, name, hidden } = route
+  const filterValidMenus = (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
+    return routes.flatMap(route => {
+      const { requiresAuth, path, name, hidden, children } = route
+      const fullPath = `${parentPath}${path}`
 
-      if (hidden) {
-        return null
+      if (hidden || (requiresAuth && !isAuthenticated)) {
+        return []
       }
 
-      if (requiresAuth && !isAuthenticated) {
-        return null // 不显示需要认证的路由项
+      const menuItem: MenuItem = {
+        key: fullPath,
+        label: <Link to={fullPath}>{name}</Link>,
       }
 
-      return {
-        key: path,
-        label: <Link to={path}>{name}</Link>,
+      if (children) {
+        menuItem.children = filterValidMenus(children, fullPath)
       }
+
+      return menuItem.children?.length ? [menuItem] : [menuItem]
     })
-    .filter(Boolean) // 移除 null 项
+  }
+
+  const menuItems = filterValidMenus(authRoutes)
 
   return (
     <Layout>
@@ -48,17 +58,8 @@ const AuthLayout: React.FC = () => {
           </div>
         </Flex>
       </Header>
-      <Content style={{ padding: '8px' }}>
-        <Routes>
-          {routes.map(route => {
-            const { requiresAuth, component: Component, path } = route
-            return requiresAuth ? (
-              <Route key={path} path={path} element={<PrivateRoute element={<Component />} />} />
-            ) : (
-              <Route key={path} path={path} element={<Component />} />
-            )
-          })}
-        </Routes>
+      <Content style={{ padding: '0px' }}>
+        <Outlet />
       </Content>
     </Layout>
   )
