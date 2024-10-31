@@ -4,8 +4,11 @@ import HomePage from '@/pges/home/Home'
 import NotFound from '@/pges/error/NotFound'
 import GuidePage from '@/pges/home/GuidePage'
 import Dict from '@/pges/dict/Dict'
-import DictRoot from '@/pges/dict/DictRoot'
+import WordRoot from '@/pges/dict/WordRoot'
+import WordAffix from '@/pges/dict/WordAffix'
 import ParentEmpty from '@/components/layout/ParentEmpty'
+import MindMapPage from '@/pges/mindmap/MindMapPage'
+import MindMapManagePage from '@/pges/mindmap/MindMapManagePage'
 
 export interface RouteConfig {
   path: string
@@ -29,7 +32,7 @@ export const authRoutes: RouteConfig[] = [
   { path: '/system', name: 'Home', component: HomePage, requiresAuth: false },
 
   {
-    path: '/dict',
+    path: '/learn',
     name: 'Dict',
     component: ParentEmpty,
     children: [
@@ -39,9 +42,26 @@ export const authRoutes: RouteConfig[] = [
         component: Dict,
       },
       {
-        path: 'dict-root',
-        name: 'DictRoot',
-        component: DictRoot,
+        path: 'word-root',
+        name: 'WordRoot',
+        component: WordRoot,
+      },
+      {
+        path: 'word-affix',
+        name: 'WordAffix',
+        component: WordAffix,
+      },
+    ],
+  },
+  {
+    path: '/tool',
+    name: 'Tool',
+    component: ParentEmpty,
+    children: [
+      {
+        path: 'mindmapManage',
+        name: 'mindMapManagePage',
+        component: MindMapManagePage,
       },
     ],
   },
@@ -54,6 +74,11 @@ export const standaloneRoutes: RouteConfig[] = [
     path: '/',
     name: 'guide',
     component: GuidePage,
+  },
+  {
+    path: 'tool/mindmap',
+    name: 'MindMapPage',
+    component: MindMapPage,
   },
   // 其他独立页面路由
 ]

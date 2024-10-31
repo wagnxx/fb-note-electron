@@ -1,0 +1,16 @@
+/* src/components/layout/Toolbar.css */
+.toolbar {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 10px;
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.toolbar button {
+  padding: 5px 10px;
+  cursor: pointer;
+}

@@ -1,0 +1,22 @@
+.custom-node {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: #f9f9f9;
+  cursor: pointer;
+}
+
+.node-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.children-container {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.add-node-button {
+  margin-top: 5px;
+}

@@ -26,7 +26,7 @@ const RoutesList: React.FC = () => {
 // 辅助函数用于递归渲染带 AuthLayout 的路由
 const renderAuthRoute = (route: RouteConfig, parentPath = '') => {
   const { path, requiresAuth, component: Component, children } = route
-  const fullPath = `${parentPath}${path}`
+  const fullPath = `${parentPath}${path}/`
 
   return (
     <React.Fragment key={fullPath}>

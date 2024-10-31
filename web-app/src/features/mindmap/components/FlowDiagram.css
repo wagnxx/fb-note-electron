@@ -1,0 +1,23 @@
+.custom-node {
+  border: 1px solid #777;
+  border-radius: 5px;
+  padding: 10px;
+  background: white;
+}
+
+.node-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.child-nodes {
+  margin-top: 5px;
+  padding-left: 10px;
+}
+
+.child-node {
+  border: 1px dashed #ccc;
+  margin: 2px 0;
+  padding: 5px;
+}

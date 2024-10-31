@@ -19,7 +19,7 @@ const AuthLayout: React.FC = () => {
   const filterValidMenus = (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
     return routes.flatMap(route => {
       const { requiresAuth, path, name, hidden, children } = route
-      const fullPath = `${parentPath}${path}`
+      const fullPath = `${parentPath}${path}/`
 
       if (hidden || (requiresAuth && !isAuthenticated)) {
         return []
