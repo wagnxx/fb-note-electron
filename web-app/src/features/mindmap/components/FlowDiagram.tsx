@@ -1,79 +1,21 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, ChangeEvent } from 'react'
 import ReactFlow, {
   addEdge,
   MiniMap,
   Controls,
-  Handle,
   Node,
   Edge,
   Connection,
-  Position,
-  NodeProps,
-  useNodes,
   Background,
   BackgroundVariant,
 } from 'react-flow-renderer'
 // 引入 uuid 库
 import './FlowDiagram.css'
-
-interface CustomNodeData {
-  label: string
-  isExpanded: boolean
-  onExpandToggle: () => void
-  onAddChild: () => void
-  childCount?: number
-}
+import CustomNode, { CustomNodeData } from './CustomNode'
 
 interface ExtendedNode extends Node<CustomNodeData> {
   isHidden?: boolean
   children?: string[]
-}
-
-const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
-  const nodes = useNodes()
-  const currentNode = nodes.find(node => node.id === id)
-  const isDragging = currentNode?.dragging || false
-
-  return (
-    <div className="custom-node">
-      {id === '1' && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: 'calc(100% + 100px)',
-            height: '100px',
-            background: 'rgba(0,0,0,0.3)',
-          }}
-        ></div>
-      )}
-      <Handle type="target" position={Position.Left} />
-      <div className="node-content">
-        <p>x: {currentNode?.position.x}</p>
-        <span>{data.label}</span>
-        {data.isExpanded ? (
-          <span className="expand-icon" onClick={data.onExpandToggle}>
-            -
-          </span>
-        ) : (
-          data.childCount !== undefined && (
-            <span className="child-count" onClick={data.onExpandToggle}>
-              {data.childCount}
-            </span>
-          )
-        )}
-      </div>
-      <Handle type="source" position={Position.Right} />
-      <div className={`context-menu-container ${isDragging ? 'hidden' : ''}`}>
-        <div className="context-menu">
-          <div className="context-menu-list">
-            <button onClick={data.onAddChild}>Add Child</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 const nodeTypes = {
@@ -92,6 +34,7 @@ const FlowDiagram: React.FC = () => {
         isExpanded: true,
         onExpandToggle: () => toggleExpand('1'),
         onAddChild: () => addChildNode('1'),
+        onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel('1', e.target.value),
       },
       position: { x: 250, y: 5 },
       isHidden: false,
@@ -100,21 +43,55 @@ const FlowDiagram: React.FC = () => {
   ])
   const [edges, setEdges] = useState<Edge[]>([])
 
+  const changeLabel = useCallback((nodeId: string, value: string) => {
+    setNodes(nds => {
+      return nds.map(node => {
+        if (node.id === nodeId) {
+          node.data.label = value
+        }
+        return node
+      })
+    })
+  }, [])
+
   const toggleExpand = useCallback((id: string) => {
     setNodes(nds => {
       const currentNode = nds.find(n => n.id === id)
       if (!currentNode) return nds
 
-      const newExpandedState = !currentNode.data.isExpanded
+      const updateNodes = new Set<string>()
 
-      return nds.map(n =>
-        n.id === id
-          ? {
-              ...n,
-              data: { ...n.data, isExpanded: newExpandedState },
-            }
-          : n,
-      )
+      // 递归收集所有子节点
+      function collectionChildren(currentId: string, state: boolean) {
+        const node = nds.find(n => n.id === currentId)
+        if (node) {
+          updateNodes.add(currentId)
+          if (node.children) {
+            node.children.forEach(childId => collectionChildren(childId, state))
+          }
+        }
+      }
+
+      const newExpandedState = !currentNode.data.isExpanded
+      collectionChildren(currentNode.id, newExpandedState)
+
+      return nds.map(n => {
+        if (n.id === id) {
+          return {
+            ...n,
+            data: { ...n.data, isExpanded: newExpandedState },
+          }
+        }
+
+        if (updateNodes.has(n.id)) {
+          return {
+            ...n,
+            isHidden: !newExpandedState, // 根据展开状态更新隐藏状态
+          }
+        }
+
+        return n
+      })
     })
   }, [])
 
@@ -136,15 +113,20 @@ const FlowDiagram: React.FC = () => {
             isExpanded: true,
             onExpandToggle: () => toggleExpand(newNodeId),
             onAddChild: () => addChildNode(newNodeId),
+            onChangeLabel: (e: ChangeEvent<HTMLInputElement>) =>
+              changeLabel(newNodeId, e.target.value),
           },
           position: { x: parentNode.position.x + NODE_DISTANCE, y: Math.random() * 200 },
           isHidden: false,
           children: [],
         }
 
+        const newChildren = [...(parentNode.children || []), newNodeId]
+
         const updatedParentNode = {
           ...parentNode,
-          children: [...(parentNode.children || []), newNodeId],
+          data: { ...parentNode.data, childCount: newChildren.length },
+          children: newChildren,
         }
 
         const updatedNodes = [
