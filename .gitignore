@@ -4,6 +4,8 @@ node_modules
 .DS_Store
 .env
 
+web-app/build
+
 electron/build-service
 electron/temps
 electron/logs
