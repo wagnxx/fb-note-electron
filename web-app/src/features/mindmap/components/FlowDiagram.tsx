@@ -8,6 +8,7 @@ import ReactFlow, {
   Connection,
   Background,
   BackgroundVariant,
+  useReactFlow,
 } from 'react-flow-renderer'
 // 引入 uuid 库
 import './FlowDiagram.css'
@@ -48,6 +49,8 @@ const FlowDiagram: React.FC = () => {
     },
   ])
   const [edges, setEdges] = useState<Edge[]>([])
+
+  const { getZoom } = useReactFlow()
 
   const changeLabel = useCallback((nodeId: string, value: string) => {
     setNodes(nds => {
@@ -182,7 +185,7 @@ const FlowDiagram: React.FC = () => {
         return eds // 防止添加重复的边
       })
     },
-    [toggleExpand],
+    [changeLabel, toggleExpand],
   )
 
   const onConnect = useCallback((params: Connection) => {
@@ -206,7 +209,6 @@ const FlowDiagram: React.FC = () => {
         const standardX = parentNode.position.x + NODE_DISTANCE
         const minX = standardX - NODE_DISTANCE / 2
         const maxX = standardX + NODE_DISTANCE
-        console.log('nodes::', nds)
 
         const runAwayNodes = new Set<string>()
         let siblingsNodesIds = new Set<string>(parentNode.children)
@@ -319,23 +321,44 @@ const FlowDiagram: React.FC = () => {
 
   const onNodeDrag = useCallback(
     (event: React.MouseEvent, node: ExtendedNode) => {
-      const newPosition = {
-        x: node.position.x + event.movementX,
-        y: node.position.y + event.movementY,
-      }
+      const zoom = getZoom()
+
       setNodes(nds => {
-        const ns = nds.map(n =>
-          n.id === node.id
-            ? {
-                ...n,
-                position: newPosition,
-              }
-            : n,
-        )
-        return ns
+        return nds.map(n => {
+          const newPosition = {
+            x: node.position.x + event.movementX / zoom,
+            y: node.position.y + event.movementY / zoom,
+          }
+
+          if (n.id === node.id) {
+            return {
+              ...n,
+              data: {
+                ...n.data,
+                rectRange: {
+                  top: (n.data.rectRange?.top || 0) + event.movementY / zoom,
+                  bottom: (n.data.rectRange?.bottom || 0) + event.movementY / zoom,
+                },
+              },
+              position: newPosition,
+            }
+          }
+
+          if (node.id === '1' && node.children?.includes(n.id)) {
+            return {
+              ...n,
+              position: {
+                x: n.position.x + event.movementX / zoom,
+                y: n.position.y + event.movementY / zoom,
+              },
+            }
+          }
+
+          return n
+        })
       })
     },
-    [setNodes],
+    [getZoom],
   )
 
   return (
