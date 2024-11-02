@@ -1,5 +1,6 @@
 .custom-node {
   position: relative;
+  width: 100px;
   padding: 10px;
   /* 节点内边距 */
   background: #f9f9f9;
@@ -8,12 +9,18 @@
   /* 节点圆角 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   /* 节点阴影 */
+  font-size: 14px;
 }
 
 .node-content {}
 
+.node-input-wrapper {}
+
 .node-content .node-input {
   display: block;
+  width: 100%;
+  border: none;
+  outline-style: none;
 }
 
 .node-switch-container {
@@ -27,11 +34,11 @@
   height: 20px;
   /* background-color: #007bff; */
   z-index: 99;
-  transform: translate(-45%, -50%);
+  transform: translate(-58%, -50%);
 }
 
 .node-switch-container.expand {
-  transform: translate(-80%, -50%);
+  transform: translate(-87%, -50%);
 }
 
 .context-menu-container {

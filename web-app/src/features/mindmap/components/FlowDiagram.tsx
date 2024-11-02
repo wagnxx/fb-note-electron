@@ -23,6 +23,8 @@ const nodeTypes = {
 }
 
 const NODE_DISTANCE = 150
+const NODE_WIDTH = 100
+const NODE_HEIGHT = 50
 
 const FlowDiagram: React.FC = () => {
   const [nodes, setNodes] = useState<ExtendedNode[]>([
@@ -35,6 +37,10 @@ const FlowDiagram: React.FC = () => {
         onExpandToggle: () => toggleExpand('1'),
         onAddChild: () => addChildNode('1'),
         onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel('1', e.target.value),
+        rectRange: {
+          top: 5,
+          bottom: NODE_HEIGHT + 5,
+        },
       },
       position: { x: 250, y: 5 },
       isHidden: false,
@@ -105,6 +111,11 @@ const FlowDiagram: React.FC = () => {
 
         const parentNode = nds[parentNodeIndex] // 获取最新的父节点
 
+        const newNodePostion = {
+          x: parentNode.position.x + NODE_DISTANCE,
+          y: Math.random() * 200,
+        }
+
         const newNode: ExtendedNode = {
           id: newNodeId,
           type: 'customNode',
@@ -116,16 +127,34 @@ const FlowDiagram: React.FC = () => {
             onChangeLabel: (e: ChangeEvent<HTMLInputElement>) =>
               changeLabel(newNodeId, e.target.value),
           },
-          position: { x: parentNode.position.x + NODE_DISTANCE, y: Math.random() * 200 },
+          position: newNodePostion,
           isHidden: false,
           children: [],
         }
 
         const newChildren = [...(parentNode.children || []), newNodeId]
+        const newChildrenNodes = nds.filter(node => newChildren.includes(node.id))
+        const newChildrenNodesPosY = newChildrenNodes
+          .map(item => item.position.y)
+          .concat(newNodePostion.y)
+          .concat(parentNode.position.y)
+
+        console.log('newChildrenNodesPosY::', newChildrenNodesPosY)
+
+        const rectRange = {
+          bottom: Math.max.apply(newChildrenNodesPosY, newChildrenNodesPosY) + NODE_HEIGHT,
+          top: Math.min.apply(newChildrenNodesPosY, newChildrenNodesPosY),
+        }
+
+        console.log('rectRange::', rectRange)
 
         const updatedParentNode = {
           ...parentNode,
-          data: { ...parentNode.data, childCount: newChildren.length },
+          data: {
+            ...parentNode.data,
+            childCount: newChildren.length,
+            rectRange,
+          },
           children: newChildren,
         }
 
