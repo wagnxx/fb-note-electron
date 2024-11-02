@@ -41,6 +41,8 @@ const FlowDiagram: React.FC = () => {
         rectRange: {
           top: 5,
           bottom: NODE_HEIGHT + 5,
+          left: 250,
+          right: 250 + NODE_WIDTH,
         },
       },
       position: { x: 250, y: 5 },
@@ -136,17 +138,20 @@ const FlowDiagram: React.FC = () => {
         }
 
         const newChildren = [...(parentNode.children || []), newNodeId]
-        const newChildrenNodes = nds.filter(node => newChildren.includes(node.id))
-        const newChildrenNodesPosY = newChildrenNodes
-          .map(item => item.position.y)
-          .concat(newNodePostion.y)
-          .concat(parentNode.position.y)
+        const newChildrenNodes = nds
+          .filter(node => newChildren.includes(node.id))
+          .concat(parentNode)
+          .concat(newNode)
+        const newChildrenNodesPosY = newChildrenNodes.map(item => item.position.y)
+        const newChildrenNodesPosX = newChildrenNodes.map(item => item.position.x)
 
         console.log('newChildrenNodesPosY::', newChildrenNodesPosY)
 
         const rectRange = {
           bottom: Math.max.apply(newChildrenNodesPosY, newChildrenNodesPosY) + NODE_HEIGHT,
           top: Math.min.apply(newChildrenNodesPosY, newChildrenNodesPosY),
+          left: Math.min.apply(newChildrenNodesPosX, newChildrenNodesPosX),
+          right: Math.max.apply(newChildrenNodesPosX, newChildrenNodesPosX) + NODE_WIDTH,
         }
 
         console.log('rectRange::', rectRange)
@@ -338,13 +343,15 @@ const FlowDiagram: React.FC = () => {
                 rectRange: {
                   top: (n.data.rectRange?.top || 0) + event.movementY / zoom,
                   bottom: (n.data.rectRange?.bottom || 0) + event.movementY / zoom,
+                  left: (n.data.rectRange?.left || 0) + event.movementX / zoom,
+                  right: (n.data.rectRange?.right || 0) + event.movementX / zoom,
                 },
               },
               position: newPosition,
             }
           }
 
-          if (node.id === '1' && node.children?.includes(n.id)) {
+          if (node.id === '1') {
             return {
               ...n,
               position: {

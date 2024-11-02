@@ -9,8 +9,8 @@ export interface CustomNodeData {
   onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => void
   childCount?: number
   rectRange?: {
-    // minX: number
-    // maxX: number
+    left: number
+    right: number
     top: number
     bottom: number
   }
@@ -33,7 +33,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
                 ? 0
                 : (data?.rectRange?.top || 0) - currentNodePostion.y,
             left: 0,
-            width: 'calc(100% + 150px)',
+            width: `${(data?.rectRange?.right || 100) - (data?.rectRange?.left || 0)}px`,
             height: `${(data?.rectRange?.bottom || 100) - (data?.rectRange?.top || 0)}px`,
             background: 'rgba(0,0,0,0.3)',
             zIndex: '-1',
