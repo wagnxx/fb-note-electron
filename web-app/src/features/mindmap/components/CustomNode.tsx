@@ -24,7 +24,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
 
   return (
     <div className="custom-node">
-      {id === '1' && (
+      {id === '1' && data.isExpanded && (
         <div
           style={{
             position: 'absolute',
@@ -55,7 +55,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
           {/* <span>{data.label}</span> */}
         </div>
       </div>
-      {data.childCount && (
+      {(data?.childCount || 0) > 0 && (
         <div
           className={`node-switch-container ${data.isExpanded ? 'expand' : ''}`}
           onClick={data.onExpandToggle}
