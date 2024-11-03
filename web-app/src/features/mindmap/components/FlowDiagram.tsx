@@ -324,9 +324,29 @@ const FlowDiagram: React.FC = () => {
     })
   }, [])
 
+  const getGroupNodeIds: (node: ExtendedNode) => Set<string> = useCallback(
+    (node: ExtendedNode) => {
+      const updateNodeIds = new Set<string>()
+      function collectionChildren(currentId: string) {
+        const node = nodes.find(n => n.id === currentId)
+        if (node) {
+          updateNodeIds.add(currentId)
+          if (node.children) {
+            node.children.forEach(childId => collectionChildren(childId))
+          }
+        }
+      }
+      collectionChildren(node.id)
+      return updateNodeIds
+    },
+    [nodes],
+  )
+
   const onNodeDrag = useCallback(
     (event: React.MouseEvent, node: ExtendedNode) => {
       const zoom = getZoom()
+
+      const updateNodeIds = getGroupNodeIds(node)
 
       setNodes(nds => {
         return nds.map(n => {
@@ -351,7 +371,7 @@ const FlowDiagram: React.FC = () => {
             }
           }
 
-          if (node.id === '1') {
+          if (node?.children?.length && updateNodeIds.has(n.id)) {
             return {
               ...n,
               position: {
@@ -365,7 +385,7 @@ const FlowDiagram: React.FC = () => {
         })
       })
     },
-    [getZoom],
+    [getGroupNodeIds, getZoom],
   )
 
   return (
