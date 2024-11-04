@@ -12,6 +12,10 @@
   font-size: 14px;
 }
 
+.custom-node:hover {
+  cursor: move;
+}
+
 .node-content {}
 
 .node-input-wrapper {}
@@ -20,7 +24,18 @@
   display: block;
   width: 100%;
   border: none;
-  outline-style: none;
+  outline: none;
+}
+
+.node-content .node-input:read-only:hover {
+  cursor: move;
+}
+
+.node-content .node-input:not(:read-only):focus-within {
+  outline-style: dotted;
+  outline-offset: 2px;
+  outline-width: 1px;
+  outline-color: #03A9F4;
 }
 
 .node-switch-container {

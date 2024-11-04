@@ -28,7 +28,21 @@ const NODE_DISTANCE = 150
 const NODE_WIDTH = 100
 const NODE_HEIGHT = 50
 
-const FlowDiagram: React.FC = () => {
+type Props = {
+  bgVType?: BackgroundVariant
+  bgColor?: string
+  bgGap?: number
+  bgSize?: number
+  className?: string
+}
+
+const FlowDiagram: React.FC<Props> = ({
+  bgVType = BackgroundVariant.Dots,
+  bgColor = '#ddd',
+  bgGap = 20,
+  bgSize = 1,
+  className = ' ',
+}) => {
   const { getZoom } = useReactFlow()
   const [nodes, setNodes] = useState<ExtendedNode[]>([
     {
@@ -39,6 +53,7 @@ const FlowDiagram: React.FC = () => {
         isExpanded: true,
         onExpandToggle: () => toggleExpand('1'),
         onAddChild: () => addChildNode('1', getZoom),
+        onDelete: () => deleteNode('1'),
         onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel('1', e.target.value),
         rectRange: {
           top: 5,
@@ -130,6 +145,27 @@ const FlowDiagram: React.FC = () => {
     })
   }, [])
 
+  const deleteNode = useCallback((id: string) => {
+    setNodes(nds => {
+      const parentNode = nds.find(n => n.children?.includes(id))
+      if (!parentNode) return nds // 如果没有找到父节点，直接返回
+
+      const updateParentNode: ExtendedNode = {
+        ...parentNode,
+        children: parentNode.children?.filter(nodeId => nodeId !== id) || [],
+      }
+
+      setEdges(eds => eds.filter(ed => ed.target !== id))
+      let updateNds = nds.filter(n => n.id !== id) || []
+      return updateNds.map(n => {
+        if (n.id === parentNode?.id) {
+          return updateParentNode
+        }
+        return n
+      })
+    })
+  }, [])
+
   const addChildNode = useCallback(
     (parentId: string, getZoomFunc: () => number) => {
       const newNodeId = `${parentId}-child-${Math.random().toString(36).substr(2, 9)}`
@@ -146,7 +182,7 @@ const FlowDiagram: React.FC = () => {
         const nicePostionY = calculateMiddleValue(
           siblingsPositionY,
           parentNode.position.y,
-          100 / zoom,
+          50 / zoom,
         )
 
         const newNodePostion = {
@@ -162,6 +198,7 @@ const FlowDiagram: React.FC = () => {
             isExpanded: true,
             onExpandToggle: () => toggleExpand(newNodeId),
             onAddChild: () => addChildNode(newNodeId, getZoom),
+            onDelete: () => deleteNode(newNodeId),
             onChangeLabel: (e: ChangeEvent<HTMLInputElement>) =>
               changeLabel(newNodeId, e.target.value),
           },
@@ -458,7 +495,7 @@ const FlowDiagram: React.FC = () => {
   )
 
   return (
-    <div style={{ height: '100vh', position: 'relative' }}>
+    <div style={{ position: 'relative' }} className={className}>
       <ReactFlow
         nodes={nodes.filter(n => !n.isHidden)}
         edges={edges}
@@ -468,7 +505,12 @@ const FlowDiagram: React.FC = () => {
         onNodeDrag={onNodeDrag}
         fitView
       >
-        <Background variant={BackgroundVariant.Dots} />
+        <Background
+          variant={bgVType}
+          color={bgColor}
+          size={bgSize / getZoom()}
+          gap={bgGap / getZoom()}
+        />
         <MiniMap />
         <Controls />
       </ReactFlow>

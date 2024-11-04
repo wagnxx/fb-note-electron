@@ -1,4 +1,5 @@
-import React, { ChangeEvent } from 'react'
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
+import React, { ChangeEvent, useRef, useState } from 'react'
 import { Handle, NodeProps, Position, useNodes } from 'react-flow-renderer'
 
 export interface CustomNodeData {
@@ -6,6 +7,7 @@ export interface CustomNodeData {
   isExpanded: boolean
   onExpandToggle: () => void
   onAddChild: () => void
+  onDelete: () => void
   onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => void
   childCount?: number
   rectRange?: {
@@ -22,8 +24,18 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
   const isDragging = currentNode?.dragging || false
   const currentNodePostion = currentNode?.position || { x: 0, y: 0 }
 
+  const [canEditLabel, setCanEditLabel] = useState(false)
+
+  const inputLabel = useRef<HTMLInputElement>(null)
+
+  const dbClickNodeHandler = () => {
+    // inputLabel?.current?.select()
+    inputLabel?.current?.focus()
+    setCanEditLabel(true)
+  }
+
   return (
-    <div className="custom-node">
+    <div className="custom-node" onDoubleClickCapture={dbClickNodeHandler}>
       {id === '1' && data.isExpanded && (
         <div
           style={{
@@ -47,6 +59,9 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
         {/* <p>x: {currentNode?.position.x}</p> */}
         <div className="node-input-wrapper">
           <input
+            ref={inputLabel}
+            readOnly={!canEditLabel}
+            onBlur={() => setCanEditLabel(false)}
             value={data.label}
             onChange={data.onChangeLabel}
             className="node-input"
@@ -76,7 +91,12 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
       <div className={`context-menu-container ${isDragging ? 'hidden' : ''}`}>
         <div className="context-menu">
           <div className="context-menu-list">
-            <button onClick={data.onAddChild}>Add Child</button>
+            <button onClick={data.onAddChild}>
+              <PlusOutlined />
+            </button>
+            <button onClick={data.onDelete}>
+              <MinusOutlined />
+            </button>
           </div>
         </div>
       </div>
