@@ -42,7 +42,7 @@ const AuthLayout: React.FC = () => {
 
   return (
     <Layout>
-      <Header>
+      <Layout.Sider>
         <Flex justify="space-between">
           <Menu style={{ flex: 1 }} theme="dark" mode="horizontal" items={menuItems} />
           <div>
@@ -57,7 +57,7 @@ const AuthLayout: React.FC = () => {
             )}
           </div>
         </Flex>
-      </Header>
+      </Layout.Sider>
       <Content style={{ padding: '0px' }}>
         <Outlet />
       </Content>
