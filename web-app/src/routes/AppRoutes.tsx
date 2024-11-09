@@ -5,10 +5,12 @@ import AuthLayout from './AuthLayout'
 import { standaloneRoutes, authRoutes, RouteConfig } from './routes'
 import PrivateRoute from './PrivateRoute'
 import { AuthProvider } from '@/context/AuthContext'
+import AppHeader from '@/components/layout/AppHeader'
 
 const RoutesList: React.FC = () => {
   return (
     <Router>
+      <AppHeader />
       <Routes>
         {/* 渲染独立页面 */}
         {standaloneRoutes.map(route => {

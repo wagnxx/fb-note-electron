@@ -10,3 +10,7 @@
   gap: 10px;
   padding-left: 70px;
 }
+
+.app-header__item:hover {
+  cursor: pointer;
+}

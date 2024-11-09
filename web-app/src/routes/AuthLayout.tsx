@@ -1,11 +1,13 @@
 // src/components/AuthLayout.tsx
 import React, { ReactNode } from 'react'
 import { Link, Outlet } from 'react-router-dom'
-import { Button, Flex, Layout, Menu } from 'antd'
+import { Button, Layout, Menu } from 'antd'
 import { useAuth } from '../context/AuthContext'
 import { authRoutes, RouteConfig } from './routes'
+import { useSelector } from 'react-redux'
+import { getSidbarCollapsed } from '@/features/settings/selectors'
 
-const { Header, Content } = Layout
+const { Content, Sider } = Layout
 
 type MenuItem = {
   key: string
@@ -15,6 +17,7 @@ type MenuItem = {
 
 const AuthLayout: React.FC = () => {
   const { isAuthenticated, login, logout } = useAuth()
+  const sidbarCfdsfollapsed = useSelector(getSidbarCollapsed)
 
   const filterValidMenus = (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
     return routes.flatMap(route => {
@@ -42,22 +45,26 @@ const AuthLayout: React.FC = () => {
 
   return (
     <Layout>
-      <Layout.Sider>
-        <Flex justify="space-between">
-          <Menu style={{ flex: 1 }} theme="dark" mode="horizontal" items={menuItems} />
-          <div>
-            {isAuthenticated ? (
-              <Button onClick={logout} type="primary">
-                Logout
-              </Button>
-            ) : (
-              <Button onClick={login} type="primary">
-                Login
-              </Button>
-            )}
-          </div>
-        </Flex>
-      </Layout.Sider>
+      <Sider
+        width={200}
+        trigger={null}
+        collapsedWidth={0}
+        collapsible
+        collapsed={sidbarCfdsfollapsed}
+      >
+        <div className=" flex justify-center py-2">
+          {isAuthenticated ? (
+            <Button onClick={logout} type="primary">
+              Logout
+            </Button>
+          ) : (
+            <Button onClick={login} type="primary">
+              Login
+            </Button>
+          )}
+        </div>
+        <Menu theme="dark" mode="vertical" items={menuItems} />
+      </Sider>
       <Content style={{ padding: '0px' }}>
         <Outlet />
       </Content>
