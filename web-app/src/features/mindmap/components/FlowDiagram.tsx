@@ -15,7 +15,7 @@ import './FlowDiagram.css'
 import CustomNode, { CustomNodeData } from './CustomNode'
 import { calculateMiddleValue } from '@/utils/utilsArray'
 
-interface ExtendedNode extends Node<CustomNodeData> {
+export interface ExtendedNode extends Node<CustomNodeData> {
   isHidden?: boolean
   children?: string[]
 }
@@ -34,7 +34,13 @@ type Props = {
   bgGap?: number
   bgSize?: number
   className?: string
+  nodeList: ExtendedNode[]
+  edgeList: Edge[]
+  onNodeListChange: (nodes: ExtendedNode[]) => void
+  onEdgeListChange: (edgeList: Edge[]) => void
 }
+
+const voidFunc = () => {}
 
 const FlowDiagram: React.FC<Props> = ({
   bgVType = BackgroundVariant.Dots,
@@ -42,32 +48,40 @@ const FlowDiagram: React.FC<Props> = ({
   bgGap = 20,
   bgSize = 1,
   className = ' ',
+  nodeList,
+  edgeList,
+  onNodeListChange = voidFunc,
+  onEdgeListChange = voidFunc,
 }) => {
   const { getZoom } = useReactFlow()
-  const [nodes, setNodes] = useState<ExtendedNode[]>([
-    {
-      id: '1',
-      type: 'customNode',
-      data: {
-        label: 'Root Node',
-        isExpanded: true,
-        onExpandToggle: () => toggleExpand('1'),
-        onAddChild: () => addChildNode('1', getZoom),
-        onDelete: () => deleteNode('1'),
-        onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel('1', e.target.value),
-        rectRange: {
-          top: 5,
-          bottom: NODE_HEIGHT + 5,
-          left: 250,
-          right: 250 + NODE_WIDTH,
-        },
-      },
-      position: { x: 250, y: 5 },
-      isHidden: false,
-      children: [],
-    },
-  ])
-  const [edges, setEdges] = useState<Edge[]>([])
+  const [nodes, setNodes] = useState<ExtendedNode[]>(
+    nodeList?.length > 0
+      ? nodeList
+      : [
+          {
+            id: '1',
+            type: 'customNode',
+            data: {
+              label: 'Root Node',
+              isExpanded: true,
+              onExpandToggle: () => toggleExpand('1'),
+              onAddChild: () => addChildNode('1', getZoom),
+              onDelete: () => deleteNode('1'),
+              onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel('1', e.target.value),
+              rectRange: {
+                top: 5,
+                bottom: NODE_HEIGHT + 5,
+                left: 250,
+                right: 250 + NODE_WIDTH,
+              },
+            },
+            position: { x: 250, y: 5 },
+            isHidden: false,
+            children: [],
+          },
+        ],
+  )
+  const [edges, setEdges] = useState<Edge[]>(edgeList?.length > 0 ? edgeList : [])
 
   const getGroupNodeIds: (node: ExtendedNode) => Set<string> = useCallback(
     (node: ExtendedNode) => {
@@ -145,26 +159,38 @@ const FlowDiagram: React.FC<Props> = ({
     })
   }, [])
 
-  const deleteNode = useCallback((id: string) => {
-    setNodes(nds => {
-      const parentNode = nds.find(n => n.children?.includes(id))
-      if (!parentNode) return nds // 如果没有找到父节点，直接返回
+  const deleteNode = useCallback(
+    (id: string) => {
+      setNodes(nds => {
+        const parentNode = nds.find(n => n.children?.includes(id))
+        if (!parentNode) return nds // 如果没有找到父节点，直接返回
 
-      const updateParentNode: ExtendedNode = {
-        ...parentNode,
-        children: parentNode.children?.filter(nodeId => nodeId !== id) || [],
-      }
-
-      setEdges(eds => eds.filter(ed => ed.target !== id))
-      let updateNds = nds.filter(n => n.id !== id) || []
-      return updateNds.map(n => {
-        if (n.id === parentNode?.id) {
-          return updateParentNode
+        const updateParentNode: ExtendedNode = {
+          ...parentNode,
+          children: parentNode.children?.filter(nodeId => nodeId !== id) || [],
         }
-        return n
+
+        setEdges(eds => {
+          const updateEds = eds.filter(ed => ed.target !== id)
+          onEdgeListChange(updateEds)
+          return updateEds
+        })
+
+        let updateNds = nds.filter(n => n.id !== id) || []
+        updateNds = updateNds.map(n => {
+          if (n.id === parentNode?.id) {
+            return updateParentNode
+          }
+          return n
+        })
+
+        onNodeListChange(updateNds)
+
+        return updateNds
       })
-    })
-  }, [])
+    },
+    [onEdgeListChange, onNodeListChange],
+  )
 
   const addChildNode = useCallback(
     (parentId: string, getZoomFunc: () => number) => {
@@ -239,6 +265,8 @@ const FlowDiagram: React.FC<Props> = ({
           ...nds.slice(parentNodeIndex + 1),
         ]
 
+        onNodeListChange(updatedNodes)
+
         return updatedNodes
       })
 
@@ -253,10 +281,11 @@ const FlowDiagram: React.FC<Props> = ({
         if (!eds.some(edge => edge.id === newEdge.id)) {
           return [...eds, newEdge]
         }
+        onEdgeListChange(eds)
         return eds // 防止添加重复的边
       })
     },
-    [changeLabel, getZoom, toggleExpand],
+    [changeLabel, deleteNode, getZoom, onNodeListChange, toggleExpand],
   )
 
   const onConnect = useCallback((params: Connection) => {

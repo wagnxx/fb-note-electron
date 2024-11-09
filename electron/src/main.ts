@@ -2,13 +2,16 @@
 /* eslint-disable no-undef */
 import { config } from 'dotenv';
 config();
-import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, IpcMainEvent, session } from 'electron';
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { exec } from 'child_process';
 import { IPC_ACTIONS } from './constants';
 import { createLogger, format, transports } from 'winston';
+import { startVideoStreamServer } from './videoStream';
+
+
 
 const SUPPORT_DIR = process.env.SUPPORT_DIR || 'support';
 const isDev = process.env.ELECTRON_START_URL !== undefined;
@@ -57,10 +60,17 @@ function createWindow() {
     height: 600,
     webPreferences: {
       preload: preloadPath,
-      nodeIntegration: false,
-      contextIsolation: true,
+      // nodeIntegration: false,
+      // contextIsolation: true,
+      // webSecurity: false,
+      disableBlinkFeatures: 'Autofill',
+      allowRunningInsecureContent: true,
+      devTools: true,
     },
   });
+
+  win.webContents.openDevTools();
+
 
   if (isDev) {
     win.loadURL(process.env.ELECTRON_START_URL!);
@@ -68,6 +78,9 @@ function createWindow() {
     win.loadFile(path.join(__dirname, '../../web-app/build/index.html'));
   }
 }
+
+// 启动 HTTP 服务
+startVideoStreamServer();
 
 app?.whenReady()?.then(() => {
   createWindow();
@@ -149,6 +162,57 @@ app?.whenReady()?.then(() => {
   ipcMain.handle(IPC_ACTIONS.GET_LOGS, async () => {
     return await getLogs();
   });
+  ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile']
+    });
+
+    if (result.canceled) {
+      return null; // 用户取消了选择
+    }
+
+    const filePath = result.filePaths[0]; // 获取文件路径
+    const fileName = path.basename(filePath); // 获取文件名
+
+    return { path: filePath, name: fileName }; // 返回文件路径和文件名
+  });
+
+  ipcMain.on(IPC_ACTIONS.LOAD_VIDEO, (event, encodedPath) => {
+    const filePath = decodeURIComponent(encodedPath);
+
+    const videoPath = path.resolve(filePath); // 获取文件路径
+    const readStream = fs.createReadStream(videoPath);
+
+    readStream.on('data', (chunk) => {
+      event.sender.send('video-stream', chunk); // 将视频流数据传递给渲染进程
+    });
+
+    readStream.on('end', () => {
+      event.sender.send('video-stream', null); // 流结束后，发送 null 表示结束
+    });
+
+    readStream.on('error', (err) => {
+      console.error('视频流读取错误:', err);
+      event.sender.send('video-stream', null); // 读取错误时也发送 null
+    });
+  });
+
+
+
+  // 改进的异步生成器，逐步读取文件并返回数据块
+  ipcMain.handle('read-stream', async (event, encodedPath) => {
+    const filePath = path.resolve(decodeURIComponent(encodedPath));
+
+    // 创建一个生成器实例来按块读取文件
+    // const fileChunks = readFileInChunks(filePath);
+
+    // 返回一个迭代器（生成器），渲染进程会用它来逐块读取数据
+    // return fileChunks;
+    const fileStream = fs.readFileSync(filePath)
+    return fileStream
+  });
+
+
 
   app.on('activate', () => {
     console.log('app window activate');
@@ -244,4 +308,12 @@ function getSocksServiceInfo() {
   }
 
   return data;
+}
+// 生成器函数，用于按块读取文件
+async function* readFileInChunks(filePath: string, chunkSize = 1024 * 1024) {
+  const stream = fs.createReadStream(filePath, { highWaterMark: chunkSize });
+
+  for await (const chunk of stream) {
+    yield chunk; // 每次读取一个块
+  }
 }

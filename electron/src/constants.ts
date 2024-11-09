@@ -8,4 +8,7 @@ export const IPC_ACTIONS = {
   GET_SOCKS_SERVICE_INFO: 'get-socks-service-info' as const,
   GET_LOGS: 'get-logs' as const,
   SUBPROCESS_ERROR: 'subprocess-errors' as const,
+  SELECT_FILE: 'select-file' as const,
+  LOAD_VIDEO: 'load-video' as const,
+  READ_STREAM: 'read-stream' as const,
 } as const;

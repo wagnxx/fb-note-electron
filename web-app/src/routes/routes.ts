@@ -1,6 +1,5 @@
 // src/routes.ts
 import React from 'react'
-import HomePage from '@/pges/home/Home'
 import NotFound from '@/pges/error/NotFound'
 import GuidePage from '@/pges/home/GuidePage'
 import Dict from '@/pges/dict/Dict'
@@ -9,6 +8,8 @@ import WordAffix from '@/pges/dict/WordAffix'
 import ParentEmpty from '@/components/layout/ParentEmpty'
 import MindMapPage from '@/pges/mindmap/MindMapPage'
 import MindMapManagePage from '@/pges/mindmap/MindMapManagePage'
+import CinemaMoments from '@/pges/tools/CinemaMoments'
+import HomePage from '@/pges/home/Home'
 
 export interface RouteConfig {
   path: string
@@ -62,6 +63,11 @@ export const authRoutes: RouteConfig[] = [
         path: 'mindmapManage',
         name: 'mindMapManagePage',
         component: MindMapManagePage,
+      },
+      {
+        path: 'cinemaMoments',
+        name: 'CinemaMoments',
+        component: CinemaMoments,
       },
     ],
   },

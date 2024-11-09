@@ -13,6 +13,9 @@ const IPC_ACTIONS = {
   CHECK_SOCKS_SERVICE: 'check-socks-service',
   GET_SOCKS_SERVICE_INFO: 'get-socks-service-info',
   GET_LOGS: 'get-logs',
+  SELECT_FILE: 'select-file',
+  LOAD_VIDEO: 'load-video',
+   READ_STREAM: 'read-stream'
 }
 
 
@@ -38,7 +41,10 @@ contextBridge.exposeInMainWorld('electron', {
       const validChannels = [
           IPC_ACTIONS.CHECK_SOCKS_SERVICE,
           IPC_ACTIONS.GET_SOCKS_SERVICE_INFO,
-          IPC_ACTIONS.GET_LOGS
+          IPC_ACTIONS.GET_LOGS,
+          IPC_ACTIONS.SELECT_FILE,
+          IPC_ACTIONS.LOAD_VIDEO,
+          IPC_ACTIONS.READ_STREAM,
         ];
 
       if (validChannels.includes(channel)) {

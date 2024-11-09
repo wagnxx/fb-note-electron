@@ -7,18 +7,12 @@ declare global {
       IPC_ACTIONS: Record<string, string>
       ipcRenderer: {
         send: (channel: string, data: any) => void
-        invoke: (channel: string, data: any) => void
-        on: (
-          channel: string,
-          listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void,
-        ) => void
-        removeListener: (
-          channel: string,
-          listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void,
-        ) => void
+        invoke: (channel: string, data: any) => any
+        on: (channel: string, listener: (...args: any[]) => void) => void
+        removeListener: (channel: string, listener: (...args: any[]) => void) => void
       }
     }
   }
 }
 
-export {}
+export { }

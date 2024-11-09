@@ -1,0 +1,6 @@
+/* VideoList.css */
+.disabled {
+  opacity: 0.5;
+
+  /* 禁用点击 */
+}
