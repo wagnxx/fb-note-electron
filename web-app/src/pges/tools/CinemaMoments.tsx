@@ -10,7 +10,6 @@ const { Sider, Content } = Layout
 const CinemaMoments: React.FC = () => {
   const [currentVideoURL, setCurrentVideoURL] = useState<string>('')
   const [currentVideoId, setCurrentVideoId] = useState<string>('')
-  const [currentVideoName, setCurrentVideoName] = useState<string>('')
   const [playlist, setPlaylist] = useState<PlayItem[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [collapsed, setCollapsed] = useState(false)
@@ -39,8 +38,16 @@ const CinemaMoments: React.FC = () => {
     }
 
     setCurrentVideoURL(videoURL)
-    setCurrentVideoName(video.name)
     setCurrentVideoId(video.id)
+  }
+
+  const removeItemVideo = (target: PlayItem) => {
+    // Removed. It is playing; do not disturb it. We only deleted the item from the playlist
+    if (currentVideoId === target.id) {
+      setCurrentVideoId('')
+      setCurrentVideoURL('')
+    }
+    setPlaylist(pre => pre.filter(item => item.id !== target.id))
   }
 
   const handleError = () => {
@@ -70,6 +77,7 @@ const CinemaMoments: React.FC = () => {
           <VideoList
             playlist={playlist}
             playVideo={playVideo}
+            removeItemVideo={removeItemVideo}
             setPlaylist={setPlaylist}
             currentVideoId={currentVideoId}
           />
@@ -79,7 +87,6 @@ const CinemaMoments: React.FC = () => {
       <Content className=" p-3 bg-gray-100">
         <VideoPlayer
           title={currentVideoURL}
-          name={currentVideoName}
           videoSource={currentVideoURL}
           playVideo={playVideo}
           onError={handleError}

@@ -5,12 +5,11 @@ import './VideoPLayer.css'
 interface VideoPlayerProps {
   videoSource: Blob | MediaSource | string | null
   title?: string
-  name?: string
   playVideo: (videoUrl: string) => void
   onError: () => void
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, name, onError }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [currentTime, setCurrentTime] = useState<number>(0)
   const [duration, setDuration] = useState<number>(0)
