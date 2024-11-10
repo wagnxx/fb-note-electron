@@ -139,7 +139,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
   }, [skipBackward, skipForward, togglePlayPause, volume])
 
   return videoSource ? (
-    <div className="video-player">
+    <div className="video-player flex-1">
       <video
         title={title}
         ref={videoRef}
@@ -187,10 +187,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
       </div>
     </div>
   ) : (
-    <div className=" text-2xl flex justify-center items-center h-full">
-      <div className=" bg-black text-white w-2/3 h-2/3 text-center pt-10">
-        Please select a video
-      </div>
+    <div className=" text-2xl flex justify-center items-center h-full  text-white w-full">
+      Please select a video
     </div>
   )
 }

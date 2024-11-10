@@ -84,7 +84,7 @@ const CinemaMoments: React.FC = () => {
         )}
       </Sider>
 
-      <Content className=" p-3 bg-gray-100">
+      <Content className=" p-3  bg-black flex justify-center items-center">
         <VideoPlayer
           title={currentVideoURL}
           videoSource={currentVideoURL}
