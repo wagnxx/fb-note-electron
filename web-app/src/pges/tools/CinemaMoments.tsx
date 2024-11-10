@@ -70,7 +70,7 @@ const CinemaMoments: React.FC = () => {
         )}
       </Sider>
 
-      <Content style={{ padding: '12px' }}>
+      <Content className=" p-3 bg-gray-100">
         <VideoPlayer
           title={currentVideoURL}
           name={currentVideoName}
