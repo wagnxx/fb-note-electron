@@ -3,15 +3,15 @@ import { Layout, Button } from 'antd'
 import { MenuUnfoldOutlined } from '@ant-design/icons'
 import VideoPlayer from './components/VideoPLayer'
 import VideoList from './components/Playlist'
-import FileUpload from './components/FileUpload'
+import FileUpload, { PlayItem } from './components/FileUpload'
 
 const { Sider, Content } = Layout
 
 const CinemaMoments: React.FC = () => {
   const [currentVideoURL, setCurrentVideoURL] = useState<string>('')
+  const [currentVideoId, setCurrentVideoId] = useState<string>('')
   const [currentVideoName, setCurrentVideoName] = useState<string>('')
-  const [skipTime, setSkipTime] = useState<number>(1)
-  const [playlist, setPlaylist] = useState<any[]>([])
+  const [playlist, setPlaylist] = useState<PlayItem[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [collapsed, setCollapsed] = useState(false)
 
@@ -40,6 +40,7 @@ const CinemaMoments: React.FC = () => {
 
     setCurrentVideoURL(videoURL)
     setCurrentVideoName(video.name)
+    setCurrentVideoId(video.id)
   }
 
   const handleError = () => {
@@ -66,7 +67,12 @@ const CinemaMoments: React.FC = () => {
           <Button icon={<MenuUnfoldOutlined />} onClick={() => setCollapsed(!collapsed)} />
         </div>
         {!collapsed && (
-          <VideoList playlist={playlist} playVideo={playVideo} setPlaylist={setPlaylist} />
+          <VideoList
+            playlist={playlist}
+            playVideo={playVideo}
+            setPlaylist={setPlaylist}
+            currentVideoId={currentVideoId}
+          />
         )}
       </Sider>
 
@@ -75,8 +81,6 @@ const CinemaMoments: React.FC = () => {
           title={currentVideoURL}
           name={currentVideoName}
           videoSource={currentVideoURL}
-          skipTime={skipTime}
-          setSkipTime={setSkipTime}
           playVideo={playVideo}
           onError={handleError}
         />

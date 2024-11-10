@@ -2,10 +2,17 @@ import React from 'react'
 import { Button } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import { isElectron } from '@/utils/utilsSystem'
+import { v4 as uuidv4 } from 'uuid'
 
+export interface PlayItem {
+  url: string
+  name: string
+  played: boolean
+  id: string
+}
 interface FileUploadProps {
   fileInputRef: React.RefObject<HTMLInputElement>
-  setPlaylist: React.Dispatch<React.SetStateAction<any[]>>
+  setPlaylist: React.Dispatch<React.SetStateAction<PlayItem[]>>
 }
 // 通过 preload 暴露的安全 IPC API
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
@@ -22,7 +29,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ fileInputRef, setPlaylist }) =>
         } else {
           videoUrl = URL.createObjectURL(file)
         }
-        setPlaylist(prev => [...prev, { url: videoUrl, name: file.name, played: false }])
+        setPlaylist(prev => [
+          ...prev,
+          { url: videoUrl, name: file.name, played: false, id: uuidv4() },
+        ])
       }
     }
   }
@@ -30,7 +40,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ fileInputRef, setPlaylist }) =>
   // electron upload
   const handleFileUploadByElectron = (file: any) => {
     if (!file) return
-    setPlaylist(prev => [...prev, { url: file.path, name: file.name, played: false }])
+    setPlaylist(prev => [...prev, { url: file.path, name: file.name, played: false, id: uuidv4() }])
   }
   // SELECT_FILE
   const openFileDialog = async () => {

@@ -4,3 +4,7 @@
 
   /* 禁用点击 */
 }
+
+.item-selected {
+  background-color: aquamarine;
+}

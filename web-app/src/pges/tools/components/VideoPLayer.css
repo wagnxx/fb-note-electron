@@ -1,0 +1,15 @@
+.video-player {
+  position: relative;
+}
+
+.control-panel {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  padding: 8px;
+  display: none;
+}
+
+.video-player:hover .control-panel {
+  display: block;
+}

@@ -1,35 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, Slider } from 'antd'
-import {
-  PlayCircleOutlined,
-  PauseOutlined,
-  ForwardOutlined,
-  BackwardOutlined,
-  SoundOutlined,
-} from '@ant-design/icons'
-
+import { PlayCircleOutlined, PauseOutlined, SoundOutlined } from '@ant-design/icons'
+import './VideoPLayer.css'
 interface VideoPlayerProps {
   videoSource: Blob | MediaSource | string | null
-  skipTime: number
   title?: string
   name?: string
-  setSkipTime: React.Dispatch<React.SetStateAction<number>>
   playVideo: (videoUrl: string) => void
   onError: () => void
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  videoSource,
-  skipTime,
-  title,
-  name,
-  setSkipTime,
-  onError,
-}) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, name, onError }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
+  const [currentTime, setCurrentTime] = useState<number>(0)
+  const [duration, setDuration] = useState<number>(0)
+  const [skipTime, setSkipTime] = useState<number>(1)
+  const [volume, setVolume] = useState<number>(100) // 新增音量控制
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
-  const togglePlayPause = () => {
+  const togglePlayPause = useCallback(() => {
     if (isPlaying) {
       videoRef.current?.pause()
       setIsPlaying(false)
@@ -37,37 +26,75 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       videoRef.current?.play()
       setIsPlaying(true)
     }
-  }
+  }, [isPlaying])
 
-  const skipForward = () => {
+  const skipForward = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.currentTime += skipTime
     }
-  }
+  }, [skipTime])
 
-  const skipBackward = () => {
+  const skipBackward = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.currentTime -= skipTime
     }
+  }, [skipTime])
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime)
+    }
+  }
+
+  const handleSliderChange = (value: number) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = value
+      setCurrentTime(value)
+    }
+  }
+
+  const handleVolumeChange = (value: number) => {
+    if (videoRef.current) {
+      videoRef.current.volume = value / 100 // 0到1的音量范围
+      setVolume(value)
+    }
+  }
+
+  const formatTime = (seconds: number): string => {
+    const hrs = Math.floor(seconds / 3600)
+      .toString()
+      .padStart(2, '0')
+    const mins = Math.floor((seconds % 3600) / 60)
+      .toString()
+      .padStart(2, '0')
+    const secs = Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, '0')
+    return `${hrs}:${mins}:${secs}`
   }
 
   useEffect(() => {
     if (videoRef.current && videoSource) {
-      if (videoSource instanceof Blob) {
-        // 如果是 Blob 类型，直接将其作为 video src
-        videoRef.current.src = URL.createObjectURL(videoSource)
-      } else if (videoSource instanceof MediaSource) {
-        // 如果是 MediaSource 类型，创建一个 Object URL 并绑定到 video 元素
-        videoRef.current.src = URL.createObjectURL(videoSource)
-      } else if (videoSource?.startsWith('http')) {
-        videoRef.current.src = videoSource
-      }
-    }
+      const videoElement = videoRef.current // 创建局部变量，持有 videoRef.current 的引用
 
-    return () => {
-      // 清理 Blob URL
-      if (videoRef.current && videoSource instanceof Blob) {
-        URL.revokeObjectURL(videoRef.current.src)
+      if (videoSource instanceof Blob) {
+        videoElement.src = URL.createObjectURL(videoSource)
+      } else if (videoSource instanceof MediaSource) {
+        videoElement.src = URL.createObjectURL(videoSource)
+      } else if (typeof videoSource === 'string' && videoSource.startsWith('http')) {
+        videoElement.src = videoSource
+      }
+
+      const handleLoadedMetadata = () => {
+        setDuration(videoElement.duration)
+      }
+
+      videoElement.addEventListener('loadedmetadata', handleLoadedMetadata)
+      videoElement.addEventListener('timeupdate', handleTimeUpdate)
+
+      return () => {
+        videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata)
+        videoElement.removeEventListener('timeupdate', handleTimeUpdate)
       }
     }
   }, [videoSource])
@@ -75,8 +102,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   useEffect(() => {
     const keypressHandler = (e: KeyboardEvent) => {
       if (!videoRef.current) return
-      console.log('video::', videoRef.current)
+
+      if (e.key === ' ') {
+        console.log('blank')
+      }
       switch (e.key) {
+        case ' ':
+          togglePlayPause()
+          break
         case 'ArrowLeft':
         case 'h':
         case 'H':
@@ -90,25 +123,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         case 'ArrowUp':
         case 'k':
         case 'K':
-          console.log('audio voice up')
+          volume < 100 && handleVolumeChange(volume + 1)
           break
         case 'ArrowDown':
         case 'j':
         case 'J':
-          console.log('audio voice down')
+          volume > 0 && handleVolumeChange(volume - 1)
           break
       }
     }
     window.addEventListener('keydown', keypressHandler, false)
 
     return () => {
-      window.removeEventListener('keypress', keypressHandler, false)
+      window.removeEventListener('keydown', keypressHandler, false)
     }
-  }, [])
+  }, [skipBackward, skipForward, togglePlayPause, volume])
 
   return videoSource ? (
     <div className="video-player">
-      <div className=" font-bold text-lg pt-0 pb-2">{name}】</div>
       <video
         title={title}
         ref={videoRef}
@@ -118,14 +150,41 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         onError={onError}
       />
       <div className="control-panel">
-        <Button
-          icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
-          onClick={togglePlayPause}
+        <Slider
+          value={currentTime}
+          onChange={handleSliderChange}
+          max={duration}
+          tooltip={{ formatter: null }} // 隐藏 tooltip
         />
-        <Button icon={<ForwardOutlined />} onClick={skipForward} />
-        <Button icon={<BackwardOutlined />} onClick={skipBackward} />
-        <Slider value={skipTime} onChange={value => setSkipTime(value)} min={1} max={10} step={1} />
-        <Button icon={<SoundOutlined />} />
+
+        <div className="btn-group flex flex-row items-center gap-2">
+          <Button
+            icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
+            onClick={togglePlayPause}
+          />
+          <Button icon={<SoundOutlined />} />
+          <Slider
+            style={{ width: '100px' }}
+            value={volume}
+            onChange={handleVolumeChange}
+            min={0}
+            max={100}
+            step={1}
+            tooltip={{ formatter: value => `Volume ${value}%` }}
+          />
+          <span>
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </span>
+          <Slider
+            style={{ width: '100px' }}
+            value={skipTime}
+            onChange={value => setSkipTime(value)}
+            min={1}
+            max={60}
+            step={1}
+            tooltip={{ formatter: value => `Skip ${value}s` }}
+          />
+        </div>
       </div>
     </div>
   ) : (
