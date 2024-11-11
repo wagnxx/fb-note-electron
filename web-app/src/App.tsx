@@ -1,5 +1,5 @@
 import React from 'react'
-import { ConfigProvider } from 'antd'
+import { ConfigProvider, notification } from 'antd'
 import type { ThemeConfig } from 'antd'
 import { Provider } from 'react-redux'
 import store from '@/store/store' // 确保你导入了 Redux store
@@ -12,14 +12,24 @@ const config: ThemeConfig = {
   },
 }
 
-const App: React.FC = () => (
-  <Provider store={store}>
-    <ConfigProvider theme={config}>
-      <div className="app-root">
-        <AppRoutes />
-      </div>
-    </ConfigProvider>
-  </Provider>
-)
+const App: React.FC = () => {
+  // 配置 notification 的全局行为
+  notification.config({
+    placement: 'topRight', // 配置通知显示位置
+    duration: 4, // 配置通知显示时长
+    bottom: 50, // 配置底部距离
+    rtl: false, // 配置是否启用右到左显示
+  })
+
+  return (
+    <Provider store={store}>
+      <ConfigProvider theme={config}>
+        <div className="app-root">
+          <AppRoutes />
+        </div>
+      </ConfigProvider>
+    </Provider>
+  )
+}
 
 export default App

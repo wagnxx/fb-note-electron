@@ -10,6 +10,7 @@ import MindMapPage from '@/pges/mindmap/MindMapPage'
 import MindMapManagePage from '@/pges/mindmap/MindMapManagePage'
 import CinemaMoments from '@/pges/tools/CinemaMoments'
 import HomePage from '@/pges/home/Home'
+import VideoDownloader from '@/pges/tools/components/VideoDownloader'
 
 export interface RouteConfig {
   path: string
@@ -68,6 +69,11 @@ export const authRoutes: RouteConfig[] = [
         path: 'cinemaMoments',
         name: 'CinemaMoments',
         component: CinemaMoments,
+      },
+      {
+        path: 'VideoDownloader',
+        name: 'VideoDownloader',
+        component: VideoDownloader,
       },
     ],
   },

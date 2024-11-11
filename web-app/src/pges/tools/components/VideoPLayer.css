@@ -9,8 +9,20 @@
   bottom: 0;
   padding: 8px;
   display: none;
+  color: #fff;
+  background-color: rgba(0, 0, 0, .2);
 }
 
 .video-player:hover .control-panel {
+  display: block;
+}
+
+.screenshot-preview {
+  display: none;
+  border: 1px solid #fff;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.control-panel__slider-wrap:hover .screenshot-preview {
   display: block;
 }

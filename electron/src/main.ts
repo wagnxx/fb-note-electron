@@ -58,6 +58,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
+    titleBarStyle: 'hidden',
     webPreferences: {
       preload: preloadPath,
       // nodeIntegration: false,
@@ -162,20 +163,41 @@ app?.whenReady()?.then(() => {
   ipcMain.handle(IPC_ACTIONS.GET_LOGS, async () => {
     return await getLogs();
   });
-  ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async () => {
+
+
+  ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async (event, options = { type: 'file' }) => {
+    let properties: ('openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory' | 'dontAddToRecent')[] = [];  // 指定为合法的字符串字面量类型
+
+
+    // 根据传入的参数决定选择文件或文件夹
+    if (options.type === 'file') {
+      properties = ['openFile'];  // 选择文件
+    } else if (options.type === 'directory') {
+      properties = ['openDirectory'];  // 选择文件夹
+    } else if (options.type === 'both') {
+      properties = ['openFile', 'openDirectory'];
+    }
+
     const result = await dialog.showOpenDialog({
-      properties: ['openFile']
+      properties: properties,
     });
 
     if (result.canceled) {
       return null; // 用户取消了选择
     }
 
-    const filePath = result.filePaths[0]; // 获取文件路径
-    const fileName = path.basename(filePath); // 获取文件名
+    const selectedPaths = result.filePaths;
+    if (options.type === 'directory' || options.type === 'both') {
+      // 如果选择的是文件夹，返回文件夹路径
+      return { path: selectedPaths[0], type: 'directory' };
+    }
 
-    return { path: filePath, name: fileName }; // 返回文件路径和文件名
+    // 如果选择的是文件，返回文件路径和文件名
+    const filePath = selectedPaths[0];
+    const fileName = path.basename(filePath);
+    return { path: filePath, name: fileName, type: 'file' };
   });
+
 
   ipcMain.on(IPC_ACTIONS.LOAD_VIDEO, (event, encodedPath) => {
     const filePath = decodeURIComponent(encodedPath);
@@ -194,6 +216,67 @@ app?.whenReady()?.then(() => {
     readStream.on('error', (err) => {
       console.error('视频流读取错误:', err);
       event.sender.send('video-stream', null); // 读取错误时也发送 null
+    });
+  });
+
+
+  // 监听下载请求
+  ipcMain.on('start-download', (event, { videoUrl, downloadDir, videoId }) => {
+    let videoTitle = ''; // 变量来存储视频的标题
+
+    // 使用 yt-dlp 命令获取视频标题
+    const ytDlpCmd = spawn('yt-dlp', ['-e', videoUrl]); // -e 用来获取视频的标题（不下载视频）
+
+    ytDlpCmd.stdout.on('data', (data) => {
+      videoTitle = data.toString().trim(); // 获取视频标题并去除空白字符
+      console.log('视频标题:', videoTitle);
+    });
+
+    ytDlpCmd.stderr.on('data', (data) => {
+      console.error(`yt-dlp error: ${data}`);
+    });
+
+    ytDlpCmd.on('close', (code) => {
+      if (code !== 0) {
+        event.reply('download-error', { videoId, errorMessage: '获取视频标题失败' });
+        return;
+      }
+
+      event.reply('download-title', { videoId, videoTitle });
+
+      // 生成视频下载路径
+      const outputPath = path.join(downloadDir, `${videoTitle}.mp4`);
+
+      // 使用 yt-dlp 下载视频
+      const ytDlpDownloadCmd = spawn('yt-dlp', [
+        '-o', outputPath, // 设置输出路径
+        videoUrl // YouTube 视频链接
+      ]);
+
+      // 监听 yt-dlp 输出的实时进度
+      ytDlpDownloadCmd.stdout.on('data', (data) => {
+        const output = data.toString();
+        const progressMatch = output.match(/(\d+\.\d+)%/); // 匹配进度百分比
+        if (progressMatch) {
+          const progress = progressMatch[1];
+          event.reply('download-progress', { videoId, progress, path: outputPath });
+        }
+      });
+
+      // 监听下载完成
+      ytDlpDownloadCmd.on('close', (code) => {
+        if (code === 0) {
+          event.reply('download-complete', { videoId, path: outputPath });
+        } else {
+          event.reply('download-error', { videoId, errorMessage: '下载失败' });
+        }
+      });
+
+      // 监听下载错误
+      ytDlpDownloadCmd.stderr.on('data', (data) => {
+        console.error(`yt-dlp error: ${data}`);
+        event.reply('download-error', { videoId, errorMessage: '下载失败' });
+      });
     });
   });
 
@@ -316,4 +399,21 @@ async function* readFileInChunks(filePath: string, chunkSize = 1024 * 1024) {
   for await (const chunk of stream) {
     yield chunk; // 每次读取一个块
   }
+}
+
+
+
+// 解析 ffmpeg 输出中的进度信息
+function parseProgress(output: string): string | null {
+  const regex = /time=(\d{2}):(\d{2}):(\d{2}\.\d{2})/; // 正则表达式匹配时间
+  const match = output.match(regex);
+
+  if (match) {
+    const hours = match[1];
+    const minutes = match[2];
+    const seconds = match[3];
+    return `${hours}:${minutes}:${seconds}`;
+  }
+
+  return null; // 如果没有找到进度，返回 null
 }

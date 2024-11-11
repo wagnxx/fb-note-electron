@@ -1,5 +1,5 @@
 {
-  "name": "electron",
+  "name": "fb-note",
   "version": "1.0.0",
   "description": "A desktop app for managing notes and tasks.",
   "main": "dist/main.js",

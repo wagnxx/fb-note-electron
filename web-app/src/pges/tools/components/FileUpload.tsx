@@ -45,7 +45,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ fileInputRef, setPlaylist }) =>
   // SELECT_FILE
   const openFileDialog = async () => {
     if (isElectron()) {
-      const r = await ipcRenderer?.invoke(IPC_ACTIONS.SELECT_FILE, null)
+      const r = await ipcRenderer?.invoke(IPC_ACTIONS.SELECT_FILE, { type: 'file' })
       handleFileUploadByElectron(r)
       //
     } else {
