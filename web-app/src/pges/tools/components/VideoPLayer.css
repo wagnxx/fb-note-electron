@@ -6,9 +6,9 @@
 .control-panel {
   width: 100%;
   position: absolute;
-  bottom: 0;
-  padding: 8px;
-  display: none;
+  top: '100%';
+  /* padding: 8px; */
+  /* display: none; */
   color: #fff;
   background-color: rgba(0, 0, 0, .2);
 }
@@ -23,6 +23,9 @@
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.control-panel__slider-wrap:hover .screenshot-preview {
+
+/* .custom-slider-container 在CustomSliderWithTeeth组件里 */
+.custom-slider-container:hover~.screenshot-preview {
   display: block;
+
 }

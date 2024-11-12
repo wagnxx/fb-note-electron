@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, Slider } from 'antd'
 import { PlayCircleOutlined, PauseOutlined, SoundOutlined } from '@ant-design/icons'
 import './VideoPLayer.css'
+import { formatSecondsToHHmmss } from '@/utils/utilsDate'
+import CustomSliderWithTeeth from './CustomSliderWithTeeth'
 
 interface VideoPlayerProps {
   videoSource: Blob | MediaSource | string | null
@@ -65,19 +67,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
     }
   }
 
-  const formatTime = (seconds: number): string => {
-    const hrs = Math.floor(seconds / 3600)
-      .toString()
-      .padStart(2, '0')
-    const mins = Math.floor((seconds % 3600) / 60)
-      .toString()
-      .padStart(2, '0')
-    const secs = Math.floor(seconds % 60)
-      .toString()
-      .padStart(2, '0')
-    return `${hrs}:${mins}:${secs}`
-  }
-
   // 获取预览图的函数
   const getPreviewImage = (time: number) => {
     const hiddenVideo = hiddenVideoRef.current
@@ -105,9 +94,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
     const mouseX = e.clientX - rect.left // 获取鼠标相对容器的偏移
     const sliderWidth = rect.width
     const newTime = (mouseX / sliderWidth) * duration
+    setPreviewTime(newTime)
+  }
 
-    setHoverTime(newTime)
-    getPreviewImage(newTime) // 获取并显示预览图
+  const setPreviewTime = (tm: number) => {
+    setHoverTime(tm)
+    getPreviewImage(tm) // 获取并显示预览图
   }
 
   // 点击时设置播放时间并开始播放
@@ -213,7 +205,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
   }, [videoSource])
 
   return videoSource ? (
-    <div className="video-player flex-1">
+    <div className="video-player flex-1 px-2">
       <video
         title={title}
         ref={videoRef}
@@ -223,16 +215,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
         onClick={togglePlayPause}
         onError={onError}
       />
-      <div className="control-panel" style={{ display: 'block' }}>
+      <div className="control-panel">
         <div
           className="control-panel__slider-wrap py-1 w-full bg-red-200"
-          onMouseMove={handleSliderMouseMove} // 在父容器上监听 mousemove 事件
-          onClick={handleSliderClick} // 点击时设置当前播放时间
+          // onMouseMove={handleSliderMouseMove} // 在父容器上监听 mousemove 事件
+          // onClick={handleSliderClick} // 点击时设置当前播放时间
         >
+          <CustomSliderWithTeeth max={duration} onChange={setPreviewTime} />
           <Slider
             value={currentTime}
             onChange={handleSliderChange}
             max={duration}
+            included={false}
             tooltip={{ formatter: null }} // 隐藏 tooltip
           />
           {hoverTime !== null && (
@@ -250,7 +244,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
               }}
             >
               <canvas ref={canvasRef} width={800} height={800 / aspectRatio} />
-              <p style={{ color: 'white' }}>{formatTime(hoverTime)}</p> {/* 显示 hover 时间 */}
+              <p style={{ color: 'white' }}>{formatSecondsToHHmmss(hoverTime)}</p>{' '}
+              {/* 显示 hover 时间 */}
             </div>
           )}
         </div>
@@ -271,7 +266,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
             tooltip={{ formatter: value => `Volume ${value}%` }}
           />
           <span>
-            {formatTime(currentTime)} / {formatTime(duration)}
+            {formatSecondsToHHmmss(currentTime)} / {formatSecondsToHHmmss(duration)}
           </span>
           <span>SkipTime:</span>
           <Slider

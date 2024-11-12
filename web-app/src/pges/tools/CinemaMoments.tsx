@@ -58,7 +58,7 @@ const CinemaMoments: React.FC = () => {
   }
 
   return (
-    <Layout style={{ minHeight: 'calc(100vh - 60px)' }}>
+    <Layout style={{ minHeight: 'calc(100vh - 29px)' }}>
       <Sider
         width={200}
         collapsedWidth={40}
@@ -84,7 +84,7 @@ const CinemaMoments: React.FC = () => {
         )}
       </Sider>
 
-      <Content className=" p-3  bg-black flex justify-center items-center">
+      <Content className="box-border bg-gray-50  flex-1  overflow-y-auto">
         <VideoPlayer
           title={currentVideoURL}
           videoSource={currentVideoURL}
