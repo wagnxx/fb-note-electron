@@ -4,15 +4,27 @@ import { PlayCircleOutlined, PauseOutlined, SoundOutlined } from '@ant-design/ic
 import './VideoPLayer.css'
 import { formatSecondsToHHmmss } from '@/utils/utilsDate'
 import CustomSliderWithTeeth from './CustomSliderWithTeeth'
+import ScreenShots from './ScreenShots'
+import { PlayItem } from './FileUpload'
+import { getNameWithoutExtension } from '@/utils/utilsString'
 
 interface VideoPlayerProps {
-  videoSource: Blob | MediaSource | string | null
-  title?: string
+  video: PlayItem
   playVideo: (videoUrl: string) => void
+  onSaveScreenshot: ({
+    videoId,
+    path,
+    name,
+  }: {
+    videoId: string
+    path: string
+    name: string
+  }) => void
   onError: () => void
 }
+const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreenshot }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [currentTime, setCurrentTime] = useState<number>(0)
   const [duration, setDuration] = useState<number>(0)
@@ -68,55 +80,104 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
   }
 
   // 获取预览图的函数
-  const getPreviewImage = (time: number) => {
+  const setPreviewImage = (time: number, option?: { width: number; height: number }) => {
     const hiddenVideo = hiddenVideoRef.current
     const canvas = canvasRef.current
 
-    if (hiddenVideo && canvas) {
+    return new Promise((resolve, reject) => {
+      if (!hiddenVideo || !canvas) return resolve(null)
+
+      const context = canvas.getContext('2d')
+      if (context) {
+        hiddenVideo.currentTime = time
+
+        hiddenVideo.onseeked = () => {
+          const drawWidth = option?.width || canvas.width
+          const drawHeight = option?.height || canvas.height
+          // 绘制当前视频的画面到canvas
+          context.drawImage(hiddenVideo, 0, 0, drawWidth, drawHeight)
+
+          // 将 canvas 转换为数据URL
+          const dataURL = canvas.toDataURL('image/png')
+
+          resolve(dataURL)
+        }
+      } else {
+        resolve(null)
+      }
+    })
+  }
+  // 获取预览图的函数
+  const getPreviewImage = (time: number, option: { width: number; height: number }) => {
+    const hiddenVideo = hiddenVideoRef.current
+    const canvas = document.createElement('canvas')
+
+    const drawWidth = option.width
+    const drawHeight = option.height
+
+    canvas.width = drawWidth
+    canvas.height = drawHeight
+
+    return new Promise((resolve, reject) => {
+      if (!hiddenVideo || !canvas) return resolve(null)
+
       const context = canvas.getContext('2d')
       if (context) {
         hiddenVideo.currentTime = time
 
         hiddenVideo.onseeked = () => {
           // 绘制当前视频的画面到canvas
-          context.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height)
+          context.drawImage(hiddenVideo, 0, 0, drawWidth, drawHeight)
+
+          // 将 canvas 转换为数据URL
+          const dataURL = canvas.toDataURL('image/png')
+
+          resolve(dataURL)
         }
+      } else {
+        resolve(null)
       }
-    }
+    })
   }
 
-  // 处理滑动条的 hover 时显示预览图
-  const handleSliderMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation()
+  const saveScreenshotHandler = (tm: number) => {
     if (!videoRef.current) return
-    const container = e.currentTarget
-    const rect = container.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left // 获取鼠标相对容器的偏移
-    const sliderWidth = rect.width
-    const newTime = (mouseX / sliderWidth) * duration
-    setPreviewTime(newTime)
+    const width = 1200
+    const height = width / aspectRatio
+
+    setHoverTime(tm)
+    getPreviewImage(tm, { width, height }) // 获取并显示预览图
+      .then(dataURL => {
+        const options = {
+          dataURL,
+          enVideoPath: encodeURIComponent(video.url),
+          enFolder: encodeURIComponent(getNameWithoutExtension(video.name)),
+          name: formatSecondsToHHmmss(tm, '-'),
+        }
+
+        ipcRenderer
+          .invoke(IPC_ACTIONS.SAVE_SCREENSHOT, options)
+          .then((res: { filePath: string; message: string }) => {
+            console.log('after save, response is: ', res)
+            if (res.message) {
+              console.log('err', res.message)
+              return
+            }
+            if (res.filePath) {
+              onSaveScreenshot({
+                videoId: video.id,
+                path: res.filePath,
+                name: formatSecondsToHHmmss(tm, '-'),
+              })
+            }
+          })
+      })
+    // getPreviewImage(tm) // 获取并显示预览图
   }
 
   const setPreviewTime = (tm: number) => {
     setHoverTime(tm)
-    getPreviewImage(tm) // 获取并显示预览图
-  }
-
-  // 点击时设置播放时间并开始播放
-  const handleSliderClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!videoRef.current) return
-
-    const container = e.currentTarget
-    const rect = container.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left // 获取鼠标相对容器的偏移
-    const sliderWidth = rect.width
-    const newTime = (mouseX / sliderWidth) * duration
-
-    videoRef.current.currentTime = newTime
-    setCurrentTime(newTime)
-    setHoverTime(null) // 点击时清空 hoverTime
-    videoRef.current.play() // 点击时开始播放
-    setIsPlaying(true)
+    setPreviewImage(tm) // 获取并显示预览图
   }
 
   useEffect(() => {
@@ -158,16 +219,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
   }, [skipBackward, skipForward, togglePlayPause, volume])
 
   useEffect(() => {
-    if (videoRef.current && videoSource) {
+    if (videoRef.current && video) {
       const videoElement = videoRef.current
 
-      if (videoSource instanceof Blob) {
-        videoElement.src = URL.createObjectURL(videoSource)
-      } else if (videoSource instanceof MediaSource) {
-        videoElement.src = URL.createObjectURL(videoSource)
-      } else if (typeof videoSource === 'string' && videoSource.startsWith('http')) {
-        videoElement.src = videoSource
+      let videoURL = video.url
+      if (!video.url.startsWith('b')) {
+        // 暂时认为都是从主进程 electron读取到的绝对路径
+        videoURL = 'http://localhost:4000/video?src=' + encodeURIComponent(videoURL)
       }
+
+      videoElement.src = videoURL
 
       const handleLoadedMetadata = () => {
         setDuration(videoElement.duration)
@@ -186,28 +247,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
         videoElement.removeEventListener('timeupdate', handleTimeUpdate)
       }
     }
-  }, [videoSource])
+  }, [video])
 
   useEffect(() => {
     const hiddenVideo = hiddenVideoRef.current
-    if (hiddenVideo && videoSource) {
-      if (typeof videoSource === 'string') {
-        // 如果 videoSource 是字符串类型（URL）
-        hiddenVideo.src = videoSource
-      } else if (videoSource instanceof Blob) {
-        // 如果 videoSource 是 Blob 类型
-        hiddenVideo.src = URL.createObjectURL(videoSource)
-      } else {
-        // 其他类型的处理（例如 MediaSource）
-        console.error('Unsupported videoSource type')
+    if (hiddenVideo && video) {
+      let videoURL = video.url
+      if (!video.url.startsWith('b')) {
+        // 暂时认为都是从主进程 electron读取到的绝对路径
+        videoURL = 'http://localhost:4000/video?src=' + encodeURIComponent(videoURL)
       }
+      hiddenVideo.src = videoURL
     }
-  }, [videoSource])
+  }, [video])
 
-  return videoSource ? (
-    <div className="video-player flex-1 px-2">
+  return video ? (
+    <div className="video-player flex-1  p-2  bg-slate-200">
       <video
-        title={title}
+        title={video.url}
         ref={videoRef}
         width="100%"
         height="auto"
@@ -216,40 +273,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
         onError={onError}
       />
       <div className="control-panel">
-        <div
-          className="control-panel__slider-wrap py-1 w-full bg-red-200"
-          // onMouseMove={handleSliderMouseMove} // 在父容器上监听 mousemove 事件
-          // onClick={handleSliderClick} // 点击时设置当前播放时间
-        >
-          <CustomSliderWithTeeth max={duration} onChange={setPreviewTime} />
-          <Slider
-            value={currentTime}
-            onChange={handleSliderChange}
-            max={duration}
-            included={false}
-            tooltip={{ formatter: null }} // 隐藏 tooltip
-          />
-          {hoverTime !== null && (
-            <div
-              className="screenshot-preview"
-              style={{
-                position: 'absolute',
-                bottom: 'calc(100% - 10px)',
-                right: 0,
-                width: '700px',
-                // height: 'auto',
-                background: 'rgba(0,0,0,0.6)',
-                textAlign: 'center',
-                zIndex: 1000,
-              }}
-            >
-              <canvas ref={canvasRef} width={800} height={800 / aspectRatio} />
-              <p style={{ color: 'white' }}>{formatSecondsToHHmmss(hoverTime)}</p>{' '}
-              {/* 显示 hover 时间 */}
-            </div>
-          )}
-        </div>
-
         <div className="btn-group flex flex-row items-center gap-2">
           <Button
             icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
@@ -279,8 +302,47 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoSource, title, onError }
             tooltip={{ formatter: value => `Skip ${value}s` }}
           />
         </div>
+        <div
+          className="control-panel__slider-wrap py-1 w-full "
+          // onMouseMove={handleSliderMouseMove} // 在父容器上监听 mousemove 事件
+          // onClick={handleSliderClick} // 点击时设置当前播放时间
+        >
+          <Slider
+            value={currentTime}
+            onChange={handleSliderChange}
+            max={duration}
+            included={false}
+            tooltip={{ formatter: null }} // 隐藏 tooltip
+          />
+          {hoverTime !== null && (
+            <div
+              className="screenshot-preview"
+              style={{
+                position: 'absolute',
+                bottom: 'calc(100% - 10px)',
+                right: 0,
+                width: '700px',
+                // height: 'auto',
+                background: 'rgba(0,0,0,0.6)',
+                textAlign: 'center',
+                zIndex: 1000,
+              }}
+            >
+              <canvas ref={canvasRef} width={700} height={700 / aspectRatio} />
+              <p style={{ color: 'white' }}>{formatSecondsToHHmmss(hoverTime)}</p>{' '}
+              {/* 显示 hover 时间 */}
+            </div>
+          )}
+
+          <CustomSliderWithTeeth
+            max={duration}
+            onChange={setPreviewTime}
+            onSaveScreenShorts={saveScreenshotHandler}
+          />
+        </div>
       </div>
-      <video ref={hiddenVideoRef} style={{ display: 'none' }} />
+      <video ref={hiddenVideoRef} crossOrigin="anonymous" style={{ display: 'none' }} />
+      {video.screenshots && <ScreenShots data={video.screenshots} />}
     </div>
   ) : (
     <div className=" text-2xl flex justify-center items-center h-full  text-white w-full">

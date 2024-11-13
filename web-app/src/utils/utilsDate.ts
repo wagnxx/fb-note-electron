@@ -1,4 +1,5 @@
-export const formatSecondsToHHmmss = (seconds: number): string => {
+export const formatSecondsToHHmmss = (seconds: number, sep?: string): string => {
+  const seqSymbol = sep || ':'
   const hrs = Math.floor(seconds / 3600)
     .toString()
     .padStart(2, '0')
@@ -8,5 +9,5 @@ export const formatSecondsToHHmmss = (seconds: number): string => {
   const secs = Math.floor(seconds % 60)
     .toString()
     .padStart(2, '0')
-  return `${hrs}:${mins}:${secs}`
+  return `${hrs}${seqSymbol}${mins}${seqSymbol}${secs}`
 }

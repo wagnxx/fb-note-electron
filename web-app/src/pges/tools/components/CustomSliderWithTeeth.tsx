@@ -1,20 +1,23 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react'
 import './CustomSlider.css' // 引入自定义样式
 import { formatSecondsToHHmmss } from '@/utils/utilsDate' // 时间格式化工具
-import { Button } from 'antd'
+import { Button, Flex, Space } from 'antd'
+import { CloseOutlined } from '@ant-design/icons'
 
 type Props = {
   max: number
   onChange: (value: number) => void
+  onSaveScreenShorts: (time: number) => void
 }
 
-const CustomSliderWithTeeth: React.FC<Props> = ({ max, onChange }) => {
+const CustomSliderWithTeeth: React.FC<Props> = ({ max, onChange, onSaveScreenShorts }) => {
   const [currentHourValue, setCurrentHourValue] = useState<number>(0)
   const [currentMinuteValue, setCurrentMinuteValue] = useState<number>(0)
   const [currentSecondValue, setCurrentSecondValue] = useState<number>(0)
   const [tooltipVisible, setTooltipVisible] = useState<boolean>(false)
   const [tooltipValue, setTooltipValue] = useState<number>(0) // 当前显示的值
   const [tooltipPosition, setTooltipPosition] = useState<number>(0) // Tooltip 的位置
+  const [isFixedTolltips, setIsFixedTolltips] = useState<boolean>(false) // Tooltip 的位置
   const sliderRef = useRef<HTMLDivElement>(null)
   const sliderContainerRef = useRef<HTMLDivElement>(null)
 
@@ -74,7 +77,13 @@ const CustomSliderWithTeeth: React.FC<Props> = ({ max, onChange }) => {
     return Math.min(Math.max(0, offsetX), rect.width)
   }
 
+  const saveImage = () => {
+    const currentTime = currentHourValue * 3600 + currentMinuteValue * 60 + currentSecondValue
+    onSaveScreenShorts(currentTime)
+  }
+
   const handleTeethClick = (idx: number, type: 'h' | 'm' | 's') => {
+    if (isFixedTolltips) return
     const value = idx
     let currentTime = 0
 
@@ -112,6 +121,9 @@ const CustomSliderWithTeeth: React.FC<Props> = ({ max, onChange }) => {
   const handleHourSliderClick = (idx: number) => handleTeethClick(idx, 'h')
   const handleMinuteSliderClick = (idx: number) => handleTeethClick(idx, 'm')
   const handleSecondSliderClick = (idx: number) => handleTeethClick(idx, 's')
+  const handleSecondSliderDBClick = () => {
+    setIsFixedTolltips(true)
+  }
 
   // 处理鼠标悬停时更新 Tooltip 显示内容和位置
   const handleTeethHover = (
@@ -120,6 +132,7 @@ const CustomSliderWithTeeth: React.FC<Props> = ({ max, onChange }) => {
     idx: number,
     type: 'h' | 'm' | 's',
   ) => {
+    if (isFixedTolltips) return
     let currentTime = currentHourValue * 3600 + currentMinuteValue * 60 + currentSecondValue
     switch (type) {
       case 'h':
@@ -211,6 +224,7 @@ const CustomSliderWithTeeth: React.FC<Props> = ({ max, onChange }) => {
               onMouseEnter={e => handleTeethHover(e, Number(key), idx, 's')}
               onMouseLeave={handleTeethLeave}
               onClick={() => handleSecondSliderClick(idx)} // 点击时改变值
+              onDoubleClick={() => handleSecondSliderDBClick()}
             />
           )
         })}
@@ -230,17 +244,30 @@ const CustomSliderWithTeeth: React.FC<Props> = ({ max, onChange }) => {
       <div
         className="tooltip-container"
         style={{
-          display: tooltipVisible ? 'block' : 'none',
+          display: isFixedTolltips || tooltipVisible ? 'block' : 'none',
           left: tooltipPosition + 'px',
           transform: 'translateX(-50%)',
         }}
       >
+        <Flex justify="end">
+          <Button
+            icon={<CloseOutlined color="#fff" />}
+            shape="circle"
+            size="small"
+            ghost
+            onClick={() => setIsFixedTolltips(false)}
+          />
+        </Flex>
         <h3>
           Current Time:
           {formatSecondsToHHmmss(tooltipValue)}
         </h3>
-        <Button>Save Image</Button>
-        <Button>Play</Button>
+        <div>
+          <Space>
+            <Button onClick={saveImage}>Save Image</Button>
+            <Button>Play</Button>
+          </Space>
+        </div>
       </div>
     </div>
   )

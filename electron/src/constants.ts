@@ -11,4 +11,5 @@ export const IPC_ACTIONS = {
   SELECT_FILE: 'select-file' as const,
   LOAD_VIDEO: 'load-video' as const,
   READ_STREAM: 'read-stream' as const,
+  SAVE_SCREENSHOT: 'save-screenshot' as const,
 } as const;

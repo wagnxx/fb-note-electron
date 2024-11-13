@@ -4,13 +4,15 @@
 }
 
 .control-panel {
-  width: 100%;
+  /* width: 100%;
   position: absolute;
-  top: '100%';
+  top: '100%'; */
   /* padding: 8px; */
   /* display: none; */
+  position: relative;
   color: #fff;
   background-color: rgba(0, 0, 0, .2);
+  padding: 10px;
 }
 
 .video-player:hover .control-panel {
@@ -23,9 +25,8 @@
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-
 /* .custom-slider-container 在CustomSliderWithTeeth组件里 */
-.custom-slider-container:hover~.screenshot-preview {
+.control-panel__slider-wrap:has(.custom-slider-container:hover) .screenshot-preview {
   display: block;
 
 }

@@ -8,8 +8,7 @@ import FileUpload, { PlayItem } from './components/FileUpload'
 const { Sider, Content } = Layout
 
 const CinemaMoments: React.FC = () => {
-  const [currentVideoURL, setCurrentVideoURL] = useState<string>('')
-  const [currentVideoId, setCurrentVideoId] = useState<string>('')
+  const [currentVideo, setCurrentVideo] = useState<PlayItem | null>(null)
   const [playlist, setPlaylist] = useState<PlayItem[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [collapsed, setCollapsed] = useState(false)
@@ -17,8 +16,12 @@ const CinemaMoments: React.FC = () => {
   // 初始化播放列表
   useEffect(() => {
     const savedPlaylist = localStorage.getItem('playlist')
+    const savedCurrentVideo = localStorage.getItem('currentVideo')
     if (savedPlaylist) {
       setPlaylist(JSON.parse(savedPlaylist))
+    }
+    if (savedCurrentVideo) {
+      setCurrentVideo(JSON.parse(savedCurrentVideo))
     }
   }, [])
 
@@ -26,35 +29,57 @@ const CinemaMoments: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('playlist', JSON.stringify(playlist))
   }, [playlist])
+  useEffect(() => {
+    localStorage.setItem('currentVideo', JSON.stringify(currentVideo))
+  }, [currentVideo])
 
   const playVideo = (video: any) => {
     if (!video?.url) return
-    console.log('current video url:::', video)
-
-    let videoURL = video.url
-    if (!video.url.startsWith('b')) {
-      // 暂时认为都是从主进程 electron读取到的绝对路径
-      videoURL = 'http://localhost:4000/video?src=' + encodeURIComponent(videoURL)
-    }
-
-    setCurrentVideoURL(videoURL)
-    setCurrentVideoId(video.id)
+    setCurrentVideo({
+      ...video,
+    })
   }
 
   const removeItemVideo = (target: PlayItem) => {
     // Removed. It is playing; do not disturb it. We only deleted the item from the playlist
-    if (currentVideoId === target.id) {
-      setCurrentVideoId('')
-      setCurrentVideoURL('')
+    if (currentVideo?.id === target.id) {
+      setCurrentVideo(null)
     }
     setPlaylist(pre => pre.filter(item => item.id !== target.id))
   }
 
   const handleError = () => {
-    if (!currentVideoURL) return
+    if (!currentVideo) return
     setPlaylist(prevPlaylist =>
-      prevPlaylist.map(item => (item.url === currentVideoURL ? { ...item, disabled: true } : item)),
+      prevPlaylist.map(item => (item.id === currentVideo.id ? { ...item, disabled: true } : item)),
     )
+  }
+  const handleSaveScreenshot = ({
+    videoId,
+    path,
+    name,
+  }: {
+    videoId: string
+    path: string
+    name: string
+  }) => {
+    setPlaylist(prevPlaylist => {
+      const updatedPlaylist = prevPlaylist.map(item =>
+        item.id === videoId
+          ? { ...item, screenshots: { ...(item.screenshots || {}), [name]: path } }
+          : item,
+      )
+
+      // 强制断言 currentVideo 为 PlayItem
+      if (currentVideo?.id === videoId) {
+        setCurrentVideo(prevVideo => ({
+          ...(prevVideo as PlayItem), // 强制类型断言
+          screenshots: { ...(prevVideo?.screenshots || {}), [name]: path },
+        }))
+      }
+
+      return updatedPlaylist
+    })
   }
 
   return (
@@ -73,24 +98,29 @@ const CinemaMoments: React.FC = () => {
           <FileUpload fileInputRef={fileInputRef} setPlaylist={setPlaylist} />
           <Button icon={<MenuUnfoldOutlined />} onClick={() => setCollapsed(!collapsed)} />
         </div>
-        {!collapsed && (
+        {!collapsed && currentVideo && (
           <VideoList
             playlist={playlist}
             playVideo={playVideo}
             removeItemVideo={removeItemVideo}
             setPlaylist={setPlaylist}
-            currentVideoId={currentVideoId}
+            currentVideoId={currentVideo.id}
           />
         )}
       </Sider>
 
-      <Content className="box-border bg-gray-50  flex-1  overflow-y-auto">
-        <VideoPlayer
-          title={currentVideoURL}
-          videoSource={currentVideoURL}
-          playVideo={playVideo}
-          onError={handleError}
-        />
+      <Content
+        className="box-border bg-gray-50    overflow-y-auto"
+        style={{ height: 'calc(100vh - 30px)' }}
+      >
+        {currentVideo && (
+          <VideoPlayer
+            video={currentVideo}
+            playVideo={playVideo}
+            onError={handleError}
+            onSaveScreenshot={handleSaveScreenshot}
+          />
+        )}
       </Content>
     </Layout>
   )
