@@ -27,6 +27,7 @@
     "react-router-dom": "^6.27.0",
     "react-scripts": "5.0.1",
     "redux": "^5.0.1",
+    "redux-persist": "^6.0.0",
     "regenerator-runtime": "^0.14.1",
     "socks": "^2.8.3",
     "socks5": "^1.0.1",
