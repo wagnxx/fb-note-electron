@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Button, Slider } from 'antd'
+import { Button, notification, Slider } from 'antd'
 import { PlayCircleOutlined, PauseOutlined, SoundOutlined } from '@ant-design/icons'
 import './VideoPLayer.css'
 import { formatSecondsToHHmmss } from '@/utils/utilsDate'
@@ -36,6 +36,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
   const canvasRef = useRef<HTMLCanvasElement | null>(null) // 用于绘制预览图的canvas
 
   const [aspectRatio, setAspectRatio] = useState<number>(5 / 3)
+
+  const [notificationApi, notificationHandleContext] = notification.useNotification()
 
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {
@@ -169,6 +171,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
                 path: res.filePath,
                 name: formatSecondsToHHmmss(tm, '-'),
               })
+              notificationApi.success({
+                message: 'Saved screenshot  successfully',
+                description: `Saved filepath is : ${res.filePath}`,
+              })
             }
           })
       })
@@ -263,6 +269,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
 
   return video ? (
     <div className="video-player flex-1  p-2  bg-slate-200">
+      {notificationHandleContext}
       <video
         title={video.url}
         ref={videoRef}
