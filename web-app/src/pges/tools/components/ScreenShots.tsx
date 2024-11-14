@@ -1,10 +1,22 @@
 import React, { FC, useState, useMemo } from 'react'
-import { Row, Col, Card, Button, Tooltip, Dropdown, Checkbox } from 'antd'
+import { Row, Col, Card, Button, Tooltip, Dropdown, Checkbox, Modal, notification } from 'antd'
 import ScreenshotModal from './ScreenshotModal'
 import './ScreenShots.css'
-
+import { CheckboxChangeEvent } from 'antd/es/checkbox'
+import { showConfirmationDialog } from '@/utils/utilsConfirm'
+const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export interface Prop {
+  videoId: string
   data: Record<string, string>
+  onSaveScreenshot: ({
+    videoId,
+    screenshops,
+    action,
+  }: {
+    videoId: string
+    screenshops: Array<{ path: string; name: string }>
+    action: 'add' | 'remove'
+  }) => void
 }
 
 const normalizeTime = (time: string): string => {
@@ -16,7 +28,7 @@ const timeToSeconds = (time: string): number => {
   return hours * 3600 + minutes * 60 + seconds
 }
 
-const ScreenShots: FC<Prop> = ({ data }) => {
+const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, videoId }) => {
   const [imageSizes, setImageSizes] = useState<Record<string, { width: number; height: number }>>(
     {},
   )
@@ -134,12 +146,11 @@ const ScreenShots: FC<Prop> = ({ data }) => {
   }, [filter, uniqueWidths, uniqueHeights])
 
   // 处理全选/取消全选
-  const toggleSelectAll = () => {
-    if (selectedKeys.size === Object.keys(filteredData).length) {
-      setSelectedKeys(new Set()) // 如果已全选，则取消全选
-    } else {
-      setSelectedKeys(new Set(Object.keys(filteredData))) // 否则全选
-    }
+  const toggleSelectAll = (e: CheckboxChangeEvent) => {
+    const newSelectedKeys: Set<string> = e.target.checked
+      ? new Set(Object.keys(filteredData)) // 全选
+      : new Set() // 取消全选
+    setSelectedKeys(newSelectedKeys)
   }
 
   // 处理单个图片的选择状态
@@ -151,6 +162,43 @@ const ScreenShots: FC<Prop> = ({ data }) => {
       newSelectedKeys.delete(key)
     }
     setSelectedKeys(newSelectedKeys)
+  }
+
+  // 删除确认
+  const handleDelete = async () => {
+    let confirmed = await showConfirmationDialog({
+      content: 'Are you sure you want to delete these images?',
+    })
+
+    if (!confirmed) return
+    const items = Array.from(selectedKeys).map((name: string) => {
+      return {
+        path: data[name],
+        name,
+      }
+    })
+
+    const paths = items.map(item => encodeURIComponent(item.path))
+
+    const r = await ipcRenderer?.invoke(IPC_ACTIONS.REMOVE_SCREENSHOT, { enPaths: paths })
+
+    if (r?.ok) {
+      notification.success({ message: 'removed successfully' })
+      onSaveScreenshot({ videoId, screenshops: items, action: 'remove' })
+    } else {
+      notification.error({ message: r?.message })
+    }
+  }
+
+  // 裁剪确认
+  const handleCrop = () => {
+    Modal.confirm({
+      title: 'Are you sure you want to crop these images?',
+      onOk: () => {
+        console.log('Images cropped:', Array.from(selectedKeys))
+        // 执行裁剪操作
+      },
+    })
   }
 
   return (
@@ -171,8 +219,18 @@ const ScreenShots: FC<Prop> = ({ data }) => {
       </Button>
 
       {/* 全选按钮 */}
-      <Button onClick={toggleSelectAll} style={{ marginLeft: '10px' }}>
+      <Checkbox onChange={toggleSelectAll} style={{ marginLeft: '10px' }}>
         {selectedKeys.size === Object.keys(filteredData).length ? 'Deselect All' : 'Select All'}
+      </Checkbox>
+
+      {/* 删除按钮 */}
+      <Button onClick={handleDelete} style={{ marginLeft: '10px' }} danger>
+        Delete
+      </Button>
+
+      {/* 裁剪按钮 */}
+      <Button onClick={handleCrop} style={{ marginLeft: '10px' }}>
+        Crop
       </Button>
 
       <Row gutter={[16, 16]} justify="start" style={{ marginTop: '20px' }}>

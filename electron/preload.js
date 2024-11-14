@@ -16,7 +16,8 @@ const IPC_ACTIONS = {
   SELECT_FILE: 'select-file',
   LOAD_VIDEO: 'load-video',
   READ_STREAM: 'read-stream',
-  SAVE_SCREENSHOT: 'save-screenshot'
+  SAVE_SCREENSHOT: 'save-screenshot',
+  REMOVE_SCREENSHOT: 'remove-screenshot'
 }
 
 
@@ -47,6 +48,7 @@ contextBridge.exposeInMainWorld('electron', {
           IPC_ACTIONS.LOAD_VIDEO,
           IPC_ACTIONS.READ_STREAM,
           IPC_ACTIONS.SAVE_SCREENSHOT,
+          IPC_ACTIONS.REMOVE_SCREENSHOT,
         ];
 
       if (validChannels.includes(channel)) {

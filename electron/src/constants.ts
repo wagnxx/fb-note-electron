@@ -12,4 +12,5 @@ export const IPC_ACTIONS = {
   LOAD_VIDEO: 'load-video' as const,
   READ_STREAM: 'read-stream' as const,
   SAVE_SCREENSHOT: 'save-screenshot' as const,
+  REMOVE_SCREENSHOT: 'remove-screenshot' as const,
 } as const;

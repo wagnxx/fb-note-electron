@@ -13,12 +13,12 @@ interface VideoPlayerProps {
   playVideo: (videoUrl: string) => void
   onSaveScreenshot: ({
     videoId,
-    path,
-    name,
+    screenshops,
+    action,
   }: {
     videoId: string
-    path: string
-    name: string
+    screenshops: Array<{ path: string; name: string }>
+    action: 'add' | 'remove'
   }) => void
   onError: () => void
 }
@@ -168,8 +168,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
             if (res.filePath) {
               onSaveScreenshot({
                 videoId: video.id,
-                path: res.filePath,
-                name: formatSecondsToHHmmss(tm, '-'),
+                screenshops: [{ path: res.filePath, name: formatSecondsToHHmmss(tm, '-') }],
+                action: 'add',
               })
               notificationApi.success({
                 message: 'Saved screenshot  successfully',
@@ -349,7 +349,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
         </div>
       </div>
       <video ref={hiddenVideoRef} crossOrigin="anonymous" style={{ display: 'none' }} />
-      {video.screenshots && <ScreenShots data={video.screenshots} />}
+      {video.screenshots && (
+        <ScreenShots
+          data={video.screenshots}
+          onSaveScreenshot={onSaveScreenshot}
+          videoId={video.id}
+        />
+      )}
     </div>
   ) : (
     <div className=" text-2xl flex justify-center items-center h-full  text-white w-full">

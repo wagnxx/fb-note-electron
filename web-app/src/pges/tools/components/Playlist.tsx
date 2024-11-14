@@ -1,38 +1,38 @@
-import React, { useId } from 'react'
+import React from 'react'
 import { List, Button } from 'antd'
 import { DeleteOutlined } from '@ant-design/icons'
 import './Playlist.css'
 import { PlayItem } from './FileUpload'
 
 interface VideoListProps {
-  currentVideoId: string
-  playlist: any[]
-  playVideo: (video: any) => void
+  currentVideo?: PlayItem | null
+  playlist: PlayItem[]
+  playVideo: (video: PlayItem) => void
   setPlaylist: React.Dispatch<React.SetStateAction<PlayItem[]>>
   removeItemVideo: (target: PlayItem) => void
 }
 
 const VideoList: React.FC<VideoListProps> = ({
+  currentVideo,
   playlist,
   playVideo,
   setPlaylist,
-  currentVideoId,
   removeItemVideo,
 }) => {
-  console.log('currentVideoId::', useId())
-  const removeItem = (target: PlayItem) => {
-    setPlaylist(pre => pre.filter(item => item.id !== target.id))
-  }
+  console.log('playlist::', playlist)
+  // const removeItem = (target: PlayItem) => {
+  //   setPlaylist(pre => pre.filter(item => item.id !== target.id))
+  // }
   return (
     <List
       itemLayout="horizontal"
       dataSource={playlist}
-      renderItem={item => (
+      renderItem={(item: PlayItem) => (
         <List.Item
           style={{
             width: '100%',
             overflowX: 'auto',
-            background: currentVideoId === item.id ? 'aquamarine' : 'inherit',
+            background: currentVideo?.id === item.id ? 'aquamarine' : 'inherit',
           }}
           className={`${item.disabled ? 'disabled' : ''}`}
           actions={[

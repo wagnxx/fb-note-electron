@@ -9,6 +9,7 @@ export interface PlayItem {
   name: string
   played: boolean
   id: string
+  disabled?: boolean
   screenshots?: Record<string, string>
 }
 interface FileUploadProps {

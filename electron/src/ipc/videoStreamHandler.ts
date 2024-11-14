@@ -3,6 +3,8 @@ import fs from 'fs';
 import { dialog, ipcMain } from 'electron'
 import { IPC_ACTIONS } from '../constants';
 import { spawn } from 'child_process';
+import { deleteFile, deleteFiles, ensureDirectoryExists, fileExists, writeFile } from '../utils/fileManager';
+
 
 export const setupVideoStreamHandler = () => {
     ipcMain.on(IPC_ACTIONS.LOAD_VIDEO, (event, encodedPath) => {
@@ -86,15 +88,8 @@ export const setupVideoStreamHandler = () => {
         });
     });
 
-
-
-
     ipcMain.handle(IPC_ACTIONS.SAVE_SCREENSHOT, async (event, { dataURL, enVideoPath, enFolder, name }) => {
         try {
-            // 移除 dataURL 前缀并转换为 Buffer
-            const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
-            const buffer = Buffer.from(base64Data, 'base64');
-
             const basePath = path.dirname(decodeURIComponent(enVideoPath))
 
             if (!basePath) {
@@ -102,32 +97,19 @@ export const setupVideoStreamHandler = () => {
                     message: 'enVideoPath is not exist'
                 }
             }
-
-
             // 设置保存路径
             const filePath = path.join(basePath, decodeURIComponent(enFolder), name + '.png');
 
             // 获取文件夹路径（不包括文件名）
             const dirPath = path.dirname(filePath);
 
-            // 判断文件夹是否存在，不存在则创建
-            if (!fs.existsSync(dirPath)) {
-                // 创建文件夹，递归创建不存在的父文件夹
-                fs.mkdirSync(dirPath, { recursive: true });
-            }
+            await ensureDirectoryExists(dirPath)
 
-            // 保存文件
-            await new Promise((resolve, reject) => {
-                fs.writeFile(filePath, buffer, (err) => {
-                    if (err) {
-                        console.error('Failed to save screenshot:', err);
-                        reject(err);  // 如果保存失败，抛出异常
-                    } else {
-                        console.log('Screenshot saved successfully:', filePath);
-                        resolve(filePath);  // 成功时返回文件路径
-                    }
-                });
-            });
+            // 移除 dataURL 前缀并转换为 Buffer
+            const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
+            const buffer = Buffer.from(base64Data, 'base64');
+            await writeFile(filePath, buffer)
+
 
             // 返回文件路径给前端
             return { filePath };
@@ -136,4 +118,9 @@ export const setupVideoStreamHandler = () => {
             throw error;  // 抛出错误，前端可以捕获
         }
     });
+
+    ipcMain.handle(IPC_ACTIONS.REMOVE_SCREENSHOT, async (event, { enPaths }: { enPaths: string[] }) => {
+        const filePaths = enPaths.map(enPath => decodeURIComponent(enPath))
+        return await deleteFiles(filePaths)
+    })
 };

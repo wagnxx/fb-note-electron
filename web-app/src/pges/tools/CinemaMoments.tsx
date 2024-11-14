@@ -17,6 +17,7 @@ const CinemaMoments: React.FC = () => {
   useEffect(() => {
     const savedPlaylist = localStorage.getItem('playlist')
     const savedCurrentVideo = localStorage.getItem('currentVideo')
+
     if (savedPlaylist) {
       setPlaylist(JSON.parse(savedPlaylist))
     }
@@ -56,26 +57,63 @@ const CinemaMoments: React.FC = () => {
   }
   const handleSaveScreenshot = ({
     videoId,
-    path,
-    name,
+    action = 'add',
+    screenshops,
   }: {
     videoId: string
-    path: string
-    name: string
+    screenshops: Array<{ path: string; name: string }>
+    action: 'add' | 'remove'
   }) => {
     setPlaylist(prevPlaylist => {
-      const updatedPlaylist = prevPlaylist.map(item =>
-        item.id === videoId
-          ? { ...item, screenshots: { ...(item.screenshots || {}), [name]: path } }
-          : item,
-      )
+      const updatedPlaylist = prevPlaylist.map(item => {
+        if (item.id !== videoId) return item
+
+        const initScreenshots = item.screenshots || {}
+        const restScreenshot = Object.fromEntries(
+          Object.entries(initScreenshots).filter(([key, value]) => {
+            return !screenshops.some(sc => sc.name === key)
+          }),
+        )
+
+        const newScreeshots = screenshops.reduce(
+          (pre, cur) => {
+            pre[cur.name] = cur.path
+            return pre
+          },
+          {} as Record<string, string>,
+        )
+
+        const updateScreenshots =
+          action === 'add' ? { ...restScreenshot, ...newScreeshots } : restScreenshot
+        const updateItem = { ...item, screenshots: updateScreenshots }
+        return updateItem
+      })
 
       // 强制断言 currentVideo 为 PlayItem
       if (currentVideo?.id === videoId) {
-        setCurrentVideo(prevVideo => ({
-          ...(prevVideo as PlayItem), // 强制类型断言
-          screenshots: { ...(prevVideo?.screenshots || {}), [name]: path },
-        }))
+        setCurrentVideo(prevVideo => {
+          const initScreenshots = prevVideo?.screenshots || {}
+          const restScreenshot = Object.fromEntries(
+            Object.entries(initScreenshots).filter(([key, value]) => {
+              return !screenshops.some(sc => sc.name === key)
+            }),
+          )
+
+          const newScreeshots = screenshops.reduce(
+            (pre, cur) => {
+              pre[cur.name] = cur.path
+              return pre
+            },
+            {} as Record<string, string>,
+          )
+          const updateScreenshots =
+            action === 'add' ? { ...restScreenshot, ...newScreeshots } : restScreenshot
+
+          return {
+            ...(prevVideo as PlayItem), // 强制类型断言
+            screenshots: updateScreenshots,
+          }
+        })
       }
 
       return updatedPlaylist
@@ -98,13 +136,13 @@ const CinemaMoments: React.FC = () => {
           <FileUpload fileInputRef={fileInputRef} setPlaylist={setPlaylist} />
           <Button icon={<MenuUnfoldOutlined />} onClick={() => setCollapsed(!collapsed)} />
         </div>
-        {!collapsed && currentVideo && (
+        {!collapsed && (
           <VideoList
             playlist={playlist}
             playVideo={playVideo}
             removeItemVideo={removeItemVideo}
             setPlaylist={setPlaylist}
-            currentVideoId={currentVideo.id}
+            currentVideo={currentVideo}
           />
         )}
       </Sider>
