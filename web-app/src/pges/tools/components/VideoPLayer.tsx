@@ -350,11 +350,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
       </div>
       <video ref={hiddenVideoRef} crossOrigin="anonymous" style={{ display: 'none' }} />
       {video.screenshots && (
-        <ScreenShots
-          data={video.screenshots}
-          onSaveScreenshot={onSaveScreenshot}
-          videoId={video.id}
-        />
+        <ScreenShots data={video.screenshots} onSaveScreenshot={onSaveScreenshot} video={video} />
       )}
     </div>
   ) : (

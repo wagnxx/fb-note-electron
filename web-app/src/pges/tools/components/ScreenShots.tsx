@@ -1,12 +1,14 @@
 import React, { FC, useState, useMemo } from 'react'
-import { Row, Col, Card, Button, Tooltip, Dropdown, Checkbox, Modal, notification } from 'antd'
+import { Row, Col, Card, Button, Tooltip, Dropdown, Checkbox, notification } from 'antd'
 import ScreenshotModal from './ScreenshotModal'
 import './ScreenShots.css'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
 import { showConfirmationDialog } from '@/utils/utilsConfirm'
+import { useNavigate } from 'react-router-dom'
+import { PlayItem } from './FileUpload'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export interface Prop {
-  videoId: string
+  video: PlayItem
   data: Record<string, string>
   onSaveScreenshot: ({
     videoId,
@@ -28,7 +30,7 @@ const timeToSeconds = (time: string): number => {
   return hours * 3600 + minutes * 60 + seconds
 }
 
-const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, videoId }) => {
+const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
   const [imageSizes, setImageSizes] = useState<Record<string, { width: number; height: number }>>(
     {},
   )
@@ -37,6 +39,12 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, videoId }) => {
   const [filter, setFilter] = useState<{ width?: number; height?: number }>({})
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set())
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [cropRange, setCropRange] = useState<Record<'x' | 'y' | 'width' | 'height', number> | null>(
+    null,
+  )
+
+  const navigate = useNavigate()
+  const [notificationApi, notificationContextHandle] = notification.useNotification()
 
   const handleImageLoad = (name: string, event: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth, naturalHeight } = event.currentTarget
@@ -63,6 +71,7 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, videoId }) => {
     height: number
   }) => {
     console.log('确认截图区域:', range)
+    setCropRange(range)
     closeModal() // 关闭modal
   }
 
@@ -107,43 +116,60 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, videoId }) => {
       )
   }, [filter, sortedData, imageSizes])
 
-  // 动态生成筛选选项
-  const uniqueWidths = useMemo(() => {
-    const widths = new Set<number>()
-    Object.values(imageSizes).forEach(size => widths.add(size.width))
-    return Array.from(widths)
-  }, [imageSizes])
-
-  const uniqueHeights = useMemo(() => {
-    const heights = new Set<number>()
-    Object.values(imageSizes).forEach(size => heights.add(size.height))
-    return Array.from(heights)
+  const uniqueImageSizes = useMemo(() => {
+    const sizes = Object.values(imageSizes).reduce(
+      (pre, cur) => {
+        if (!pre.some(item => item.width === cur.width && item.height === cur.height)) {
+          pre.push(cur)
+        }
+        return pre
+      },
+      [] as Array<{ width: number; height: number }>,
+    )
+    return sizes
   }, [imageSizes])
 
   // 筛选菜单
   const menu = useMemo(() => {
     // 创建 Menu.Item 对应的 MenuProps 类型的数组
+    const widths = [...new Set(uniqueImageSizes.map(item => item.width))]
+    const heights = [...new Set(uniqueImageSizes.map(item => item.height))]
     const items = [
-      ...uniqueWidths.map(width => ({
-        key: `width-${width}`,
-        label: `By Width ${width}`,
-        onClick: () => setFilter({ ...filter, width }),
-      })),
-      ...uniqueHeights.map(height => ({
-        key: `height-${height}`,
-        label: `By Height ${height}`,
-        onClick: () => setFilter({ ...filter, height }),
-      })),
       {
         key: 'all',
-        label: 'All Images',
+        label: 'All',
         onClick: () => setFilter({}),
       },
+      ...uniqueImageSizes.map(({ width, height }) => ({
+        key: `width-${width}-{height}`,
+        label: `${width}x${height}`,
+        onClick: () => setFilter({ width, height }),
+      })),
+      ...widths.map(width => ({
+        key: `width-${width}`,
+        label: `Width ${width}`,
+        onClick: () => setFilter({ ...filter, width }),
+      })),
+      ...heights.map(height => ({
+        key: `height-${height}`,
+        label: `Height ${height}`,
+        onClick: () => setFilter({ ...filter, height }),
+      })),
     ]
 
     // 返回 MenuProps 类型的 Menu 组件
     return items
-  }, [filter, uniqueWidths, uniqueHeights])
+  }, [uniqueImageSizes, filter])
+
+  const allSelectedState = useMemo(() => {
+    const selectedCount = selectedKeys.size
+    const totalCount = Object.keys(filteredData).length
+
+    return {
+      checkAll: selectedCount === totalCount,
+      indeterminate: selectedCount > 0 && selectedCount < totalCount,
+    }
+  }, [filteredData, selectedKeys.size])
 
   // 处理全选/取消全选
   const toggleSelectAll = (e: CheckboxChangeEvent) => {
@@ -166,6 +192,10 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, videoId }) => {
 
   // 删除确认
   const handleDelete = async () => {
+    if (selectedKeys.size === 0) {
+      return
+    }
+
     let confirmed = await showConfirmationDialog({
       content: 'Are you sure you want to delete these images?',
     })
@@ -183,55 +213,178 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, videoId }) => {
     const r = await ipcRenderer?.invoke(IPC_ACTIONS.REMOVE_SCREENSHOT, { enPaths: paths })
 
     if (r?.ok) {
-      notification.success({ message: 'removed successfully' })
-      onSaveScreenshot({ videoId, screenshops: items, action: 'remove' })
+      notificationApi.success({ message: 'removed successfully' })
+      onSaveScreenshot({ videoId: video.id, screenshops: items, action: 'remove' })
     } else {
-      notification.error({ message: r?.message })
+      notificationApi.error({ message: r?.message })
     }
   }
 
   // 裁剪确认
-  const handleCrop = () => {
-    Modal.confirm({
-      title: 'Are you sure you want to crop these images?',
-      onOk: () => {
-        console.log('Images cropped:', Array.from(selectedKeys))
-        // 执行裁剪操作
+  const handleCrop = async () => {
+    if (!cropRange || selectedKeys.size === 0) {
+      return
+    }
+
+    let confirmed = await showConfirmationDialog({
+      content: 'Are you sure you want to crop these images?',
+    })
+
+    if (!confirmed) return
+    const items = Array.from(selectedKeys).map((name: string) => {
+      return {
+        path: data[name],
+        name,
+      }
+    })
+
+    const paths = items.map(item => encodeURIComponent(item.path))
+
+    const params = {
+      paths,
+      cropRange,
+    }
+    console.log(params)
+
+    const r = await ipcRenderer?.invoke(IPC_ACTIONS.BATCH_CROP_IMAGE, {
+      enPaths: paths,
+      cropRange: {
+        left: Math.floor(cropRange?.x),
+        top: Math.floor(cropRange?.y),
+        width: Math.floor(cropRange?.width),
+        height: Math.floor(cropRange?.height),
       },
     })
+
+    if (r?.ok) {
+      notificationApi.success({ message: 'croped successfully' })
+      setCropRange(null)
+      // onSaveScreenshot({ videoId, screenshops: items, action: 'remove' })
+      navigate(0)
+    } else {
+      notificationApi.error({ message: r?.message })
+    }
+  }
+  // 裁剪确认
+  const handleMergeImage = async () => {
+    if (selectedKeys.size === 0) {
+      return
+    }
+
+    const names = Array.from(selectedKeys)
+
+    let confirmed = await showConfirmationDialog({
+      content: `Are you sure you want to merge these images? [${names}]`,
+    })
+
+    if (!confirmed) return
+
+    const images = names.map(name => ({
+      enPath: encodeURIComponent(data[name]),
+      ...imageSizes[name],
+    }))
+
+    const params = {
+      enFolder: encodeURIComponent(video.url.replace(/\.[\w]+$/, '')),
+      layout: 'col',
+      images,
+      mergedName: video.name + '_' + 'merged.png',
+    }
+    console.log('params:: ', params)
+
+    const r = await ipcRenderer?.invoke(IPC_ACTIONS.MERGE_IMAGES, params)
+
+    if (r?.ok) {
+      notificationApi.success({ message: 'croped successfully' })
+      onSaveScreenshot({
+        videoId: video.id,
+        screenshops: [
+          {
+            name: video.name + '_' + 'merged.png',
+            path: video.url.replace(/\.[\w]+$/, '') + '/' + params.mergedName,
+          },
+        ],
+        action: 'add',
+      })
+    } else {
+      notificationApi.error({ message: r?.message })
+    }
   }
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
+      {notificationContextHandle}
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>Screen Shots</h2>
 
-      {/* 筛选按钮 */}
-      <Dropdown menu={{ items: menu }} trigger={['click']}>
-        <Button>Filter By</Button>
-      </Dropdown>
+      <Row justify={'start'} align={'middle'}>
+        {/* 筛选按钮 */}
+        <Dropdown menu={{ items: menu }} trigger={['click']}>
+          <Button>
+            Filter By: (<span>Width: {filter?.width || '*'}</span>
+            <span>Height: {filter?.height || '*'}</span>)
+          </Button>
+        </Dropdown>
 
-      {/* 排序按钮 */}
-      <Button
-        onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-        style={{ marginLeft: '10px' }}
-      >
-        Sort by Time ({sortOrder === 'asc' ? 'Asc' : 'Desc'})
-      </Button>
+        {/* 排序按钮 */}
+        <Button
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+          style={{ marginLeft: '10px' }}
+        >
+          Sort by Time ({sortOrder === 'asc' ? 'Asc' : 'Desc'})
+        </Button>
 
-      {/* 全选按钮 */}
-      <Checkbox onChange={toggleSelectAll} style={{ marginLeft: '10px' }}>
-        {selectedKeys.size === Object.keys(filteredData).length ? 'Deselect All' : 'Select All'}
-      </Checkbox>
+        {/* 全选按钮 */}
+        <Checkbox
+          onChange={toggleSelectAll}
+          style={{ marginLeft: '10px' }}
+          checked={allSelectedState.checkAll}
+          indeterminate={allSelectedState.indeterminate}
+        >
+          {selectedKeys.size === Object.keys(filteredData).length ? 'Deselect All' : 'Select All'}
+        </Checkbox>
 
-      {/* 删除按钮 */}
-      <Button onClick={handleDelete} style={{ marginLeft: '10px' }} danger>
-        Delete
-      </Button>
+        {/* 删除按钮 */}
+        <Button
+          onClick={handleDelete}
+          style={{ marginLeft: '10px' }}
+          danger
+          disabled={selectedKeys.size === 0}
+        >
+          Delete
+        </Button>
 
-      {/* 裁剪按钮 */}
-      <Button onClick={handleCrop} style={{ marginLeft: '10px' }}>
-        Crop
-      </Button>
+        {/* 裁剪按钮 */}
+        <Button
+          onClick={handleCrop}
+          style={{ marginLeft: '10px' }}
+          disabled={!cropRange || selectedKeys.size === 0}
+        >
+          Crop
+        </Button>
+        <Button
+          onClick={handleMergeImage}
+          style={{ marginLeft: '10px' }}
+          disabled={selectedKeys.size === 0}
+        >
+          Merge
+        </Button>
+      </Row>
+
+      <Row>
+        <Col>
+          <strong>Selected crop range:</strong>:
+        </Col>
+        <Col offset={1}>
+          {cropRange && (
+            <div>
+              <span>x: {cropRange.x}</span>
+              <span>y: {cropRange.y}</span>
+              <span>width: {cropRange.width}</span>
+              <span>height: {cropRange.height}</span>
+            </div>
+          )}
+        </Col>
+      </Row>
 
       <Row gutter={[16, 16]} justify="start" style={{ marginTop: '20px' }}>
         {Object.keys(filteredData).map(key => {
@@ -239,15 +392,32 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, videoId }) => {
           const imageSize = imageSizes[key]
 
           return (
-            <Col xs={24} sm={12} md={8} lg={6} xl={3} key={key}>
+            <Col xs={24} sm={12} md={8} lg={6} xl={4} key={key}>
               <Card
                 hoverable
                 cover={
-                  <img
-                    alt={key}
-                    src={'http://localhost:4000/image?src=' + imagePath}
-                    onLoad={e => handleImageLoad(key, e)}
-                  />
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      paddingBottom: '50.58%', // 高度是宽度的 607/1200 = 50.58%
+                      background: '#000',
+                    }}
+                  >
+                    <img
+                      alt={key}
+                      src={'http://localhost:4000/image?src=' + imagePath}
+                      onLoad={e => handleImageLoad(key, e)}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover', // 保证图片等比缩放并覆盖整个区域
+                      }}
+                    />
+                  </div>
                 }
               >
                 <Card.Meta

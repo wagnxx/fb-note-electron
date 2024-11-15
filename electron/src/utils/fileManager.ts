@@ -210,3 +210,17 @@ export const copyDirectory = async (srcDir: string, destDir: string): Promise<vo
         throw err;
     }
 };
+
+export const renameAndOverwrite = async (tempOutputPath: string, filePath: string) => {
+    try {
+        // 如果目标文件已经存在，删除它
+        if (await fileExists(filePath)) {
+            await fs.promises.unlink(filePath); // 删除目标文件
+        }
+        // 执行文件重命名
+        await fs.promises.rename(tempOutputPath, filePath);
+        console.log('File renamed and overwritten successfully.');
+    } catch (error) {
+        console.error('Error during renaming and overwriting:', error);
+    }
+};

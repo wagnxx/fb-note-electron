@@ -4,6 +4,7 @@ import { dialog, ipcMain } from 'electron'
 import { IPC_ACTIONS } from '../constants';
 import { spawn } from 'child_process';
 import { deleteFile, deleteFiles, ensureDirectoryExists, fileExists, writeFile } from '../utils/fileManager';
+import { batchCropImages, mergeImages } from '../utils/imageUtils';
 
 
 export const setupVideoStreamHandler = () => {
@@ -122,5 +123,19 @@ export const setupVideoStreamHandler = () => {
     ipcMain.handle(IPC_ACTIONS.REMOVE_SCREENSHOT, async (event, { enPaths }: { enPaths: string[] }) => {
         const filePaths = enPaths.map(enPath => decodeURIComponent(enPath))
         return await deleteFiles(filePaths)
+    })
+    ipcMain.handle(IPC_ACTIONS.BATCH_CROP_IMAGE, async (event, { enPaths, cropRange }: { enPaths: string[], cropRange: Record<'left' | 'top' | 'width' | 'height', number> }) => {
+        const filePaths = enPaths.map(enPath => decodeURIComponent(enPath))
+        return await batchCropImages(filePaths, cropRange)
+    })
+    ipcMain.handle(IPC_ACTIONS.MERGE_IMAGES, async (event, { enFolder, layout, images, mergedName }: { enFolder: string, layout: 'col' | 'row', images: Array<{ enPath: string, width: number, height: number }>, mergedName: string }) => {
+        const folder = decodeURIComponent(enFolder)
+        const transPathImages = images.map(item => ({
+            path: decodeURIComponent(item.enPath),
+            width: item.width,
+            height: item.height
+        }))
+
+        return await mergeImages({ folder, layout, images: transPathImages, mergedName })
     })
 };

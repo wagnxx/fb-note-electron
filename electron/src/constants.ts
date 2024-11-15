@@ -13,4 +13,6 @@ export const IPC_ACTIONS = {
   READ_STREAM: 'read-stream' as const,
   SAVE_SCREENSHOT: 'save-screenshot' as const,
   REMOVE_SCREENSHOT: 'remove-screenshot' as const,
+  BATCH_CROP_IMAGE: 'batch-crop-image' as const,
+  MERGE_IMAGES: 'merge-images' as const,
 } as const;
