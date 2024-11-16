@@ -1,11 +1,12 @@
-import React, { FC, useState, useMemo } from 'react'
-import { Row, Col, Card, Button, Tooltip, Dropdown, Checkbox, notification } from 'antd'
+import React, { FC, useState, useMemo, useRef } from 'react'
+import { Row, Col, Card, Button, Tooltip, Dropdown, Checkbox, notification, Space } from 'antd'
 import ScreenshotModal from './ScreenshotModal'
 import './ScreenShots.css'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
 import { showConfirmationDialog } from '@/utils/utilsConfirm'
 import { useNavigate } from 'react-router-dom'
 import { PlayItem } from './FileUpload'
+import { copyImagesFromElementsToClipboard } from '@/utils/utilsClipboard'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export interface Prop {
   video: PlayItem
@@ -42,6 +43,8 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
   const [cropRange, setCropRange] = useState<Record<'x' | 'y' | 'width' | 'height', number> | null>(
     null,
   )
+  // 使用 useRef 来为每个图片创建一个 ref
+  const imgRefs = useRef<{ [key: string]: HTMLImageElement | null }>({})
 
   const navigate = useNavigate()
   const [notificationApi, notificationContextHandle] = notification.useNotification()
@@ -141,7 +144,7 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
         onClick: () => setFilter({}),
       },
       ...uniqueImageSizes.map(({ width, height }) => ({
-        key: `width-${width}-{height}`,
+        key: `width-${width}-${height}`,
         label: `${width}x${height}`,
         onClick: () => setFilter({ width, height }),
       })),
@@ -311,6 +314,24 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
     }
   }
 
+  const handleCopyImage = async () => {
+    if (selectedKeys.size === 0 || !imgRefs.current) {
+      return
+    }
+
+    const names = Array.from(selectedKeys)
+    console.log('image  selected : ', names)
+    console.log('image refs: ', imgRefs.current)
+    const selectedImages = names.map(name => imgRefs.current[name]) as HTMLImageElement[]
+    console.log('selectedImages: ', selectedImages)
+    const r = await copyImagesFromElementsToClipboard(selectedImages)
+    if (r?.ok) {
+      notificationApi.success({ message: 'croped successfully' })
+    } else {
+      notificationApi.error({ message: r?.message })
+    }
+  }
+
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
       {notificationContextHandle}
@@ -342,46 +363,43 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
         >
           {selectedKeys.size === Object.keys(filteredData).length ? 'Deselect All' : 'Select All'}
         </Checkbox>
-
-        {/* 删除按钮 */}
-        <Button
-          onClick={handleDelete}
-          style={{ marginLeft: '10px' }}
-          danger
-          disabled={selectedKeys.size === 0}
-        >
-          Delete
-        </Button>
-
-        {/* 裁剪按钮 */}
-        <Button
-          onClick={handleCrop}
-          style={{ marginLeft: '10px' }}
-          disabled={!cropRange || selectedKeys.size === 0}
-        >
-          Crop
-        </Button>
-        <Button
-          onClick={handleMergeImage}
-          style={{ marginLeft: '10px' }}
-          disabled={selectedKeys.size === 0}
-        >
-          Merge
-        </Button>
       </Row>
 
-      <Row>
+      <Row justify={'start'} align={'middle'} gutter={16} style={{ marginTop: '20px' }}>
+        {/* 删除按钮 */}
         <Col>
-          <strong>Selected crop range:</strong>:
+          <Space>
+            <Button onClick={handleDelete} danger disabled={selectedKeys.size === 0}>
+              Delete
+            </Button>
+
+            {/* 裁剪按钮 */}
+            <Button onClick={handleCrop} disabled={!cropRange || selectedKeys.size === 0}>
+              Crop
+            </Button>
+
+            <Button onClick={handleMergeImage} disabled={selectedKeys.size === 0}>
+              Merge
+            </Button>
+            <Button onClick={handleCopyImage} disabled={selectedKeys.size === 0}>
+              Copy Images
+            </Button>
+          </Space>
+        </Col>
+      </Row>
+
+      <Row style={{ marginTop: '20px' }}>
+        <Col>
+          <span>Selected crop range:</span>:
         </Col>
         <Col offset={1}>
           {cropRange && (
-            <div>
+            <Space>
               <span>x: {cropRange.x}</span>
               <span>y: {cropRange.y}</span>
               <span>width: {cropRange.width}</span>
               <span>height: {cropRange.height}</span>
-            </div>
+            </Space>
           )}
         </Col>
       </Row>
@@ -406,7 +424,9 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
                   >
                     <img
                       alt={key}
+                      ref={el => (imgRefs.current[key] = el)}
                       src={'http://localhost:4000/image?src=' + imagePath}
+                      crossOrigin="anonymous"
                       onLoad={e => handleImageLoad(key, e)}
                       style={{
                         position: 'absolute',
