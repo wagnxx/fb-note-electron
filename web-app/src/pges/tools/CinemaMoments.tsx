@@ -8,21 +8,24 @@ import FileUpload, { PlayItem } from './components/FileUpload'
 const { Sider, Content } = Layout
 
 const CinemaMoments: React.FC = () => {
-  const [currentVideo, setCurrentVideo] = useState<PlayItem | null>(null)
+  // const [currentVideo, setCurrentVideo] = useState<PlayItem | null>(null)
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null)
   const [playlist, setPlaylist] = useState<PlayItem[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [collapsed, setCollapsed] = useState(false)
 
+  const currentVideo = playlist.find(item => item.id === currentVideoId)
+
   // 初始化播放列表
   useEffect(() => {
     const savedPlaylist = localStorage.getItem('playlist')
-    const savedCurrentVideo = localStorage.getItem('currentVideo')
+    const savedCurrentVideoId = localStorage.getItem('currentVideoId')
 
     if (savedPlaylist) {
       setPlaylist(JSON.parse(savedPlaylist))
     }
-    if (savedCurrentVideo) {
-      setCurrentVideo(JSON.parse(savedCurrentVideo))
+    if (savedCurrentVideoId) {
+      setCurrentVideoId(JSON.parse(savedCurrentVideoId))
     }
   }, [])
 
@@ -31,20 +34,18 @@ const CinemaMoments: React.FC = () => {
     localStorage.setItem('playlist', JSON.stringify(playlist))
   }, [playlist])
   useEffect(() => {
-    localStorage.setItem('currentVideo', JSON.stringify(currentVideo))
-  }, [currentVideo])
+    localStorage.setItem('currentVideoId', JSON.stringify(currentVideoId))
+  }, [currentVideoId])
 
-  const playVideo = (video: any) => {
-    if (!video?.url) return
-    setCurrentVideo({
-      ...video,
-    })
+  const playVideo = (video: PlayItem) => {
+    if (!video.id) return
+    setCurrentVideoId(video.id)
   }
 
   const removeItemVideo = (target: PlayItem) => {
     // Removed. It is playing; do not disturb it. We only deleted the item from the playlist
     if (currentVideo?.id === target.id) {
-      setCurrentVideo(null)
+      setCurrentVideoId(null)
     }
     setPlaylist(pre => pre.filter(item => item.id !== target.id))
   }
@@ -88,7 +89,7 @@ const CinemaMoments: React.FC = () => {
         style={{ height: 'calc(100vh - 30px)' }}
       >
         {currentVideo && (
-          <VideoPlayer video={currentVideo} playVideo={playVideo} onError={handleError} />
+          <VideoPlayer video={currentVideo} setPlaylist={setPlaylist} onError={handleError} />
         )}
       </Content>
     </Layout>

@@ -12,10 +12,14 @@ export type ScreenshotDoc = {
   docId: string
   screenshotsMap: Record<string, string>
 }
-
+export type PlayerAtTime = {
+  videoId: string
+  at: number
+  max: number
+}
 interface VideoPlayerProps {
   video: PlayItem
-  playVideo: (videoUrl: string) => void
+  setPlaylist: React.Dispatch<React.SetStateAction<PlayItem[]>>
   onError: () => void
 }
 
@@ -26,7 +30,7 @@ export interface SliderRef {
 
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [currentTime, setCurrentTime] = useState<number>(0)
   const [duration, setDuration] = useState<number>(0)
@@ -70,6 +74,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video }) => {
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       setCurrentTime(videoRef.current.currentTime)
+
+      const playerAtTime = localStorage.getItem('playerAtTime')
+      let timeArray = (playerAtTime && (JSON.parse(playerAtTime) as PlayerAtTime[])) || []
+      const current = timeArray.find(item => item.videoId === video.id)
+      if (current) {
+        current.at = videoRef.current.currentTime
+        current.max = videoRef.current.duration
+      } else {
+        timeArray.push({
+          videoId: video.id,
+          at: videoRef.current.currentTime || 0,
+          max: videoRef.current.duration,
+        })
+      }
+      localStorage.setItem('playerAtTime', JSON.stringify(timeArray))
     }
   }
 
@@ -203,9 +222,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video }) => {
   }: {
     docId: string
     screenshops: Array<{ path: string; name: string }>
-    action: 'add' | 'remove'
+    action: 'add' | 'remove' | 'refresh'
   }) => {
     setScreenshotDocs(prev => {
+      if (action === 'refresh') {
+        return prev.map(item => {
+          if (item.docId !== docId) return item
+          return {
+            ...item,
+            screenshotsMap: {
+              ...item.screenshotsMap,
+            },
+          }
+        })
+      }
       if (!prev.some(item => item.docId === docId)) {
         const newDoc: ScreenshotDoc = {
           docId,
@@ -298,7 +328,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video }) => {
         videoURL = 'http://localhost:4000/video?src=' + encodeURIComponent(videoURL)
       }
 
+      const playerAtTime = localStorage.getItem('playerAtTime')
+      let currentAt = 0
+      try {
+        const timeArray = (playerAtTime && (JSON.parse(playerAtTime) as PlayerAtTime[])) || []
+        const current =
+          (timeArray && timeArray.find(item => item.videoId === video.id)) || ({} as PlayerAtTime)
+        currentAt = current.at
+      } catch (error) {}
+
       videoElement.src = videoURL
+      videoElement.currentTime = currentAt || 0
 
       const handleLoadedMetadata = () => {
         setDuration(videoElement.duration)
@@ -349,7 +389,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video }) => {
           value={currentTime}
           onChange={handleSliderChange}
           max={duration}
-          included={false}
           tooltip={{
             formatter: value => formatSecondsToHHmmss(Number(value)),
           }}

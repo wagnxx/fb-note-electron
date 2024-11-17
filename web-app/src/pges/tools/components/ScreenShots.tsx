@@ -1,15 +1,15 @@
-import React, { FC, useState, useMemo, useRef } from 'react'
+import React, { FC, useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { Row, Col, Card, Button, Tooltip, Dropdown, Checkbox, notification, Space } from 'antd'
 import ScreenshotModal from './ScreenshotModal'
 import './ScreenShots.css'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
 import { showConfirmationDialog } from '@/utils/utilsConfirm'
-import { useNavigate } from 'react-router-dom'
 import { PlayItem } from './FileUpload'
 import { copyImagesFromElementsToClipboard } from '@/utils/utilsClipboard'
 import { ScreenshotDoc } from './VideoPLayer'
+import { handleRequestWithNotification } from '@/utils/utilsRequest'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
-export interface Prop {
+export type Prop = {
   doc: ScreenshotDoc
   video: PlayItem
   onSaveScreenshot: ({
@@ -19,7 +19,7 @@ export interface Prop {
   }: {
     docId: string
     screenshops: Array<{ path: string; name: string }>
-    action: 'add' | 'remove'
+    action: 'add' | 'remove' | 'refresh'
   }) => void
 }
 
@@ -31,8 +31,15 @@ const timeToSeconds = (time: string): number => {
   const [hours, minutes, seconds] = time.split(':').map(Number)
   return hours * 3600 + minutes * 60 + seconds
 }
-
-const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
+type ScreenTypes = Prop & { _renderCount: number; _refreshPage: () => void }
+// type ScreenTypes = Prop
+const ScreenShots: FC<ScreenTypes> = ({
+  doc,
+  onSaveScreenshot,
+  video,
+  _renderCount,
+  _refreshPage,
+}) => {
   const [imageSizes, setImageSizes] = useState<Record<string, { width: number; height: number }>>(
     {},
   )
@@ -47,7 +54,6 @@ const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
   // 使用 useRef 来为每个图片创建一个 ref
   const imgRefs = useRef<{ [key: string]: HTMLImageElement | null }>({})
 
-  const navigate = useNavigate()
   const [notificationApi, notificationContextHandle] = notification.useNotification()
 
   const handleImageLoad = (name: string, event: React.SyntheticEvent<HTMLImageElement>) => {
@@ -93,7 +99,7 @@ const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
       },
       {} as Record<string, string>,
     )
-  }, [doc.screenshotsMap, sortOrder])
+  }, [doc, sortOrder])
 
   // 筛选函数
   const filteredData = useMemo(() => {
@@ -214,13 +220,12 @@ const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
 
     const paths = items.map(item => encodeURIComponent(item.path))
 
-    const r = await ipcRenderer?.invoke(IPC_ACTIONS.REMOVE_SCREENSHOT, { enPaths: paths })
+    const r = await handleRequestWithNotification(
+      async () => await ipcRenderer?.invoke(IPC_ACTIONS.REMOVE_SCREENSHOT, { enPaths: paths }),
+    )
 
     if (r?.ok) {
-      notificationApi.success({ message: 'removed successfully' })
       onSaveScreenshot({ docId: video.id, screenshops: items, action: 'remove' })
-    } else {
-      notificationApi.error({ message: r?.message })
     }
   }
 
@@ -245,12 +250,6 @@ const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
     const paths = items.map(item => encodeURIComponent(item.path))
 
     const params = {
-      paths,
-      cropRange,
-    }
-    console.log(params)
-
-    const r = await ipcRenderer?.invoke(IPC_ACTIONS.BATCH_CROP_IMAGE, {
       enPaths: paths,
       cropRange: {
         left: Math.floor(cropRange?.x),
@@ -258,14 +257,21 @@ const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
         width: Math.floor(cropRange?.width),
         height: Math.floor(cropRange?.height),
       },
-    })
+    }
+
+    const r = await handleRequestWithNotification(
+      async () => await ipcRenderer?.invoke(IPC_ACTIONS.BATCH_CROP_IMAGE, params),
+    )
 
     if (r?.ok) {
-      notificationApi.success({ message: 'croped successfully' })
       setCropRange(null)
-      navigate(0)
-    } else {
-      notificationApi.error({ message: r?.message })
+      // navigate(0)
+      // _refreshPage()
+      onSaveScreenshot({
+        docId: doc.docId,
+        screenshops: [],
+        action: 'refresh',
+      })
     }
   }
   // 裁剪确认
@@ -332,7 +338,10 @@ const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
       {notificationContextHandle}
-      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>Screen Shots</h2>
+      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>
+        Screen Shots
+        <span>_renderCount: {_renderCount}</span>
+      </h2>
 
       <Row justify={'start'} align={'middle'}>
         {/* 筛选按钮 */}
@@ -422,7 +431,12 @@ const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
                     <img
                       alt={key}
                       ref={el => (imgRefs.current[key] = el)}
-                      src={'http://localhost:4000/image?src=' + imagePath}
+                      src={
+                        'http://localhost:4000/image?src=' +
+                        imagePath +
+                        '&renderCount=' +
+                        _renderCount
+                      }
                       crossOrigin="anonymous"
                       onLoad={e => handleImageLoad(key, e)}
                       style={{
@@ -476,4 +490,33 @@ const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
   )
 }
 
-export default ScreenShots
+const ScreenShotsContainer: FC<Prop> = props => {
+  const [renderCount, setRenderCount] = useState<number>(0)
+  const [lastScreenshotsMap, setLastScreenshotsMap] = useState(props.doc.screenshotsMap)
+
+  const refreshPage = useCallback(() => {
+    setRenderCount(renderCount + 1)
+  }, [renderCount])
+
+  useEffect(() => {
+    // 如果 screenshotsMap 发生变化，更新 renderCount 来触发子组件重新渲染
+    if (props.doc.screenshotsMap !== lastScreenshotsMap) {
+      setLastScreenshotsMap(props.doc.screenshotsMap)
+      setRenderCount(prevCount => prevCount + 1) // 增加渲染计数，触发重新渲染
+    }
+  }, [props.doc.screenshotsMap, lastScreenshotsMap])
+
+  const newProps = {
+    ...props,
+    doc: {
+      ...props.doc,
+      screenshotsMap: {
+        ...props.doc.screenshotsMap,
+      },
+    },
+  }
+
+  return <ScreenShots {...newProps} _renderCount={renderCount} _refreshPage={refreshPage} />
+}
+
+export default ScreenShotsContainer
