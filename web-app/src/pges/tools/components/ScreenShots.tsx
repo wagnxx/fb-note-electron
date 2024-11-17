@@ -6,21 +6,23 @@ import { CheckboxChangeEvent } from 'antd/es/checkbox'
 import { showConfirmationDialog } from '@/utils/utilsConfirm'
 import { PlayItem } from './FileUpload'
 import { copyImagesFromElementsToClipboard } from '@/utils/utilsClipboard'
-import { ScreenshotDoc } from './VideoPLayer'
+import { ScreenshotDoc, ScreenshotType } from './VideoPLayer'
 import { handleRequestWithNotification } from '@/utils/utilsRequest'
+import { mapByField } from '@/utils/utilsArray'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export type Prop = {
   doc: ScreenshotDoc
   video: PlayItem
   onSaveScreenshot: ({
     docId,
-    screenshops,
+    screenshots,
     action,
   }: {
     docId: string
-    screenshops: Array<{ path: string; name: string }>
+    screenshots: ScreenshotType[]
     action: 'add' | 'remove' | 'refresh'
   }) => void
+  onJumpTo: (tm: number) => void
 }
 
 const normalizeTime = (time: string): string => {
@@ -35,8 +37,9 @@ type ScreenTypes = Prop & { _renderCount: number; _refreshPage: () => void }
 // type ScreenTypes = Prop
 const ScreenShots: FC<ScreenTypes> = ({
   doc,
-  onSaveScreenshot,
   video,
+  onSaveScreenshot,
+  onJumpTo,
   _renderCount,
   _refreshPage,
 }) => {
@@ -85,45 +88,41 @@ const ScreenShots: FC<ScreenTypes> = ({
     closeModal() // 关闭modal
   }
 
+  const screenshotsMap = useMemo(() => {
+    const screenshots = mapByField(doc.screenshots, 'name')
+    return screenshots
+  }, [doc.screenshots])
+
   const sortedData = useMemo(() => {
-    const sortedKeys = Object.keys(doc.screenshotsMap).sort((a, b) => {
+    const sortedKeys = Object.keys(screenshotsMap).sort((a, b) => {
       const normalizedA = normalizeTime(a)
       const normalizedB = normalizeTime(b)
       const diff = timeToSeconds(normalizedA) - timeToSeconds(normalizedB)
       return sortOrder === 'asc' ? diff : -diff
     })
-    return sortedKeys.reduce(
-      (acc, key) => {
-        acc[key] = doc.screenshotsMap[key]
-        return acc
-      },
-      {} as Record<string, string>,
-    )
-  }, [doc, sortOrder])
+
+    return sortedKeys.map(item => ({
+      name: item,
+      path: screenshotsMap[item].path,
+      at: screenshotsMap[item].at,
+    }))
+  }, [screenshotsMap, sortOrder])
 
   // 筛选函数
   const filteredData = useMemo(() => {
     if (!filter.width && !filter.height) return sortedData
-    return Object.keys(sortedData)
-      .filter(key => {
-        const imageSize = imageSizes[key]
-        if (!imageSize) return false
+    return sortedData.filter(item => {
+      const imageSize = imageSizes[item.name]
+      if (!imageSize) return false
 
-        const { width, height } = imageSize
+      const { width, height } = imageSize
 
-        // 动态筛选
-        const matchesWidth = filter.width ? width === filter.width : true
-        const matchesHeight = filter.height ? height === filter.height : true
+      // 动态筛选
+      const matchesWidth = filter.width ? width === filter.width : true
+      const matchesHeight = filter.height ? height === filter.height : true
 
-        return matchesWidth && matchesHeight
-      })
-      .reduce(
-        (acc, key) => {
-          acc[key] = sortedData[key]
-          return acc
-        },
-        {} as Record<string, string>,
-      )
+      return matchesWidth && matchesHeight
+    })
   }, [filter, sortedData, imageSizes])
 
   const uniqueImageSizes = useMemo(() => {
@@ -213,8 +212,9 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (!confirmed) return
     const items = Array.from(selectedKeys).map((name: string) => {
       return {
-        path: doc.screenshotsMap[name],
+        path: screenshotsMap[name].path,
         name,
+        at: 3,
       }
     })
 
@@ -225,7 +225,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     )
 
     if (r?.ok) {
-      onSaveScreenshot({ docId: video.id, screenshops: items, action: 'remove' })
+      onSaveScreenshot({ docId: video.id, screenshots: items, action: 'remove' })
     }
   }
 
@@ -242,7 +242,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (!confirmed) return
     const items = Array.from(selectedKeys).map((name: string) => {
       return {
-        path: doc.screenshotsMap[name],
+        path: screenshotsMap[name].path,
         name,
       }
     })
@@ -265,11 +265,9 @@ const ScreenShots: FC<ScreenTypes> = ({
 
     if (r?.ok) {
       setCropRange(null)
-      // navigate(0)
-      // _refreshPage()
       onSaveScreenshot({
         docId: doc.docId,
-        screenshops: [],
+        screenshots: [],
         action: 'refresh',
       })
     }
@@ -289,7 +287,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (!confirmed) return
 
     const images = names.map(name => ({
-      enPath: encodeURIComponent(doc.screenshotsMap[name]),
+      enPath: encodeURIComponent(screenshotsMap[name].path),
       ...imageSizes[name],
     }))
 
@@ -307,10 +305,11 @@ const ScreenShots: FC<ScreenTypes> = ({
       notificationApi.success({ message: 'croped successfully' })
       onSaveScreenshot({
         docId: video.id,
-        screenshops: [
+        screenshots: [
           {
             name: video.name + '_' + 'merged.png',
             path: video.url.replace(/\.[\w]+$/, '') + '/' + params.mergedName,
+            at: null,
           },
         ],
         action: 'add',
@@ -411,12 +410,12 @@ const ScreenShots: FC<ScreenTypes> = ({
       </Row>
 
       <Row gutter={[16, 16]} justify="start" style={{ marginTop: '20px' }}>
-        {Object.keys(filteredData).map(key => {
-          const imagePath = filteredData[key]
-          const imageSize = imageSizes[key]
+        {filteredData.map(item => {
+          const imagePath = item.path
+          const imageSize = imageSizes[item.name]
 
           return (
-            <Col xs={24} sm={12} md={8} lg={6} xl={4} key={key}>
+            <Col xs={24} sm={12} md={8} lg={6} xl={4} key={item.name}>
               <Card
                 hoverable
                 cover={
@@ -429,8 +428,8 @@ const ScreenShots: FC<ScreenTypes> = ({
                     }}
                   >
                     <img
-                      alt={key}
-                      ref={el => (imgRefs.current[key] = el)}
+                      alt={item.name}
+                      ref={el => (imgRefs.current[item.name] = el)}
                       src={
                         'http://localhost:4000/image?src=' +
                         imagePath +
@@ -438,7 +437,7 @@ const ScreenShots: FC<ScreenTypes> = ({
                         _renderCount
                       }
                       crossOrigin="anonymous"
-                      onLoad={e => handleImageLoad(key, e)}
+                      onLoad={e => handleImageLoad(item.name, e)}
                       style={{
                         position: 'absolute',
                         top: 0,
@@ -452,7 +451,22 @@ const ScreenShots: FC<ScreenTypes> = ({
                 }
               >
                 <Card.Meta
-                  title={key}
+                  title={
+                    <Row>
+                      <Col>
+                        <h2>{item.name}</h2>
+                      </Col>
+                      <Col>
+                        <Button
+                          size="small"
+                          type="text"
+                          onClick={() => item.at && onJumpTo(item.at)}
+                        >
+                          Jump To
+                        </Button>
+                      </Col>
+                    </Row>
+                  }
                   description={
                     <Row justify="space-between">
                       <Col>
@@ -464,8 +478,8 @@ const ScreenShots: FC<ScreenTypes> = ({
                       </Col>
                       <Col>
                         <Checkbox
-                          checked={selectedKeys.has(key)}
-                          onChange={e => handleCheckboxChange(key, e.target.checked)}
+                          checked={selectedKeys.has(item.name)}
+                          onChange={e => handleCheckboxChange(item.name, e.target.checked)}
                         />
                         <Button type="link" onClick={() => openModal(imagePath)}>
                           View
@@ -492,7 +506,7 @@ const ScreenShots: FC<ScreenTypes> = ({
 
 const ScreenShotsContainer: FC<Prop> = props => {
   const [renderCount, setRenderCount] = useState<number>(0)
-  const [lastScreenshotsMap, setLastScreenshotsMap] = useState(props.doc.screenshotsMap)
+  const [lastScreenshots, setLastScreenshots] = useState(props.doc.screenshots)
 
   const refreshPage = useCallback(() => {
     setRenderCount(renderCount + 1)
@@ -500,19 +514,17 @@ const ScreenShotsContainer: FC<Prop> = props => {
 
   useEffect(() => {
     // 如果 screenshotsMap 发生变化，更新 renderCount 来触发子组件重新渲染
-    if (props.doc.screenshotsMap !== lastScreenshotsMap) {
-      setLastScreenshotsMap(props.doc.screenshotsMap)
+    if (props.doc.screenshots !== lastScreenshots) {
+      setLastScreenshots(props.doc.screenshots)
       setRenderCount(prevCount => prevCount + 1) // 增加渲染计数，触发重新渲染
     }
-  }, [props.doc.screenshotsMap, lastScreenshotsMap])
+  }, [props.doc.screenshots, lastScreenshots])
 
   const newProps = {
     ...props,
     doc: {
       ...props.doc,
-      screenshotsMap: {
-        ...props.doc.screenshotsMap,
-      },
+      screenshots: [...props.doc.screenshots],
     },
   }
 

@@ -84,10 +84,7 @@ const CinemaMoments: React.FC = () => {
         )}
       </Sider>
 
-      <Content
-        className="box-border bg-gray-50    overflow-y-auto"
-        style={{ height: 'calc(100vh - 30px)' }}
-      >
+      <Content className="box-border bg-gray-50  " style={{ height: 'calc(100vh - 30px)' }}>
         {currentVideo && (
           <VideoPlayer video={currentVideo} setPlaylist={setPlaylist} onError={handleError} />
         )}

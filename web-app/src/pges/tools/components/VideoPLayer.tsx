@@ -1,4 +1,4 @@
-import React, { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, notification, Slider } from 'antd'
 import { PlayCircleOutlined, PauseOutlined, SoundOutlined } from '@ant-design/icons'
 import './VideoPLayer.css'
@@ -8,9 +8,15 @@ import ScreenShots from './ScreenShots'
 import { PlayItem } from './FileUpload'
 import { getNameWithoutExtension } from '@/utils/utilsString'
 
+export type ScreenshotType = {
+  name: string
+  at: number | null
+  path: string
+}
 export type ScreenshotDoc = {
   docId: string
-  screenshotsMap: Record<string, string>
+  // screenshotsMap: Record<string, string>
+  screenshots: ScreenshotType[]
 }
 export type PlayerAtTime = {
   videoId: string
@@ -38,12 +44,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   const [volume, setVolume] = useState<number>(100) // 新增音量控制
   const [hoverTime, setHoverTime] = useState<number | null>(null) // Hover时的时间
   const [screenshotDocs, setScreenshotDocs] = useState<ScreenshotDoc[]>([])
+  const [aspectRatio, setAspectRatio] = useState<number>(5 / 3)
+
+  const videoContainerRef = useRef<HTMLDivElement>(null)
   const seekbarRef = useRef<SliderRef>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const hiddenVideoRef = useRef<HTMLVideoElement | null>(null) // 用于获取预览图的隐藏视频
   const canvasRef = useRef<HTMLCanvasElement | null>(null) // 用于绘制预览图的canvas
-
-  const [aspectRatio, setAspectRatio] = useState<number>(5 / 3)
 
   const [notificationApi, notificationHandleContext] = notification.useNotification()
 
@@ -193,7 +200,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
             if (res.filePath) {
               handleSaveScreenshot({
                 docId: video.id,
-                screenshops: [{ path: res.filePath, name: formatSecondsToHHmmss(tm, '-') }],
+                screenshots: [{ path: res.filePath, name: formatSecondsToHHmmss(tm, '-'), at: tm }],
                 action: 'add',
               })
               notificationApi.success({
@@ -211,17 +218,27 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
     setPreviewImage(tm) // 获取并显示预览图
   }
 
-  const handleCropCurrentImage = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleCropCurrentImage = () => {
     saveScreenshotHandler(currentTime)
+  }
+
+  const handleJumpTo = (tm: number, shouldPlay: boolean = false) => {
+    if (!videoRef.current) return
+    videoContainerRef?.current?.scrollTo({ top: 0 })
+    videoRef.current.currentTime = tm
+
+    if (shouldPlay) {
+      setIsPlaying(true)
+    }
   }
 
   const handleSaveScreenshot = ({
     docId,
-    screenshops,
+    screenshots,
     action,
   }: {
     docId: string
-    screenshops: Array<{ path: string; name: string }>
+    screenshots: ScreenshotType[]
     action: 'add' | 'remove' | 'refresh'
   }) => {
     setScreenshotDocs(prev => {
@@ -230,38 +247,31 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
           if (item.docId !== docId) return item
           return {
             ...item,
-            screenshotsMap: {
-              ...item.screenshotsMap,
-            },
+            screenshots: [...item.screenshots],
           }
         })
       }
       if (!prev.some(item => item.docId === docId)) {
         const newDoc: ScreenshotDoc = {
           docId,
-          screenshotsMap: Object.fromEntries(screenshops.map(item => [item.name, item.path])),
+          screenshots: screenshots,
         }
         return [...prev, newDoc]
       }
 
       return prev.map(doc => {
         if (docId === doc.docId) {
-          const filteredScreenshotsMap = Object.fromEntries(
-            Object.entries(doc.screenshotsMap).filter(
-              ([name, _]) => !screenshops.some(income => income.name === name),
-            ),
+          const filteredScreenshots = doc.screenshots.filter(item =>
+            screenshots.some(income => income.name !== item.name),
           )
           if (action === 'add') {
             return {
               ...doc,
-              screenshotsMap: {
-                ...filteredScreenshotsMap,
-                ...Object.fromEntries(screenshops.map(item => [item.name, item.path])),
-              },
+              screenshots: [...filteredScreenshots, ...screenshots],
             }
           }
           if (action === 'remove') {
-            return { ...doc, screenshotsMap: { ...filteredScreenshotsMap } }
+            return { ...doc, screenshots: filteredScreenshots }
           }
         }
         return doc
@@ -372,7 +382,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   }, [video])
 
   return video ? (
-    <div className="video-player flex-1  p-2  bg-slate-200">
+    <div
+      ref={videoContainerRef}
+      className="video-player p-2  bg-slate-200  h-full  overflow-y-auto "
+    >
       {notificationHandleContext}
       <video
         title={video.url}
@@ -455,6 +468,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
             max={duration}
             onChange={setPreviewTime}
             onSaveScreenShorts={saveScreenshotHandler}
+            onJumpTo={handleJumpTo}
           />
         </div>
       </div>
@@ -463,6 +477,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
         <ScreenShots
           doc={currentScreenShotDoc}
           onSaveScreenshot={handleSaveScreenshot}
+          onJumpTo={handleJumpTo}
           video={video}
         />
       )}

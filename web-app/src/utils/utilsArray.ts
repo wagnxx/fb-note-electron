@@ -65,3 +65,18 @@ export const calculateMiddleValue: (
     return last + interval // 最后一位离基准值近，返回 last + interval
   }
 }
+
+export function mapByField<T>(array: T[], key: keyof T): Record<string, T> {
+  return array.reduce(
+    (result, currentValue) => {
+      // 获取当前项的 key 值
+      const groupKey = currentValue[key] as unknown as string
+
+      // 将当前项按照该字段值提取出来
+      result[groupKey] = currentValue
+
+      return result
+    },
+    {} as Record<string, T>,
+  )
+}

@@ -8,9 +8,15 @@ type Props = {
   max: number
   onChange: (value: number) => void
   onSaveScreenShorts: (time: number) => void
+  onJumpTo: (tm: number, shouldPlay: boolean) => void
 }
 
-const CustomSliderWithTeeth: React.FC<Props> = ({ max, onChange, onSaveScreenShorts }) => {
+const CustomSliderWithTeeth: React.FC<Props> = ({
+  max,
+  onChange,
+  onSaveScreenShorts,
+  onJumpTo,
+}) => {
   const [currentHourValue, setCurrentHourValue] = useState<number>(0)
   const [currentMinuteValue, setCurrentMinuteValue] = useState<number>(0)
   const [currentSecondValue, setCurrentSecondValue] = useState<number>(0)
@@ -265,7 +271,7 @@ const CustomSliderWithTeeth: React.FC<Props> = ({ max, onChange, onSaveScreenSho
         <div>
           <Space>
             <Button onClick={saveImage}>Save Image</Button>
-            <Button>Play</Button>
+            <Button onClick={() => onJumpTo(tooltipValue, true)}>Play</Button>
           </Space>
         </div>
       </div>
