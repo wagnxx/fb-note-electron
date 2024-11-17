@@ -7,16 +7,17 @@ import { showConfirmationDialog } from '@/utils/utilsConfirm'
 import { useNavigate } from 'react-router-dom'
 import { PlayItem } from './FileUpload'
 import { copyImagesFromElementsToClipboard } from '@/utils/utilsClipboard'
+import { ScreenshotDoc } from './VideoPLayer'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export interface Prop {
+  doc: ScreenshotDoc
   video: PlayItem
-  data: Record<string, string>
   onSaveScreenshot: ({
-    videoId,
+    docId,
     screenshops,
     action,
   }: {
-    videoId: string
+    docId: string
     screenshops: Array<{ path: string; name: string }>
     action: 'add' | 'remove'
   }) => void
@@ -31,7 +32,7 @@ const timeToSeconds = (time: string): number => {
   return hours * 3600 + minutes * 60 + seconds
 }
 
-const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
+const ScreenShots: FC<Prop> = ({ doc, onSaveScreenshot, video }) => {
   const [imageSizes, setImageSizes] = useState<Record<string, { width: number; height: number }>>(
     {},
   )
@@ -79,7 +80,7 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
   }
 
   const sortedData = useMemo(() => {
-    const sortedKeys = Object.keys(data).sort((a, b) => {
+    const sortedKeys = Object.keys(doc.screenshotsMap).sort((a, b) => {
       const normalizedA = normalizeTime(a)
       const normalizedB = normalizeTime(b)
       const diff = timeToSeconds(normalizedA) - timeToSeconds(normalizedB)
@@ -87,12 +88,12 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
     })
     return sortedKeys.reduce(
       (acc, key) => {
-        acc[key] = data[key]
+        acc[key] = doc.screenshotsMap[key]
         return acc
       },
       {} as Record<string, string>,
     )
-  }, [data, sortOrder])
+  }, [doc.screenshotsMap, sortOrder])
 
   // 筛选函数
   const filteredData = useMemo(() => {
@@ -206,7 +207,7 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
     if (!confirmed) return
     const items = Array.from(selectedKeys).map((name: string) => {
       return {
-        path: data[name],
+        path: doc.screenshotsMap[name],
         name,
       }
     })
@@ -217,7 +218,7 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
 
     if (r?.ok) {
       notificationApi.success({ message: 'removed successfully' })
-      onSaveScreenshot({ videoId: video.id, screenshops: items, action: 'remove' })
+      onSaveScreenshot({ docId: video.id, screenshops: items, action: 'remove' })
     } else {
       notificationApi.error({ message: r?.message })
     }
@@ -236,7 +237,7 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
     if (!confirmed) return
     const items = Array.from(selectedKeys).map((name: string) => {
       return {
-        path: data[name],
+        path: doc.screenshotsMap[name],
         name,
       }
     })
@@ -262,7 +263,6 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
     if (r?.ok) {
       notificationApi.success({ message: 'croped successfully' })
       setCropRange(null)
-      // onSaveScreenshot({ videoId, screenshops: items, action: 'remove' })
       navigate(0)
     } else {
       notificationApi.error({ message: r?.message })
@@ -283,7 +283,7 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
     if (!confirmed) return
 
     const images = names.map(name => ({
-      enPath: encodeURIComponent(data[name]),
+      enPath: encodeURIComponent(doc.screenshotsMap[name]),
       ...imageSizes[name],
     }))
 
@@ -300,7 +300,7 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
     if (r?.ok) {
       notificationApi.success({ message: 'croped successfully' })
       onSaveScreenshot({
-        videoId: video.id,
+        docId: video.id,
         screenshops: [
           {
             name: video.name + '_' + 'merged.png',
@@ -320,10 +320,7 @@ const ScreenShots: FC<Prop> = ({ data, onSaveScreenshot, video }) => {
     }
 
     const names = Array.from(selectedKeys)
-    console.log('image  selected : ', names)
-    console.log('image refs: ', imgRefs.current)
     const selectedImages = names.map(name => imgRefs.current[name]) as HTMLImageElement[]
-    console.log('selectedImages: ', selectedImages)
     const r = await copyImagesFromElementsToClipboard(selectedImages)
     if (r?.ok) {
       notificationApi.success({ message: 'croped successfully' })

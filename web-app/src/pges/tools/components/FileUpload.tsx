@@ -10,7 +10,6 @@ export interface PlayItem {
   played: boolean
   id: string
   disabled?: boolean
-  screenshots?: Record<string, string>
 }
 interface FileUploadProps {
   fileInputRef: React.RefObject<HTMLInputElement>

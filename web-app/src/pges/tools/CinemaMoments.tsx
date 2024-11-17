@@ -55,70 +55,6 @@ const CinemaMoments: React.FC = () => {
       prevPlaylist.map(item => (item.id === currentVideo.id ? { ...item, disabled: true } : item)),
     )
   }
-  const handleSaveScreenshot = ({
-    videoId,
-    action = 'add',
-    screenshops,
-  }: {
-    videoId: string
-    screenshops: Array<{ path: string; name: string }>
-    action: 'add' | 'remove'
-  }) => {
-    setPlaylist(prevPlaylist => {
-      const updatedPlaylist = prevPlaylist.map(item => {
-        if (item.id !== videoId) return item
-
-        const initScreenshots = item.screenshots || {}
-        const restScreenshot = Object.fromEntries(
-          Object.entries(initScreenshots).filter(([key, value]) => {
-            return !screenshops.some(sc => sc.name === key)
-          }),
-        )
-
-        const newScreeshots = screenshops.reduce(
-          (pre, cur) => {
-            pre[cur.name] = cur.path
-            return pre
-          },
-          {} as Record<string, string>,
-        )
-
-        const updateScreenshots =
-          action === 'add' ? { ...restScreenshot, ...newScreeshots } : restScreenshot
-        const updateItem = { ...item, screenshots: updateScreenshots }
-        return updateItem
-      })
-
-      // 强制断言 currentVideo 为 PlayItem
-      if (currentVideo?.id === videoId) {
-        setCurrentVideo(prevVideo => {
-          const initScreenshots = prevVideo?.screenshots || {}
-          const restScreenshot = Object.fromEntries(
-            Object.entries(initScreenshots).filter(([key, value]) => {
-              return !screenshops.some(sc => sc.name === key)
-            }),
-          )
-
-          const newScreeshots = screenshops.reduce(
-            (pre, cur) => {
-              pre[cur.name] = cur.path
-              return pre
-            },
-            {} as Record<string, string>,
-          )
-          const updateScreenshots =
-            action === 'add' ? { ...restScreenshot, ...newScreeshots } : restScreenshot
-
-          return {
-            ...(prevVideo as PlayItem), // 强制类型断言
-            screenshots: updateScreenshots,
-          }
-        })
-      }
-
-      return updatedPlaylist
-    })
-  }
 
   return (
     <Layout style={{ minHeight: 'calc(100vh - 29px)' }}>
@@ -152,12 +88,7 @@ const CinemaMoments: React.FC = () => {
         style={{ height: 'calc(100vh - 30px)' }}
       >
         {currentVideo && (
-          <VideoPlayer
-            video={currentVideo}
-            playVideo={playVideo}
-            onError={handleError}
-            onSaveScreenshot={handleSaveScreenshot}
-          />
+          <VideoPlayer video={currentVideo} playVideo={playVideo} onError={handleError} />
         )}
       </Content>
     </Layout>

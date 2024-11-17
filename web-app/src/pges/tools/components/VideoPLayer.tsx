@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { Button, notification, Slider } from 'antd'
 import { PlayCircleOutlined, PauseOutlined, SoundOutlined } from '@ant-design/icons'
 import './VideoPLayer.css'
@@ -8,29 +8,33 @@ import ScreenShots from './ScreenShots'
 import { PlayItem } from './FileUpload'
 import { getNameWithoutExtension } from '@/utils/utilsString'
 
+export type ScreenshotDoc = {
+  docId: string
+  screenshotsMap: Record<string, string>
+}
+
 interface VideoPlayerProps {
   video: PlayItem
   playVideo: (videoUrl: string) => void
-  onSaveScreenshot: ({
-    videoId,
-    screenshops,
-    action,
-  }: {
-    videoId: string
-    screenshops: Array<{ path: string; name: string }>
-    action: 'add' | 'remove'
-  }) => void
   onError: () => void
 }
+
+export interface SliderRef {
+  focus: () => void
+  blur: () => void
+}
+
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreenshot }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [currentTime, setCurrentTime] = useState<number>(0)
   const [duration, setDuration] = useState<number>(0)
   const [skipTime, setSkipTime] = useState<number>(1)
   const [volume, setVolume] = useState<number>(100) // 新增音量控制
   const [hoverTime, setHoverTime] = useState<number | null>(null) // Hover时的时间
+  const [screenshotDocs, setScreenshotDocs] = useState<ScreenshotDoc[]>([])
+  const seekbarRef = useRef<SliderRef>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const hiddenVideoRef = useRef<HTMLVideoElement | null>(null) // 用于获取预览图的隐藏视频
   const canvasRef = useRef<HTMLCanvasElement | null>(null) // 用于绘制预览图的canvas
@@ -38,6 +42,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
   const [aspectRatio, setAspectRatio] = useState<number>(5 / 3)
 
   const [notificationApi, notificationHandleContext] = notification.useNotification()
+
+  const currentScreenShotDoc = screenshotDocs.find(item => item.docId === video.id)
 
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {
@@ -166,8 +172,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
               return
             }
             if (res.filePath) {
-              onSaveScreenshot({
-                videoId: video.id,
+              handleSaveScreenshot({
+                docId: video.id,
                 screenshops: [{ path: res.filePath, name: formatSecondsToHHmmss(tm, '-') }],
                 action: 'add',
               })
@@ -185,6 +191,64 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
     setHoverTime(tm)
     setPreviewImage(tm) // 获取并显示预览图
   }
+
+  const handleCropCurrentImage = (e: MouseEvent<HTMLButtonElement>) => {
+    saveScreenshotHandler(currentTime)
+  }
+
+  const handleSaveScreenshot = ({
+    docId,
+    screenshops,
+    action,
+  }: {
+    docId: string
+    screenshops: Array<{ path: string; name: string }>
+    action: 'add' | 'remove'
+  }) => {
+    setScreenshotDocs(prev => {
+      if (!prev.some(item => item.docId === docId)) {
+        const newDoc: ScreenshotDoc = {
+          docId,
+          screenshotsMap: Object.fromEntries(screenshops.map(item => [item.name, item.path])),
+        }
+        return [...prev, newDoc]
+      }
+
+      return prev.map(doc => {
+        if (docId === doc.docId) {
+          const filteredScreenshotsMap = Object.fromEntries(
+            Object.entries(doc.screenshotsMap).filter(
+              ([name, _]) => !screenshops.some(income => income.name === name),
+            ),
+          )
+          if (action === 'add') {
+            return {
+              ...doc,
+              screenshotsMap: {
+                ...filteredScreenshotsMap,
+                ...Object.fromEntries(screenshops.map(item => [item.name, item.path])),
+              },
+            }
+          }
+          if (action === 'remove') {
+            return { ...doc, screenshotsMap: { ...filteredScreenshotsMap } }
+          }
+        }
+        return doc
+      })
+    })
+  }
+  // 初始化savedScreenshotDocs
+  useEffect(() => {
+    const savedScreenshotDocs = localStorage.getItem('screenshotDocs')
+
+    if (savedScreenshotDocs) {
+      setScreenshotDocs(JSON.parse(savedScreenshotDocs) || [])
+    }
+  }, [])
+  useEffect(() => {
+    localStorage.setItem('screenshotDocs', JSON.stringify(screenshotDocs))
+  }, [screenshotDocs])
 
   useEffect(() => {
     const keypressHandler = (e: KeyboardEvent) => {
@@ -279,7 +343,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
         onClick={togglePlayPause}
         onError={onError}
       />
-      <div className="control-panel">
+      <div className="control-panel" style={{ position: 'relative', zIndex: 9999 }}>
+        <Slider
+          ref={seekbarRef}
+          value={currentTime}
+          onChange={handleSliderChange}
+          max={duration}
+          included={false}
+          tooltip={{
+            formatter: value => formatSecondsToHHmmss(Number(value)),
+          }}
+        />
         <div className="btn-group flex flex-row items-center gap-2">
           <Button
             icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
@@ -308,19 +382,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
             step={1}
             tooltip={{ formatter: value => `Skip ${value}s` }}
           />
+
+          <Button size="small" onClick={handleCropCurrentImage}>
+            Crop Current
+          </Button>
         </div>
         <div
           className="control-panel__slider-wrap py-1 w-full "
           // onMouseMove={handleSliderMouseMove} // 在父容器上监听 mousemove 事件
           // onClick={handleSliderClick} // 点击时设置当前播放时间
         >
-          <Slider
-            value={currentTime}
-            onChange={handleSliderChange}
-            max={duration}
-            included={false}
-            tooltip={{ formatter: null }} // 隐藏 tooltip
-          />
           {hoverTime !== null && (
             <div
               className="screenshot-preview"
@@ -349,8 +420,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, onSaveScreens
         </div>
       </div>
       <video ref={hiddenVideoRef} crossOrigin="anonymous" style={{ display: 'none' }} />
-      {video.screenshots && (
-        <ScreenShots data={video.screenshots} onSaveScreenshot={onSaveScreenshot} video={video} />
+      {currentScreenShotDoc && (
+        <ScreenShots
+          doc={currentScreenShotDoc}
+          onSaveScreenshot={handleSaveScreenshot}
+          video={video}
+        />
       )}
     </div>
   ) : (
