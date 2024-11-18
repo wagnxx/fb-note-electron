@@ -1,21 +1,26 @@
-.video-player {
+.video-player {}
+
+.video-container {
   position: relative;
 
 }
+
+
 
 .control-panel {
-  /* width: 100%;
+  display: none;
+  width: 100%;
   position: absolute;
-  top: '100%'; */
+  bottom: 0;
   /* padding: 8px; */
   /* display: none; */
-  position: relative;
+  /* position: relative; */
   color: #fff;
   background-color: rgba(0, 0, 0, .2);
-  padding: 10px;
+  padding: 0 8px 8px;
 }
 
-.video-player:hover .control-panel {
+.video-container:hover .control-panel {
   display: block;
 }
 
@@ -26,7 +31,21 @@
 }
 
 /* .custom-slider-container 在CustomSliderWithTeeth组件里 */
-.control-panel__slider-wrap:has(.custom-slider-container:hover) .screenshot-preview {
+.video-player:has(.custom-slider-container:hover) .screenshot-preview {
   display: block;
 
+}
+
+.btn-contaier {
+  display: flex;
+  ;
+}
+
+.btn-slider {
+  display: none;
+  transition: 2000 all;
+}
+
+.btn-contaier:hover .btn-slider {
+  display: block
 }

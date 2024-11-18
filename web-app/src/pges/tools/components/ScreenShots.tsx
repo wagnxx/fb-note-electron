@@ -183,7 +183,7 @@ const ScreenShots: FC<ScreenTypes> = ({
   // 处理全选/取消全选
   const toggleSelectAll = (e: CheckboxChangeEvent) => {
     const newSelectedKeys: Set<string> = e.target.checked
-      ? new Set(Object.keys(filteredData)) // 全选
+      ? new Set(filteredData.map(item => item.name)) // 全选
       : new Set() // 取消全选
     setSelectedKeys(newSelectedKeys)
   }
@@ -214,7 +214,7 @@ const ScreenShots: FC<ScreenTypes> = ({
       return {
         path: screenshotsMap[name].path,
         name,
-        at: 3,
+        at: null,
       }
     })
 

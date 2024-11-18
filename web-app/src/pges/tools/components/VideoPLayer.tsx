@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Button, notification, Slider } from 'antd'
-import { PlayCircleOutlined, PauseOutlined, SoundOutlined } from '@ant-design/icons'
+import { Button, Col, notification, Popover, Row, Slider, Space, Switch, Tooltip } from 'antd'
+import {
+  PlayCircleOutlined,
+  PauseOutlined,
+  SoundOutlined,
+  SettingFilled,
+  QuestionCircleOutlined,
+} from '@ant-design/icons'
 import './VideoPLayer.css'
 import { formatSecondsToHHmmss } from '@/utils/utilsDate'
 import CustomSliderWithTeeth from './CustomSliderWithTeeth'
@@ -45,6 +51,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   const [hoverTime, setHoverTime] = useState<number | null>(null) // Hover时的时间
   const [screenshotDocs, setScreenshotDocs] = useState<ScreenshotDoc[]>([])
   const [aspectRatio, setAspectRatio] = useState<number>(5 / 3)
+  const [showMoreSettings, setShowMoreSettings] = useState(true)
 
   const videoContainerRef = useRef<HTMLDivElement>(null)
   const seekbarRef = useRef<SliderRef>(null)
@@ -261,8 +268,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
 
       return prev.map(doc => {
         if (docId === doc.docId) {
-          const filteredScreenshots = doc.screenshots.filter(item =>
-            screenshots.some(income => income.name !== item.name),
+          const filteredScreenshots = doc.screenshots.filter(
+            item => !screenshots.some(income => income.name === item.name),
           )
           if (action === 'add') {
             return {
@@ -387,83 +394,160 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
       className="video-player p-2  bg-slate-200  h-full  overflow-y-auto "
     >
       {notificationHandleContext}
-      <video
-        title={video.url}
-        ref={videoRef}
-        width="100%"
-        height="auto"
-        autoPlay={isPlaying}
-        onClick={togglePlayPause}
-        onError={onError}
-      />
-      <div className="control-panel" style={{ position: 'relative', zIndex: 9999 }}>
-        <Slider
-          ref={seekbarRef}
-          value={currentTime}
-          onChange={handleSliderChange}
-          max={duration}
-          tooltip={{
-            formatter: value => formatSecondsToHHmmss(Number(value)),
-          }}
+      <div className="video-container relative">
+        <video
+          title={video.url}
+          ref={videoRef}
+          width="100%"
+          height="auto"
+          autoPlay={isPlaying}
+          onClick={togglePlayPause}
+          onError={onError}
         />
-        <div className="btn-group flex flex-row items-center gap-2">
-          <Button
-            icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
-            onClick={togglePlayPause}
-          />
-          <Button icon={<SoundOutlined />} />
+        <div className="control-panel" style={{ zIndex: 10 }}>
           <Slider
-            style={{ width: '100px' }}
-            value={volume}
-            onChange={handleVolumeChange}
-            min={0}
-            max={100}
-            step={1}
-            tooltip={{ formatter: value => `Volume ${value}%` }}
+            ref={seekbarRef}
+            value={currentTime}
+            onChange={handleSliderChange}
+            max={duration}
+            tooltip={{
+              formatter: value => formatSecondsToHHmmss(Number(value)),
+            }}
           />
-          <span>
-            {formatSecondsToHHmmss(currentTime)} / {formatSecondsToHHmmss(duration)}
-          </span>
-          <span>SkipTime:</span>
-          <Slider
-            style={{ width: '100px' }}
-            value={skipTime}
-            onChange={value => setSkipTime(value)}
-            min={1}
-            max={60}
-            step={1}
-            tooltip={{ formatter: value => `Skip ${value}s` }}
-          />
-
-          <Button size="small" onClick={handleCropCurrentImage}>
-            Crop Current
-          </Button>
-        </div>
-        <div
-          className="control-panel__slider-wrap py-1 w-full "
-          // onMouseMove={handleSliderMouseMove} // 在父容器上监听 mousemove 事件
-          // onClick={handleSliderClick} // 点击时设置当前播放时间
-        >
-          {hoverTime !== null && (
-            <div
-              className="screenshot-preview"
-              style={{
-                position: 'absolute',
-                bottom: 'calc(100% - 10px)',
-                right: 0,
-                width: '700px',
-                // height: 'auto',
-                background: 'rgba(0,0,0,0.6)',
-                textAlign: 'center',
-                zIndex: 1000,
-              }}
-            >
-              <canvas ref={canvasRef} width={700} height={700 / aspectRatio} />
-              <p style={{ color: 'white' }}>{formatSecondsToHHmmss(hoverTime)}</p>{' '}
-              {/* 显示 hover 时间 */}
+          <div className="btn-group flex flex-row items-center gap-2">
+            <Button
+              icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
+              onClick={togglePlayPause}
+            />
+            <div className="btn-contaier">
+              <Button icon={<SoundOutlined />} className="btn-item" />
+              <Slider
+                className="btn-slider"
+                style={{ width: '100px' }}
+                value={volume}
+                onChange={handleVolumeChange}
+                min={0}
+                max={100}
+                step={1}
+                tooltip={{ formatter: value => `Volume ${value}%` }}
+              />
             </div>
-          )}
+            <span>
+              {formatSecondsToHHmmss(currentTime)} / {formatSecondsToHHmmss(duration)}
+            </span>
 
+            <Popover
+              content={
+                <div className="popover-content">
+                  {/* Show more settings section */}
+                  <Row gutter={[16, 8]} align="middle">
+                    <Col span={12}>
+                      <span className="popover-label">More settings</span>
+                    </Col>
+                    <Col span={12}>
+                      <Switch
+                        checked={showMoreSettings}
+                        onChange={setShowMoreSettings}
+                        className="popover-switch"
+                      />
+                    </Col>
+                  </Row>
+
+                  {/* Skip time slider */}
+                  <Row gutter={[16, 8]} align="middle">
+                    <Col span={12}>
+                      <span className="popover-label">Skip Step:</span>
+                    </Col>
+                    <Col span={12}>
+                      <Slider
+                        style={{ width: '100%' }}
+                        value={skipTime}
+                        onChange={value => setSkipTime(value)}
+                        min={1}
+                        max={60}
+                        step={1}
+                        tooltip={{ formatter: value => `Skip ${value}s` }}
+                        className="popover-slider"
+                      />
+                    </Col>
+                  </Row>
+                </div>
+              }
+              title="Settings"
+              overlayStyle={{ width: '250px' }}
+            >
+              <Button icon={<SettingFilled />} style={{ marginLeft: 'auto' }} />
+            </Popover>
+          </div>
+        </div>
+        {hoverTime !== null && (
+          <div
+            className="screenshot-preview"
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              width: '700px',
+              // height: 'auto',
+              background: 'rgba(0,0,0,0.6)',
+              textAlign: 'center',
+              zIndex: 1000,
+            }}
+          >
+            <canvas ref={canvasRef} width={700} height={700 / aspectRatio} />
+            <p style={{ color: 'white' }}>{formatSecondsToHHmmss(hoverTime)}</p>{' '}
+            {/* 显示 hover 时间 */}
+          </div>
+        )}
+      </div>
+
+      {showMoreSettings && (
+        <div className=" py-2 ">
+          <div className=" flex items-start gap-1">
+            <span className="font-bold ">Set Precision Time</span>
+            <span className=" text-opacity-65 text-black">
+              (You can capture screenshots at any time while the video is playing or paused.
+              <Tooltip
+                placement="topRight"
+                title={
+                  <div>
+                    <p>
+                      You can capture screenshots at any time while the video is playing or paused.
+                      The three sliders represent hours, minutes, and seconds, from left to right.
+                      Clicking on any tick mark on these sliders indicates your intention to capture
+                      a screenshot at that specific moment.
+                    </p>
+
+                    <p>
+                      The screenshot action is focused on the seconds slider. To take a screenshot,
+                      simply double-click on a tick mark on the seconds slider, and a 'Save Image'
+                      button will appear. Click this button to capture the screenshot.
+                    </p>
+
+                    <p>
+                      Additionally, clicking the play button will jump the video to the selected
+                      time and resume playback from that point.
+                    </p>
+                  </div>
+                }
+              >
+                <QuestionCircleOutlined style={{ marginLeft: '4px' }} className=" self-start" />
+              </Tooltip>
+              )
+            </span>
+          </div>
+
+          <div className=" py-2">
+            <Space>
+              <span>Current Time:</span>
+              <span>
+                {formatSecondsToHHmmss(currentTime)} / {formatSecondsToHHmmss(duration)}
+              </span>
+              <Button size="small" onClick={handleCropCurrentImage} type="text" danger>
+                Take Screenshot Now
+              </Button>
+            </Space>
+          </div>
           <CustomSliderWithTeeth
             max={duration}
             onChange={setPreviewTime}
@@ -471,7 +555,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
             onJumpTo={handleJumpTo}
           />
         </div>
-      </div>
+      )}
       <video ref={hiddenVideoRef} crossOrigin="anonymous" style={{ display: 'none' }} />
       {currentScreenShotDoc && (
         <ScreenShots
