@@ -39,6 +39,7 @@
 .btn-contaier {
   display: flex;
   ;
+  align-items: center;
 }
 
 .btn-slider {

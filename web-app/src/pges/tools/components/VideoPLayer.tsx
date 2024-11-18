@@ -419,7 +419,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
               icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
               onClick={togglePlayPause}
             />
-            <div className="btn-contaier">
+            <div className="btn-contaier h-6">
               <Button icon={<SoundOutlined />} className="btn-item" />
               <Slider
                 className="btn-slider"
