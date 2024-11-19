@@ -186,6 +186,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
     const width = 1200
     const height = width / aspectRatio
 
+    videoRef.current.currentTime = tm
+
     setHoverTime(tm)
     getPreviewImage(tm, { width, height }) // 获取并显示预览图
       .then(dataURL => {
@@ -278,7 +280,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
             }
           }
           if (action === 'remove') {
-            return { ...doc, screenshots: filteredScreenshots }
+            return { ...doc, screenshots: [...filteredScreenshots] }
           }
         }
         return doc

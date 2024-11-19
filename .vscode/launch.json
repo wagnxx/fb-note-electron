@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Electron App",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "tsc: build - electron", // 确保 TypeScript 代码编译
+            "program": "${workspaceFolder}/electron/dist/main.js", // 编译后的 JS 文件
+            "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron", // Electron 可执行路径
+            "env": {
+                "ELECTRON_START_URL": "http://localhost:3000" // 环境变量
+            },
+            "cwd": "${workspaceFolder}/electron", // 工作目录
+            "outFiles": [
+                "${workspaceFolder}/electron/dist/**/*.js" // 包含 Source Maps 的路径
+            ],
+            "sourceMaps": true, // 启用 Source Maps 支持
+            "skipFiles": [
+                "<node_internals>/**" // 忽略内部模块
+            ]
+        }
+    ]
+}

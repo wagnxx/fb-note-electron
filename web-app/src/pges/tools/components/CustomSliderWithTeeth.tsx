@@ -86,6 +86,8 @@ const CustomSliderWithTeeth: React.FC<Props> = ({
   const saveImage = () => {
     const currentTime = currentHourValue * 3600 + currentMinuteValue * 60 + currentSecondValue
     onSaveScreenShorts(currentTime)
+    setCurrentSecondValue(0)
+    setIsFixedTolltips(false)
   }
 
   const handleTeethClick = (idx: number, type: 'h' | 'm' | 's') => {

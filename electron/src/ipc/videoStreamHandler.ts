@@ -4,7 +4,8 @@ import { dialog, ipcMain } from 'electron'
 import { IPC_ACTIONS } from '../constants';
 import { spawn } from 'child_process';
 import { deleteFile, deleteFiles, ensureDirectoryExists, fileExists, writeFile } from '../utils/fileManager';
-import { batchCropImages, mergeImages } from '../utils/imageUtils';
+import { batchCropImages, CropRange, FileWithCropRange, mergeImages } from '../utils/imageUtils';
+import { extractFrameAtTime, extractTextFromImage } from '../utils/imageText';
 
 
 export const setupVideoStreamHandler = () => {
@@ -124,9 +125,9 @@ export const setupVideoStreamHandler = () => {
         const filePaths = enPaths.map(enPath => decodeURIComponent(enPath))
         return await deleteFiles(filePaths)
     })
-    ipcMain.handle(IPC_ACTIONS.BATCH_CROP_IMAGE, async (event, { enPaths, cropRange }: { enPaths: string[], cropRange: Record<'left' | 'top' | 'width' | 'height', number> }) => {
-        const filePaths = enPaths.map(enPath => decodeURIComponent(enPath))
-        return await batchCropImages(filePaths, cropRange)
+    ipcMain.handle(IPC_ACTIONS.BATCH_CROP_IMAGE, async (event, { filePaths, cropRange, needDecode = false }: { filePaths: string[] | { path: string, cropRange: CropRange }[], cropRange: CropRange, needDecode?: boolean }) => {
+
+        return await batchCropImages({ filePaths, cropRange, needDecode })
     })
     ipcMain.handle(IPC_ACTIONS.MERGE_IMAGES, async (event, { enFolder, layout, images, mergedName }: { enFolder: string, layout: 'col' | 'row', images: Array<{ enPath: string, width: number, height: number }>, mergedName: string }) => {
         const folder = decodeURIComponent(enFolder)
@@ -137,5 +138,21 @@ export const setupVideoStreamHandler = () => {
         }))
 
         return await mergeImages({ folder, layout, images: transPathImages, mergedName })
+    })
+    ipcMain.handle(IPC_ACTIONS.EXRACT_IMAGES_TEXT, async (event, { enPaths }: { enPaths: string[] }) => {
+        const paths = enPaths.map(p => decodeURIComponent(p))
+        const promises = paths.map((item => {
+            return extractTextFromImage(item)
+        }))
+        return Promise.all(promises)
+    })
+    ipcMain.handle(IPC_ACTIONS.COMPARE_IMAGES, async (event, { enPaths }: { enPaths: string[] }) => {
+        const paths = enPaths.map(p => decodeURIComponent(p))
+    })
+    ipcMain.handle(IPC_ACTIONS.EXRACT_VIDEO_FRAME_TEXT, async (event, { enVideoPath, time, name }: { enVideoPath: string, time: number, name: string }) => {
+        const videoPath = decodeURIComponent(enVideoPath)
+        const outputImagePath = path.join(path.dirname(videoPath), 'frames', name + '.png')
+        await extractFrameAtTime(videoPath, time, outputImagePath)
+        return extractTextFromImage(outputImagePath)
     })
 };

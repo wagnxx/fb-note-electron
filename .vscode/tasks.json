@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "tsc: build - electron",
+            "type": "shell",
+            "command": "${workspaceFolder}/electron/node_modules/.bin/tsc", // 本地 TypeScript 编译器路径
+            "args": [
+                "-p",
+                "./electron/tsconfig.json"
+            ], // 指定 TypeScript 配置文件
+            "group": "build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        }
+    ]
+}

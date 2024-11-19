@@ -19,7 +19,10 @@ const IPC_ACTIONS = {
   SAVE_SCREENSHOT: 'save-screenshot',
   REMOVE_SCREENSHOT: 'remove-screenshot',
   BATCH_CROP_IMAGE: 'batch-crop-image',
-  MERGE_IMAGES: 'merge-images'
+  MERGE_IMAGES: 'merge-images',
+  COMPARE_IMAGES: 'compare-images',
+  EXRACT_IMAGES_TEXT: 'exract-images-text',
+  EXRACT_VIDEO_FRAME_TEXT: 'exract-video-frame-text'
 }
 
 
@@ -42,18 +45,7 @@ contextBridge.exposeInMainWorld('electron', {
     },
     invoke: (channel, data) => {
 
-      const validChannels = [
-          IPC_ACTIONS.CHECK_SOCKS_SERVICE,
-          IPC_ACTIONS.GET_SOCKS_SERVICE_INFO,
-          IPC_ACTIONS.GET_LOGS,
-          IPC_ACTIONS.SELECT_FILE,
-          IPC_ACTIONS.LOAD_VIDEO,
-          IPC_ACTIONS.READ_STREAM,
-          IPC_ACTIONS.SAVE_SCREENSHOT,
-          IPC_ACTIONS.REMOVE_SCREENSHOT,
-          IPC_ACTIONS.BATCH_CROP_IMAGE,
-          IPC_ACTIONS.MERGE_IMAGES,
-        ];
+      const validChannels = Object.values(IPC_ACTIONS) 
 
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, data);

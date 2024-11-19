@@ -69,6 +69,7 @@ const ScreenShots: FC<ScreenTypes> = ({
 
   const openModal = (image: string) => {
     setCurrentImage(image)
+    handleCheckboxChange(image, true)
     setVisibleModal(true)
   }
 
@@ -92,6 +93,14 @@ const ScreenShots: FC<ScreenTypes> = ({
     const screenshots = mapByField(doc.screenshots, 'name')
     return screenshots
   }, [doc.screenshots])
+
+  const thumbnailsData = useMemo(() => {
+    const names = Array.from(selectedKeys)
+    return names.map(item => ({
+      id: item,
+      url: screenshotsMap[item].path,
+    }))
+  }, [screenshotsMap, selectedKeys])
 
   const sortedData = useMemo(() => {
     const sortedKeys = Object.keys(screenshotsMap).sort((a, b) => {
@@ -210,6 +219,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     })
 
     if (!confirmed) return
+
     const items = Array.from(selectedKeys).map((name: string) => {
       return {
         path: screenshotsMap[name].path,
@@ -250,13 +260,14 @@ const ScreenShots: FC<ScreenTypes> = ({
     const paths = items.map(item => encodeURIComponent(item.path))
 
     const params = {
-      enPaths: paths,
+      filePaths: paths,
       cropRange: {
         left: Math.floor(cropRange?.x),
         top: Math.floor(cropRange?.y),
         width: Math.floor(cropRange?.width),
         height: Math.floor(cropRange?.height),
       },
+      needDecode: true,
     }
 
     const r = await handleRequestWithNotification(
@@ -333,6 +344,62 @@ const ScreenShots: FC<ScreenTypes> = ({
       notificationApi.error({ message: r?.message })
     }
   }
+  const handleExtractText = async () => {
+    if (selectedKeys.size === 0) {
+      return
+    }
+
+    const names = Array.from(selectedKeys)
+
+    let confirmed = await showConfirmationDialog({
+      content: `Are you sure you want to compare these images? [${names}]`,
+    })
+
+    if (!confirmed) return
+    const item = names[0]
+    const params = {
+      enVideoPath: encodeURIComponent(video.url),
+      name: screenshotsMap[item].name,
+      time: screenshotsMap[item].at,
+    }
+    // EXRACT_VIDEO_FRAME_TEXT
+    const r = await handleRequestWithNotification(
+      async () => await ipcRenderer?.invoke(IPC_ACTIONS.EXRACT_VIDEO_FRAME_TEXT, params),
+    )
+
+    console.log('r::', r)
+
+    if (r?.ok) {
+      //
+    }
+  }
+  const handleCompare = async () => {
+    if (selectedKeys.size === 0) {
+      return
+    }
+
+    const names = Array.from(selectedKeys)
+
+    let confirmed = await showConfirmationDialog({
+      content: `Are you sure you want to compare these images? [${names}]`,
+    })
+
+    if (!confirmed) return
+
+    const params = {
+      enPaths: names.map(name => encodeURIComponent(screenshotsMap[name].path)),
+    }
+    // EXRACT_IMAGES_TEXT
+    const r = await handleRequestWithNotification(
+      async () => await ipcRenderer?.invoke(IPC_ACTIONS.EXRACT_IMAGES_TEXT, params),
+    )
+
+    console.log('r::', r)
+
+    if (r?.ok) {
+      //
+    }
+  }
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
@@ -381,6 +448,12 @@ const ScreenShots: FC<ScreenTypes> = ({
             {/* 裁剪按钮 */}
             <Button onClick={handleCrop} disabled={!cropRange || selectedKeys.size === 0}>
               Crop
+            </Button>
+            <Button onClick={handleCompare} disabled={selectedKeys.size === 0}>
+              Compare Gutter
+            </Button>
+            <Button onClick={handleExtractText} disabled={selectedKeys.size === 0}>
+              Extract Text
             </Button>
 
             <Button onClick={handleMergeImage} disabled={selectedKeys.size === 0}>
@@ -481,7 +554,7 @@ const ScreenShots: FC<ScreenTypes> = ({
                           checked={selectedKeys.has(item.name)}
                           onChange={e => handleCheckboxChange(item.name, e.target.checked)}
                         />
-                        <Button type="link" onClick={() => openModal(imagePath)}>
+                        <Button type="link" onClick={() => openModal(item.name)}>
                           View
                         </Button>
                       </Col>
@@ -495,8 +568,10 @@ const ScreenShots: FC<ScreenTypes> = ({
       </Row>
 
       <ScreenshotModal
+        _renderCount={_renderCount}
         visible={visibleModal}
-        currentImage={currentImage}
+        currentImageId={currentImage}
+        thumbnails={thumbnailsData}
         onCancel={closeModal}
         onConfirm={handleConfirmScreenshot}
       />
@@ -518,7 +593,7 @@ const ScreenShotsContainer: FC<Prop> = props => {
       setLastScreenshots(props.doc.screenshots)
       setRenderCount(prevCount => prevCount + 1) // 增加渲染计数，触发重新渲染
     }
-  }, [props.doc.screenshots, lastScreenshots])
+  }, [props.doc, lastScreenshots])
 
   const newProps = {
     ...props,

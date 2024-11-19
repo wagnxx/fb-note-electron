@@ -3,13 +3,25 @@ import fs from 'fs';
 import path from 'path';
 import { ensureDirectoryExists, renameAndOverwrite } from './fileManager';
 
+export interface CropRange {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+}
+
+export interface FileWithCropRange {
+    path: string;
+    cropRange: CropRange;
+}
+
 /**
  * 单张图片裁剪并保存为文件
  * @param filePath 图片路径
  * @param cropRange 裁剪区域 { left, top, width, height }
  * @param outputPath 输出路径
  */
-export const cropImageToFile = async (filePath: string, cropRange: { left: number, top: number, width: number, height: number }, outputPath: string): Promise<void> => {
+export const cropImageToFile = async (filePath: string, cropRange: { left: number, top: number, width: number, height: number }): Promise<void> => {
     try {
         console.log(`Start cropping image: ${filePath}`);
 
@@ -31,39 +43,65 @@ export const cropImageToFile = async (filePath: string, cropRange: { left: numbe
     }
 };
 
-/**
- * 批量裁剪图片
- * @param filePaths 图片路径数组
- * @param cropRange 裁剪区域 { left, top, width, height }
- */
-export const batchCropImages = async (filePaths: string[], cropRange: { left: number, top: number, width: number, height: number }): Promise<{ ok: boolean, message?: string }> => {
+
+
+export const batchCropImages = async ({
+    filePaths,
+    cropRange,
+    needDecode
+}: {
+
+    filePaths: string[] | { path: string, cropRange: CropRange }[],
+    cropRange?: CropRange,
+    needDecode?: boolean
+}
+): Promise<{ ok: boolean, message?: string }> => {
     try {
         // 确保输出目录存在
+        // ...
 
+        // 判断传参的类型
+        let cropPromises: Promise<any>[];
 
-        // 批量裁剪图片，使用 Promise.all 并行处理
-        const cropPromises = filePaths.map((filePath) => {
-            const outputPath = filePath;  // 输出文件路径与原文件名一致
+        if (Array.isArray(filePaths)) {
+            if (filePaths[0] && typeof filePaths[0] === 'string') {
+                // 第一种情况: filePaths 和 cropRange 是单独传递的
+                if (!cropRange) {
+                    throw new Error('cropRange is required when passing filePaths');
+                }
 
-            return cropImageToFile(filePath, cropRange, outputPath);  // 调用 cropImageToFile 方法处理每个文件
-        });
+                // 批量裁剪图片，使用 Promise.all 并行处理
+                cropPromises = (filePaths as string[]).map((filePath) => {
+                    const fpath = needDecode ? decodeURIComponent(filePath) : filePath;  // 输出文件路径与原文件名一致
+                    return cropImageToFile(fpath, cropRange);  // 调用 cropImageToFile 方法处理每个文件
+                });
+
+            } else {
+                // 第二种情况: files 数组，每个文件都有自己的 cropRange
+                cropPromises = (filePaths as FileWithCropRange[]).map(({ path, cropRange }) => {
+                    const fpath = needDecode ? decodeURIComponent(path) : path;  // 输出文件路径与原文件名一致
+                    return cropImageToFile(fpath, cropRange,);  // 调用 cropImageToFile 方法处理每个文件
+                });
+            }
+
+        } else {
+            throw new Error('Invalid input. filePaths should be either an array of strings or an array of objects with path and cropRange.');
+        }
 
         // 等待所有裁剪操作完成
         await Promise.all(cropPromises);
 
         console.log('All images have been cropped successfully.');
-        return {
-            ok: true,
-        }
+        return { ok: true };
     } catch (err) {
         console.error('Error during batch image cropping:', (err as Error).message);
-        // throw new Error('Batch image cropping failed');
         return {
             ok: false,
-            message: 'Error during batch image cropping:' + (err as Error).message
-        }
+            message: 'Error during batch image cropping: ' + (err as Error).message,
+        };
     }
 };
+
 
 /**
  * 合并图片（横向或垂直布局）

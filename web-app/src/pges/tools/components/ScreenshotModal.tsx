@@ -1,16 +1,24 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { Button, Modal } from 'antd'
-
+import { LeftOutlined, RightOutlined } from '@ant-design/icons'
+interface Thumbnail {
+  id: string
+  url: string
+}
 interface ScreenshotModalProps {
   visible: boolean
-  currentImage: string
+  currentImageId: string
+  thumbnails?: Thumbnail[]
+  _renderCount: number
   onCancel: () => void
   onConfirm: (range: { x: number; y: number; width: number; height: number }) => void
 }
 
 const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   visible,
-  currentImage,
+  currentImageId,
+  _renderCount,
+  thumbnails = [],
   onCancel,
   onConfirm,
 }) => {
@@ -31,6 +39,44 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
     height: number
   } | null>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
+
+  const [currentIndex, setCurrentIndex] = useState<number>(-1)
+
+  const currentSelectedImage = useMemo(() => {
+    if (currentIndex === -1) {
+      const idx = thumbnails.findIndex(item => item.id === currentImageId)
+      setCurrentIndex(idx)
+      return thumbnails[idx]
+    }
+    return thumbnails[currentIndex]
+  }, [currentImageId, currentIndex, thumbnails])
+
+  const handleSelectThumbnail = (index: number) => {
+    setCurrentIndex(index)
+  }
+
+  const handlePrevThumbnail = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1)
+    }
+  }
+
+  const handleNextThumbnail = () => {
+    if (currentIndex < thumbnails.length - 1) {
+      setCurrentIndex(currentIndex + 1)
+    }
+  }
+
+  const handleComplete = () => {
+    // Close modal and finalize the screenshot process
+    onCancel()
+  }
+  const handleCancel = (clear: boolean = false) => {
+    onCancel()
+    if (clear) {
+      setCurrentIndex(-1)
+    }
+  }
 
   // 获取图片的原始尺寸
   const getImageOriginalDimensions = () => {
@@ -220,7 +266,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
       <Modal
         title="截图预览"
         open={visible}
-        onCancel={onCancel}
+        onCancel={() => handleCancel()}
         footer={null}
         width={800}
         style={{ top: '10%' }}
@@ -236,12 +282,19 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          <img
-            ref={imageRef}
-            src={'http://localhost:4000/image?src=' + currentImage}
-            alt="screenshot"
-            style={{ width: '100%', height: 'auto' }}
-          />
+          {currentSelectedImage && (
+            <img
+              ref={imageRef}
+              src={
+                'http://localhost:4000/image?src=' +
+                currentSelectedImage.url +
+                '&_renderCount=' +
+                _renderCount
+              }
+              alt="screenshot"
+              style={{ width: '100%', height: 'auto' }}
+            />
+          )}
           {selectedRange && (
             <div
               style={{
@@ -306,10 +359,54 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
               />
             </div>
           )}
+
+          {/* 缩略图浏览按钮 */}
+          <div style={{ marginBottom: 20, textAlign: 'center' }}>
+            <Button
+              icon={<LeftOutlined />}
+              onClick={handlePrevThumbnail}
+              disabled={currentIndex === 0}
+              style={{ marginRight: 10 }}
+            />
+            <Button
+              icon={<RightOutlined />}
+              onClick={handleNextThumbnail}
+              disabled={currentIndex === thumbnails.length - 1}
+            />
+          </div>
+        </div>
+
+        {/* 缩略图列表 */}
+        <div style={{ display: 'flex', overflowX: 'auto', marginBottom: 20 }}>
+          {thumbnails.map((thumbnail, index) => (
+            <div
+              key={thumbnail.id}
+              style={{
+                marginRight: 10,
+                cursor: 'pointer',
+                border: index === currentIndex ? '2px solid #1890ff' : 'none',
+              }}
+              onClick={() => handleSelectThumbnail(index)}
+            >
+              <img
+                src={
+                  'http://localhost:4000/image?src=' +
+                  thumbnail.url +
+                  '&_renderCount=' +
+                  _renderCount
+                }
+                alt={`Thumbnail ${index}`}
+                style={{ width: 80, height: 60, objectFit: 'cover' }}
+              />
+            </div>
+          ))}
         </div>
         <Button onClick={handleConfirmScreenshot}>确认截图</Button>
         <Button onClick={handleStartScreenshot} style={{ marginLeft: 8 }}>
           开始截图
+        </Button>
+        <Button onClick={() => handleCancel(true)} style={{ marginLeft: 8 }}>
+          清空并退出
         </Button>
       </Modal>
     </div>

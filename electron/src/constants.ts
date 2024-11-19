@@ -15,4 +15,7 @@ export const IPC_ACTIONS = {
   REMOVE_SCREENSHOT: 'remove-screenshot' as const,
   BATCH_CROP_IMAGE: 'batch-crop-image' as const,
   MERGE_IMAGES: 'merge-images' as const,
+  COMPARE_IMAGES: 'compare-images' as const,
+  EXRACT_IMAGES_TEXT: 'exract-images-text' as const,
+  EXRACT_VIDEO_FRAME_TEXT: 'exract-video-frame-text' as const,
 } as const;
