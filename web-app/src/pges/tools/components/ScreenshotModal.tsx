@@ -286,7 +286,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
     const { scaleX, scaleY } = getImageScaleFactor()
 
     const results = Object.entries(rangeState)
-      .filter(([name, range]) => Boolean(range))
+      .filter(([_, range]) => Boolean(range))
       .map(([name, range]) => {
         return {
           name,
@@ -302,6 +302,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
     // 返回原始尺寸的截图范围
     onConfirm(results)
+    setCurrentIndex(-1)
   }
 
   // 开始截图按钮的点击事件

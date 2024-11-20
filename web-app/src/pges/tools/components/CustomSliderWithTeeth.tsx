@@ -1,22 +1,26 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react'
+import React, { useState, useRef, useMemo, useEffect, forwardRef, useImperativeHandle } from 'react'
 import './CustomSlider.css' // 引入自定义样式
-import { formatSecondsToHHmmss } from '@/utils/utilsDate' // 时间格式化工具
+import { convertSecondsToTime, formatSecondsToHHmmss } from '@/utils/utilsDate' // 时间格式化工具
 import { Button, Flex, Space } from 'antd'
 import { CloseOutlined } from '@ant-design/icons'
 
 type Props = {
   max: number
+  videoTime: number
   onChange: (value: number) => void
   onSaveScreenShorts: (time: number) => void
   onJumpTo: (tm: number, shouldPlay: boolean) => void
 }
 
-const CustomSliderWithTeeth: React.FC<Props> = ({
-  max,
-  onChange,
-  onSaveScreenShorts,
-  onJumpTo,
-}) => {
+// 定义通过 ref 暴露的对象类型
+export interface CustomSliderRef {
+  handleSyncWithVideoTime: () => void
+}
+
+const CustomSliderWithTeeth = (
+  { max, videoTime, onChange, onSaveScreenShorts, onJumpTo }: Props,
+  ref: React.Ref<CustomSliderRef>,
+) => {
   const [currentHourValue, setCurrentHourValue] = useState<number>(0)
   const [currentMinuteValue, setCurrentMinuteValue] = useState<number>(0)
   const [currentSecondValue, setCurrentSecondValue] = useState<number>(0)
@@ -30,6 +34,19 @@ const CustomSliderWithTeeth: React.FC<Props> = ({
   useEffect(() => {
     console.log('CustomSliderWithTeeth component onMounted')
   }, [])
+
+  useImperativeHandle(ref, () => {
+    return {
+      handleSyncWithVideoTime: () => {
+        if (!videoTime) return
+        console.log('videoTime::', videoTime)
+        const { h, m, s } = convertSecondsToTime(videoTime)
+        setCurrentHourValue(h)
+        setCurrentMinuteValue(m)
+        setCurrentSecondValue(s)
+      },
+    }
+  }, [videoTime])
 
   // 使用useMemo计算可选的最大值
   const { maxH, maxM, maxS } = useMemo(() => {
@@ -151,13 +168,13 @@ const CustomSliderWithTeeth: React.FC<Props> = ({
         break
       case 's':
         currentTime = currentHourValue * 3600 + currentMinuteValue * 60 + idx
+        setTooltipVisible(true)
         break
     }
     setTooltipValue(currentTime)
     onChange(currentTime)
     const position = getMousePosition(e)
     setTooltipPosition(position)
-    setTooltipVisible(true)
   }
 
   // 处理鼠标离开时隐藏 Tooltip
@@ -281,4 +298,4 @@ const CustomSliderWithTeeth: React.FC<Props> = ({
   )
 }
 
-export default CustomSliderWithTeeth
+export default forwardRef<CustomSliderRef, Props>(CustomSliderWithTeeth)

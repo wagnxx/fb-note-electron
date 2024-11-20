@@ -310,6 +310,7 @@ const ScreenShots: FC<ScreenTypes> = ({
       async () => await ipcRenderer?.invoke(IPC_ACTIONS.BATCH_CROP_IMAGE, params),
     )
 
+    setIsCroping(false)
     if (r?.ok) {
       setCropRange(null)
       onSaveScreenshot({

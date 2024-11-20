@@ -1,3 +1,9 @@
+interface TimeFormat {
+  h: number
+  m: number
+  s: number
+}
+
 export const formatSecondsToHHmmss = (seconds: number, sep?: string): string => {
   const seqSymbol = sep || ':'
   const hrs = Math.floor(seconds / 3600)
@@ -23,4 +29,11 @@ export const parseHHmmssToSeconds = (timeStr: string, sep?: string): number => {
 
   // 计算总秒数
   return hours * 3600 + minutes * 60 + seconds
+}
+export const convertSecondsToTime = (seconds: number): TimeFormat => {
+  const h = Math.floor(seconds / 3600) // 计算小时数
+  const m = Math.floor((seconds % 3600) / 60) // 计算分钟数
+  const s = seconds % 60 // 计算剩余秒数
+
+  return { h, m, s }
 }

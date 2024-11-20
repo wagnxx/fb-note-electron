@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons'
 import './VideoPLayer.css'
 import { formatSecondsToHHmmss } from '@/utils/utilsDate'
-import CustomSliderWithTeeth from './CustomSliderWithTeeth'
+import CustomSliderWithTeeth, { CustomSliderRef } from './CustomSliderWithTeeth'
 import ScreenShots from './ScreenShots'
 import { PlayItem } from './FileUpload'
 import { getNameWithoutExtension } from '@/utils/utilsString'
@@ -58,6 +58,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const hiddenVideoRef = useRef<HTMLVideoElement | null>(null) // 用于获取预览图的隐藏视频
   const canvasRef = useRef<HTMLCanvasElement | null>(null) // 用于绘制预览图的canvas
+  const customSliderRef = useRef<CustomSliderRef>(null)
 
   const [notificationApi, notificationHandleContext] = notification.useNotification()
 
@@ -229,6 +230,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
 
   const handleCropCurrentImage = () => {
     saveScreenshotHandler(currentTime)
+  }
+  const handleSyncWithVideoTime = () => {
+    customSliderRef.current?.handleSyncWithVideoTime()
   }
 
   const handleJumpTo = (tm: number, shouldPlay: boolean = false) => {
@@ -548,10 +552,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
               <Button size="small" onClick={handleCropCurrentImage} type="text" danger>
                 Take Screenshot Now
               </Button>
+              <Button
+                size="small"
+                onClick={handleSyncWithVideoTime}
+                type="text"
+                style={{ color: '#1890ff' }}
+              >
+                Sync with Video
+              </Button>
             </Space>
           </div>
           <CustomSliderWithTeeth
+            ref={customSliderRef}
             max={duration}
+            videoTime={currentTime}
             onChange={setPreviewTime}
             onSaveScreenShorts={saveScreenshotHandler}
             onJumpTo={handleJumpTo}
