@@ -4,13 +4,14 @@
   "description": "A desktop app for managing notes and tasks.",
   "main": "dist/main.js",
   "scripts": {
-    "start": "ts-node src/main.ts",
-    "build:src": "rollup -c",
-    "build:src-w": "rollup -c -w",
-    "start:ele": "ELECTRON_START_URL=http://localhost:3000 electron .",
-    "build:socks": "mkdir -p ./build-service && pkg ./socks-server.js --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --out=./build-service/socks-server",
-    "build:ele-simple": "electron-builder",
-    "build:ele": "electron-builder --config=electron.build.config.js"
+    "dev:start": "scripty",
+    "dev:ele": "scripty",
+    "build:tsc": "scripty",
+    "build:rollup": "scripty",
+    "build:rollup-w": "scripty",
+    "build:socks": "scripty",
+    "build:ele-simple": "scripty",
+    "build:ele": "scripty"
   },
   "build": {
     "productName": "fb-note-electron",
@@ -77,6 +78,7 @@
     "electron-builder": "^25.1.8",
     "rollup": "^4.24.4",
     "rollup-plugin-typescript2": "^0.36.0",
+    "scripty": "^2.1.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.6.3"
