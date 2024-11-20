@@ -596,6 +596,7 @@ const ScreenShots: FC<ScreenTypes> = ({
                       <Col>
                         <Checkbox
                           checked={selectedKeys.has(item.name)}
+                          disabled={isCroping}
                           onChange={e => handleCheckboxChange(item.name, e.target.checked)}
                         />
                         <Button type="link" onClick={() => openModal(item.name)}>

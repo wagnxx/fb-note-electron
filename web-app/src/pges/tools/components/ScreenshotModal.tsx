@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useReducer } from 'react'
+import React, { useState, useRef, useMemo, useReducer, useEffect } from 'react'
 import { Button, Modal } from 'antd'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 interface Thumbnail {
@@ -62,20 +62,30 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
     }
   }
 
+  const thumbnailsInitial = useMemo(() => {
+    if (visible && thumbnails) {
+      return thumbnails
+    }
+    return null
+  }, [thumbnails, visible])
+
   const currentSelectedRange = useMemo(() => {
-    if (currentIndex === -1 || !thumbnails) return
-    const currentItem = rangeState[thumbnails[currentIndex].id]
+    if (currentIndex === -1 || !thumbnailsInitial) return
+    if (thumbnails.length - 1 < currentIndex) return
+
+    const currentItem = rangeState[thumbnailsInitial[currentIndex].id]
     return currentItem
-  }, [currentIndex, rangeState, thumbnails])
+  }, [currentIndex, rangeState, thumbnails.length, thumbnailsInitial])
 
   const currentSelectedImage = useMemo(() => {
+    if (!thumbnailsInitial) return null
     if (currentIndex === -1) {
-      const idx = thumbnails.findIndex(item => item.id === currentImageId)
+      const idx = thumbnailsInitial.findIndex(item => item.id === currentImageId)
       setCurrentIndex(idx)
-      return thumbnails[idx]
+      return thumbnailsInitial[idx]
     }
-    return thumbnails[currentIndex]
-  }, [currentImageId, currentIndex, thumbnails])
+    return thumbnailsInitial[currentIndex]
+  }, [currentImageId, currentIndex, thumbnailsInitial])
 
   const handleSelectThumbnail = (index: number) => {
     setCurrentIndex(index)
@@ -88,7 +98,8 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   }
 
   const handleNextThumbnail = () => {
-    if (currentIndex < thumbnails.length - 1) {
+    if (!thumbnailsInitial) return
+    if (currentIndex < thumbnailsInitial.length - 1) {
       setCurrentIndex(currentIndex + 1)
     }
   }
@@ -169,7 +180,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
   const handleDrag = (e: React.MouseEvent) => {
     // 防止空值错误
-    if (!initialDimensions.current || !currentSelectedRange) return
+    if (!initialDimensions.current || !currentSelectedRange || !thumbnailsInitial) return
 
     // 获取容器尺寸
     const { width: containerWidth, height: containerHeight } = getContainerDimensions()
@@ -198,7 +209,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
     // 同步更新矩形框的位置
     updateRangeState({
-      id: thumbnails[currentIndex].id,
+      id: thumbnailsInitial[currentIndex].id,
       range: {
         x: newX,
         y: newY,
@@ -213,7 +224,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
   // 缩放逻辑：根据拖拽的角落调整矩形框大小
   const handleResize = (e: React.MouseEvent) => {
-    if (!initialDimensions.current) return // 防止空值错误
+    if (!initialDimensions.current || !thumbnailsInitial) return // 防止空值错误
     const { width: containerWidth, height: containerHeight } = getContainerDimensions()
 
     const offsetX = e.clientX - initialPosition.current.x
@@ -256,7 +267,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
     // 更新矩形框的尺寸和位置
     updateRangeState({
-      id: thumbnails[currentIndex].id,
+      id: thumbnailsInitial[currentIndex].id,
       range: {
         x: newX,
         y: newY,
@@ -295,9 +306,10 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
   // 开始截图按钮的点击事件
   const handleStartScreenshot = () => {
+    if (!thumbnailsInitial) return
     const { width: containerWidth, height: containerHeight } = getContainerDimensions()
     updateRangeState({
-      id: thumbnails[currentIndex].id,
+      id: thumbnailsInitial[currentIndex].id,
       range: {
         x: 0,
         y: 0,
@@ -306,6 +318,21 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
       },
     })
   }
+
+  useEffect(() => {
+    if (!visible || !thumbnails) return
+    if (thumbnails.length - 1 < currentIndex) {
+      setCurrentIndex(-1)
+    }
+  }, [currentIndex, thumbnails, visible])
+
+  useEffect(() => {
+    if (!visible) return
+    const idx = thumbnailsInitial?.findIndex(item => item.id === currentImageId) || -1
+    if (idx > -1) {
+      setCurrentIndex(idx)
+    }
+  }, [currentImageId, thumbnailsInitial, visible])
 
   return (
     <div>
@@ -407,45 +434,51 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
           )}
 
           {/* 缩略图浏览按钮 */}
-          <div style={{ marginBottom: 20, textAlign: 'center' }}>
-            <Button
-              icon={<LeftOutlined />}
-              onClick={handlePrevThumbnail}
-              disabled={currentIndex === 0}
-              style={{ marginRight: 10 }}
-            />
-            <Button
-              icon={<RightOutlined />}
-              onClick={handleNextThumbnail}
-              disabled={currentIndex === thumbnails.length - 1}
-            />
-          </div>
+          {thumbnailsInitial && (
+            <div style={{ marginBottom: 20, textAlign: 'center' }}>
+              <Button
+                icon={<LeftOutlined />}
+                onClick={handlePrevThumbnail}
+                disabled={currentIndex === 0}
+                style={{ marginRight: 10 }}
+              />
+              <Button
+                icon={<RightOutlined />}
+                onClick={handleNextThumbnail}
+                disabled={currentIndex === thumbnailsInitial.length - 1}
+              />
+            </div>
+          )}
         </div>
 
         {/* 缩略图列表 */}
-        <div style={{ display: 'flex', overflowX: 'auto', marginBottom: 20 }}>
-          {thumbnails.map((thumbnail, index) => (
-            <div
-              key={thumbnail.id}
-              style={{
-                marginRight: 10,
-                cursor: 'pointer',
-                border: index === currentIndex ? '2px solid #1890ff' : 'none',
-              }}
-              onClick={() => handleSelectThumbnail(index)}
-            >
-              <img
-                src={
-                  'http://localhost:4000/image?src=' +
-                  thumbnail.url +
-                  '&_renderCount=' +
-                  _renderCount
-                }
-                alt={`Thumbnail ${index}`}
-                style={{ width: 80, height: 60, objectFit: 'cover' }}
-              />
-            </div>
-          ))}
+        <div style={{ overflowX: 'auto', marginBottom: 20 }}>
+          <div style={{ display: 'flex', width: 'max-content' }}>
+            {thumbnailsInitial &&
+              thumbnailsInitial.map((thumbnail, index) => (
+                <div
+                  key={thumbnail.id}
+                  style={{
+                    width: 'fix-content',
+                    marginRight: 10,
+                    cursor: 'pointer',
+                    border: index === currentIndex ? '2px solid #1890ff' : 'none',
+                  }}
+                  onClick={() => handleSelectThumbnail(index)}
+                >
+                  <img
+                    src={
+                      'http://localhost:4000/image?src=' +
+                      thumbnail.url +
+                      '&_renderCount=' +
+                      _renderCount
+                    }
+                    alt={`Thumbnail ${index}`}
+                    style={{ width: 80, height: 60, objectFit: 'cover' }}
+                  />
+                </div>
+              ))}
+          </div>
         </div>
         <Button onClick={handleConfirmScreenshot}>确认截图</Button>
         <Button onClick={handleStartScreenshot} style={{ marginLeft: 8 }}>

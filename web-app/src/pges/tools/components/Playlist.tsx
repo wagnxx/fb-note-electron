@@ -35,7 +35,7 @@ const VideoList: React.FC<VideoListProps> = ({
     } catch (error) {
       console.error('Error parsing playerAtTime from localStorage:', error)
     }
-  }, []) // 依赖为空数组，确保只在组件挂载时执行一次
+  }, [currentVideo]) // 依赖为空数组，确保只在组件挂载时执行一次
 
   // 获取当前视频的播放进度
   const getCurrentRate = (id: string) => {
