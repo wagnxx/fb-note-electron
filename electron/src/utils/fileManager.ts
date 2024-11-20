@@ -146,14 +146,21 @@ export const getFileStats = async (filePath: string): Promise<fs.Stats> => {
 };
 
 // 获取目录下的所有文件
-export const readDirectory = async (dirPath: string): Promise<string[]> => {
+export const readDirectory = async (dirPath: string): Promise<{ ok: boolean, message?: string, data?: string[] }> => {
     try {
         const files = await fsPromises.readdir(dirPath);
         console.log(`Files in directory: ${dirPath}`);
-        return files;
+        return {
+            ok: true,
+            data: files
+        };
     } catch (err) {
-        console.error(`Error reading directory: ${(err as Error).message}`);
-        throw err;
+        const message = `Error reading directory: ${(err as Error).message}`
+        console.error(message);
+        return {
+            ok: false,
+            message
+        }
     }
 };
 

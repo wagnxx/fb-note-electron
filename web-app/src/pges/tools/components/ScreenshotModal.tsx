@@ -1,9 +1,15 @@
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useRef, useMemo, useReducer } from 'react'
 import { Button, Modal } from 'antd'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 interface Thumbnail {
   id: string
   url: string
+}
+export interface Range {
+  x: number
+  y: number
+  width: number
+  height: number
 }
 interface ScreenshotModalProps {
   visible: boolean
@@ -11,7 +17,12 @@ interface ScreenshotModalProps {
   thumbnails?: Thumbnail[]
   _renderCount: number
   onCancel: () => void
-  onConfirm: (range: { x: number; y: number; width: number; height: number }) => void
+  onConfirm: (
+    ranges: {
+      name: string
+      range: Range
+    }[],
+  ) => void
 }
 
 const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
@@ -22,12 +33,6 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   onCancel,
   onConfirm,
 }) => {
-  const [selectedRange, setSelectedRange] = useState<{
-    x: number
-    y: number
-    width: number
-    height: number
-  } | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [resizeCorner, setResizeCorner] = useState<null | 'tl' | 'tr' | 'bl' | 'br'>(null)
@@ -41,6 +46,27 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   const imageRef = useRef<HTMLImageElement | null>(null)
 
   const [currentIndex, setCurrentIndex] = useState<number>(-1)
+  const [rangeState, updateRangeState] = useReducer(
+    setRangeReducer,
+    {} as Record<string, Range | null>,
+  )
+
+  function setRangeReducer(
+    state: Record<string, Range | null>,
+    action: { id: string; range: Range },
+  ) {
+    if (!action.id) return state
+    return {
+      ...state,
+      [action.id]: { ...state[action.id], ...action.range },
+    }
+  }
+
+  const currentSelectedRange = useMemo(() => {
+    if (currentIndex === -1 || !thumbnails) return
+    const currentItem = rangeState[thumbnails[currentIndex].id]
+    return currentItem
+  }, [currentIndex, rangeState, thumbnails])
 
   const currentSelectedImage = useMemo(() => {
     if (currentIndex === -1) {
@@ -115,7 +141,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
     corner: 'tl' | 'tr' | 'bl' | 'br' | null = null,
   ) => {
     e.stopPropagation()
-    initialDimensions.current = selectedRange
+    initialDimensions.current = currentSelectedRange!
     initialPosition.current = { x: e.clientX, y: e.clientY }
     if (corner) {
       setIsResizing(true)
@@ -132,18 +158,18 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   }
   const handleMouseMove = (e: React.MouseEvent) => {
     // 拖拽逻辑
-    if (isDragging && selectedRange) {
+    if (isDragging && currentSelectedRange) {
       handleDrag(e)
     }
     // 缩放逻辑
-    if (isResizing && selectedRange && initialDimensions.current) {
+    if (isResizing && currentSelectedRange && initialDimensions.current) {
       handleResize(e)
     }
   }
 
   const handleDrag = (e: React.MouseEvent) => {
     // 防止空值错误
-    if (!initialDimensions.current || !selectedRange) return
+    if (!initialDimensions.current || !currentSelectedRange) return
 
     // 获取容器尺寸
     const { width: containerWidth, height: containerHeight } = getContainerDimensions()
@@ -159,23 +185,27 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
     let newY = initialDimensions.current.y + offsetY
 
     // 限制矩形框位置，确保不超出容器范围
-    newX = Math.max(0, Math.min(containerWidth - selectedRange.width, newX))
-    newY = Math.max(0, Math.min(containerHeight - selectedRange.height, newY))
+    newX = Math.max(0, Math.min(containerWidth - currentSelectedRange.width, newX))
+    newY = Math.max(0, Math.min(containerHeight - currentSelectedRange.height, newY))
 
     // 更新矩形框的位置到 ref 中，以便下次拖拽使用
     initialDimensions.current = {
       x: newX,
       y: newY,
-      width: selectedRange.width,
-      height: selectedRange.height,
+      width: currentSelectedRange.width,
+      height: currentSelectedRange.height,
     }
 
     // 同步更新矩形框的位置
-    setSelectedRange(prev => ({
-      ...prev!,
-      x: newX,
-      y: newY,
-    }))
+    updateRangeState({
+      id: thumbnails[currentIndex].id,
+      range: {
+        x: newX,
+        y: newY,
+        width: currentSelectedRange.width,
+        height: currentSelectedRange.height,
+      },
+    })
 
     // 更新初始位置，准备下一次拖拽
     initialPosition.current = { x: e.clientX, y: e.clientY }
@@ -225,40 +255,56 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
     newHeight = Math.max(10, Math.min(containerHeight - newY, newHeight))
 
     // 更新矩形框的尺寸和位置
-    setSelectedRange(prev => ({
-      ...prev!,
-      x: newX,
-      y: newY,
-      width: newWidth,
-      height: newHeight,
-    }))
+    updateRangeState({
+      id: thumbnails[currentIndex].id,
+      range: {
+        x: newX,
+        y: newY,
+        width: newWidth,
+        height: newHeight,
+      },
+    })
   }
 
   // 截图确认
   const handleConfirmScreenshot = () => {
-    if (!selectedRange) return
+    if (!currentSelectedRange) return
+
+    console.log('rangeState::', rangeState)
 
     const { scaleX, scaleY } = getImageScaleFactor()
 
-    // 将截图框的坐标和尺寸从容器空间转换为原始图片的尺寸
-    const originalX = selectedRange.x / scaleX
-    const originalY = selectedRange.y / scaleY
-    const originalWidth = selectedRange.width / scaleX
-    const originalHeight = selectedRange.height / scaleY
+    const results = Object.entries(rangeState)
+      .filter(([name, range]) => Boolean(range))
+      .map(([name, range]) => {
+        return {
+          name,
+          // 将截图框的坐标和尺寸从容器空间转换为原始图片的尺寸
+          range: {
+            x: range!.x / scaleX,
+            y: range!.y / scaleY,
+            width: range!.width / scaleX,
+            height: range!.height / scaleY,
+          },
+        }
+      })
 
     // 返回原始尺寸的截图范围
-    onConfirm({
-      x: originalX,
-      y: originalY,
-      width: originalWidth,
-      height: originalHeight,
-    })
+    onConfirm(results)
   }
 
   // 开始截图按钮的点击事件
   const handleStartScreenshot = () => {
     const { width: containerWidth, height: containerHeight } = getContainerDimensions()
-    setSelectedRange({ x: 0, y: 0, width: containerWidth, height: containerHeight }) // 设置默认的选区为 100x100
+    updateRangeState({
+      id: thumbnails[currentIndex].id,
+      range: {
+        x: 0,
+        y: 0,
+        width: containerWidth,
+        height: containerHeight,
+      },
+    })
   }
 
   return (
@@ -295,14 +341,14 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
               style={{ width: '100%', height: 'auto' }}
             />
           )}
-          {selectedRange && (
+          {currentSelectedRange && (
             <div
               style={{
                 position: 'absolute',
-                left: `${selectedRange.x}px`,
-                top: `${selectedRange.y}px`,
-                width: `${selectedRange.width}px`,
-                height: `${selectedRange.height}px`,
+                left: `${currentSelectedRange.x}px`,
+                top: `${currentSelectedRange.y}px`,
+                width: `${currentSelectedRange.width}px`,
+                height: `${currentSelectedRange.height}px`,
                 border: '2px solid red',
                 cursor: 'move',
               }}

@@ -559,14 +559,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
         </div>
       )}
       <video ref={hiddenVideoRef} crossOrigin="anonymous" style={{ display: 'none' }} />
-      {currentScreenShotDoc && (
+      {
         <ScreenShots
           doc={currentScreenShotDoc}
           onSaveScreenshot={handleSaveScreenshot}
           onJumpTo={handleJumpTo}
           video={video}
         />
-      )}
+      }
     </div>
   ) : (
     <div className=" text-2xl flex justify-center items-center h-full  text-white w-full">

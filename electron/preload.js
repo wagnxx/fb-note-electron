@@ -14,6 +14,7 @@ const IPC_ACTIONS = {
   GET_SOCKS_SERVICE_INFO: 'get-socks-service-info',
   GET_LOGS: 'get-logs',
   SELECT_FILE: 'select-file',
+  LS_FOLDER: 'ls-folder',
   LOAD_VIDEO: 'load-video',
   READ_STREAM: 'read-stream',
   SAVE_SCREENSHOT: 'save-screenshot',

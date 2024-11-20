@@ -3,6 +3,7 @@ import fs from 'fs';
 import { dialog, ipcMain } from 'electron'
 import { IPC_ACTIONS } from '../constants';
 import { spawn } from 'child_process';
+import { readDirectory } from '../utils/fileManager';
 
 export const setupFileHandler = () => {
     ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async (event, options = { type: 'file' }) => {
@@ -52,6 +53,13 @@ export const setupFileHandler = () => {
         const fileStream = fs.readFileSync(filePath)
         return fileStream
     });
+
+    ipcMain.handle(IPC_ACTIONS.LS_FOLDER, async (event, enFolderPath) => {
+        const filePath = path.resolve(decodeURIComponent(enFolderPath));
+
+        return await readDirectory(filePath)
+    });
+
 
 
 };

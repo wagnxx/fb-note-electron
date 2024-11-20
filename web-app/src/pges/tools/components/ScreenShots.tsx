@@ -1,6 +1,6 @@
 import React, { FC, useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { Row, Col, Card, Button, Tooltip, Dropdown, Checkbox, notification, Space } from 'antd'
-import ScreenshotModal from './ScreenshotModal'
+import ScreenshotModal, { Range } from './ScreenshotModal'
 import './ScreenShots.css'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
 import { showConfirmationDialog } from '@/utils/utilsConfirm'
@@ -9,9 +9,10 @@ import { copyImagesFromElementsToClipboard } from '@/utils/utilsClipboard'
 import { ScreenshotDoc, ScreenshotType } from './VideoPLayer'
 import { handleRequestWithNotification } from '@/utils/utilsRequest'
 import { mapByField } from '@/utils/utilsArray'
+import { parseHHmmssToSeconds } from '@/utils/utilsDate'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export type Prop = {
-  doc: ScreenshotDoc
+  doc?: ScreenshotDoc
   video: PlayItem
   onSaveScreenshot: ({
     docId,
@@ -51,9 +52,8 @@ const ScreenShots: FC<ScreenTypes> = ({
   const [filter, setFilter] = useState<{ width?: number; height?: number }>({})
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set())
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
-  const [cropRange, setCropRange] = useState<Record<'x' | 'y' | 'width' | 'height', number> | null>(
-    null,
-  )
+  const [cropRange, setCropRange] = useState<{ name: string; range: Range }[] | null>()
+  const [isCroping, setIsCroping] = useState(false)
   // 使用 useRef 来为每个图片创建一个 ref
   const imgRefs = useRef<{ [key: string]: HTMLImageElement | null }>({})
 
@@ -78,29 +78,38 @@ const ScreenShots: FC<ScreenTypes> = ({
     setCurrentImage('')
   }
 
-  const handleConfirmScreenshot = (range: {
-    x: number
-    y: number
-    width: number
-    height: number
-  }) => {
-    console.log('确认截图区域:', range)
-    setCropRange(range)
+  const handleConfirmScreenshot = (
+    ranges: {
+      name: string
+      range: Range
+    }[],
+  ) => {
+    console.log('确认截图区域:', ranges)
+    setCropRange(ranges)
+    setIsCroping(true)
     closeModal() // 关闭modal
   }
 
   const screenshotsMap = useMemo(() => {
-    const screenshots = mapByField(doc.screenshots, 'name')
+    const screenshots = mapByField(doc?.screenshots || [], 'name')
     return screenshots
-  }, [doc.screenshots])
+  }, [doc])
 
   const thumbnailsData = useMemo(() => {
     const names = Array.from(selectedKeys)
-    return names.map(item => ({
-      id: item,
-      url: screenshotsMap[item].path,
-    }))
-  }, [screenshotsMap, selectedKeys])
+    return names
+      .map(item => ({
+        id: item,
+        url: screenshotsMap[item]?.path,
+      }))
+      .filter(item => Boolean(item.url))
+      .sort((a, b) => {
+        const normalizedA = normalizeTime(a.id)
+        const normalizedB = normalizeTime(b.id)
+        const diff = timeToSeconds(normalizedA) - timeToSeconds(normalizedB)
+        return sortOrder === 'asc' ? diff : -diff
+      })
+  }, [screenshotsMap, selectedKeys, sortOrder])
 
   const sortedData = useMemo(() => {
     const sortedKeys = Object.keys(screenshotsMap).sort((a, b) => {
@@ -239,9 +248,27 @@ const ScreenShots: FC<ScreenTypes> = ({
     }
   }
 
+  const handleTryLoadFromLoacal = async () => {
+    const docPath = video.url.substring(0, video.url.lastIndexOf('.'))
+    const r = await handleRequestWithNotification(
+      async () => await ipcRenderer?.invoke(IPC_ACTIONS.LS_FOLDER, encodeURIComponent(docPath)),
+    )
+    if (r?.ok) {
+      const items = (r.data as string[]).map(item => {
+        const name = item.substring(0, item.lastIndexOf('.'))
+        return {
+          name: name,
+          at: parseHHmmssToSeconds(name, '-'),
+          path: docPath + '/' + item,
+        }
+      })
+      onSaveScreenshot({ docId: video.id, screenshots: items, action: 'add' })
+    }
+  }
+
   // 裁剪确认
   const handleCrop = async () => {
-    if (!cropRange || selectedKeys.size === 0) {
+    if (!doc || !cropRange?.length || selectedKeys.size === 0) {
       return
     }
 
@@ -257,16 +284,25 @@ const ScreenShots: FC<ScreenTypes> = ({
       }
     })
 
-    const paths = items.map(item => encodeURIComponent(item.path))
+    const filePaths = items.map(item => {
+      const currentItem = cropRange.find(it => it.name === item.name)
 
+      if (!currentItem) return
+
+      const currentCrop = {
+        left: Math.floor(currentItem.range.x),
+        top: Math.floor(currentItem.range.y),
+        width: Math.floor(currentItem.range.width),
+        height: Math.floor(currentItem.range.height),
+      }
+      return {
+        path: encodeURIComponent(item.path),
+        cropRange: currentCrop,
+      }
+    })
+    // TODO
     const params = {
-      filePaths: paths,
-      cropRange: {
-        left: Math.floor(cropRange?.x),
-        top: Math.floor(cropRange?.y),
-        width: Math.floor(cropRange?.width),
-        height: Math.floor(cropRange?.height),
-      },
+      filePaths: filePaths,
       needDecode: true,
     }
 
@@ -441,44 +477,52 @@ const ScreenShots: FC<ScreenTypes> = ({
         {/* 删除按钮 */}
         <Col>
           <Space>
-            <Button onClick={handleDelete} danger disabled={selectedKeys.size === 0}>
+            <Button onClick={handleDelete} danger disabled={selectedKeys.size === 0 || isCroping}>
               Delete
             </Button>
-
-            {/* 裁剪按钮 */}
-            <Button onClick={handleCrop} disabled={!cropRange || selectedKeys.size === 0}>
-              Crop
+            <Button onClick={handleTryLoadFromLoacal} danger>
+              Try Load
             </Button>
-            <Button onClick={handleCompare} disabled={selectedKeys.size === 0}>
+
+            <Button onClick={handleCompare} disabled={selectedKeys.size === 0 || isCroping}>
               Compare Gutter
             </Button>
-            <Button onClick={handleExtractText} disabled={selectedKeys.size === 0}>
+            <Button onClick={handleExtractText} disabled={selectedKeys.size === 0 || isCroping}>
               Extract Text
             </Button>
 
-            <Button onClick={handleMergeImage} disabled={selectedKeys.size === 0}>
+            <Button onClick={handleMergeImage} disabled={selectedKeys.size === 0 || isCroping}>
               Merge
             </Button>
-            <Button onClick={handleCopyImage} disabled={selectedKeys.size === 0}>
+            <Button onClick={handleCopyImage} disabled={selectedKeys.size === 0 || isCroping}>
               Copy Images
             </Button>
           </Space>
         </Col>
       </Row>
 
-      <Row style={{ marginTop: '20px' }}>
+      <Row style={{ marginTop: '20px' }} justify={'start'} align={'middle'}>
         <Col>
           <span>Selected crop range:</span>:
         </Col>
         <Col offset={1}>
-          {cropRange && (
-            <Space>
-              <span>x: {cropRange.x}</span>
-              <span>y: {cropRange.y}</span>
-              <span>width: {cropRange.width}</span>
-              <span>height: {cropRange.height}</span>
-            </Space>
-          )}
+          <Space>
+            {/* {cropRange && (
+              <Space>
+                <span>x: {cropRange.x}</span>
+                <span>y: {cropRange.y}</span>
+                <span>width: {cropRange.width}</span>
+                <span>height: {cropRange.height}</span>
+              </Space>
+            )} */}
+            {/* 裁剪按钮 */}
+            <Button
+              onClick={handleCrop}
+              disabled={!cropRange || selectedKeys.size === 0 || !isCroping}
+            >
+              Crop
+            </Button>
+          </Space>
         </Col>
       </Row>
 
@@ -581,7 +625,7 @@ const ScreenShots: FC<ScreenTypes> = ({
 
 const ScreenShotsContainer: FC<Prop> = props => {
   const [renderCount, setRenderCount] = useState<number>(0)
-  const [lastScreenshots, setLastScreenshots] = useState(props.doc.screenshots)
+  const [lastScreenshots, setLastScreenshots] = useState<ScreenshotType[]>()
 
   const refreshPage = useCallback(() => {
     setRenderCount(renderCount + 1)
@@ -589,18 +633,20 @@ const ScreenShotsContainer: FC<Prop> = props => {
 
   useEffect(() => {
     // 如果 screenshotsMap 发生变化，更新 renderCount 来触发子组件重新渲染
-    if (props.doc.screenshots !== lastScreenshots) {
-      setLastScreenshots(props.doc.screenshots)
+    if (props?.doc?.screenshots && props?.doc?.screenshots !== lastScreenshots) {
+      setLastScreenshots(props?.doc?.screenshots || [])
       setRenderCount(prevCount => prevCount + 1) // 增加渲染计数，触发重新渲染
     }
   }, [props.doc, lastScreenshots])
 
   const newProps = {
     ...props,
-    doc: {
-      ...props.doc,
-      screenshots: [...props.doc.screenshots],
-    },
+    doc: props.doc
+      ? {
+          ...props.doc,
+          screenshots: [...(props?.doc?.screenshots || [])],
+        }
+      : undefined,
   }
 
   return <ScreenShots {...newProps} _renderCount={renderCount} _refreshPage={refreshPage} />
