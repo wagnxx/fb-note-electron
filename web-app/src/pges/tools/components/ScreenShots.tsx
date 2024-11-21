@@ -1,5 +1,5 @@
 import React, { FC, useState, useMemo, useRef, useCallback, useEffect } from 'react'
-import { Row, Col, Card, Button, Tooltip, Dropdown, Checkbox, notification, Space } from 'antd'
+import { Row, Col, Button, Tooltip, Dropdown, Checkbox, notification, Space } from 'antd'
 import ScreenshotModal, { Range } from './ScreenshotModal'
 import './ScreenShots.css'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
@@ -220,17 +220,17 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (selectedKeys.size === 0) {
       return
     }
-
+    const names = Array.from(selectedKeys)
     let confirmed = await showConfirmationDialog({
-      content: 'Are you sure you want to delete these images?',
+      content: `Are you sure you want to delete these images? [${names}]`,
     })
 
     if (!confirmed) return
 
-    const items = Array.from(selectedKeys).map((name: string) => {
+    const items = Array.from(selectedKeys).map((key: string) => {
       return {
-        path: screenshotsMap[name].path,
-        name,
+        path: screenshotsMap[key].path,
+        name: key,
         at: null,
       }
     })
@@ -243,6 +243,7 @@ const ScreenShots: FC<ScreenTypes> = ({
 
     if (r?.ok) {
       onSaveScreenshot({ docId: video.id, screenshots: items, action: 'remove' })
+      names.forEach(key => selectedKeys.delete(key))
     }
   }
 
@@ -290,14 +291,16 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (!doc || !cropRange?.length || selectedKeys.size === 0) {
       return
     }
-    const names = Array.from(selectedKeys)
+    const names = Array.from(selectedKeys).filter(item => {
+      return cropRange.find(it => it.name === item)
+    })
 
     let confirmed = await showConfirmationDialog({
       content: `Are you sure you want to crop these images? [${names}]`,
     })
 
     if (!confirmed) return
-    const items = Array.from(selectedKeys).map((key: string) => {
+    const items = names.map((key: string) => {
       return {
         path: screenshotsMap[key].path,
         name: key,
@@ -354,9 +357,9 @@ const ScreenShots: FC<ScreenTypes> = ({
 
     if (!confirmed) return
 
-    const images = names.map(name => ({
-      enPath: encodeURIComponent(screenshotsMap[name].path),
-      ...imageSizes[name],
+    const images = names.map(key => ({
+      enPath: encodeURIComponent(screenshotsMap[key].path),
+      ...imageSizes[key],
     }))
 
     const params = {
@@ -393,7 +396,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     }
 
     const names = Array.from(selectedKeys)
-    const selectedImages = names.map(name => imgRefs.current[name]) as HTMLImageElement[]
+    const selectedImages = names.map(key => imgRefs.current[key]) as HTMLImageElement[]
     const r = await copyImagesFromElementsToClipboard(selectedImages)
     if (r?.ok) {
       notificationApi.success({ message: 'croped successfully' })
@@ -444,7 +447,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (!confirmed) return
 
     const params = {
-      enPaths: names.map(name => encodeURIComponent(screenshotsMap[name].path)),
+      enPaths: names.map(key => encodeURIComponent(screenshotsMap[key].path)),
     }
     // EXRACT_IMAGES_TEXT
     const r = await handleRequestWithNotification(
@@ -557,81 +560,75 @@ const ScreenShots: FC<ScreenTypes> = ({
 
           return (
             <Col xs={24} sm={12} md={8} lg={6} xl={4} key={item.name}>
-              <Card
-                hoverable
-                cover={
-                  <div
+              <div style={{ background: item?.isCropped ? '#7dbeae' : '#ff7875', padding: 0 }}>
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    paddingBottom: '50.58%', // 高度是宽度的 607/1200 = 50.58%
+                    background: '#000',
+                  }}
+                >
+                  <img
+                    alt={item.name}
+                    ref={el => (imgRefs.current[item.name] = el)}
+                    src={
+                      'http://localhost:4000/image?src=' +
+                      imagePath +
+                      '&renderCount=' +
+                      _renderCount
+                    }
+                    crossOrigin="anonymous"
+                    onLoad={e => handleImageLoad(item.name, e)}
                     style={{
-                      position: 'relative',
-                      width: '100%',
-                      paddingBottom: '50.58%', // 高度是宽度的 607/1200 = 50.58%
-                      background: '#000',
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'cover', // 保证图片等比缩放并覆盖整个区域
                     }}
-                  >
-                    <img
-                      alt={item.name}
-                      ref={el => (imgRefs.current[item.name] = el)}
-                      src={
-                        'http://localhost:4000/image?src=' +
-                        imagePath +
-                        '&renderCount=' +
-                        _renderCount
-                      }
-                      crossOrigin="anonymous"
-                      onLoad={e => handleImageLoad(item.name, e)}
+                  />
+                </div>
+
+                <div style={{ padding: 8 }}>
+                  <div className="flex justify-between">
+                    <h2
                       style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover', // 保证图片等比缩放并覆盖整个区域
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}
-                    />
+                    >
+                      {item.name}
+                    </h2>
+                    <Button size="small" type="text" onClick={() => item.at && onJumpTo(item.at)}>
+                      Jump To
+                    </Button>
                   </div>
-                }
-              >
-                <Card.Meta
-                  style={{ background: item?.isCropped ? '#38ffcf' : '#ff7875' }}
-                  title={
-                    <Row>
-                      <Col>
-                        <h2>{item.name}</h2>
-                      </Col>
-                      <Col>
-                        <Button
-                          size="small"
-                          type="text"
-                          onClick={() => item.at && onJumpTo(item.at)}
-                        >
-                          Jump To
-                        </Button>
-                      </Col>
-                    </Row>
-                  }
-                  description={
-                    <Row justify="space-between">
-                      <Col>
-                        <Tooltip title="Image Dimensions">
-                          <span>
-                            {imageSize ? `${imageSize.width} x ${imageSize.height}` : 'Loading...'}
-                          </span>
-                        </Tooltip>
-                      </Col>
-                      <Col>
-                        <Checkbox
-                          checked={selectedKeys.has(item.name)}
-                          disabled={isCroping}
-                          onChange={e => handleCheckboxChange(item.name, e.target.checked)}
-                        />
-                        <Button type="link" onClick={() => openModal(item.name)}>
-                          View
-                        </Button>
-                      </Col>
-                    </Row>
-                  }
-                />
-              </Card>
+
+                  <Row justify="space-between">
+                    <Col>
+                      <Tooltip title="Image Dimensions">
+                        <span>
+                          {imageSize ? `${imageSize.width} x ${imageSize.height}` : 'Loading...'}
+                        </span>
+                      </Tooltip>
+                    </Col>
+                    <Col>
+                      <Checkbox
+                        checked={selectedKeys.has(item.name)}
+                        disabled={isCroping}
+                        onChange={e => handleCheckboxChange(item.name, e.target.checked)}
+                      />
+                      <Button type="link" onClick={() => openModal(item.name)}>
+                        View
+                      </Button>
+                    </Col>
+                  </Row>
+                </div>
+              </div>
             </Col>
           )
         })}

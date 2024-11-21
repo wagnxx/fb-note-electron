@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useReducer, useEffect } from 'react'
-import { Button, Modal } from 'antd'
+import { Button, Modal, Space } from 'antd'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 interface Thumbnail {
   id: string
@@ -53,9 +53,17 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
   function setRangeReducer(
     state: Record<string, Range | null>,
-    action: { id: string; range: Range },
+    action: { id: string; range: Range; type?: string },
   ) {
     if (!action.id) return state
+
+    if (action.type && action.type === 'delete') {
+      const { [action.id]: _, ...rest } = state
+      return {
+        ...rest,
+      }
+    }
+
     return {
       ...state,
       [action.id]: { ...state[action.id], ...action.range },
@@ -319,6 +327,20 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
       },
     })
   }
+  const handleCancelScreenshot = () => {
+    if (!thumbnailsInitial) return
+    const { width: containerWidth, height: containerHeight } = getContainerDimensions()
+    updateRangeState({
+      id: thumbnailsInitial[currentIndex].id,
+      type: 'delete',
+      range: {
+        x: 0,
+        y: 0,
+        width: containerWidth,
+        height: containerHeight,
+      },
+    })
+  }
 
   useEffect(() => {
     if (!visible || !thumbnails) return
@@ -345,6 +367,68 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
         width={800}
         style={{ top: '10%' }}
       >
+        <div>
+          <Space>
+            <Button onClick={handleConfirmScreenshot}>确认截图</Button>
+            <Button onClick={handleStartScreenshot} style={{ marginLeft: 8 }}>
+              开始截图
+            </Button>
+            <Button onClick={handleCancelScreenshot} style={{ marginLeft: 8 }}>
+              取消截图
+            </Button>
+            <Button onClick={() => handleCancel(true)} style={{ marginLeft: 8 }}>
+              清空并退出
+            </Button>
+          </Space>
+        </div>
+        {/* 缩略图列表 */}
+        <div style={{ overflowX: 'auto', marginBottom: 20 }}>
+          <div style={{ display: 'flex', width: 'max-content' }}>
+            {thumbnailsInitial &&
+              thumbnailsInitial.map((thumbnail, index) => (
+                <div
+                  key={thumbnail.id}
+                  style={{
+                    width: 'fix-content',
+                    marginRight: 10,
+                    cursor: 'pointer',
+                    border: index === currentIndex ? '2px solid #1890ff' : 'none',
+                  }}
+                  onClick={() => handleSelectThumbnail(index)}
+                >
+                  <img
+                    src={
+                      'http://localhost:4000/image?src=' +
+                      thumbnail.url +
+                      '&_renderCount=' +
+                      _renderCount
+                    }
+                    alt={`Thumbnail ${index}`}
+                    title={thumbnail.id}
+                    style={{ width: 80, height: 60, objectFit: 'cover' }}
+                  />
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* 缩略图浏览按钮 */}
+        {thumbnailsInitial && (
+          <div style={{ marginBottom: 4, textAlign: 'center' }}>
+            <Button
+              icon={<LeftOutlined />}
+              onClick={handlePrevThumbnail}
+              disabled={currentIndex === 0}
+              style={{ marginRight: 10 }}
+            />
+            <Button
+              icon={<RightOutlined />}
+              onClick={handleNextThumbnail}
+              disabled={currentIndex === thumbnailsInitial.length - 1}
+            />
+          </div>
+        )}
+
         <div
           style={{
             position: 'relative',
@@ -433,61 +517,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
               />
             </div>
           )}
-
-          {/* 缩略图浏览按钮 */}
-          {thumbnailsInitial && (
-            <div style={{ marginBottom: 20, textAlign: 'center' }}>
-              <Button
-                icon={<LeftOutlined />}
-                onClick={handlePrevThumbnail}
-                disabled={currentIndex === 0}
-                style={{ marginRight: 10 }}
-              />
-              <Button
-                icon={<RightOutlined />}
-                onClick={handleNextThumbnail}
-                disabled={currentIndex === thumbnailsInitial.length - 1}
-              />
-            </div>
-          )}
         </div>
-
-        {/* 缩略图列表 */}
-        <div style={{ overflowX: 'auto', marginBottom: 20 }}>
-          <div style={{ display: 'flex', width: 'max-content' }}>
-            {thumbnailsInitial &&
-              thumbnailsInitial.map((thumbnail, index) => (
-                <div
-                  key={thumbnail.id}
-                  style={{
-                    width: 'fix-content',
-                    marginRight: 10,
-                    cursor: 'pointer',
-                    border: index === currentIndex ? '2px solid #1890ff' : 'none',
-                  }}
-                  onClick={() => handleSelectThumbnail(index)}
-                >
-                  <img
-                    src={
-                      'http://localhost:4000/image?src=' +
-                      thumbnail.url +
-                      '&_renderCount=' +
-                      _renderCount
-                    }
-                    alt={`Thumbnail ${index}`}
-                    style={{ width: 80, height: 60, objectFit: 'cover' }}
-                  />
-                </div>
-              ))}
-          </div>
-        </div>
-        <Button onClick={handleConfirmScreenshot}>确认截图</Button>
-        <Button onClick={handleStartScreenshot} style={{ marginLeft: 8 }}>
-          开始截图
-        </Button>
-        <Button onClick={() => handleCancel(true)} style={{ marginLeft: 8 }}>
-          清空并退出
-        </Button>
       </Modal>
     </div>
   )
