@@ -18,6 +18,7 @@ export type ScreenshotType = {
   name: string
   at: number | null
   path: string
+  isCropped?: boolean
 }
 export type ScreenshotDoc = {
   docId: string
@@ -252,7 +253,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   }: {
     docId: string
     screenshots: ScreenshotType[]
-    action: 'add' | 'remove' | 'refresh'
+    action: 'add' | 'modify' | 'remove' | 'refresh'
   }) => {
     setScreenshotDocs(prev => {
       if (action === 'refresh') {
@@ -277,7 +278,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
           const filteredScreenshots = doc.screenshots.filter(
             item => !screenshots.some(income => income.name === item.name),
           )
-          if (action === 'add') {
+          if (action === 'add' || action === 'modify') {
             return {
               ...doc,
               screenshots: [...filteredScreenshots, ...screenshots],

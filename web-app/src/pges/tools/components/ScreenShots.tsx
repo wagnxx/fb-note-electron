@@ -21,7 +21,7 @@ export type Prop = {
   }: {
     docId: string
     screenshots: ScreenshotType[]
-    action: 'add' | 'remove' | 'refresh'
+    action: 'add' | 'modify' | 'remove' | 'refresh'
   }) => void
   onJumpTo: (tm: number) => void
 }
@@ -120,9 +120,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     })
 
     return sortedKeys.map(item => ({
-      name: item,
-      path: screenshotsMap[item].path,
-      at: screenshotsMap[item].at,
+      ...screenshotsMap[item],
     }))
   }, [screenshotsMap, sortOrder])
 
@@ -266,21 +264,43 @@ const ScreenShots: FC<ScreenTypes> = ({
     }
   }
 
+  const handleSetAsScropted = async () => {
+    if (!doc || selectedKeys.size === 0) {
+      return
+    }
+    const names = Array.from(selectedKeys)
+
+    let confirmed = await showConfirmationDialog({
+      content: `Are you sure you want to set these images as croped? [${names}]`,
+    })
+
+    if (!confirmed) return
+
+    const updated = doc.screenshots.filter(item => names.includes(item.name))
+
+    onSaveScreenshot({
+      docId: doc.docId,
+      screenshots: updated.map(item => ({ ...item, isCropped: true })),
+      action: 'add',
+    })
+  }
+
   // 裁剪确认
   const handleCrop = async () => {
     if (!doc || !cropRange?.length || selectedKeys.size === 0) {
       return
     }
+    const names = Array.from(selectedKeys)
 
     let confirmed = await showConfirmationDialog({
-      content: 'Are you sure you want to crop these images?',
+      content: `Are you sure you want to crop these images? [${names}]`,
     })
 
     if (!confirmed) return
-    const items = Array.from(selectedKeys).map((name: string) => {
+    const items = Array.from(selectedKeys).map((key: string) => {
       return {
-        path: screenshotsMap[name].path,
-        name,
+        path: screenshotsMap[key].path,
+        name: key,
       }
     })
 
@@ -523,6 +543,9 @@ const ScreenShots: FC<ScreenTypes> = ({
             >
               Crop
             </Button>
+            <Button onClick={handleSetAsScropted} disabled={selectedKeys.size === 0}>
+              Set As Scroped
+            </Button>
           </Space>
         </Col>
       </Row>
@@ -569,6 +592,7 @@ const ScreenShots: FC<ScreenTypes> = ({
                 }
               >
                 <Card.Meta
+                  style={{ background: item?.isCropped ? '#38ffcf' : '#ff7875' }}
                   title={
                     <Row>
                       <Col>
