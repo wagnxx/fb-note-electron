@@ -5,6 +5,7 @@ import { getSidbarCollapsed } from '@/features/settings/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 import { toggleSidebar } from '@/features/settings/settingsSlice'
 import { useNavigate } from 'react-router-dom'
+import LanguageSwitcher from '@/features/language/components/LanguageSwitcher'
 
 const AppHeader = () => {
   const sidbarCfdsfollapsed = useSelector(getSidbarCollapsed)
@@ -18,6 +19,9 @@ const AppHeader = () => {
       </div>
       <div className="app-header__item" onClick={() => navigate('/')}>
         <HomeOutlined />
+      </div>
+      <div className="app-header__item">
+        <LanguageSwitcher />
       </div>
     </div>
   )

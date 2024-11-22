@@ -6,6 +6,7 @@ import { Provider } from 'react-redux'
 import { store, persistor } from '@/store/store' // 确保你导入了 Redux store
 import AppRoutes from './routes/AppRoutes'
 import './App.css'
+import './i18n'
 
 const config: ThemeConfig = {
   token: {
