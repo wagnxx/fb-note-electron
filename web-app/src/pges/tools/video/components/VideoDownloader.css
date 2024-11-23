@@ -1,7 +1,7 @@
 /* VideoDownloader.css */
 
 .container {
-  min-height: 100vh;
+  /* min-height: 100vh; */
   background: linear-gradient(to bottom, #f7f9fc, #ffffff);
   padding: 40px 0;
 }

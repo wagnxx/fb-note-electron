@@ -2,15 +2,11 @@
 import React from 'react'
 import NotFound from '@/pges/error/NotFound'
 import GuidePage from '@/pges/home/GuidePage'
-import Dict from '@/pges/dict/Dict'
-import WordRoot from '@/pges/dict/WordRoot'
-import WordAffix from '@/pges/dict/WordAffix'
-import ParentEmpty from '@/components/layout/ParentEmpty'
 import MindMapPage from '@/pges/mindmap/MindMapPage'
-import MindMapManagePage from '@/pges/mindmap/MindMapManagePage'
-import CinemaMoments from '@/pges/tools/CinemaMoments'
-import HomePage from '@/pges/home/Home'
-import VideoDownloader from '@/pges/tools/components/VideoDownloader'
+import Login from '@/pges/login/Login'
+import { routesTool } from './config/tool'
+import { routesLearn } from './config/learn'
+import { routesSystem } from './config/system'
 
 export interface RouteConfig {
   path: string
@@ -23,60 +19,9 @@ export interface RouteConfig {
 }
 
 export const authRoutes: RouteConfig[] = [
-  {
-    path: '/',
-    name: 'GuidePage',
-    component: GuidePage,
-    requiresAuth: false,
-    hidden: true,
-    isStandalone: true,
-  },
-  { path: '/system', name: 'Home', component: HomePage, requiresAuth: false },
-
-  {
-    path: '/learn',
-    name: 'Dict',
-    component: ParentEmpty,
-    children: [
-      {
-        path: 'dict',
-        name: 'dict',
-        component: Dict,
-      },
-      {
-        path: 'word-root',
-        name: 'WordRoot',
-        component: WordRoot,
-      },
-      {
-        path: 'word-affix',
-        name: 'WordAffix',
-        component: WordAffix,
-      },
-    ],
-  },
-  {
-    path: '/tool',
-    name: 'Tool',
-    component: ParentEmpty,
-    children: [
-      {
-        path: 'mindmapManage',
-        name: 'mindMapManagePage',
-        component: MindMapManagePage,
-      },
-      {
-        path: 'cinemaMoments',
-        name: 'CinemaMoments',
-        component: CinemaMoments,
-      },
-      {
-        path: 'VideoDownloader',
-        name: 'VideoDownloader',
-        component: VideoDownloader,
-      },
-    ],
-  },
+  routesSystem,
+  routesLearn,
+  routesTool,
 
   { path: '*', name: 'NotFound', component: NotFound, requiresAuth: true, hidden: true },
 ]
@@ -86,6 +31,11 @@ export const standaloneRoutes: RouteConfig[] = [
     path: '/',
     name: 'guide',
     component: GuidePage,
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login,
   },
   {
     path: 'tool/mindmap',

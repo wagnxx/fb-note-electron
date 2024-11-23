@@ -10,6 +10,8 @@ import { ScreenshotDoc, ScreenshotType } from './VideoPLayer'
 import { handleRequestWithNotification } from '@/utils/utilsRequest'
 import { mapByField } from '@/utils/utilsArray'
 import { parseHHmmssToSeconds } from '@/utils/utilsDate'
+import { uploadFileToFirebase } from '@/service/firebaseUploader'
+import { checkScreenshotDocExistsByName, createScreenshotDoc } from '@/service/screenshotDoc'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export type Prop = {
   doc?: ScreenshotDoc
@@ -54,6 +56,7 @@ const ScreenShots: FC<ScreenTypes> = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [cropRange, setCropRange] = useState<{ name: string; range: Range }[] | null>()
   const [isCroping, setIsCroping] = useState(false)
+  const [docExisted, setDocExisted] = useState(true)
   // 使用 useRef 来为每个图片创建一个 ref
   const imgRefs = useRef<{ [key: string]: HTMLImageElement | null }>({})
 
@@ -390,6 +393,34 @@ const ScreenShots: FC<ScreenTypes> = ({
     }
   }
 
+  const handleCreateDoc = async () => {
+    if (selectedKeys.size === 0) {
+      return
+    }
+
+    const names = Array.from(selectedKeys)
+
+    let confirmed = await showConfirmationDialog({
+      content: `Are you sure you want to compare these images? [${names}]`,
+    })
+
+    if (!confirmed) return
+    //Currently, only one merged image is supported
+    const filePath = screenshotsMap[names[0]].path
+    const fileBuffer = await ipcRenderer?.invoke('read-stream', encodeURIComponent(filePath))
+    if (!fileBuffer) {
+      return
+    }
+    console.log('image path', filePath)
+    const fileName = filePath.split('/').pop() // 获取文件名
+    const downloadURL = await uploadFileToFirebase(fileBuffer, `screenshotDoc/${fileName}`)
+
+    createScreenshotDoc({
+      docName: video.name,
+      screenshots: [downloadURL],
+    })
+  }
+
   const handleCopyImage = async () => {
     if (selectedKeys.size === 0 || !imgRefs.current) {
       return
@@ -461,6 +492,12 @@ const ScreenShots: FC<ScreenTypes> = ({
     }
   }
 
+  useEffect(() => {
+    checkScreenshotDocExistsByName(video.name).then(res => {
+      setDocExisted(res)
+    })
+  }, [video.name])
+
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
       {notificationContextHandle}
@@ -520,6 +557,9 @@ const ScreenShots: FC<ScreenTypes> = ({
             </Button>
             <Button onClick={handleCopyImage} disabled={selectedKeys.size === 0 || isCroping}>
               Copy Images
+            </Button>
+            <Button onClick={handleCreateDoc} disabled={selectedKeys.size === 0 || docExisted}>
+              Create Doc
             </Button>
           </Space>
         </Col>

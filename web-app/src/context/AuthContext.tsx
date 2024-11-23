@@ -1,25 +1,25 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useContext, ReactNode } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { login as loginAction, logout as logoutAction } from '@/features/auth/authSlice'
+import { clearAuthState, UserInfo } from '@/features/auth/authSlice'
+import { RootState } from '@/store/store'
 
 interface AuthContextType {
   isAuthenticated: boolean
-  login: () => void
   logout: () => void
+  user: UserInfo | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated)
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
   const dispatch = useDispatch()
 
-  const login = () => dispatch(loginAction())
-  const logout = () => dispatch(logoutAction())
+  const logout = () => dispatch(clearAuthState())
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, logout, user }}>
       {children}
     </AuthContext.Provider>
   )
