@@ -2,6 +2,8 @@ import { Button, Checkbox, Col, Row, Tooltip } from 'antd'
 import React from 'react'
 import { ScreenshotType } from './VideoPLayer'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
+import { useSortable } from '@dnd-kit/sortable'
+import { DragOutlined } from '@ant-design/icons'
 
 export type Props = {
   item: ScreenshotType
@@ -28,34 +30,37 @@ const ScreenshotCardItem = ({
   handleCheckboxChange,
   openModal,
 }: Props) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.name,
+  })
   if (!item) return <div>-</div>
-
   const imagePath = item.path
   const imageSize = imageSizes[item.name]
+
+  const style: React.CSSProperties = {
+    transform: transform
+      ? `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`
+      : '',
+    transition,
+  }
+
   const handleOpenModal = (e: CheckboxChangeEvent) => {
-    console.log('open modal: ', e.target.checked)
     handleCheckboxChange(String(item.name), e.target.checked)
-    e.stopPropagation()
   }
   return (
     <div
+      className="screenshot-card-item"
+      ref={setNodeRef}
+      {...attributes}
       style={{
+        ...style,
         background: item?.isCropped ? '#7dbeae' : '#ff7875',
-        padding: 0,
-        position: 'absolute',
-        top: 0,
-        left: 0,
       }}
-      // onClick={e => {
-      //   e.stopPropagation()
-      // }}
-      // onMouseDown={e => {
-      //   e.stopPropagation()
-      // }}
-      // onMouseMove={e => {
-      //   e.stopPropagation()
-      // }}
     >
+      <div className="drag-icon   bg-white" style={{ height: 'max-content' }}>
+        <DragOutlined {...listeners} color="#fff" />
+      </div>
+
       <div
         style={{
           position: 'relative',
@@ -122,4 +127,3 @@ const ScreenshotCardItem = ({
 }
 
 export default ScreenshotCardItem
-// export default ({ item }: { item: { name: string } }) => <h2>{item.name}</h2>

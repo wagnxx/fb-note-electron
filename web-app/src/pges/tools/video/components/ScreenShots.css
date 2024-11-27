@@ -30,16 +30,19 @@
   cursor: nwse-resize;
 }
 
-.screenshot-item-container{
+.screenshot-card-item{
+  padding: 0;
   position: relative;
+  top: 0;
+  left: 0;
+
 }
-.screenshot-sortable-item{
+.drag-icon{
   position: absolute;
   visibility: hidden;
   padding: 4px;
-  /* border: 1px solid #ddd; */
-  background-color: rgba(211, 200, 200, 0.5);
+  z-index: 999;
 }
-.screenshot-item-container:hover .screenshot-sortable-item{
+.screenshot-card-item:hover .drag-icon{
   visibility: visible;
 }

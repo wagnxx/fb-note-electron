@@ -28,8 +28,6 @@ import { checkScreenshotDocExistsByName, createScreenshotDoc } from '@/service/s
 import { useAuth } from '@/context/AuthContext'
 import useComputedFilter from './useComputedFilter'
 import ScreenshotCardItem from './ScreenshotCardItem'
-import { ScreenshotSortableItem } from './ScreenshotSortableItem'
-import { DragOutlined } from '@ant-design/icons'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export type Prop = {
   doc?: ScreenshotDoc
@@ -203,8 +201,8 @@ const ScreenShots: FC<ScreenTypes> = ({
     }
   }, [filteredData, selectedKeys.size])
 
-  const SortedselectedKeys = useMemo(() => {
-    const filtered = filteredData.filter(item => selectedKeys.has(item.name))
+  const sortedselectedKeys = useMemo(() => {
+    const filtered = filteredData.filter(item => selectedKeys.has(item.name)).map(item => item.name)
     return filtered
   }, [filteredData, selectedKeys])
 
@@ -262,7 +260,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (selectedKeys.size === 0) {
       return
     }
-    const names = Array.from(selectedKeys)
+    const names = sortedselectedKeys
     let confirmed = await showConfirmationDialog({
       content: `Are you sure you want to delete these images? [${names}]`,
     })
@@ -311,7 +309,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (!doc || selectedKeys.size === 0) {
       return
     }
-    const names = Array.from(selectedKeys)
+    const names = sortedselectedKeys
 
     let confirmed = await showConfirmationDialog({
       content: `Are you sure you want to set these images as croped? [${names}]`,
@@ -333,7 +331,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (!doc || !cropRange?.length || selectedKeys.size === 0) {
       return
     }
-    const names = Array.from(selectedKeys).filter(item => {
+    const names = sortedselectedKeys.filter(item => {
       return cropRange.find(it => it.name === item)
     })
 
@@ -392,7 +390,7 @@ const ScreenShots: FC<ScreenTypes> = ({
       return
     }
 
-    const names = Array.from(selectedKeys)
+    const names = sortedselectedKeys
 
     let confirmed = await showConfirmationDialog({
       content: `Are you sure you want to merge these images? [${names}]`,
@@ -438,7 +436,7 @@ const ScreenShots: FC<ScreenTypes> = ({
       return
     }
 
-    const names = Array.from(selectedKeys)
+    const names = sortedselectedKeys
 
     let confirmed = await showConfirmationDialog({
       content: `Are you sure you want to compare these images? [${names}]`,
@@ -466,7 +464,7 @@ const ScreenShots: FC<ScreenTypes> = ({
       return
     }
 
-    const names = Array.from(selectedKeys)
+    const names = sortedselectedKeys
     const selectedImages = names.map(key => imgRefs.current[key]) as HTMLImageElement[]
     const r = await copyImagesFromElementsToClipboard(selectedImages)
     if (r?.ok) {
@@ -480,7 +478,7 @@ const ScreenShots: FC<ScreenTypes> = ({
       return
     }
 
-    const names = Array.from(selectedKeys)
+    const names = sortedselectedKeys
 
     let confirmed = await showConfirmationDialog({
       content: `Are you sure you want to compare these images? [${names}]`,
@@ -509,7 +507,7 @@ const ScreenShots: FC<ScreenTypes> = ({
       return
     }
 
-    const names = Array.from(selectedKeys)
+    const names = sortedselectedKeys
 
     let confirmed = await showConfirmationDialog({
       content: `Are you sure you want to compare these images? [${names}]`,
@@ -689,23 +687,23 @@ const ScreenShots: FC<ScreenTypes> = ({
             {filteredData.map((item, index) => {
               return (
                 <Col xs={24} sm={12} md={8} lg={6} xl={4} key={item.name}>
-                  <div className="screenshot-item-container">
-                    <ScreenshotCardItem
-                      item={item}
-                      imageSizes={imageSizes}
-                      imgRefs={imgRefs}
-                      isCroping={isCroping}
-                      _renderCount={_renderCount}
-                      selectedKeys={selectedKeys}
-                      handleImageLoad={handleImageLoad}
-                      onJumpTo={onJumpTo}
-                      handleCheckboxChange={handleCheckboxChange}
-                      openModal={openModal}
-                    />
-                    <ScreenshotSortableItem key={item.name} id={item.name}>
-                      <DragOutlined />
-                    </ScreenshotSortableItem>
-                  </div>
+                  {/* <div className="screenshot-item-container w-full"> */}
+                  {/* <ScreenshotSortableItem key={item.name} id={item.name}> */}
+                  <ScreenshotCardItem
+                    item={item}
+                    imageSizes={imageSizes}
+                    imgRefs={imgRefs}
+                    isCroping={isCroping}
+                    _renderCount={_renderCount}
+                    selectedKeys={selectedKeys}
+                    handleImageLoad={handleImageLoad}
+                    onJumpTo={onJumpTo}
+                    handleCheckboxChange={handleCheckboxChange}
+                    openModal={openModal}
+                  />
+                  {/* <DragOutlined /> */}
+                  {/* </ScreenshotSortableItem> */}
+                  {/* </div> */}
                 </Col>
               )
             })}
@@ -740,7 +738,6 @@ const ScreenShots: FC<ScreenTypes> = ({
           </DragOverlay>
         </DndContext>
       </Row>
-
       <ScreenshotModal
         _renderCount={_renderCount}
         visible={visibleModal}
