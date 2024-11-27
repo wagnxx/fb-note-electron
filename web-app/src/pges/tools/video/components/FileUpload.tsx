@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from 'antd'
-import { UploadOutlined } from '@ant-design/icons'
+import { PlusOutlined } from '@ant-design/icons'
 import { isElectron } from '@/utils/utilsSystem'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -62,7 +62,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ fileInputRef, setPlaylist }) =>
         onChange={handleFileUpload}
         style={{ display: 'none' }}
       />
-      <Button icon={<UploadOutlined />} onClick={openFileDialog}></Button>
+      <Button icon={<PlusOutlined />} onClick={openFileDialog}></Button>
     </div>
   )
 }

@@ -29,3 +29,17 @@
   right: -5px;
   cursor: nwse-resize;
 }
+
+.screenshot-item-container{
+  position: relative;
+}
+.screenshot-sortable-item{
+  position: absolute;
+  visibility: hidden;
+  padding: 4px;
+  /* border: 1px solid #ddd; */
+  background-color: rgba(211, 200, 200, 0.5);
+}
+.screenshot-item-container:hover .screenshot-sortable-item{
+  visibility: visible;
+}

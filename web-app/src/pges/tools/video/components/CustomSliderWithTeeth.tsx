@@ -207,8 +207,7 @@ const CustomSliderWithTeeth = (
         <div
           className="slider-cursor"
           style={{
-            left: `${currentHourValue * 6}px`, // 根据当前小时值计算游标位置
-            transform: 'translateX(-50%)',
+            left: `${currentHourValue * 7}px`, // 根据当前小时值计算游标位置
           }}
         ></div>
       </div>
@@ -232,8 +231,7 @@ const CustomSliderWithTeeth = (
         <div
           className="slider-cursor"
           style={{
-            left: `${currentMinuteValue * 6}px`, // 根据当前分钟值计算游标位置
-            transform: 'translateX(-50%)',
+            left: `${currentMinuteValue * 7}px`, // 根据当前分钟值计算游标位置
           }}
         ></div>
       </div>
@@ -258,8 +256,7 @@ const CustomSliderWithTeeth = (
         <div
           className="slider-cursor"
           style={{
-            left: `${currentSecondValue * 6}px`, // 根据当前秒值计算游标位置
-            transform: 'translateX(-50%)',
+            left: `${currentSecondValue * 7}px`, // 根据当前秒值计算游标位置
           }}
         ></div>
       </div>
@@ -283,14 +280,11 @@ const CustomSliderWithTeeth = (
             onClick={() => setIsFixedTolltips(false)}
           />
         </Flex>
-        <h3>
-          Current Time:
-          {formatSecondsToHHmmss(tooltipValue)}
-        </h3>
+        <h3 className=" py-2 text-3xl text-center">{formatSecondsToHHmmss(tooltipValue)}</h3>
         <div>
           <Space>
             <Button onClick={saveImage}>Save Image</Button>
-            <Button onClick={() => onJumpTo(tooltipValue, true)}>Play</Button>
+            <Button onClick={() => onJumpTo(tooltipValue, false)}>Go To</Button>
           </Space>
         </div>
       </div>

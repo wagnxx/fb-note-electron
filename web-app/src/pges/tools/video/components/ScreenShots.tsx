@@ -1,5 +1,18 @@
 import React, { FC, useState, useMemo, useRef, useCallback, useEffect } from 'react'
-import { Row, Col, Button, Tooltip, Dropdown, Checkbox, notification, Space } from 'antd'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverEvent,
+  UniqueIdentifier,
+  DragOverlay,
+  DragStartEvent,
+} from '@dnd-kit/core'
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { Row, Col, Button, Dropdown, Checkbox, notification, Space } from 'antd'
 import ScreenshotModal, { Range } from './ScreenshotModal'
 import './ScreenShots.css'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
@@ -12,6 +25,11 @@ import { mapByField } from '@/utils/utilsArray'
 import { parseHHmmssToSeconds } from '@/utils/utilsDate'
 import { uploadFileToFirebase } from '@/service/firebaseUploader'
 import { checkScreenshotDocExistsByName, createScreenshotDoc } from '@/service/screenshotDoc'
+import { useAuth } from '@/context/AuthContext'
+import useComputedFilter from './useComputedFilter'
+import ScreenshotCardItem from './ScreenshotCardItem'
+import { ScreenshotSortableItem } from './ScreenshotSortableItem'
+import { DragOutlined } from '@ant-design/icons'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export type Prop = {
   doc?: ScreenshotDoc
@@ -32,10 +50,6 @@ const normalizeTime = (time: string): string => {
   return time.replace(/-/g, ':')
 }
 
-const timeToSeconds = (time: string): number => {
-  const [hours, minutes, seconds] = time.split(':').map(Number)
-  return hours * 3600 + minutes * 60 + seconds
-}
 type ScreenTypes = Prop & { _renderCount: number; _refreshPage: () => void }
 // type ScreenTypes = Prop
 const ScreenShots: FC<ScreenTypes> = ({
@@ -51,16 +65,156 @@ const ScreenShots: FC<ScreenTypes> = ({
   )
   const [visibleModal, setVisibleModal] = useState<boolean>(false)
   const [currentImage, setCurrentImage] = useState<string>('')
-  const [filter, setFilter] = useState<{ width?: number; height?: number }>({})
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set())
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [cropRange, setCropRange] = useState<{ name: string; range: Range }[] | null>()
   const [isCroping, setIsCroping] = useState(false)
   const [docExisted, setDocExisted] = useState(true)
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null) // 当前拖拽的 id
+
   // 使用 useRef 来为每个图片创建一个 ref
   const imgRefs = useRef<{ [key: string]: HTMLImageElement | null }>({})
 
   const [notificationApi, notificationContextHandle] = notification.useNotification()
+
+  const { isAuthenticated } = useAuth()
+
+  const screenshotsMap = useMemo(() => {
+    const screenshots = mapByField(doc?.screenshots || [], 'name')
+    return screenshots
+  }, [doc])
+
+  const thumbnailsData = useMemo(() => {
+    const names = Array.from(selectedKeys)
+    return names
+      .map(item => ({
+        id: item,
+        url: screenshotsMap[item]?.path,
+      }))
+      .filter(item => Boolean(item.url))
+      .sort((a, b) => {
+        const normalizedA = normalizeTime(a.id)
+        const normalizedB = normalizeTime(b.id)
+        const diff = parseHHmmssToSeconds(normalizedA) - parseHHmmssToSeconds(normalizedB)
+        return sortOrder === 'asc' ? diff : -diff
+      })
+  }, [screenshotsMap, selectedKeys, sortOrder])
+
+  const sortedData = useMemo(() => {
+    const sortedKeys = Object.keys(screenshotsMap).sort((a, b) => {
+      const normalizedA = normalizeTime(a)
+      const normalizedB = normalizeTime(b)
+      const diff = parseHHmmssToSeconds(normalizedA) - parseHHmmssToSeconds(normalizedB)
+      return sortOrder === 'asc' ? diff : -diff
+    })
+
+    return sortedKeys.map(item => ({
+      ...screenshotsMap[item],
+    }))
+  }, [screenshotsMap, sortOrder])
+
+  const { filteredData, setFilteredData, filter, setFilter } = useComputedFilter<ScreenshotType>(
+    sortedData,
+    imageSizes,
+    {
+      width: null,
+      height: null,
+      isCroped: undefined,
+    },
+  )
+
+  const activedItem = useMemo(() => {
+    return filteredData.find(item => item.name === activeId)
+  }, [activeId, filteredData])
+
+  const uniqueImageSizes = useMemo(() => {
+    const sizes = Object.values(imageSizes).reduce(
+      (pre, cur) => {
+        if (!pre.some(item => item.width === cur.width && item.height === cur.height)) {
+          pre.push(cur)
+        }
+        return pre
+      },
+      [] as Array<{ width: number; height: number }>,
+    )
+    return sizes
+  }, [imageSizes])
+
+  // 筛选菜单
+  const sizeMenu = useMemo(() => {
+    // 创建 Menu.Item 对应的 MenuProps 类型的数组
+    const widths = [...new Set(uniqueImageSizes.map(item => item.width))]
+    const heights = [...new Set(uniqueImageSizes.map(item => item.height))]
+    const items = [
+      {
+        key: 'all',
+        label: 'All',
+        onClick: () => setFilter({}),
+      },
+      ...uniqueImageSizes.map(({ width, height }) => ({
+        key: `width-${width}-${height}`,
+        label: `${width}x${height}`,
+        onClick: () => setFilter({ width, height }),
+      })),
+      ...widths.map(width => ({
+        key: `width-${width}`,
+        label: `Width ${width}`,
+        onClick: () => setFilter({ ...filter, width }),
+      })),
+      ...heights.map(height => ({
+        key: `height-${height}`,
+        label: `Height ${height}`,
+        onClick: () => setFilter({ ...filter, height }),
+      })),
+    ]
+
+    // 返回 MenuProps 类型的 Menu 组件
+    return items
+  }, [uniqueImageSizes, setFilter, filter])
+
+  const stateMenu = useMemo(() => {
+    const items = [
+      {
+        key: 'all',
+        label: 'All',
+        onClick: () => setFilter({}),
+      },
+      {
+        key: 'croped',
+        label: 'Croped',
+        onClick: () => setFilter({ ...filter, isCroped: true }),
+      },
+      {
+        key: 'uncroped',
+        label: 'Uncroped',
+        onClick: () => setFilter({ ...filter, isCroped: false }),
+      },
+    ]
+    return items
+  }, [filter, setFilter])
+
+  const allSelectedState = useMemo(() => {
+    const selectedCount = selectedKeys.size
+    const totalCount = Object.keys(filteredData).length
+
+    return {
+      checkAll: selectedCount === totalCount,
+      indeterminate: selectedCount > 0 && selectedCount < totalCount,
+    }
+  }, [filteredData, selectedKeys.size])
+
+  const SortedselectedKeys = useMemo(() => {
+    const filtered = filteredData.filter(item => selectedKeys.has(item.name))
+    return filtered
+  }, [filteredData, selectedKeys])
+
+  // 处理全选/取消全选
+  const toggleSelectAll = (e: CheckboxChangeEvent) => {
+    const newSelectedKeys: Set<string> = e.target.checked
+      ? new Set(filteredData.map(item => item.name)) // 全选
+      : new Set() // 取消全选
+    setSelectedKeys(newSelectedKeys)
+  }
 
   const handleImageLoad = (name: string, event: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth, naturalHeight } = event.currentTarget
@@ -92,121 +246,6 @@ const ScreenShots: FC<ScreenTypes> = ({
     setIsCroping(true)
     closeModal() // 关闭modal
   }
-
-  const screenshotsMap = useMemo(() => {
-    const screenshots = mapByField(doc?.screenshots || [], 'name')
-    return screenshots
-  }, [doc])
-
-  const thumbnailsData = useMemo(() => {
-    const names = Array.from(selectedKeys)
-    return names
-      .map(item => ({
-        id: item,
-        url: screenshotsMap[item]?.path,
-      }))
-      .filter(item => Boolean(item.url))
-      .sort((a, b) => {
-        const normalizedA = normalizeTime(a.id)
-        const normalizedB = normalizeTime(b.id)
-        const diff = timeToSeconds(normalizedA) - timeToSeconds(normalizedB)
-        return sortOrder === 'asc' ? diff : -diff
-      })
-  }, [screenshotsMap, selectedKeys, sortOrder])
-
-  const sortedData = useMemo(() => {
-    const sortedKeys = Object.keys(screenshotsMap).sort((a, b) => {
-      const normalizedA = normalizeTime(a)
-      const normalizedB = normalizeTime(b)
-      const diff = timeToSeconds(normalizedA) - timeToSeconds(normalizedB)
-      return sortOrder === 'asc' ? diff : -diff
-    })
-
-    return sortedKeys.map(item => ({
-      ...screenshotsMap[item],
-    }))
-  }, [screenshotsMap, sortOrder])
-
-  // 筛选函数
-  const filteredData = useMemo(() => {
-    if (!filter.width && !filter.height) return sortedData
-    return sortedData.filter(item => {
-      const imageSize = imageSizes[item.name]
-      if (!imageSize) return false
-
-      const { width, height } = imageSize
-
-      // 动态筛选
-      const matchesWidth = filter.width ? width === filter.width : true
-      const matchesHeight = filter.height ? height === filter.height : true
-
-      return matchesWidth && matchesHeight
-    })
-  }, [filter, sortedData, imageSizes])
-
-  const uniqueImageSizes = useMemo(() => {
-    const sizes = Object.values(imageSizes).reduce(
-      (pre, cur) => {
-        if (!pre.some(item => item.width === cur.width && item.height === cur.height)) {
-          pre.push(cur)
-        }
-        return pre
-      },
-      [] as Array<{ width: number; height: number }>,
-    )
-    return sizes
-  }, [imageSizes])
-
-  // 筛选菜单
-  const menu = useMemo(() => {
-    // 创建 Menu.Item 对应的 MenuProps 类型的数组
-    const widths = [...new Set(uniqueImageSizes.map(item => item.width))]
-    const heights = [...new Set(uniqueImageSizes.map(item => item.height))]
-    const items = [
-      {
-        key: 'all',
-        label: 'All',
-        onClick: () => setFilter({}),
-      },
-      ...uniqueImageSizes.map(({ width, height }) => ({
-        key: `width-${width}-${height}`,
-        label: `${width}x${height}`,
-        onClick: () => setFilter({ width, height }),
-      })),
-      ...widths.map(width => ({
-        key: `width-${width}`,
-        label: `Width ${width}`,
-        onClick: () => setFilter({ ...filter, width }),
-      })),
-      ...heights.map(height => ({
-        key: `height-${height}`,
-        label: `Height ${height}`,
-        onClick: () => setFilter({ ...filter, height }),
-      })),
-    ]
-
-    // 返回 MenuProps 类型的 Menu 组件
-    return items
-  }, [uniqueImageSizes, filter])
-
-  const allSelectedState = useMemo(() => {
-    const selectedCount = selectedKeys.size
-    const totalCount = Object.keys(filteredData).length
-
-    return {
-      checkAll: selectedCount === totalCount,
-      indeterminate: selectedCount > 0 && selectedCount < totalCount,
-    }
-  }, [filteredData, selectedKeys.size])
-
-  // 处理全选/取消全选
-  const toggleSelectAll = (e: CheckboxChangeEvent) => {
-    const newSelectedKeys: Set<string> = e.target.checked
-      ? new Set(filteredData.map(item => item.name)) // 全选
-      : new Set() // 取消全选
-    setSelectedKeys(newSelectedKeys)
-  }
-
   // 处理单个图片的选择状态
   const handleCheckboxChange = (key: string, checked: boolean) => {
     const newSelectedKeys = new Set(selectedKeys)
@@ -285,7 +324,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     onSaveScreenshot({
       docId: doc.docId,
       screenshots: updated.map(item => ({ ...item, isCropped: true })),
-      action: 'add',
+      action: 'modify',
     })
   }
 
@@ -339,10 +378,11 @@ const ScreenShots: FC<ScreenTypes> = ({
     setIsCroping(false)
     if (r?.ok) {
       setCropRange(null)
+      const updated = doc.screenshots.filter(item => names.includes(item.name))
       onSaveScreenshot({
         docId: doc.docId,
-        screenshots: [],
-        action: 'refresh',
+        screenshots: updated.map(item => ({ ...item, isCropped: true })),
+        action: 'modify',
       })
     }
   }
@@ -491,12 +531,46 @@ const ScreenShots: FC<ScreenTypes> = ({
       //
     }
   }
+  const sensors = useSensors(
+    useSensor(PointerSensor), // 支持鼠标拖动
+  )
+  const handleDragStart = (e: DragStartEvent) => {
+    setActiveId(e.active.id) // 记录当前拖拽的元素 id
+  }
+  const handleDragOver = (event: DragOverEvent) => {
+    // 获取当前拖拽的元素
+    const { active } = event
+
+    if (active) {
+      const target = document.getElementById(String(active.id))
+      if (target) {
+        target.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'
+      }
+    }
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id) return
+
+    const oldIndex = filteredData.findIndex(item => item.name === active.id)
+    const newIndex = filteredData.findIndex(item => item.name === over.id)
+
+    setFilteredData([...arrayMove(filteredData, oldIndex, newIndex)])
+  }
 
   useEffect(() => {
-    checkScreenshotDocExistsByName(video.name).then(res => {
-      setDocExisted(res)
-    })
-  }, [video.name])
+    if (!isAuthenticated) return
+    checkScreenshotDocExistsByName(video.name)
+      .then(res => {
+        setDocExisted(res)
+      })
+      .catch(err => {
+        setDocExisted(true)
+        console.log('checkScreenshotDocExistsByName err: ', err)
+      })
+  }, [isAuthenticated, video.name])
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
@@ -508,10 +582,16 @@ const ScreenShots: FC<ScreenTypes> = ({
 
       <Row justify={'start'} align={'middle'}>
         {/* 筛选按钮 */}
-        <Dropdown menu={{ items: menu }} trigger={['click']}>
+        <Dropdown menu={{ items: sizeMenu }} trigger={['click']}>
           <Button>
             Filter By: (<span>Width: {filter?.width || '*'}</span>
             <span>Height: {filter?.height || '*'}</span>)
+          </Button>
+        </Dropdown>
+        <Dropdown menu={{ items: stateMenu }} trigger={['click']}>
+          <Button>
+            Filter state By:{' '}
+            {filter?.isCroped === undefined ? 'All' : filter?.isCroped ? 'Croped' : 'Uncroped'}
           </Button>
         </Dropdown>
 
@@ -593,85 +673,72 @@ const ScreenShots: FC<ScreenTypes> = ({
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} justify="start" style={{ marginTop: '20px' }}>
-        {filteredData.map(item => {
-          const imagePath = item.path
-          const imageSize = imageSizes[item.name]
-
-          return (
-            <Col xs={24} sm={12} md={8} lg={6} xl={4} key={item.name}>
-              <div style={{ background: item?.isCropped ? '#7dbeae' : '#ff7875', padding: 0 }}>
-                <div
-                  style={{
-                    position: 'relative',
-                    width: '100%',
-                    paddingBottom: '50.58%', // 高度是宽度的 607/1200 = 50.58%
-                    background: '#000',
-                  }}
-                >
-                  <img
-                    alt={item.name}
-                    ref={el => (imgRefs.current[item.name] = el)}
-                    src={
-                      'http://localhost:4000/image?src=' +
-                      imagePath +
-                      '&renderCount=' +
-                      _renderCount
-                    }
-                    crossOrigin="anonymous"
-                    onLoad={e => handleImageLoad(item.name, e)}
-                    style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      objectFit: 'cover', // 保证图片等比缩放并覆盖整个区域
-                    }}
-                  />
-                </div>
-
-                <div style={{ padding: 8 }}>
-                  <div className="flex justify-between">
-                    <h2
-                      style={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {item.name}
-                    </h2>
-                    <Button size="small" type="text" onClick={() => item.at && onJumpTo(item.at)}>
-                      Jump To
-                    </Button>
+      <Row gutter={[16, 16]} justify={'start'} style={{ marginTop: '20px' }}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+          // onDragLeave={handleDragLeave}
+        >
+          <SortableContext
+            items={filteredData.map(item => item.name)}
+            strategy={verticalListSortingStrategy}
+          >
+            {filteredData.map((item, index) => {
+              return (
+                <Col xs={24} sm={12} md={8} lg={6} xl={4} key={item.name}>
+                  <div className="screenshot-item-container">
+                    <ScreenshotCardItem
+                      item={item}
+                      imageSizes={imageSizes}
+                      imgRefs={imgRefs}
+                      isCroping={isCroping}
+                      _renderCount={_renderCount}
+                      selectedKeys={selectedKeys}
+                      handleImageLoad={handleImageLoad}
+                      onJumpTo={onJumpTo}
+                      handleCheckboxChange={handleCheckboxChange}
+                      openModal={openModal}
+                    />
+                    <ScreenshotSortableItem key={item.name} id={item.name}>
+                      <DragOutlined />
+                    </ScreenshotSortableItem>
                   </div>
+                </Col>
+              )
+            })}
+          </SortableContext>
 
-                  <Row justify="space-between">
-                    <Col>
-                      <Tooltip title="Image Dimensions">
-                        <span>
-                          {imageSize ? `${imageSize.width} x ${imageSize.height}` : 'Loading...'}
-                        </span>
-                      </Tooltip>
-                    </Col>
-                    <Col>
-                      <Checkbox
-                        checked={selectedKeys.has(item.name)}
-                        disabled={isCroping}
-                        onChange={e => handleCheckboxChange(item.name, e.target.checked)}
-                      />
-                      <Button type="link" onClick={() => openModal(item.name)}>
-                        View
-                      </Button>
-                    </Col>
-                  </Row>
-                </div>
+          {/* 拖拽视觉反馈 */}
+          <DragOverlay>
+            {activedItem ? (
+              <div
+                style={{
+                  padding: '8px',
+                  background: '#e0f7fa',
+                  border: '1px dashed #00796b',
+                  borderRadius: '4px',
+                  cursor: 'grabbing',
+                }}
+              >
+                <ScreenshotCardItem
+                  item={activedItem}
+                  imageSizes={imageSizes}
+                  imgRefs={imgRefs}
+                  isCroping={isCroping}
+                  _renderCount={_renderCount}
+                  selectedKeys={selectedKeys}
+                  handleImageLoad={handleImageLoad}
+                  onJumpTo={onJumpTo}
+                  handleCheckboxChange={handleCheckboxChange}
+                  openModal={openModal}
+                />
               </div>
-            </Col>
-          )
-        })}
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </Row>
 
       <ScreenshotModal
