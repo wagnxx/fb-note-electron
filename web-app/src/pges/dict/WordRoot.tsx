@@ -1,9 +1,20 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { Table, Button, Popconfirm, Space, Input } from 'antd'
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { Table, Button, Popconfirm, Space, Input, Switch } from 'antd'
 import { ColumnType } from 'antd/es/table'
-import { batchUpdateWordRoot, getWordRoots } from '@/service/dict'
-import { handleRequestWithNotification } from '@/utils/utilsRequest'
+import { addWordRoot, batchUpdateWordRoot, deleteWordRoot, getWordRoots } from '@/service/dict'
+import { handleRequestWithNotification, showNotification } from '@/utils/utilsRequest'
 import { useAuth } from '@/context/AuthContext'
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { hasDuplicate } from '@/utils/utilsArray'
+import ModalAddRoot from './components/ModalAddRoot'
 
 // 词根类型定义
 export type WordRootType = {
@@ -23,6 +34,8 @@ interface EditableColumnProps extends ColumnType<WordRootType> {
   onCell?: (record: WordRootType) => any
 }
 
+type CollectonKeysType = Map<number, { key: number; newKey: number; id: string }>
+
 // 编辑单元格组件
 const EditableTableCell: React.FC<any> = ({
   title,
@@ -30,13 +43,18 @@ const EditableTableCell: React.FC<any> = ({
   children,
   value,
   field,
+  isBoolean,
   onChange,
   ...restProps
 }) => {
   return (
     <div {...restProps}>
       {editable ? (
-        <Input value={value} onChange={e => onChange(e.target.value)} placeholder={title} />
+        isBoolean ? (
+          <Switch value={value} onChange={val => onChange(val)} />
+        ) : (
+          <Input value={value} onChange={e => onChange(e.target.value)} placeholder={title} />
+        )
       ) : (
         children
       )}
@@ -51,12 +69,16 @@ const WordRoot = () => {
   const [count, setCount] = useState<number>(dataSource.length)
   const [editingKey, setEditingKey] = useState<number | null>(null)
   const [searchText, setSearchText] = useState('')
+  const editedKeys = useRef<Set<number>>(new Set())
+  const collectionRowkeys = useRef<CollectonKeysType>(new Map())
 
   // 分页相关状态
   const [currentPage, setCurrentPage] = useState(1) // 当前页
-  const [pageSize, setPageSize] = useState(5) // 每页条数
+  const [pageSize, setPageSize] = useState(10) // 每页条数
   const [pageTotal, setPageTotal] = useState(0) // 每页条数
   const [loading, setloading] = useState(true)
+
+  const [addRootModalVisible, setAddRootModalVisible] = useState(false)
 
   const { isAuthenticated } = useAuth()
 
@@ -65,91 +87,30 @@ const WordRoot = () => {
       item.root.some(word => word.toLowerCase().includes(searchText.toLowerCase())) ||
       item.meaning.toLowerCase().includes(searchText.toLowerCase()),
   )
-
-  // 分页后数据
-  // const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-  const getTableData = useCallback(async () => {
-    setloading(true)
-    getWordRoots({
-      pageNumber: currentPage,
-      pageSize,
-      lastVisibleDocData: dataSource[dataSource.length - 1],
-    })
-      .then(res => {
-        if (res) {
-          setDataSource([...(res.data as WordRootType[])])
-          setPageTotal(res.total)
-        } else {
-          setDataSource([])
-          setPageTotal(0)
-        }
-      })
-      .finally(() => {
-        setloading(false)
-      })
-  }, [currentPage, pageSize])
-
-  // 过滤函数
-  const handleSearch = (value: string) => {
-    setSearchText(value)
-    setCurrentPage(1) // 搜索时重置页码
+  // 分页配置
+  const paginationConfig = {
+    current: currentPage,
+    pageSize: pageSize,
+    total: pageTotal,
+    onChange: handlePageChange,
+    showSizeChanger: true,
+    pageSizeOptions: ['10', '20', '30', '50'],
+    showTotal: (total: number) => `共 ${total} 条数据`,
   }
 
-  const handleDelete = (key: React.Key) => {
-    const newData = dataSource.filter(item => item.key !== key)
-    setDataSource(newData)
-  }
-
-  const handleAdd = () => {
-    const newData = {
-      key: pageTotal + 1,
-      root: [],
-      meaning: '',
-      wordCount: 0,
-      inDocument: false,
-      inJson: false,
-      isLinked: false,
-    }
-    setDataSource([...dataSource, newData])
-  }
-
-  const handleSync = async () => {
-    const r = await handleRequestWithNotification(
-      async () =>
-        await batchUpdateWordRoot(
-          dataSource.map(item => ({
-            id: item?.id,
-            key: Number(item.key),
-          })),
-        ),
-      {
-        successField: null,
-        errorField: null,
-      },
-    )
-
-    if (r) {
-      console.log('operation successful')
-    }
-  }
-
-  const handleChange = <K extends keyof WordRootType>({
-    value,
-    rowKey,
-    field,
-  }: {
-    value: WordRootType[K]
-    rowKey: number
-    field: K
-  }) => {
-    setDataSource(data =>
-      data.map(item => {
-        if (rowKey === item.key) {
-          item[field] = value
+  const handleChangeWordsText = (val: string, rowKey: number) => {
+    let arr = val.split('/')
+    setDataSource(preData => {
+      return preData.map(item => {
+        if (item.key === editingKey) {
+          return {
+            ...item,
+            root: arr,
+          }
         }
         return item
-      }),
-    )
+      })
+    })
   }
 
   const editableColumns: (EditableColumnProps & { isBoolean?: boolean })[] = [
@@ -160,7 +121,20 @@ const WordRoot = () => {
       editable: false,
       fixed: true,
       width: 60,
-      render: (text, record) => text.toString(),
+      // render: (text, record) => text.toString(),
+      render: (text, record) => (
+        <SortableRow id={record.key} collectionRowkeys={collectionRowkeys}>
+          {collectionRowkeys.current.has(record.key) ? (
+            <div>
+              {collectionRowkeys.current.get(record.key)?.key}
+              <span>-</span>
+              {collectionRowkeys.current.get(record.key)?.newKey}
+            </div>
+          ) : (
+            text
+          )}
+        </SortableRow>
+      ),
     },
     {
       title: '词根',
@@ -169,7 +143,21 @@ const WordRoot = () => {
       editable: true,
       fixed: true,
       width: 150,
-      render: (text, record) => text.toString(),
+      render: (text, record) => {
+        if (editingKey === record.key) {
+          // edit mode
+          return (
+            <Input
+              value={record.root.join('/')}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                handleChangeWordsText(e.target.value, record.key)
+              }
+            />
+          )
+        } else {
+          return record.root.join('/')
+        }
+      },
     },
     {
       title: '词义',
@@ -220,6 +208,9 @@ const WordRoot = () => {
             >
               Edit
             </Button>
+            <Popconfirm title="确定保存?" onConfirm={() => handleSave(record.key)}>
+              <a>Save</a>
+            </Popconfirm>
           </Space>
         ) : null,
     },
@@ -236,6 +227,7 @@ const WordRoot = () => {
         <EditableTableCell
           editable={editingKey === record.key}
           value={text}
+          isBoolean={col.isBoolean}
           onChange={(value: any) =>
             handleChange({
               rowKey: record.key,
@@ -244,27 +236,205 @@ const WordRoot = () => {
             })
           }
         >
-          {col.isBoolean ? (record[col.dataIndex as keyof WordRootType] ? '√' : '×') : text}
+          <div style={{ pointerEvents: 'none', userSelect: 'none' }}>
+            {col.isBoolean ? (record[col.dataIndex as keyof WordRootType] ? '√' : '×') : text}
+          </div>
         </EditableTableCell>
       ),
     }
   })
 
+  // 分页后数据
+  // const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const getTableData = useCallback(async () => {
+    setloading(true)
+    getWordRoots({
+      pageNumber: currentPage,
+      pageSize,
+      lastVisibleDocData: dataSource[dataSource.length - 1],
+    })
+      .then(res => {
+        if (res) {
+          setDataSource([...(res.data as WordRootType[])])
+          setPageTotal(res.total)
+        } else {
+          setDataSource([])
+          setPageTotal(0)
+        }
+      })
+      .finally(() => {
+        setloading(false)
+        editedKeys.current.clear()
+      })
+  }, [currentPage, pageSize])
+
+  // 过滤函数
+  const handleSearch = (value: string) => {
+    setSearchText(value)
+    setCurrentPage(1) // 搜索时重置页码
+  }
+
+  const handleDelete = async (key: React.Key) => {
+    const tar = dataSource.find(item => item.key === key)
+    if (!tar) return
+
+    const r = await handleRequestWithNotification(async () => await deleteWordRoot([tar.id!]), {
+      successField: null,
+      errorField: null,
+    })
+
+    if (r) {
+      collectionRowkeys.current.clear()
+      editedKeys.current.clear()
+      setEditingKey(null)
+      getTableData()
+    }
+  }
+  const handleSave = async (key: React.Key) => {
+    const tar = dataSource.find(item => item.key === key)
+    if (!tar) return
+
+    const r = await handleRequestWithNotification(async () => await batchUpdateWordRoot([tar]), {
+      successField: null,
+      errorField: null,
+    })
+
+    if (r) {
+      collectionRowkeys.current.clear()
+      editedKeys.current.clear()
+      setEditingKey(null)
+      getTableData()
+    }
+  }
+
+  const handleAdd = () => {
+    setAddRootModalVisible(true)
+  }
+  const handleSyncKeys = async () => {
+    console.log('collectionRowkeys: ', collectionRowkeys.current.values())
+    const submiteData = Array.from(collectionRowkeys.current.values()).map(item => ({
+      id: item.id,
+      key: item.newKey,
+    }))
+    if (hasDuplicate(submiteData, 'key')) {
+      showNotification('error', 'Can not include duplicate keys', 'message')
+      return
+    }
+
+    const r = await handleRequestWithNotification(
+      async () => await batchUpdateWordRoot(submiteData),
+      {
+        successField: null,
+        errorField: null,
+      },
+    )
+
+    if (r) {
+      collectionRowkeys.current.clear()
+      getTableData()
+    }
+  }
+  const handleSync = async () => {
+    const submiteData = dataSource.filter(item => editedKeys.current.has(item.key))
+
+    const r = await handleRequestWithNotification(
+      async () => await batchUpdateWordRoot(submiteData),
+      {
+        successField: null,
+        errorField: null,
+      },
+    )
+
+    if (r) {
+      setEditingKey(null)
+      getTableData()
+    }
+  }
+
+  const handleChange = <K extends keyof WordRootType>({
+    value,
+    rowKey,
+    field,
+  }: {
+    value: WordRootType[K]
+    rowKey: number
+    field: K
+  }) => {
+    editedKeys.current.add(rowKey)
+    setDataSource(data =>
+      data.map(item => {
+        if (rowKey === item.key) {
+          item[field] = value
+        }
+        return item
+      }),
+    )
+  }
+
   // 分页改变时触发
-  const handlePageChange = (page: number, pageSize: number) => {
+  function handlePageChange(page: number, pageSize: number) {
     setCurrentPage(page)
     setPageSize(pageSize)
   }
+  const sensors = useSensors(useSensor(PointerSensor))
 
-  // 分页配置
-  const paginationConfig = {
-    current: currentPage,
-    pageSize: pageSize,
-    total: pageTotal,
-    onChange: handlePageChange,
-    showSizeChanger: true,
-    pageSizeOptions: ['10', '20', '30', '50'],
-    showTotal: (total: number) => `共 ${total} 条数据`,
+  const moveRow = (fromIndex: number, toIndex: number) => {
+    const updatedData = [...dataSource] // 复制一份原始数据
+    // 交换 fromIndex 和 toIndex 位置的元素
+    const temp = updatedData[fromIndex]
+    updatedData[fromIndex] = updatedData[toIndex]
+    updatedData[toIndex] = temp
+    setDataSource(updatedData) // 更新数据源
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (active.id !== over?.id) {
+      // 找到元素的索引
+      const oldIndex = dataSource.findIndex(row => row.key === active.id)
+      const newIndex = dataSource.findIndex(row => row.key === over?.id)
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        moveRow(oldIndex, newIndex)
+        collectionRowkeys.current.set(active.id as number, {
+          newKey: over?.id as number,
+          key: active.id as number,
+          id: dataSource[oldIndex].id as string,
+        })
+        collectionRowkeys.current.set(over?.id as number, {
+          newKey: active?.id as number,
+          key: over?.id as number,
+          id: dataSource[newIndex].id as string,
+        })
+      }
+    }
+  }
+
+  const onAddRoot = async ({ root, meaning, wordCount }: Partial<WordRootType>) => {
+    if (!root) return
+
+    const tar = {
+      key: pageTotal + 1,
+      root: root,
+      meaning: meaning,
+      wordCount: wordCount,
+      inDocument: false,
+      inJson: false,
+      isLinked: false,
+    }
+
+    const r = await handleRequestWithNotification(
+      async () => await addWordRoot(tar as WordRootType),
+      {
+        successField: null,
+        errorField: null,
+      },
+    )
+    if (r) {
+      getTableData()
+    }
+    setAddRootModalVisible(false)
   }
 
   useEffect(() => {
@@ -273,35 +443,83 @@ const WordRoot = () => {
   }, [getTableData, isAuthenticated])
 
   return (
-    <div className="container mx-auto">
-      <Space style={{ marginBottom: 16 }}>
+    <div className="container mx-auto p-6 bg-white">
+      <Space style={{ marginBottom: 16 }} className=" items-start">
         <Input.Search
+          size="small"
           placeholder="搜索词根或词义"
           value={searchText}
           onChange={e => handleSearch(e.target.value)}
           style={{ marginBottom: 8 }}
         />
-        <Button onClick={handleAdd} type="primary" icon={<i className="anticon anticon-plus" />}>
+        <Button onClick={handleAdd} type="primary" size="small">
           添加
         </Button>
         <Button
           onClick={handleSync}
           type="primary"
-          icon={<i className="anticon anticon-plus" />}
-          disabled
+          size="small"
+          disabled={editedKeys.current.size === 0}
         >
           Sync Data
         </Button>
+        <Button onClick={handleSyncKeys} type="primary" size="small">
+          Sync Keys
+        </Button>
       </Space>
-      <Table
-        loading={loading}
-        bordered
-        scroll={{ y: 600 }}
-        dataSource={filteredData} // 使用分页后的数据
-        columns={mergedColumns as ColumnType<WordRootType>[]}
-        rowClassName="editable-row"
-        pagination={paginationConfig} // 配置分页
-      />
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+        <SortableContext
+          items={filteredData.map(item => item.key)}
+          strategy={verticalListSortingStrategy}
+        >
+          <Table
+            loading={loading}
+            bordered
+            size="small"
+            scroll={{ y: 600 }}
+            dataSource={filteredData} // 使用分页后的数据
+            columns={mergedColumns as ColumnType<WordRootType>[]}
+            rowClassName="editable-row"
+            pagination={paginationConfig} // 配置分页
+          />
+        </SortableContext>
+      </DndContext>
+
+      <ModalAddRoot visible={addRootModalVisible} onAdd={onAddRoot} />
+    </div>
+  )
+}
+
+// 为每一行创建可排序的组件
+const SortableRow = ({
+  id,
+  collectionRowkeys,
+  children,
+}: {
+  id: number
+  children: React.ReactNode
+  collectionRowkeys: React.RefObject<CollectonKeysType>
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id,
+  })
+
+  const styles = {
+    transform: `translateY(${transform?.y || 0}px)`,
+    transition,
+    background: collectionRowkeys.current?.has(id) ? 'red' : '',
+    // cursor: 'not-allowed',
+  }
+
+  if (collectionRowkeys.current?.has(id)) {
+    return (
+      <div style={{ ...styles, backgroundColor: 'green', cursor: 'not-allowed' }}>{children}</div>
+    )
+  }
+
+  return (
+    <div ref={setNodeRef} {...listeners} {...attributes} style={styles}>
+      {children}
     </div>
   )
 }

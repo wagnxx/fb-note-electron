@@ -80,3 +80,15 @@ export function mapByField<T>(array: T[], key: keyof T): Record<string, T> {
     {} as Record<string, T>,
   )
 }
+
+export const hasDuplicate = (arr: any[], field: string): boolean => {
+  const seen = new Set()
+  for (let i = 0; i < arr.length; i++) {
+    const value = arr[i][field]
+    if (seen.has(value)) {
+      return true // 如果已经存在该值，说明有重复
+    }
+    seen.add(value) // 将该值加入集合
+  }
+  return false // 没有重复
+}

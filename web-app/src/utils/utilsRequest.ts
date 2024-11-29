@@ -53,7 +53,7 @@ export async function handleRequestWithNotification<T>(
 }
 
 // 封装通知的显示
-function showNotification(
+export function showNotification(
   type: 'success' | 'error',
   messageContent: string,
   notificationType: 'notification' | 'message' | 'alert' | 'notice',
