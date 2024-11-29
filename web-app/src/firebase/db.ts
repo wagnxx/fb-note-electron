@@ -14,6 +14,7 @@ import {
   getFirestore,
   writeBatch,
   where,
+  getCountFromServer,
 } from 'firebase/firestore'
 
 import { app } from './firebase'
@@ -39,6 +40,43 @@ export const addDocToCol = async (colName: string, doc: DocumentData): Promise<s
     const docRef = await addDoc(collection(db, colName), doc)
     LogInfo('Document added with ID:', docRef.id)
     return docRef.id // 返回添加文档的 ID
+  } catch (error: unknown) {
+    dealError(error)
+    return null // 返回 null 或者抛出错误，视情况而定
+  }
+}
+
+export const batchAddOrUpdateDocs = async (
+  colName: string,
+  docs: { id?: string; data: DocumentData }[],
+): Promise<string[] | null> => {
+  const batch = writeBatch(db)
+
+  const docRefs: any[] = [] // 用于存储文档的引用，以便稍后提取其 ID
+
+  docs.forEach(d => {
+    let docRef
+    if (d.id) {
+      // 如果传递了 id，使用 update 更新文档
+      docRef = doc(collection(db, colName), d.id)
+      batch.update(docRef, d.data) // 批量更新文档
+    } else {
+      // 如果没有 id，使用 set 添加新文档
+      docRef = doc(collection(db, colName)) // 自动生成 ID
+      batch.set(docRef, d.data) // 批量添加文档
+    }
+    docRefs.push(docRef) // 将每个文档的引用加入 docRefs 数组
+  })
+
+  try {
+    // 提交批量操作
+    await batch.commit()
+
+    // 提取所有文档的 ID
+    const docIds = docRefs.map(ref => ref.id)
+
+    console.log('Batch add successful')
+    return docIds
   } catch (error: unknown) {
     dealError(error)
     return null // 返回 null 或者抛出错误，视情况而定
@@ -124,10 +162,27 @@ export const getDocsByCondition = async (
   }
 }
 
+export const getDocSize = async (colName: string): Promise<number> => {
+  try {
+    // 获取集合的文档数量
+    const snapshot = await getCountFromServer(collection(db, colName))
+
+    // 获取总数
+    const total = snapshot.data().count
+
+    console.log('Total number of documents:', total)
+    return total
+  } catch (error) {
+    console.error('Error getting document count:', error)
+    // 如果发生异常，返回一个默认值或抛出错误
+    throw new Error('无法获取文档数量')
+  }
+}
 // 获取指定字段的值
+
 export const getFieldValues = async (
   collectionName: string,
-  fieldNames: string[],
+  fieldNames: string[] | 'all',
   conditions: QueryConstraint[] = [],
 ): Promise<DocumentData[]> => {
   try {
@@ -141,14 +196,19 @@ export const getFieldValues = async (
     const fieldValues: DocumentData[] = []
 
     querySnapshot.forEach(doc => {
-      const fieldValue: DocumentData = {}
-      fieldNames.forEach(fieldName => {
-        if (fieldName === 'id') {
-          fieldValue[fieldName] = doc.id
-        } else {
-          fieldValue[fieldName] = doc.data()[fieldName]
-        }
-      })
+      let fieldValue: DocumentData = {}
+      if (fieldNames === 'all') {
+        fieldValue = doc.data()
+        fieldValue.id = doc.id
+      } else {
+        fieldNames.forEach(fieldName => {
+          if (fieldName === 'id') {
+            fieldValue[fieldName] = doc.id
+          } else {
+            fieldValue[fieldName] = doc.data()[fieldName]
+          }
+        })
+      }
       fieldValues.push(fieldValue)
     })
 

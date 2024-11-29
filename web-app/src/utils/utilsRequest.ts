@@ -10,8 +10,8 @@ interface NotifyOptions {
   successMessage?: string
   errorMessage?: string
   notificationType?: 'notification' | 'message' | 'alert' | 'notice' // 通知类型
-  successField?: string // 自定义字段名，用于检查成功结果
-  errorField?: string // 自定义字段名，用于检查错误结果
+  successField?: string | null // 自定义字段名，用于检查成功结果
+  errorField?: string | null // 自定义字段名，用于检查错误结果
 }
 
 export async function handleRequestWithNotification<T>(
@@ -31,8 +31,10 @@ export async function handleRequestWithNotification<T>(
     const result = await actionFunc() // 调用传入的方法
 
     // 根据传入的字段名检查返回结果
-    const isSuccess = (result as ApiResponse)?.[successField] === true
-    const errorMsg = (result as ApiResponse)?.[errorField] || errorMessage
+    const isSuccess =
+      successField === null && result ? true : (result as ApiResponse)?.[successField!] === true
+    const errorMsg =
+      errorField === null ? errorMessage : (result as ApiResponse)?.[errorField] || errorMessage
 
     if (isSuccess) {
       // 根据传入的通知类型显示成功消息

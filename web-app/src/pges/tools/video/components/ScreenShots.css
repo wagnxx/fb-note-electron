@@ -30,19 +30,21 @@
   cursor: nwse-resize;
 }
 
-.screenshot-card-item{
+.screenshot-card-item {
   padding: 0;
   position: relative;
   top: 0;
   left: 0;
 
 }
-.drag-icon{
+
+.drag-icon {
   position: absolute;
   visibility: hidden;
   padding: 4px;
   z-index: 999;
 }
-.screenshot-card-item:hover .drag-icon{
+
+.screenshot-card-item:hover .drag-icon {
   visibility: visible;
 }

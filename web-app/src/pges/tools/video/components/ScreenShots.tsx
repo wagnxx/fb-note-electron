@@ -542,7 +542,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     if (active) {
       const target = document.getElementById(String(active.id))
       if (target) {
-        target.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'
+        target.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
       }
     }
   }
@@ -574,8 +574,9 @@ const ScreenShots: FC<ScreenTypes> = ({
     <div style={{ height: '100vh', overflowY: 'auto' }}>
       {notificationContextHandle}
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>
-        Screen Shots
-        <span>_renderCount: {_renderCount}</span>
+        <Space>
+          <span>Screen Shots List</span>
+        </Space>
       </h2>
 
       <Row justify={'start'} align={'middle'}>
