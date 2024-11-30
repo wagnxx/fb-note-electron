@@ -16,15 +16,23 @@ import {
   startAfter,
 } from 'firebase/firestore'
 import { WordRootType } from '@/pges/dict/WordRoot'
+import { AffixType } from '@/pges/dict/components/AffixList'
 
 const COL_WORD_ROOT = 'wordRoot'
+const COL_WORD_AFFIX = 'wordAffix'
 
-type DocType = WordRootType & {
+export type AffixDocType = AffixType & {
+  createTime: FieldValue // 创建时间，必选
+  updatedTime: FieldValue // 更新时间，必选
+  createId?: string
+}
+
+type RootDocType = WordRootType & {
   createTime?: FieldValue
   createId?: string
 }
 
-export const addWordRoot = (doc: DocType) => {
+export const addWordRoot = (doc: RootDocType) => {
   if (auth?.currentUser?.uid) {
     doc.createTime = serverTimestamp()
     doc.createId = auth.currentUser.uid
@@ -32,7 +40,7 @@ export const addWordRoot = (doc: DocType) => {
   }
   return Promise.reject('logout')
 }
-export const batchUpdateWordRoot = (docs: Partial<DocType>[]) => {
+export const batchUpdateWordRoot = (docs: Partial<RootDocType>[]) => {
   if (auth?.currentUser?.uid) {
     docs.map(doc => {
       doc.createTime = serverTimestamp()
@@ -86,3 +94,41 @@ export const getWordRoots = async ({
 export const getWordRoot = (id: string) => getDocData(COL_WORD_ROOT, id)
 
 export const deleteWordRoot = (ids: string[]) => deleteDocsByIds(COL_WORD_ROOT, ids)
+
+export const batchUpdateWordAffix = (docs: Partial<AffixDocType>[]) => {
+  if (auth?.currentUser?.uid) {
+    docs.map(doc => {
+      if (doc.id) {
+        doc.updatedTime = serverTimestamp()
+      } else {
+        doc.createTime = serverTimestamp()
+        doc.createId = auth.currentUser!.uid
+      }
+    })
+    return batchAddOrUpdateDocs(
+      COL_WORD_AFFIX,
+      docs.map(doc => ({ data: doc, id: doc?.id })),
+    )
+  }
+  return Promise.reject('logout')
+}
+export const deleteWordAffix = (ids: string[]) => deleteDocsByIds(COL_WORD_AFFIX, ids)
+
+export const getWordAffix = async () => {
+  if (!auth?.currentUser?.uid) {
+    return Promise.reject('logout')
+  }
+
+  const conditions = [
+    // where('createId', '==', auth.currentUser.uid),
+    // orderBy('key', 'asc'),
+    // orderBy('key', 'asc'),
+    // lastVisibleDocData ? startAfter(lastVisibleDocData.key) : null,
+    // where('docName', '>', ''),
+    // orderBy('createTime', 'desc'),
+  ].filter(Boolean)
+
+  const data = await getFieldValues(COL_WORD_AFFIX, 'all', conditions as QueryConstraint[])
+
+  return data
+}

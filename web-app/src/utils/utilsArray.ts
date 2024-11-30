@@ -92,3 +92,49 @@ export const hasDuplicate = (arr: any[], field: string): boolean => {
   }
   return false // 没有重复
 }
+
+export const groupBy = <T>(
+  array: T[],
+  key: keyof T | ((item: T) => string),
+): Record<string, T[]> => {
+  return array.reduce(
+    (result, item) => {
+      // 获取分组的 key，确保其为 string 类型
+      const groupKey = typeof key === 'function' ? key(item) : String(item[key]) // 强制转换为 string
+
+      // 如果该 groupKey 不存在，就初始化一个数组
+      if (!result[groupKey]) {
+        result[groupKey] = []
+      }
+
+      // 将 item 添加到对应的分组
+      result[groupKey].push(item)
+
+      return result
+    },
+    {} as Record<string, T[]>,
+  )
+}
+
+// 对分组后的数据进行排序
+export function sortGroupedData<T>(
+  groupedData: Record<string, T[]>,
+  sortBy: keyof T, // Sort by a specific property of the group items
+): Record<string, T[]> {
+  const sortedGroupedData: Record<string, T[]> = {}
+
+  Object.keys(groupedData).forEach(key => {
+    // Sort the items inside the group
+    sortedGroupedData[key] = groupedData[key].sort((a, b) => {
+      if (a[sortBy] < b[sortBy]) {
+        return -1
+      }
+      if (a[sortBy] > b[sortBy]) {
+        return 1
+      }
+      return 0
+    })
+  })
+
+  return sortedGroupedData
+}
