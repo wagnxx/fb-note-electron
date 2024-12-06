@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import AffixList, { AffixType } from './components/AffixList'
 import { Tabs, Button, Space, Spin } from 'antd'
 import { groupBy, sortGroupedData } from '@/utils/utilsArray'
-import { batchUpdateWordAffix, getWordAffix } from '@/service/dict'
+import { batchUpdateWordAffix, deleteWordAffix, getWordAffix } from '@/service/dict'
 import { handleRequestWithNotification } from '@/utils/utilsRequest'
 import { useAuth } from '@/context/AuthContext'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -32,19 +32,18 @@ const WordAffix = () => {
       })
   }
 
-  const handleSync = async () => {
-    const r = await handleRequestWithNotification(
-      async () => await batchUpdateWordAffix(affixData),
-      {
-        successField: null,
-        errorField: null,
-      },
-    )
+  const updateAffixData = async (data: AffixType[]) => {
+    const r = await handleRequestWithNotification(async () => await batchUpdateWordAffix(data), {
+      successField: null,
+      errorField: null,
+    })
 
     if (r) {
       getTableData()
     }
   }
+
+  const handleSync = () => updateAffixData(affixData)
 
   // 切换 tab 时的回调函数
   const handleTabChange = (key: string) => {
@@ -52,53 +51,50 @@ const WordAffix = () => {
   }
 
   // 添加词缀
-  const handleAdd = (newAffix: AffixType) => {
-    // 这里添加新的词缀到 affixData 数据中
-    // 更新数据并刷新表格
-    console.log('Adding new affix:', newAffix)
-  }
+  const handleAdd = (newAffix: AffixType) => updateAffixData([newAffix])
 
   // 删除词缀
-  const handleDelete = (id: string) => {
-    // 删除逻辑
+  const handleDelete = async (id: string) => {
     console.log('Deleting affix with id:', id)
+    if (!id) return
+
+    // 删除逻辑
+    const r = await handleRequestWithNotification(async () => await deleteWordAffix([id]), {
+      successField: null,
+      errorField: null,
+    })
+
+    if (r) {
+      getTableData()
+    }
   }
 
   // 编辑词缀
-  const handleEdit = (id: string, updatedAffix: AffixType) => {
-    // 编辑逻辑
-    console.log('Editing affix with id:', id, 'Updated:', updatedAffix)
-  }
+  const handleEdit = (id: string, updatedAffix: AffixType) =>
+    updateAffixData([{ ...updatedAffix, id }])
 
   useEffect(() => {
     if (!isAuthenticated) return
     getTableData()
   }, [isAuthenticated])
 
+  const commonTabProps = {
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+    onAdd: handleAdd,
+    onRefreshPage: getTableData,
+  }
+
   const tabItems = [
     {
       key: 'prefix',
       label: '前缀',
-      children: (
-        <AffixList
-          data={groupedAffixData.prefix || []}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onAdd={handleAdd}
-        />
-      ),
+      children: <AffixList data={groupedAffixData.prefix || []} {...commonTabProps} />,
     },
     {
       key: 'suffix',
       label: '后缀',
-      children: (
-        <AffixList
-          data={groupedAffixData.suffix || []}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onAdd={handleAdd}
-        />
-      ),
+      children: <AffixList data={groupedAffixData.suffix || []} {...commonTabProps} />,
     },
   ]
 

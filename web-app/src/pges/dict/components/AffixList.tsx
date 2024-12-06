@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Table, Button, Modal, Space } from 'antd'
+import { Table, Button, Modal, Space, Popconfirm } from 'antd'
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import AffixForm from './AffixForm'
 import {
@@ -12,7 +12,9 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { getDuplicateKeys, hasDuplicate } from '@/utils/utilsArray'
-import { showNotification } from '@/utils/utilsRequest'
+import { handleRequestWithNotification, showNotification } from '@/utils/utilsRequest'
+import { batchUpdateWordAffix } from '@/service/dict'
+import { showConfirmationDialog } from '@/utils/utilsConfirm'
 
 export type AffixType = {
   id?: string // 唯一标识符，必选
@@ -36,13 +38,12 @@ interface Props {
   onEdit: (id: string, updatedAffix: AffixType) => void
   onDelete: (id: string) => void
   onAdd: (newAffix: AffixType) => void
+  onRefreshPage: () => void
 }
-
-type AffixListProps = Props & { updateData: React.Dispatch<React.SetStateAction<AffixType[]>> }
 
 type CollectonKeysType = Map<number, { key: number; newKey: number; id: string }>
 
-const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd }) => {
+const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPage }) => {
   const [dataSource, setDataSource] = useState<AffixType[]>([])
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editingAffix, setEditingAffix] = useState<AffixType | null>(null)
@@ -71,13 +72,35 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd }) => {
     [collectionRowkeys],
   )
 
-  const handleUpdateKeys = () => {
+  const handleUpdateKeys = async () => {
     const values = [...collectionRowkeys.values()]
     if (hasDuplicate(values, 'key') || hasDuplicate(values, 'newKey')) {
       showNotification('error', 'Duplicate keys found, please check again', 'message')
       return
     }
     console.log('collectionRowkeys: ', values)
+
+    const valueString = values.map(item => `${item.key} -> ${item.newKey}`)
+
+    let confirmed = await showConfirmationDialog({
+      content: `Are you sure you want to update these item keys ? [${valueString}]`,
+    })
+
+    if (!confirmed) return
+
+    const r = await handleRequestWithNotification(
+      async () =>
+        await batchUpdateWordAffix(values.map(item => ({ id: item.id, key: item.newKey }))),
+      {
+        successField: null,
+        errorField: null,
+      },
+    )
+
+    if (r) {
+      collectionRowkeys.clear()
+      onRefreshPage()
+    }
   }
 
   const handleAddClick = () => {
@@ -128,6 +151,13 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd }) => {
       ),
     },
     {
+      title: '1-based index',
+      width: 200,
+      render: (_: any, record: AffixType, index: number) => {
+        return index + 1
+      },
+    },
+    {
       title: '词缀',
       dataIndex: 'affix',
       key: 'affix',
@@ -157,10 +187,12 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd }) => {
             onClick={() => handleEditClick(record)}
             style={{ marginRight: 8 }}
           />
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => handleDeleteClick(record.id ? record.id : '')}
-          />
+          <Popconfirm
+            title="确定删除?"
+            onConfirm={() => handleDeleteClick(record.id ? record.id : '')}
+          >
+            <DeleteOutlined />
+          </Popconfirm>
         </span>
       ),
     },
@@ -211,7 +243,11 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd }) => {
         >
           添加
         </Button>
-        <Button onClick={handleUpdateKeys} style={{ marginBottom: 16 }}>
+        <Button
+          onClick={handleUpdateKeys}
+          disabled={collectionRowkeys.size === 0}
+          style={{ marginBottom: 16 }}
+        >
           Update keys
         </Button>
       </Space>
@@ -220,13 +256,20 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd }) => {
           items={dataSource.map(item => item.key)}
           strategy={verticalListSortingStrategy}
         >
-          <Table dataSource={dataSource} columns={columns} rowKey="key" size="small" />
+          <Table
+            dataSource={dataSource}
+            columns={columns}
+            rowKey="key"
+            size="small"
+            pagination={{ pageSize: 50 }}
+            scroll={{ y: 600 }}
+          />
         </SortableContext>
       </DndContext>
 
       <Modal
         title={editingAffix ? '编辑词缀' : '添加词缀'}
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >

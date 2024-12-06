@@ -31,6 +31,7 @@ const AffixForm: React.FC<AffixFormProps> = ({ affix, onSave }) => {
         affix: values.affix.split(',').map((prefix: string) => prefix.trim()),
         meaning: values.meaning,
         type: values.type,
+        key: Number(values.key),
       }
       onSave(updatedAffix as AffixType)
     })
@@ -38,6 +39,9 @@ const AffixForm: React.FC<AffixFormProps> = ({ affix, onSave }) => {
 
   return (
     <Form form={form} layout="vertical">
+      <Form.Item label="key" name="key" rules={[{ required: true, message: '请输入key' }]}>
+        <Input />
+      </Form.Item>
       <Form.Item label="词缀" name="affix" rules={[{ required: true, message: '请输入词缀' }]}>
         <Input />
       </Form.Item>
