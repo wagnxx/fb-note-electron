@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import AffixList, { AffixType } from './components/AffixList'
-import { Tabs, Button, Space } from 'antd'
+import { Tabs, Button, Space, Spin } from 'antd'
 import { groupBy, sortGroupedData } from '@/utils/utilsArray'
 import { batchUpdateWordAffix, getWordAffix } from '@/service/dict'
 import { handleRequestWithNotification } from '@/utils/utilsRequest'
 import { useAuth } from '@/context/AuthContext'
+import { LoadingOutlined } from '@ant-design/icons'
 
 const WordAffix = () => {
   const [activeKey, setActiveKey] = useState('prefix')
   const [affixData, setaffixData] = useState<AffixType[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const { isAuthenticated } = useAuth()
 
@@ -16,13 +18,18 @@ const WordAffix = () => {
   const groupedAffixData = sortGroupedData(groupBy(affixData, 'type'), 'key')
 
   const getTableData = () => {
-    getWordAffix().then(res => {
-      if (res?.length) {
-        setaffixData(res as AffixType[])
-      } else {
-        setaffixData([])
-      }
-    })
+    setIsLoading(true)
+    getWordAffix()
+      .then(res => {
+        if (res?.length) {
+          setaffixData(res as AffixType[])
+        } else {
+          setaffixData([])
+        }
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }
 
   const handleSync = async () => {
@@ -96,17 +103,23 @@ const WordAffix = () => {
   ]
 
   return (
-    <div className=" container mx-auto bg-red-300 ">
-      <div className="p-2">
-        <div>
-          <Space>
-            <Button type="primary" onClick={handleSync} disabled>
-              Sync Data
-            </Button>
-          </Space>
+    <div className=" container mx-auto bg-red-300  " style={{ height: 'calc(100vh - 28px)' }}>
+      {isLoading ? (
+        <div className=" w-full   h-full flex justify-center items-center">
+          <Spin indicator={<LoadingOutlined spin />} size="large" />
         </div>
-        <Tabs activeKey={activeKey} onChange={handleTabChange} items={tabItems}></Tabs>
-      </div>
+      ) : (
+        <div className="p-2">
+          <div>
+            <Space>
+              <Button type="primary" onClick={handleSync} disabled>
+                Sync Data
+              </Button>
+            </Space>
+          </div>
+          <Tabs activeKey={activeKey} onChange={handleTabChange} items={tabItems}></Tabs>
+        </div>
+      )}
     </div>
   )
 }

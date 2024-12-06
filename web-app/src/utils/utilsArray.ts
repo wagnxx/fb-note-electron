@@ -93,6 +93,32 @@ export const hasDuplicate = (arr: any[], field: string): boolean => {
   return false // 没有重复
 }
 
+export const getDuplicateKeys = (
+  arr: any[],
+  fields: string | string[],
+  initial: any[] = [],
+): any[] => {
+  if (arr.length === 1) return []
+
+  const normalizedFields = Array.isArray(fields) ? fields : [fields]
+  const checkedItems: any[] = [] // 用于保存已检查的所有元素
+
+  return arr.reduce((pre, cur) => {
+    // 检查当前元素是否和已检查的元素重复
+    const isDuplicate = checkedItems.some((item: any) =>
+      normalizedFields.some((field: string) => item[field] === cur[field]),
+    )
+
+    if (isDuplicate) {
+      pre.push(cur) // 如果是重复项，加入结果数组
+    }
+
+    checkedItems.push(cur) // 无论是否重复，都加入已检查项
+
+    return pre // 返回结果数组
+  }, initial) // 初始值为空数组或由外部传入的值
+}
+
 export const groupBy = <T>(
   array: T[],
   key: keyof T | ((item: T) => string),

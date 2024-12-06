@@ -1,8 +1,18 @@
-// /src/components/AffixList.tsx
-import React, { useState } from 'react'
-import { Table, Button, Modal } from 'antd'
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons' // 使用 ant-design 图标
+import React, { useEffect, useMemo, useState } from 'react'
+import { Table, Button, Modal, Space } from 'antd'
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import AffixForm from './AffixForm'
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { getDuplicateKeys, hasDuplicate } from '@/utils/utilsArray'
+import { showNotification } from '@/utils/utilsRequest'
 
 export type AffixType = {
   id?: string // 唯一标识符，必选
@@ -17,18 +27,58 @@ export type AffixType = {
   commonCombinations?: string[] // 常见组合，选填
   grammarRules?: string // 语法规则，选填
   additionalInfo?: string // 其他附加信息，选填
+
+  initialIndex?: number
 }
 
-interface AffixListProps {
+interface Props {
   data: AffixType[]
   onEdit: (id: string, updatedAffix: AffixType) => void
   onDelete: (id: string) => void
   onAdd: (newAffix: AffixType) => void
 }
 
-const AffixList: React.FC<AffixListProps> = ({ data, onEdit, onDelete, onAdd }) => {
+type AffixListProps = Props & { updateData: React.Dispatch<React.SetStateAction<AffixType[]>> }
+
+type CollectonKeysType = Map<number, { key: number; newKey: number; id: string }>
+
+const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd }) => {
+  const [dataSource, setDataSource] = useState<AffixType[]>([])
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editingAffix, setEditingAffix] = useState<AffixType | null>(null)
+  const [collectionRowkeys, setcollectionRowkeys] = useState<CollectonKeysType>(new Map())
+
+  useEffect(() => {
+    setDataSource(data.map((item, index) => ({ ...item, initialIndex: index })))
+  }, [data])
+
+  useEffect(() => {
+    const keys = [...collectionRowkeys.keys()]
+    const updateCollectionRowKeys = new Map(collectionRowkeys)
+
+    keys.forEach(k => {
+      const newIndex = dataSource.findIndex(item => item.key === k)
+      const oldIndex = dataSource[newIndex].initialIndex
+      if (newIndex === oldIndex) {
+        updateCollectionRowKeys.delete(k)
+      }
+    })
+    setcollectionRowkeys(updateCollectionRowKeys)
+  }, [dataSource])
+
+  const duplicateKeys = useMemo(
+    () => getDuplicateKeys([...collectionRowkeys.values()], ['newKey'], []),
+    [collectionRowkeys],
+  )
+
+  const handleUpdateKeys = () => {
+    const values = [...collectionRowkeys.values()]
+    if (hasDuplicate(values, 'key') || hasDuplicate(values, 'newKey')) {
+      showNotification('error', 'Duplicate keys found, please check again', 'message')
+      return
+    }
+    console.log('collectionRowkeys: ', values)
+  }
 
   const handleAddClick = () => {
     setEditingAffix(null)
@@ -54,7 +104,29 @@ const AffixList: React.FC<AffixListProps> = ({ data, onEdit, onDelete, onAdd }) 
   }
 
   const columns = [
-    { title: 'Key', dataIndex: 'key', key: 'key', width: 60 },
+    {
+      title: 'Key',
+      dataIndex: 'key',
+      key: 'key',
+      width: 60,
+      render: (text: any, record: AffixType) => (
+        <SortableRow id={record.key} collectionRowkeys={collectionRowkeys}>
+          {collectionRowkeys.has(record.key) ? (
+            <div
+              style={{
+                background: duplicateKeys.some(item => item.id === record.id) ? 'red' : '',
+              }}
+            >
+              {collectionRowkeys.get(record.key)?.key}
+              <span className=" px-2">&rarr;</span>
+              {collectionRowkeys.get(record.key)?.newKey}
+            </div>
+          ) : (
+            text
+          )}
+        </SortableRow>
+      ),
+    },
     {
       title: '词缀',
       dataIndex: 'affix',
@@ -73,7 +145,6 @@ const AffixList: React.FC<AffixListProps> = ({ data, onEdit, onDelete, onAdd }) 
         return record?.affectedPartsOfSpeech?.join('/')
       },
     },
-    // { title: '类型', dataIndex: 'type', key: 'type' },
     { title: '含义', dataIndex: 'meaning', key: 'meaning' },
     {
       title: '操作',
@@ -88,28 +159,74 @@ const AffixList: React.FC<AffixListProps> = ({ data, onEdit, onDelete, onAdd }) 
           />
           <Button
             icon={<DeleteOutlined />}
-            onClick={() => handleDeleteClick(record.id ? record.id : '')} // 修正强制解包问题
+            onClick={() => handleDeleteClick(record.id ? record.id : '')}
           />
         </span>
       ),
     },
   ]
 
+  const sensors = useSensors(useSensor(PointerSensor))
+
+  const moveRow = (fromIndex: number, toIndex: number) => {
+    const updatedData = [...dataSource]
+    const temp = updatedData[fromIndex]
+    updatedData[fromIndex] = updatedData[toIndex]
+    updatedData[toIndex] = temp
+    setDataSource(updatedData)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (active.id !== over?.id) {
+      const oldIndex = dataSource.findIndex(row => row.key === active.id)
+      const newIndex = dataSource.findIndex(row => row.key === over?.id)
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        moveRow(oldIndex, newIndex)
+        const updateCollectionRowKeys = new Map(collectionRowkeys)
+        updateCollectionRowKeys.set(active.id as number, {
+          newKey: over?.id as number,
+          key: active.id as number,
+          id: dataSource[oldIndex].id as string,
+        })
+        updateCollectionRowKeys.set(over?.id as number, {
+          newKey: active?.id as number,
+          key: over?.id as number,
+          id: dataSource[newIndex].id as string,
+        })
+        setcollectionRowkeys(updateCollectionRowKeys)
+      }
+    }
+  }
+
   return (
     <div>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={handleAddClick}
-        style={{ marginBottom: 16 }}
-      >
-        添加
-      </Button>
-      <Table dataSource={data} columns={columns} rowKey="key" size="small" />
+      <Space>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleAddClick}
+          style={{ marginBottom: 16 }}
+        >
+          添加
+        </Button>
+        <Button onClick={handleUpdateKeys} style={{ marginBottom: 16 }}>
+          Update keys
+        </Button>
+      </Space>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+        <SortableContext
+          items={dataSource.map(item => item.key)}
+          strategy={verticalListSortingStrategy}
+        >
+          <Table dataSource={dataSource} columns={columns} rowKey="key" size="small" />
+        </SortableContext>
+      </DndContext>
 
       <Modal
         title={editingAffix ? '编辑词缀' : '添加词缀'}
-        open={isModalVisible}
+        visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
@@ -119,4 +236,33 @@ const AffixList: React.FC<AffixListProps> = ({ data, onEdit, onDelete, onAdd }) 
   )
 }
 
+const SortableRow = ({
+  id,
+  collectionRowkeys,
+  children,
+}: {
+  id: number
+  collectionRowkeys: CollectonKeysType
+  children: React.ReactNode
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id,
+  })
+
+  // 计算元素的样式，动态调整边距或背景色
+  const styles = {
+    transform: `translateY(${transform?.y || 0}px)`,
+    // transition,
+    transition: transition ? 'transform 0.3s ease' : undefined,
+    border: collectionRowkeys.has(id) ? '2px dotted red' : '',
+    padding: '2px 8px',
+    backgroundColor: collectionRowkeys.has(id) ? 'lightblue' : '',
+  }
+
+  return (
+    <div ref={setNodeRef} {...listeners} {...attributes} style={styles}>
+      {children}
+    </div>
+  )
+}
 export default AffixList
