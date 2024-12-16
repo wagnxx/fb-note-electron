@@ -13,18 +13,7 @@ interface ScreenshotDoc {
 }
 
 const ScreenshotDocs: React.FC = () => {
-  const [data, setData] = useState<ScreenshotDoc[]>([
-    {
-      id: '1',
-      docName: 'Document 1',
-      screenshots: ['https://via.placeholder.com/300', 'https://via.placeholder.com/400'],
-    },
-    { id: '2', docName: 'Document 2', screenshots: ['https://via.placeholder.com/500'] },
-    { id: '3', docName: 'Document 3', screenshots: [] },
-    { id: '4', docName: 'Document 4', screenshots: ['https://via.placeholder.com/300'] },
-    { id: '5', docName: 'Document 5', screenshots: ['https://via.placeholder.com/400'] },
-    { id: '6', docName: 'Document 6', screenshots: [] },
-  ])
+  const [data, setData] = useState<ScreenshotDoc[]>([])
 
   const [isGridView, setIsGridView] = useState(true)
   const { isAuthenticated } = useAuth()

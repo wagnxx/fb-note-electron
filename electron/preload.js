@@ -23,7 +23,8 @@ const IPC_ACTIONS = {
   MERGE_IMAGES: 'merge-images',
   COMPARE_IMAGES: 'compare-images',
   EXRACT_IMAGES_TEXT: 'exract-images-text',
-  EXRACT_VIDEO_FRAME_TEXT: 'exract-video-frame-text'
+  EXRACT_VIDEO_FRAME_TEXT: 'exract-video-frame-text',
+   CHECK_FOLDER_EXIST: 'check_folder_exist'
 }
 
 

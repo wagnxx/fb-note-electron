@@ -19,4 +19,5 @@ export const IPC_ACTIONS = {
   COMPARE_IMAGES: 'compare-images' as const,
   EXRACT_IMAGES_TEXT: 'exract-images-text' as const,
   EXRACT_VIDEO_FRAME_TEXT: 'exract-video-frame-text' as const,
+  CHECK_FOLDER_EXIST: 'check_folder_exist' as const,
 } as const;

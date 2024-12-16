@@ -110,7 +110,7 @@ const AuthLayout: React.FC = () => {
             </Button>
           )}
         </div>
-        <Menu theme="dark" mode="vertical" items={menuItems} />
+        <Menu theme="dark" mode="inline" items={menuItems} />
       </Sider>
       <Content style={{ padding: '0px', height: 'calc(100vh - 28px)', overflow: 'auto' }}>
         <Outlet />

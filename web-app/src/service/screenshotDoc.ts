@@ -13,6 +13,7 @@ const COL_SCREENSHOT = 'screenshotDoc'
 export type DocType = {
   docName: string
   screenshots: Array<string>
+  keyTerms?: Array<string>
   createTime?: FieldValue
   createId?: string
 }
