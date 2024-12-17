@@ -7,7 +7,7 @@ import { CloseOutlined } from '@ant-design/icons'
 type Props = {
   max: number
   videoTime: number
-  onChange: (value: number) => void
+  onPreview: (value: number | null) => void
   onSaveScreenShorts: (time: number) => void
   onJumpTo: (tm: number, shouldPlay: boolean) => void
 }
@@ -18,7 +18,7 @@ export interface CustomSliderRef {
 }
 
 const CustomSliderWithTeeth = (
-  { max, videoTime, onChange, onSaveScreenShorts, onJumpTo }: Props,
+  { max, videoTime, onPreview, onSaveScreenShorts, onJumpTo }: Props,
   ref: React.Ref<CustomSliderRef>,
 ) => {
   const [currentHourValue, setCurrentHourValue] = useState<number>(0)
@@ -121,7 +121,7 @@ const CustomSliderWithTeeth = (
           setCurrentSecondValue(0)
           currentTime = value * 3600 + 0 + 0
         }
-        onChange(currentTime)
+        onPreview(currentTime)
         break
       }
       case 'm': {
@@ -131,13 +131,13 @@ const CustomSliderWithTeeth = (
           setCurrentSecondValue(0)
           currentTime = currentHourValue * 3600 + value * 60 + 0
         }
-        onChange(currentTime)
+        onPreview(currentTime)
         break
       }
       case 's':
         currentTime = currentHourValue * 3600 + currentMinuteValue * 60 + value
         setCurrentSecondValue(value)
-        onChange(currentTime)
+        onPreview(currentTime)
         break
     }
   }
@@ -172,7 +172,7 @@ const CustomSliderWithTeeth = (
         break
     }
     setTooltipValue(currentTime)
-    onChange(currentTime)
+    onPreview(currentTime)
     const position = getMousePosition(e)
     setTooltipPosition(position)
   }
@@ -181,9 +181,17 @@ const CustomSliderWithTeeth = (
   const handleTeethLeave = () => {
     setTooltipVisible(false)
   }
+  const handleLeaveContaienr = () => {
+    if (isFixedTolltips) return
+    onPreview(null)
+  }
 
   return (
-    <div className="custom-slider-container" ref={sliderContainerRef}>
+    <div
+      className="custom-slider-container"
+      ref={sliderContainerRef}
+      onMouseLeave={handleLeaveContaienr}
+    >
       {/* 小时滑动条 */}
       <div
         ref={sliderRef}

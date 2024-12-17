@@ -35,6 +35,7 @@ import Search from 'antd/es/input/Search'
 import { showConfirmationDialog } from '@/utils/utilsConfirm'
 import { createScreenshotDoc } from '@/service/screenshotDoc'
 import { uploadFileToFirebase } from '@/service/firebaseUploader'
+import { useNavigate } from 'react-router-dom'
 
 export type Snap = {
   name: string
@@ -65,6 +66,8 @@ const MultiDocSnap: React.FC = () => {
   const [mergedDocName, setMergedDocName] = useState('')
   const [keyTermsString, setKeyTermsString] = useState('')
   const [hasError, setHasError] = useState(false)
+
+  const navigate = useNavigate()
 
   const allSnaps = useMemo(() => {
     const all = snapGroups.reduce((prev: Snap[], cur) => {
@@ -157,6 +160,12 @@ const MultiDocSnap: React.FC = () => {
     console.log('Opened dir: ', folder)
 
     const docPath = folder.path
+
+    if (snapGroups.some(item => item.path === docPath)) {
+      showNotification('error', `The path "${docPath}" already exists.`, 'message')
+      return
+    }
+
     const r = await handleRequestWithNotification(
       async () => await ipcRenderer?.invoke(IPC_ACTIONS.LS_FOLDER, encodeURIComponent(docPath)),
     )
@@ -441,7 +450,12 @@ const MultiDocSnap: React.FC = () => {
     <div style={{ padding: '20px' }}>
       {/* 页面说明 */}
       <Typography>
-        <Title level={2}>Cross-Document Screenshot Display</Title>
+        <Space>
+          <Title level={2}>Cross-Document snap create</Title>
+          <Button type="link" onClick={() => navigate('/tool/docSnap/manage')}>
+            View published
+          </Button>
+        </Space>
         <Paragraph>
           This page allows users to manage and view merged screenshots from multiple documents,
           grouped dynamically with each new addition.

@@ -1,7 +1,8 @@
 import { useAuth } from '@/context/AuthContext'
 import { getAllScreenshotDoc } from '@/service/screenshotDoc'
 import React, { useEffect, useState } from 'react'
-import { Card, List, Image, Switch, Typography } from 'antd'
+import { Card, List, Image, Switch, Typography, Button, Space } from 'antd'
+import { useNavigate } from 'react-router-dom'
 
 const { Meta } = Card
 const { Title, Text } = Typography
@@ -17,6 +18,7 @@ const ScreenshotDocs: React.FC = () => {
 
   const [isGridView, setIsGridView] = useState(true)
   const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -36,7 +38,12 @@ const ScreenshotDocs: React.FC = () => {
   return (
     <div className="p-5 bg-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-5">
-        <Title level={2}>Screenshot Documents</Title>
+        <Space>
+          <Title level={2}>Screenshot Documents</Title>
+          <Button type="link" onClick={() => navigate('/tool/docSnap/multi')}>
+            Create
+          </Button>
+        </Space>
         <Switch
           checkedChildren="Grid View"
           unCheckedChildren="List View"

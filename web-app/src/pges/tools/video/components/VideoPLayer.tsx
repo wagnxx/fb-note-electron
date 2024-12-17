@@ -13,6 +13,7 @@ import CustomSliderWithTeeth, { CustomSliderRef } from './CustomSliderWithTeeth'
 import ScreenShots from './ScreenShots'
 import { PlayItem } from './FileUpload'
 import { getNameWithoutExtension } from '@/utils/utilsString'
+import MarkedMoment from './MarkedMoment'
 
 export type ScreenshotType = {
   name: string
@@ -24,6 +25,10 @@ export type ScreenshotDoc = {
   docId: string
   // screenshotsMap: Record<string, string>
   screenshots: ScreenshotType[]
+}
+export type MarkedMomentType = {
+  docId: string
+  moments: number[]
 }
 export type PlayerAtTime = {
   videoId: string
@@ -51,6 +56,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   const [volume, setVolume] = useState<number>(100) // 新增音量控制
   const [hoverTime, setHoverTime] = useState<number | null>(null) // Hover时的时间
   const [screenshotDocs, setScreenshotDocs] = useState<ScreenshotDoc[]>([])
+  const [markedMoments, setMarkedMoments] = useState<MarkedMomentType[]>([])
   const [aspectRatio, setAspectRatio] = useState<number>(5 / 3)
   const [showMoreSettings, setShowMoreSettings] = useState(true)
 
@@ -64,6 +70,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   const [notificationApi, notificationHandleContext] = notification.useNotification()
 
   const currentScreenShotDoc = screenshotDocs.find(item => item.docId === video.id)
+  const currentMarkedMoments = markedMoments.find(item => item.docId === video.id)
 
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {
@@ -224,13 +231,33 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
     // getPreviewImage(tm) // 获取并显示预览图
   }
 
-  const setPreviewTime = (tm: number) => {
+  const setPreviewTime = (tm: number | null) => {
     setHoverTime(tm)
-    setPreviewImage(tm) // 获取并显示预览图
+    if (tm) {
+      setPreviewImage(tm) // 获取并显示预览图
+    }
   }
 
   const handleCropCurrentImage = () => {
     saveScreenshotHandler(currentTime)
+  }
+  const handleMarkMoment = ({ tm, type }: { tm: number; type: 'add' | 'remove' }) => {
+    // saveScreenshotHandler(currentTime)
+    setMarkedMoments(prev => {
+      const rest = prev.filter(item => item.docId !== video.id)
+      const cur = prev.find(item => item.docId === video.id) || { moments: [] }
+
+      const curMoments =
+        type === 'add'
+          ? [...new Set([...cur.moments, tm])]
+          : cur?.moments.filter(item => item !== tm)
+
+      const curMoment = {
+        docId: video.id,
+        moments: curMoments,
+      }
+      return [...rest, curMoment]
+    })
   }
   const handleSyncWithVideoTime = () => {
     customSliderRef.current?.handleSyncWithVideoTime()
@@ -295,14 +322,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   // 初始化savedScreenshotDocs
   useEffect(() => {
     const savedScreenshotDocs = localStorage.getItem('screenshotDocs')
+    const markedMomentsDocs = localStorage.getItem('markedMoments')
 
     if (savedScreenshotDocs) {
       setScreenshotDocs(JSON.parse(savedScreenshotDocs) || [])
+    }
+    if (markedMomentsDocs) {
+      setMarkedMoments(JSON.parse(markedMomentsDocs) || [])
     }
   }, [])
   useEffect(() => {
     localStorage.setItem('screenshotDocs', JSON.stringify(screenshotDocs))
   }, [screenshotDocs])
+  useEffect(() => {
+    localStorage.setItem('markedMoments', JSON.stringify(markedMoments))
+  }, [markedMoments])
 
   useEffect(() => {
     const keypressHandler = (e: KeyboardEvent) => {
@@ -487,25 +521,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
             </Popover>
           </div>
         </div>
-        {hoverTime !== null && (
-          <div
-            className="screenshot-preview"
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: '700px',
-              // height: 'auto',
-              background: 'rgba(0,0,0,0.6)',
-              textAlign: 'center',
-              zIndex: 1000,
-            }}
-          >
-            <canvas ref={canvasRef} width={700} height={700 / aspectRatio} />
-            <p style={{ color: 'white' }}>{formatSecondsToHHmmss(hoverTime)}</p>{' '}
-            {/* 显示 hover 时间 */}
-          </div>
-        )}
+
+        <div
+          className="screenshot-preview"
+          style={{
+            display: hoverTime === null ? 'none' : 'block',
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            width: '700px',
+            // height: 'auto',
+            background: 'rgba(0,0,0,0.6)',
+            textAlign: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <canvas ref={canvasRef} width={700} height={700 / aspectRatio} />
+          {hoverTime && <p style={{ color: 'white' }}>{formatSecondsToHHmmss(hoverTime)}</p>}
+        </div>
       </div>
 
       {showMoreSettings && (
@@ -547,11 +580,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
           <div className=" py-2">
             <Space>
               <span>Current Time:</span>
-              <span>
+              <span style={{ width: '150px', display: 'inline-block' }}>
                 {formatSecondsToHHmmss(currentTime)} / {formatSecondsToHHmmss(duration)}
               </span>
               <Button size="small" onClick={handleCropCurrentImage} type="text" danger>
                 Take Screenshot Now
+              </Button>
+              <Button
+                size="small"
+                onClick={() => handleMarkMoment({ tm: currentTime, type: 'add' })}
+                type="text"
+              >
+                Mark Moment
               </Button>
               <Button
                 size="small"
@@ -567,21 +607,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
             ref={customSliderRef}
             max={duration}
             videoTime={currentTime}
-            onChange={setPreviewTime}
+            onPreview={setPreviewTime}
             onSaveScreenShorts={saveScreenshotHandler}
             onJumpTo={handleJumpTo}
           />
         </div>
       )}
       <video ref={hiddenVideoRef} crossOrigin="anonymous" style={{ display: 'none' }} />
-      {
-        <ScreenShots
-          doc={currentScreenShotDoc}
-          onSaveScreenshot={handleSaveScreenshot}
-          onJumpTo={handleJumpTo}
-          video={video}
-        />
-      }
+      <MarkedMoment
+        data={currentMarkedMoments?.moments}
+        onPreview={setPreviewTime}
+        onJumpTo={handleJumpTo}
+      />
+      <ScreenShots
+        doc={currentScreenShotDoc}
+        onSaveScreenshot={handleSaveScreenshot}
+        onJumpTo={handleJumpTo}
+        video={video}
+      />
     </div>
   ) : (
     <div className=" text-2xl flex justify-center items-center h-full  text-white w-full">
