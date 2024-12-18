@@ -12,7 +12,7 @@ import {
   DragStartEvent,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { Row, Col, Button, Dropdown, Checkbox, notification, Space } from 'antd'
+import { Row, Col, Button, Dropdown, Checkbox, Space } from 'antd'
 import ScreenshotModal, { Range } from './ScreenshotModal'
 import './ScreenShots.css'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
@@ -20,7 +20,7 @@ import { showConfirmationDialog } from '@/utils/utilsConfirm'
 import { PlayItem } from './FileUpload'
 import { copyImagesFromElementsToClipboard } from '@/utils/utilsClipboard'
 import { ScreenshotDoc, ScreenshotType } from './VideoPLayer'
-import { handleRequestWithNotification } from '@/utils/utilsRequest'
+// import { handleRequestWithNotification, showNotification } from '@/utils/utilsRequest'
 import { mapByField } from '@/utils/utilsArray'
 import { parseHHmmssToSeconds } from '@/utils/utilsDate'
 import { uploadFileToFirebase } from '@/service/firebaseUploader'
@@ -28,6 +28,8 @@ import { checkScreenshotDocExistsByName, createScreenshotDoc } from '@/service/s
 import { useAuth } from '@/context/AuthContext'
 import useComputedFilter from './useComputedFilter'
 import ScreenshotCardItem from './ScreenshotCardItem'
+import { useNavigate } from 'react-router-dom'
+import { useNotification } from '@/hooks/useNotification'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export type Prop = {
   doc?: ScreenshotDoc
@@ -73,7 +75,9 @@ const ScreenShots: FC<ScreenTypes> = ({
   // 使用 useRef 来为每个图片创建一个 ref
   const imgRefs = useRef<{ [key: string]: HTMLImageElement | null }>({})
 
-  const [notificationApi, notificationContextHandle] = notification.useNotification()
+  const navigate = useNavigate()
+
+  const { handleRequestWithNotification, showNotification } = useNotification()
 
   const { isAuthenticated } = useAuth()
 
@@ -196,7 +200,8 @@ const ScreenShots: FC<ScreenTypes> = ({
     const totalCount = Object.keys(filteredData).length
 
     return {
-      checkAll: selectedCount === totalCount,
+      totalCount,
+      checkAll: totalCount !== 0 && selectedCount === totalCount,
       indeterminate: selectedCount > 0 && selectedCount < totalCount,
     }
   }, [filteredData, selectedKeys.size])
@@ -327,12 +332,21 @@ const ScreenShots: FC<ScreenTypes> = ({
   }
 
   // 裁剪确认
-  const handleCrop = async () => {
+  const handleCrop = async (byTemplate: boolean) => {
     if (!doc || !cropRange?.length || selectedKeys.size === 0) {
       return
     }
+
+    if (byTemplate && cropRange.length > 1) {
+      showNotification(
+        'error',
+        'When you choose the "bytemplate" option, the cropRange length must be 1.',
+        'message',
+      )
+    }
+
     const names = sortedselectedKeys.filter(item => {
-      return cropRange.find(it => it.name === item)
+      return byTemplate || cropRange.find(it => it.name === item)
     })
 
     let confirmed = await showConfirmationDialog({
@@ -348,7 +362,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     })
 
     const filePaths = items.map(item => {
-      const currentItem = cropRange.find(it => it.name === item.name)
+      const currentItem = byTemplate ? cropRange[0] : cropRange.find(it => it.name === item.name)
 
       if (!currentItem) return
 
@@ -410,11 +424,14 @@ const ScreenShots: FC<ScreenTypes> = ({
       mergedName: video.name + '_' + 'merged.png',
     }
     console.log('params:: ', params)
-
-    const r = await ipcRenderer?.invoke(IPC_ACTIONS.MERGE_IMAGES, params)
+    const r = await handleRequestWithNotification(
+      async () => await ipcRenderer?.invoke(IPC_ACTIONS.MERGE_IMAGES, params),
+      {
+        successMessage: 'merged successfully',
+      },
+    )
 
     if (r?.ok) {
-      notificationApi.success({ message: 'croped successfully' })
       onSaveScreenshot({
         docId: video.id,
         screenshots: [
@@ -426,8 +443,6 @@ const ScreenShots: FC<ScreenTypes> = ({
         ],
         action: 'add',
       })
-    } else {
-      notificationApi.error({ message: r?.message })
     }
   }
 
@@ -466,12 +481,13 @@ const ScreenShots: FC<ScreenTypes> = ({
 
     const names = sortedselectedKeys
     const selectedImages = names.map(key => imgRefs.current[key]) as HTMLImageElement[]
-    const r = await copyImagesFromElementsToClipboard(selectedImages)
-    if (r?.ok) {
-      notificationApi.success({ message: 'croped successfully' })
-    } else {
-      notificationApi.error({ message: r?.message })
-    }
+
+    handleRequestWithNotification(
+      async () => await copyImagesFromElementsToClipboard(selectedImages),
+      {
+        successMessage: 'Copyed successfully',
+      },
+    )
   }
   const handleExtractText = async () => {
     if (selectedKeys.size === 0) {
@@ -572,10 +588,12 @@ const ScreenShots: FC<ScreenTypes> = ({
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
-      {notificationContextHandle}
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>
         <Space>
           <span>Screen Shots List</span>
+          <Button type="link" onClick={() => navigate('/tool/docSnap/manage')}>
+            View Published Doc
+          </Button>
         </Space>
       </h2>
 
@@ -606,6 +624,7 @@ const ScreenShots: FC<ScreenTypes> = ({
         <Checkbox
           onChange={toggleSelectAll}
           style={{ marginLeft: '10px' }}
+          disabled={allSelectedState.totalCount == 0}
           checked={allSelectedState.checkAll}
           indeterminate={allSelectedState.indeterminate}
         >
@@ -660,10 +679,16 @@ const ScreenShots: FC<ScreenTypes> = ({
             )} */}
             {/* 裁剪按钮 */}
             <Button
-              onClick={handleCrop}
+              onClick={() => handleCrop(false)}
               disabled={!cropRange || selectedKeys.size === 0 || !isCroping}
             >
               Crop
+            </Button>
+            <Button
+              onClick={() => handleCrop(true)}
+              disabled={!cropRange || selectedKeys.size === 0 || !isCroping}
+            >
+              Crop By Template
             </Button>
             <Button onClick={handleSetAsScropted} disabled={selectedKeys.size === 0}>
               Set As Scroped

@@ -1,6 +1,6 @@
 import React from 'react'
 import { PersistGate } from 'redux-persist/integration/react'
-import { ConfigProvider, notification } from 'antd'
+import { ConfigProvider, notification, App as AntdApp } from 'antd'
 import type { ThemeConfig } from 'antd'
 import { Provider } from 'react-redux'
 import { store, persistor } from '@/store/store' // 确保你导入了 Redux store
@@ -27,9 +27,11 @@ const App: React.FC = () => {
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <ConfigProvider theme={config}>
-          <div className="app-root">
-            <AppRoutes />
-          </div>
+          <AntdApp>
+            <div className="app-root">
+              <AppRoutes />
+            </div>
+          </AntdApp>
         </ConfigProvider>
       </PersistGate>
     </Provider>

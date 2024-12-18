@@ -12,9 +12,9 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { getDuplicateKeys, hasDuplicate } from '@/utils/utilsArray'
-import { handleRequestWithNotification, showNotification } from '@/utils/utilsRequest'
 import { batchUpdateWordAffix } from '@/service/dict'
 import { showConfirmationDialog } from '@/utils/utilsConfirm'
+import { useNotification } from '@/hooks/useNotification'
 
 export type AffixType = {
   id?: string // 唯一标识符，必选
@@ -48,6 +48,8 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editingAffix, setEditingAffix] = useState<AffixType | null>(null)
   const [collectionRowkeys, setcollectionRowkeys] = useState<CollectonKeysType>(new Map())
+
+  const { handleRequestWithNotification, showNotification } = useNotification()
 
   useEffect(() => {
     setDataSource(data.map((item, index) => ({ ...item, initialIndex: index })))

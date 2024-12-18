@@ -7,9 +7,10 @@ type Props = {
   data?: number[]
   onPreview: (value: number | null) => void
   onJumpTo: (tm: number, shouldPlay: boolean) => void
+  onDelete: (value: number) => void
 }
 
-const MarkedMoment: FC<Props> = ({ data, onPreview, onJumpTo }) => {
+const MarkedMoment: FC<Props> = ({ data, onPreview, onJumpTo, onDelete }) => {
   useEffect(() => {
     console.log('Marked moment component update')
   }, [])
@@ -23,6 +24,7 @@ const MarkedMoment: FC<Props> = ({ data, onPreview, onJumpTo }) => {
           <Space onMouseLeave={() => onPreview(null)}>
             {data.map(tm => (
               <Tooltip
+                key={tm}
                 placement="top"
                 title={
                   <div className=" p-2">
@@ -33,7 +35,9 @@ const MarkedMoment: FC<Props> = ({ data, onPreview, onJumpTo }) => {
                   </div>
                 }
               >
-                <Tag color="cyan">{formatSecondsToHHmmss(tm)}</Tag>
+                <Tag color="cyan" closable onClose={() => onDelete(tm)}>
+                  {formatSecondsToHHmmss(tm)}
+                </Tag>
               </Tooltip>
             ))}
           </Space>

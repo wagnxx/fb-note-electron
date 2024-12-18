@@ -3,9 +3,9 @@ import AffixList, { AffixType } from './components/AffixList'
 import { Tabs, Button, Space, Spin } from 'antd'
 import { groupBy, sortGroupedData } from '@/utils/utilsArray'
 import { batchUpdateWordAffix, deleteWordAffix, getWordAffix } from '@/service/dict'
-import { handleRequestWithNotification } from '@/utils/utilsRequest'
 import { useAuth } from '@/context/AuthContext'
 import { LoadingOutlined } from '@ant-design/icons'
+import { useNotification } from '@/hooks/useNotification'
 
 const WordAffix = () => {
   const [activeKey, setActiveKey] = useState('prefix')
@@ -13,6 +13,7 @@ const WordAffix = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   const { isAuthenticated } = useAuth()
+  const { handleRequestWithNotification } = useNotification()
 
   // 获取分组后的数据
   const groupedAffixData = sortGroupedData(groupBy(affixData, 'type'), 'key')

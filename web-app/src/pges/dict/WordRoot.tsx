@@ -2,7 +2,6 @@ import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 're
 import { Table, Button, Popconfirm, Space, Input, Switch } from 'antd'
 import { ColumnType } from 'antd/es/table'
 import { addWordRoot, batchUpdateWordRoot, deleteWordRoot, getWordRoots } from '@/service/dict'
-import { handleRequestWithNotification, showNotification } from '@/utils/utilsRequest'
 import { useAuth } from '@/context/AuthContext'
 import {
   closestCenter,
@@ -15,6 +14,7 @@ import {
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { hasDuplicate } from '@/utils/utilsArray'
 import ModalAddRoot from './components/ModalAddRoot'
+import { useNotification } from '@/hooks/useNotification'
 
 // 词根类型定义
 export type WordRootType = {
@@ -81,6 +81,8 @@ const WordRoot = () => {
   const [addRootModalVisible, setAddRootModalVisible] = useState(false)
 
   const { isAuthenticated } = useAuth()
+
+  const { handleRequestWithNotification, showNotification } = useNotification()
 
   const filteredData = dataSource.filter(
     item =>

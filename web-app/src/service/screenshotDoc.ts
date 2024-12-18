@@ -1,5 +1,6 @@
 import {
   addDocToCol,
+  batchAddOrUpdateDocs,
   checkDataExistsByFieldValue,
   deleteDocsByIds,
   getDocData,
@@ -7,22 +8,37 @@ import {
 } from '@/firebase/db'
 import { auth } from '@/firebase/authService'
 import { FieldValue, serverTimestamp, where } from 'firebase/firestore'
+import { ScreenshotDoc } from '@/pges/tools/docSnap/ScreenshotDoc'
 
 const COL_SCREENSHOT = 'screenshotDoc'
 
-export type DocType = {
-  docName: string
-  screenshots: Array<string>
-  keyTerms?: Array<string>
+export type DocType = ScreenshotDoc & {
+  // docName: string
+  // screenshots: Array<string>
+  // keyTerms?: Array<string>
   createTime?: FieldValue
   createId?: string
 }
 
-export const createScreenshotDoc = (doc: DocType) => {
+export const createScreenshotDoc = (doc: Partial<DocType>) => {
   doc.createTime = serverTimestamp()
   if (auth?.currentUser?.uid) {
     doc.createId = auth.currentUser.uid
     return addDocToCol(COL_SCREENSHOT, doc)
+  }
+  return Promise.reject('logout')
+}
+
+export const batchUpdateScreenshotDoc = (docs: Partial<DocType>[]) => {
+  if (auth?.currentUser?.uid) {
+    docs.map(doc => {
+      doc.createTime = serverTimestamp()
+      doc.createId = auth.currentUser!.uid
+    })
+    return batchAddOrUpdateDocs(
+      COL_SCREENSHOT,
+      docs.map(doc => ({ data: doc, id: doc?.id })),
+    )
   }
   return Promise.reject('logout')
 }
@@ -33,7 +49,8 @@ export const getAllScreenshotDoc = () => {
   }
   return getFieldValues(
     COL_SCREENSHOT,
-    ['docName', 'id', 'createTime', 'screenshots'],
+    // ['docName', 'id', 'createTime', 'keyTerms', 'screenshots'],
+    'all',
     [
       where('createId', '==', auth.currentUser.uid),
       // where('docName', '>', ''),

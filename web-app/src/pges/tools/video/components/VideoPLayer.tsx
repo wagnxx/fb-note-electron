@@ -618,6 +618,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
         data={currentMarkedMoments?.moments}
         onPreview={setPreviewTime}
         onJumpTo={handleJumpTo}
+        onDelete={tm => handleMarkMoment({ tm, type: 'remove' })}
       />
       <ScreenShots
         doc={currentScreenShotDoc}

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Layout, Button } from 'antd'
-import { MenuUnfoldOutlined } from '@ant-design/icons'
+import { Layout, Collapse, CollapseProps } from 'antd'
+import { CaretRightOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
 import VideoPlayer from './components/VideoPLayer'
 import VideoList from './components/Playlist'
 import FileUpload, { PlayItem } from './components/FileUpload'
+import FloatButton from './components/FloatButton'
 
 const { Sider, Content } = Layout
 
@@ -57,32 +58,54 @@ const CinemaMoments: React.FC = () => {
     )
   }
 
+  const collapseItems: CollapseProps['items'] = [
+    {
+      key: '1',
+      label: 'Play List',
+      children: (
+        <>
+          <div className={`w-full flex justify-start ${collapsed ? 'flex-col' : 'flex-row'}`}>
+            <FileUpload fileInputRef={fileInputRef} setPlaylist={setPlaylist} />
+          </div>
+          {!collapsed && (
+            <VideoList
+              playlist={playlist}
+              playVideo={playVideo}
+              removeItemVideo={removeItemVideo}
+              setPlaylist={setPlaylist}
+              currentVideo={currentVideo}
+            />
+          )}
+        </>
+      ),
+    },
+  ]
+
   return (
     <Layout style={{ minHeight: 'calc(100vh - 29px)' }}>
       <Sider
-        width={200}
-        collapsedWidth={40}
+        width={240}
+        collapsedWidth={0}
         theme="light"
         collapsible
         trigger={null}
         collapsed={collapsed}
-        style={{ padding: '8px' }}
+        style={{ padding: 0 }}
       >
-        {/* <Button icon={<ExpandOutlined />} onClick={() => setCollapsed(!collapsed)} /> */}
-        <div className={`w-full flex justify-center ${collapsed ? 'flex-col' : 'flex-row'}`}>
-          <FileUpload fileInputRef={fileInputRef} setPlaylist={setPlaylist} />
-          <Button icon={<MenuUnfoldOutlined />} onClick={() => setCollapsed(!collapsed)} />
-        </div>
-        {!collapsed && (
-          <VideoList
-            playlist={playlist}
-            playVideo={playVideo}
-            removeItemVideo={removeItemVideo}
-            setPlaylist={setPlaylist}
-            currentVideo={currentVideo}
-          />
-        )}
+        <Collapse
+          bordered={false}
+          defaultActiveKey={['1']}
+          expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+          items={collapseItems}
+        />
       </Sider>
+
+      <FloatButton
+        label={<MenuUnfoldOutlined />}
+        direction="vertical" // 设置为水平方向拖拽
+        edgeDistance={20} // 设置距离容器边缘的最小距离
+        onClick={() => setCollapsed(!collapsed)}
+      />
 
       <Content className="box-border   " style={{ height: 'calc(100vh - 30px)' }}>
         {currentVideo && (

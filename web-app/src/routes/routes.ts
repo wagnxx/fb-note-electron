@@ -7,6 +7,7 @@ import Login from '@/pges/login/Login'
 import { routesTool } from './config/tool'
 import { routesLearn } from './config/learn'
 import { routesSystem } from './config/system'
+import { routesTest } from './config/test'
 
 export interface RouteConfig {
   path: string
@@ -22,6 +23,7 @@ export const authRoutes: RouteConfig[] = [
   routesSystem,
   routesLearn,
   routesTool,
+  routesTest,
 
   { path: '*', name: 'NotFound', component: NotFound, requiresAuth: true, hidden: true },
 ]

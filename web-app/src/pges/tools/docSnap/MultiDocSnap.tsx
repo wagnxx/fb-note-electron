@@ -14,7 +14,6 @@ import {
   CollapseProps,
 } from 'antd'
 import { CaretRightOutlined, DownOutlined, PlusOutlined } from '@ant-design/icons'
-import { handleRequestWithNotification, showNotification } from '@/utils/utilsRequest'
 import { getFileName, resolvePath } from '@/utils/utilsString'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -36,6 +35,7 @@ import { showConfirmationDialog } from '@/utils/utilsConfirm'
 import { createScreenshotDoc } from '@/service/screenshotDoc'
 import { uploadFileToFirebase } from '@/service/firebaseUploader'
 import { useNavigate } from 'react-router-dom'
+import { useNotification } from '@/hooks/useNotification'
 
 export type Snap = {
   name: string
@@ -68,6 +68,7 @@ const MultiDocSnap: React.FC = () => {
   const [hasError, setHasError] = useState(false)
 
   const navigate = useNavigate()
+  const { handleRequestWithNotification, showNotification } = useNotification()
 
   const allSnaps = useMemo(() => {
     const all = snapGroups.reduce((prev: Snap[], cur) => {

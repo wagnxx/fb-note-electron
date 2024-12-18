@@ -10,6 +10,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 export const uploadFileToFirebase = async (
   fileBuffer: ArrayBuffer,
   path: string,
+  onProgress?: (progress: number) => void,
 ): Promise<string> => {
   try {
     // 创建存储引用
@@ -22,7 +23,12 @@ export const uploadFileToFirebase = async (
     await new Promise<void>((resolve, reject) => {
       uploadTask.on(
         'state_changed',
-        null, // 可选：监听进度变化
+        snapshot => {
+          // 计算上传进度
+          const progress = snapshot.bytesTransferred / snapshot.totalBytes
+          // 调用回调函数，传递进度
+          onProgress?.(progress)
+        },
         error => {
           console.error('Upload failed:', error)
           reject(error)
