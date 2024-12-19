@@ -1,3 +1,4 @@
+import { afterRaf } from '@/utils/utilsAsyncFunc'
 import React, { useState, useRef, useEffect, ReactNode } from 'react'
 
 interface FloatButtonProps {
@@ -100,7 +101,7 @@ const FloatButton: React.FC<FloatButtonProps> = ({ label, direction, edgeDistanc
       buttonRef.current.style.opacity = '1' // 恢复透明度
     }
 
-    requestAnimationFrame(() => {
+    afterRaf().then(() => {
       isDraggingMode.current = false
     })
 
