@@ -103,7 +103,7 @@ const CinemaMoments: React.FC = () => {
       <FloatButton
         label={<MenuUnfoldOutlined />}
         direction="vertical" // 设置为水平方向拖拽
-        edgeDistance={20} // 设置距离容器边缘的最小距离
+        edgeDistance={10} // 设置距离容器边缘的最小距离
         onClick={() => setCollapsed(!collapsed)}
       />
 

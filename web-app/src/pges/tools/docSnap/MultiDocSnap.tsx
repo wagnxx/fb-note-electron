@@ -31,7 +31,6 @@ import {
 } from '@dnd-kit/core'
 import DocCardItem from './components/DocCardItem'
 import Search from 'antd/es/input/Search'
-import { showConfirmationDialog } from '@/utils/utilsConfirm'
 import { createScreenshotDoc } from '@/service/screenshotDoc'
 import { uploadFileToFirebase } from '@/service/firebaseUploader'
 import { useNavigate } from 'react-router-dom'
@@ -68,7 +67,8 @@ const MultiDocSnap: React.FC = () => {
   const [hasError, setHasError] = useState(false)
 
   const navigate = useNavigate()
-  const { handleRequestWithNotification, showNotification } = useNotification()
+  const { handleRequestWithNotification, showNotification, showConfirmationDialog } =
+    useNotification()
 
   const allSnaps = useMemo(() => {
     const all = snapGroups.reduce((prev: Snap[], cur) => {

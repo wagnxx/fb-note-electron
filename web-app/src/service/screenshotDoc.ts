@@ -34,7 +34,12 @@ export const batchUpdateScreenshotDoc = (docs: Partial<DocType>[]) => {
     docs.map(doc => {
       doc.createTime = serverTimestamp()
       doc.createId = auth.currentUser!.uid
+
+      if (!doc.id) {
+        delete doc.id
+      }
     })
+
     return batchAddOrUpdateDocs(
       COL_SCREENSHOT,
       docs.map(doc => ({ data: doc, id: doc?.id })),

@@ -1,6 +1,6 @@
 import { afterRaf } from '@/utils/utilsAsyncFunc'
 import React, { useState, useRef, useEffect, ReactNode } from 'react'
-
+import './FloatButton.css'
 interface FloatButtonProps {
   label: ReactNode
   direction: 'horizontal' | 'vertical' // 控制滑动方向
@@ -126,10 +126,12 @@ const FloatButton: React.FC<FloatButtonProps> = ({ label, direction, edgeDistanc
       style={{
         position: 'absolute',
         left: 0,
-        // zIndex: 2,
+        zIndex: 999999,
         width: direction === 'vertical' ? '8px' : '100vw',
         height: direction === 'vertical' ? 'calc(100vh - 30px)' : '8px',
         top: direction === 'vertical' ? '30px' : 0,
+        // mixBlendMode: 'difference',
+        // background: 'transparent',
         // overflow: 'hidden', // 防止按钮溢出
       }}
     >
@@ -137,6 +139,7 @@ const FloatButton: React.FC<FloatButtonProps> = ({ label, direction, edgeDistanc
         ref={buttonRef}
         onClick={handleClick}
         onMouseDown={handleDragStart} // 按下鼠标开始拖动
+        className="blend-button"
         style={{
           position: 'absolute',
           top: position.y,
@@ -144,13 +147,16 @@ const FloatButton: React.FC<FloatButtonProps> = ({ label, direction, edgeDistanc
           cursor: 'grab',
           zIndex: 9999, // 确保按钮在最上层
           borderRadius: '100%',
-          background: 'rgba(255,255,255,0.9)',
+          // background: 'rgba(255,255,255,0.9)',
+          // background: 'rgba(0,0,0,0.9)',
           width: '50px',
           height: '50px',
           textAlign: 'center',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          mixBlendMode: 'multiply',
+          // mixBlendMode: 'multiply',
         }}
       >
         {label}

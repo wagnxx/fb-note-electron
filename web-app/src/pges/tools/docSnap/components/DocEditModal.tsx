@@ -4,12 +4,13 @@ import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { ScreenshotDoc } from '../ScreenshotDoc'
 import { useNotification } from '@/hooks/useNotification'
 import { uploadFileToFirebase } from '@/service/firebaseUploader'
+import { Optional } from '@/utils/types'
 
 interface DocEditModalProps {
   visible: boolean
   onCancel: () => void
   onSave: (data: ScreenshotDoc) => void
-  editData?: ScreenshotDoc // 接收编辑的数据
+  editData?: Optional<ScreenshotDoc, 'id'> // 接收编辑的数据
 }
 
 const DocEditModal: React.FC<DocEditModalProps> = ({ visible, onCancel, onSave, editData }) => {
@@ -36,7 +37,6 @@ const DocEditModal: React.FC<DocEditModalProps> = ({ visible, onCancel, onSave, 
     uploadFileToFirebase(file, `screenshotDoc/${file.name}`, progress =>
       onProgress({ percent: progress * 100 }),
     ).then(downloadURL => {
-      debugger
       if (downloadURL) {
         setScreenshots(prevScreenshots => [...prevScreenshots, downloadURL])
       }
@@ -54,7 +54,7 @@ const DocEditModal: React.FC<DocEditModalProps> = ({ visible, onCancel, onSave, 
       .then(values => {
         const docData = {
           ...values,
-          id: editData ? editData.id : Date.now().toString(), // 如果是编辑，使用现有 ID，若是新建则生成新 ID
+          id: editData ? editData.id : void 0,
           keyTerms: values.key.trim().split('/').filter(Boolean),
           screenshots,
         }

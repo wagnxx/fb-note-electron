@@ -18,6 +18,31 @@ export const formatSecondsToHHmmss = (seconds: number, sep?: string): string => 
   return `${hrs}${seqSymbol}${mins}${seqSymbol}${secs}`
 }
 
+export const formatSecondsToHHmmssWithDecimals = (
+  seconds: number,
+  options: {
+    sep?: string // 分隔符
+    decimalPlaces?: number // 小数位数
+    showDecimal?: boolean // 是否显示小数
+  } = {},
+): string => {
+  const { sep = ':', decimalPlaces = 2, showDecimal = true } = options
+
+  const hrs = Math.floor(seconds / 3600)
+    .toString()
+    .padStart(2, '0')
+  const mins = Math.floor((seconds % 3600) / 60)
+    .toString()
+    .padStart(2, '0')
+  const secs = showDecimal
+    ? (seconds % 60).toFixed(decimalPlaces).padStart(2 + decimalPlaces, '0')
+    : Math.floor(seconds % 60)
+        .toString()
+        .padStart(2, '0')
+
+  return `${hrs}${sep}${mins}${sep}${secs}`
+}
+
 export const parseHHmmssToSeconds = (timeStr: string, sep?: string): number => {
   const seqSymbol = sep || ':' // 默认分隔符为冒号
   const timeParts = timeStr.split(seqSymbol) // 按照分隔符拆分时间字符串

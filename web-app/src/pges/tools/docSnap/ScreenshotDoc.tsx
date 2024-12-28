@@ -1,10 +1,15 @@
 import { useAuth } from '@/context/AuthContext'
-import { batchUpdateScreenshotDoc, getAllScreenshotDoc } from '@/service/screenshotDoc'
+import {
+  batchUpdateScreenshotDoc,
+  deleteScreenshotDocs,
+  getAllScreenshotDoc,
+} from '@/service/screenshotDoc'
 import React, { useEffect, useState } from 'react'
-import { Card, List, Image, Switch, Typography, Button, Space, Spin, Tag } from 'antd'
+import { Card, List, Image, Switch, Typography, Button, Space, Spin, Tag, Popconfirm } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import DocEditModal from './components/DocEditModal'
 import { useNotification } from '@/hooks/useNotification'
+import { PlusOutlined } from '@ant-design/icons'
 
 const { Meta } = Card
 const { Title, Text } = Typography
@@ -28,7 +33,7 @@ const colors = [
 ]
 
 export type ScreenshotDoc = {
-  id: string
+  id?: string
   docName: string
   keyTerms?: string[]
   screenshots: string[]
@@ -41,7 +46,8 @@ const ScreenshotDocs: React.FC = () => {
   const [editingItem, setEditingItem] = useState<ScreenshotDoc>()
 
   const [isLoading, setIsloading] = useState(false)
-
+  const [isFormLoading, setIsFormloading] = useState(false)
+  const [canGoBack, setCanGoBack] = useState(false)
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
@@ -55,6 +61,12 @@ const ScreenshotDocs: React.FC = () => {
     return shuffled
   }
   const shuffledColors = shuffleColors(colors)
+
+  useEffect(() => {
+    // 判断是否可以返回
+    const hasHistory = window.history.length > 1 // 如果历史记录长度大于 1，说明可以返回
+    setCanGoBack(hasHistory)
+  }, [])
 
   const showDocEditModal = () => {
     setIsDocEditModalVisible(true)
@@ -72,7 +84,8 @@ const ScreenshotDocs: React.FC = () => {
       screenshots: data.screenshots,
     }
     console.log('Saved data:', docData)
-    batchUpdateScreenshotDoc([docData])
+
+    setIsFormloading(true)
 
     const r = await handleRequestWithNotification(
       async () => await batchUpdateScreenshotDoc([docData]),
@@ -82,17 +95,45 @@ const ScreenshotDocs: React.FC = () => {
       },
     )
 
+    setIsFormloading(false)
+    setIsDocEditModalVisible(false)
+
     if (r) {
       refreshPage()
     }
     // 可以在这里处理保存操作，例如提交到后端
-    setIsDocEditModalVisible(false)
   }
 
   // 显示编辑 Modal
   const handleEditClick = (item: ScreenshotDoc) => {
     setEditingItem(item)
     showDocEditModal()
+  }
+  const handleAddDoc = () => {
+    const item = {
+      docName: '',
+      keyTerms: [],
+      screenshots: [],
+    }
+    handleEditClick(item)
+  }
+
+  const handleConfirm = async (item: ScreenshotDoc) => {
+    console.log('delete item is : ', item)
+
+    if (!item?.id) return
+
+    const r = await handleRequestWithNotification(
+      async () => await deleteScreenshotDocs([item.id!]),
+      {
+        successField: null,
+        errorField: null,
+      },
+    )
+
+    if (r) {
+      refreshPage()
+    }
   }
 
   function refreshPage() {
@@ -128,16 +169,24 @@ const ScreenshotDocs: React.FC = () => {
           <Button type="link" onClick={() => navigate('/tool/docSnap/multi')}>
             Create
           </Button>
-          <Button type="link" onClick={() => navigate(-1)}>
+          <Button type="link" onClick={() => navigate(-1)} disabled={!canGoBack}>
             back
           </Button>
         </Space>
-        <Switch
-          checkedChildren="Grid View"
-          unCheckedChildren="List View"
-          checked={isGridView}
-          onChange={setIsGridView}
-        />
+        <Space>
+          <Button type="text" onClick={refreshPage}>
+            Refresh
+          </Button>
+          <Button type="text" onClick={handleAddDoc}>
+            <PlusOutlined />
+          </Button>
+          <Switch
+            checkedChildren="Grid View"
+            unCheckedChildren="List View"
+            checked={isGridView}
+            onChange={setIsGridView}
+          />
+        </Space>
       </div>
 
       <Spin spinning={isLoading}>
@@ -214,6 +263,17 @@ const ScreenshotDocs: React.FC = () => {
                           <Button type="text" onClick={() => handleEditClick(doc)}>
                             Edit
                           </Button>
+                          <Popconfirm
+                            title="Delete the task"
+                            description="Are you sure to delete this item?"
+                            onConfirm={() => handleConfirm(doc)}
+                            okText="Yes"
+                            cancelText="No"
+                          >
+                            <Button size="small" danger>
+                              Delete
+                            </Button>
+                          </Popconfirm>
                         </Space>
                       </div>
                       <div>
@@ -259,12 +319,14 @@ const ScreenshotDocs: React.FC = () => {
         )}
       </Spin>
 
-      <DocEditModal
-        editData={editingItem}
-        visible={isDocEditModalVisible}
-        onCancel={handleDocEditModalCancel}
-        onSave={handleDocEditModalSave}
-      />
+      <Spin spinning={isFormLoading}>
+        <DocEditModal
+          editData={editingItem}
+          visible={isDocEditModalVisible}
+          onCancel={handleDocEditModalCancel}
+          onSave={handleDocEditModalSave}
+        />
+      </Spin>
     </div>
   )
 }

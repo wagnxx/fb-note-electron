@@ -13,7 +13,6 @@ import {
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { getDuplicateKeys, hasDuplicate } from '@/utils/utilsArray'
 import { batchUpdateWordAffix } from '@/service/dict'
-import { showConfirmationDialog } from '@/utils/utilsConfirm'
 import { useNotification } from '@/hooks/useNotification'
 
 export type AffixType = {
@@ -49,7 +48,8 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
   const [editingAffix, setEditingAffix] = useState<AffixType | null>(null)
   const [collectionRowkeys, setcollectionRowkeys] = useState<CollectonKeysType>(new Map())
 
-  const { handleRequestWithNotification, showNotification } = useNotification()
+  const { handleRequestWithNotification, showNotification, showConfirmationDialog } =
+    useNotification()
 
   useEffect(() => {
     setDataSource(data.map((item, index) => ({ ...item, initialIndex: index })))

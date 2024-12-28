@@ -145,6 +145,28 @@ export function useNotification() {
     })
   }
 
+  function showConfirmationDialog(options: {
+    title?: string // 弹窗的标题
+    content: string // 弹窗的内容（可选）
+    onOk?: () => void // 用户点击确认按钮时执行的回调
+    onCancel?: () => void // 用户点击取消按钮时执行的回调（可选）
+  }): Promise<boolean> {
+    return new Promise(resolve => {
+      modal.confirm({
+        title: options.title || 'System warnning',
+        content: options.content, // 默认内容
+        onOk: () => {
+          if (options.onOk) options.onOk()
+          resolve(true)
+        },
+        onCancel: () => {
+          if (options.onCancel) options.onCancel()
+          resolve(false)
+        },
+      })
+    })
+  }
+
   return {
     isLoading,
     handleRequestWithNotification,
@@ -153,5 +175,6 @@ export function useNotification() {
     message,
     modal,
     showConfirmModal,
+    showConfirmationDialog,
   }
 }

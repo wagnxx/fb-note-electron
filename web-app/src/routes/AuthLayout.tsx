@@ -9,7 +9,7 @@ import { getSidbarCollapsed } from '@/features/settings/selectors'
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth'
 import { auth, logoutUser } from '@/firebase/authService'
 import { clearAuthState, setAuthState } from '@/features/auth/authSlice'
-import { showConfirmationDialog } from '@/utils/utilsConfirm'
+import { useNotification } from '@/hooks/useNotification'
 
 const { Content, Sider } = Layout
 
@@ -26,6 +26,7 @@ const AuthLayout: React.FC = () => {
   const sidbarCfdsfollapsed = useSelector(getSidbarCollapsed)
 
   const dispatch = useDispatch() // Redux 使用
+  const { showConfirmationDialog } = useNotification()
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user: FirebaseUser | null) => {

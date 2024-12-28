@@ -8,7 +8,7 @@ import {
   QuestionCircleOutlined,
 } from '@ant-design/icons'
 import './VideoPLayer.css'
-import { formatSecondsToHHmmss } from '@/utils/utilsDate'
+import { formatSecondsToHHmmss, formatSecondsToHHmmssWithDecimals } from '@/utils/utilsDate'
 import CustomSliderWithTeeth, { CustomSliderRef } from './CustomSliderWithTeeth'
 import ScreenShots from './ScreenShots'
 import { PlayItem } from './FileUpload'
@@ -157,6 +157,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
       }
     })
   }
+
   // 获取预览图的函数
   const getPreviewImage = (time: number, option: { width: number; height: number }) => {
     const hiddenVideo = hiddenVideoRef.current
@@ -330,6 +331,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
     if (markedMomentsDocs) {
       setMarkedMoments(JSON.parse(markedMomentsDocs) || [])
     }
+
+    ;(window as Window & { hiddenVideoRef?: any; videoRef?: any }).hiddenVideoRef = hiddenVideoRef
+    ;(window as Window & { hiddenVideoRef?: any; videoRef?: any }).videoRef = videoRef
   }, [])
   useEffect(() => {
     localStorage.setItem('screenshotDocs', JSON.stringify(screenshotDocs))
@@ -441,6 +445,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
           ref={videoRef}
           width="100%"
           height="auto"
+          crossOrigin="anonymous"
           autoPlay={isPlaying}
           onClick={togglePlayPause}
           onError={onError}
@@ -537,7 +542,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
           }}
         >
           <canvas ref={canvasRef} width={700} height={700 / aspectRatio} />
-          {hoverTime && <p style={{ color: 'white' }}>{formatSecondsToHHmmss(hoverTime)}</p>}
+          {hoverTime && (
+            <p style={{ color: 'white' }}>
+              {formatSecondsToHHmmssWithDecimals(hoverTime, {
+                showDecimal: true,
+                decimalPlaces: 6,
+              })}
+            </p>
+          )}
         </div>
       </div>
 

@@ -16,7 +16,6 @@ import { Row, Col, Button, Dropdown, Checkbox, Space } from 'antd'
 import ScreenshotModal, { Range } from './ScreenshotModal'
 import './ScreenShots.css'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
-import { showConfirmationDialog } from '@/utils/utilsConfirm'
 import { PlayItem } from './FileUpload'
 import { copyImagesFromElementsToClipboard } from '@/utils/utilsClipboard'
 import { ScreenshotDoc, ScreenshotType } from './VideoPLayer'
@@ -77,7 +76,8 @@ const ScreenShots: FC<ScreenTypes> = ({
 
   const navigate = useNavigate()
 
-  const { handleRequestWithNotification, showNotification } = useNotification()
+  const { handleRequestWithNotification, showNotification, showConfirmationDialog } =
+    useNotification()
 
   const { isAuthenticated } = useAuth()
 
