@@ -5,14 +5,34 @@ import {
   getAllScreenshotDoc,
 } from '@/service/screenshotDoc'
 import React, { useEffect, useState } from 'react'
-import { Card, List, Image, Switch, Typography, Button, Space, Spin, Tag, Popconfirm } from 'antd'
+import {
+  Card,
+  List,
+  Image,
+  Switch,
+  Typography,
+  Button,
+  Space,
+  Spin,
+  Tag,
+  Popconfirm,
+  Row,
+  Col,
+  Select,
+  Form,
+  Input,
+  FormInstance,
+} from 'antd'
 import { useNavigate } from 'react-router-dom'
 import DocEditModal from './components/DocEditModal'
 import { useNotification } from '@/hooks/useNotification'
 import { PlusOutlined } from '@ant-design/icons'
+import { FieldValue, Timestamp } from 'firebase/firestore'
+import { transFBDate2Local } from '@/utils/utilsDate'
 
 const { Meta } = Card
 const { Title, Text } = Typography
+const { Option } = Select
 
 const colors = [
   'processing',
@@ -37,6 +57,7 @@ export type ScreenshotDoc = {
   docName: string
   keyTerms?: string[]
   screenshots: string[]
+  createTime?: FieldValue
 }
 
 const ScreenshotDocs: React.FC = () => {
@@ -48,10 +69,13 @@ const ScreenshotDocs: React.FC = () => {
   const [isLoading, setIsloading] = useState(false)
   const [isFormLoading, setIsFormloading] = useState(false)
   const [canGoBack, setCanGoBack] = useState(false)
+
+  // const docTypeFormRef = useRef<FormInstance>(null)
+
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
-  const { handleRequestWithNotification, showNotification } = useNotification()
+  const { handleRequestWithNotification, showConfirmModal } = useNotification()
   const shuffleColors = (arr: string[]) => {
     let shuffled = [...arr] // 拷贝一份数组，避免改变原数组
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -136,6 +160,24 @@ const ScreenshotDocs: React.FC = () => {
     }
   }
 
+  const handleDocType = async () => {
+    const docTypeFormRef = React.createRef<FormInstance<any>>()
+
+    showConfirmModal({
+      title: 'Add Doc Type',
+      content: (
+        <Form ref={docTypeFormRef}>
+          <Form.Item name="other">
+            <Input />
+          </Form.Item>
+        </Form>
+      ),
+      onOk(value) {
+        console.log('onOk : ', value)
+      },
+    })
+  }
+
   function refreshPage() {
     setIsloading(true)
     getAllScreenshotDoc()
@@ -147,6 +189,7 @@ const ScreenshotDocs: React.FC = () => {
               docName: item.docName,
               keyTerms: item.keyTerms || [],
               screenshots: item.screenshots,
+              createTime: item.createTime,
             })),
           )
         }
@@ -189,6 +232,27 @@ const ScreenshotDocs: React.FC = () => {
         </Space>
       </div>
 
+      <div style={{ padding: '10px 0', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+        {/* Title Section */}
+
+        {/* Buttons and Selectors */}
+        <Row gutter={[16, 16]}>
+          <Col>
+            <Title level={4}>DocType: </Title>
+          </Col>
+          <Col>
+            <Space size="middle">
+              {/* Selector */}
+              <Tag>Video</Tag>
+              <Tag>English</Tag>
+
+              {/* Button */}
+              <Button type="text" icon={<PlusOutlined />} onClick={handleDocType}></Button>
+            </Space>
+          </Col>
+        </Row>
+      </div>
+
       <Spin spinning={isLoading}>
         {/* 文档列表 */}
         {isGridView ? (
@@ -199,6 +263,8 @@ const ScreenshotDocs: React.FC = () => {
               sm: 2,
               md: 3,
               lg: 4,
+              xl: 6,
+              xxl: 8,
             }}
             dataSource={data}
             renderItem={doc => (
@@ -252,6 +318,22 @@ const ScreenshotDocs: React.FC = () => {
                     <div>
                       <div>
                         <Space>
+                          {doc?.keyTerms?.length
+                            ? doc.keyTerms.map((k, index) => (
+                                <Tag
+                                  key={k}
+                                  bordered={false}
+                                  color={shuffledColors[index % shuffledColors.length]}
+                                >
+                                  {k}
+                                </Tag>
+                              ))
+                            : null}
+                        </Space>
+                      </div>
+                      <div>
+                        <Space>
+                          <span>{transFBDate2Local(doc?.createTime as Timestamp)}</span>
                           {doc.screenshots.length ? (
                             <Space>
                               <span>{`${doc.screenshots.length} screenshot(s) available`}</span>
@@ -274,21 +356,6 @@ const ScreenshotDocs: React.FC = () => {
                               Delete
                             </Button>
                           </Popconfirm>
-                        </Space>
-                      </div>
-                      <div>
-                        <Space>
-                          {doc?.keyTerms?.length
-                            ? doc.keyTerms.map((k, index) => (
-                                <Tag
-                                  key={k}
-                                  bordered={false}
-                                  color={shuffledColors[index % shuffledColors.length]}
-                                >
-                                  {k}
-                                </Tag>
-                              ))
-                            : null}
                         </Space>
                       </div>
                     </div>

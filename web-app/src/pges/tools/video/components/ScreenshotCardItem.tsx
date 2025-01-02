@@ -98,7 +98,7 @@ const ScreenshotCardItem = ({
           >
             {item.name}
           </h2>
-          <Button size="small" type="text" onClick={() => item.at && onJumpTo(item.at)}>
+          <Button size="small" type="text" onClick={() => item.at !== null && onJumpTo(item.at)}>
             Jump To
           </Button>
         </div>

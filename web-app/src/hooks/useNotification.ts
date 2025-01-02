@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { App, Modal } from 'antd'
+import { App } from 'antd'
 
 interface ApiResponse {
   [key: string]: any // 可以根据具体的返回结构更详细地定义
@@ -18,8 +18,8 @@ interface ConfirmModalProps {
   content: React.ReactNode
   okText?: string
   cancelText?: string
-  onOk: (value: string) => void // 确认时传递的回调
-  onCancel: () => void // 取消时的回调
+  onOk?: (value: string) => void // 确认时传递的回调
+  onCancel?: () => void // 取消时的回调
 }
 
 // `useNotification` hook：处理请求和通知
@@ -120,7 +120,7 @@ export function useNotification() {
     onCancel,
   }: ConfirmModalProps) => {
     return new Promise<string>((resolve, reject) => {
-      Modal.confirm({
+      modal.confirm({
         title,
         content,
         okText,
@@ -130,16 +130,14 @@ export function useNotification() {
           if (form) {
             const values = form.getFieldsValue()
             resolve(values)
-            if (onOk) {
-              onOk(values)
-            }
+            onOk?.(values)
           } else {
             reject('No form data found')
           }
         },
         onCancel() {
           reject('Cancelled')
-          onCancel() // 调用传入的 onCancel
+          onCancel?.() // 调用传入的 onCancel
         },
       })
     })

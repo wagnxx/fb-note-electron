@@ -49,7 +49,7 @@ type SnapGroup = {
 
 const { Title, Paragraph } = Typography
 
-const { ipcRenderer, IPC_ACTIONS } = window.electron
+const { ipcRenderer, IPC_ACTIONS } = window?.electron || { ipcRenderer: {} }
 
 const MultiDocSnap: React.FC = () => {
   const [imageSizes, setImageSizes] = useState<Record<string, { width: number; height: number }>>(

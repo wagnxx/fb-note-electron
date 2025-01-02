@@ -6,6 +6,7 @@ import {
   SoundOutlined,
   SettingFilled,
   QuestionCircleOutlined,
+  FullscreenOutlined,
 } from '@ant-design/icons'
 import './VideoPLayer.css'
 import { formatSecondsToHHmmss, formatSecondsToHHmmssWithDecimals } from '@/utils/utilsDate'
@@ -14,6 +15,12 @@ import ScreenShots from './ScreenShots'
 import { PlayItem } from './FileUpload'
 import { getNameWithoutExtension } from '@/utils/utilsString'
 import MarkedMoment from './MarkedMoment'
+import { useFullscreen } from '@/hooks/useFullscreen'
+
+const TollButtonStyle = {
+  background: 'rgba(0, 0, 0, 0.5)',
+  color: '#fff',
+}
 
 export type ScreenshotType = {
   name: string
@@ -62,12 +69,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
 
   const videoContainerRef = useRef<HTMLDivElement>(null)
   const seekbarRef = useRef<SliderRef>(null)
-  const videoRef = useRef<HTMLVideoElement | null>(null)
+  // const videoRef = useRef<HTMLVideoElement | null>(null)
   const hiddenVideoRef = useRef<HTMLVideoElement | null>(null) // 用于获取预览图的隐藏视频
   const canvasRef = useRef<HTMLCanvasElement | null>(null) // 用于绘制预览图的canvas
   const customSliderRef = useRef<CustomSliderRef>(null)
 
   const [notificationApi, notificationHandleContext] = notification.useNotification()
+  const {
+    elementRef: videoRef,
+    isFullscreen,
+    goFullscreen,
+    exitFullscreen,
+  } = useFullscreen<HTMLVideoElement>()
 
   const currentScreenShotDoc = screenshotDocs.find(item => item.docId === video.id)
   const currentMarkedMoments = markedMoments.find(item => item.docId === video.id)
@@ -464,9 +477,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
             <Button
               icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
               onClick={togglePlayPause}
+              style={TollButtonStyle}
             />
             <div className="btn-contaier h-6">
-              <Button icon={<SoundOutlined />} className="btn-item" />
+              <Button icon={<SoundOutlined />} className="btn-item" style={TollButtonStyle} />
               <Slider
                 className="btn-slider"
                 style={{ width: '100px' }}
@@ -481,6 +495,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
             <span>
               {formatSecondsToHHmmss(currentTime)} / {formatSecondsToHHmmss(duration)}
             </span>
+
+            <Button
+              icon={<FullscreenOutlined />}
+              onClick={goFullscreen}
+              style={{ marginLeft: 'auto', ...TollButtonStyle }}
+            ></Button>
 
             <Popover
               content={
@@ -522,7 +542,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
               title="Settings"
               overlayStyle={{ width: '250px' }}
             >
-              <Button icon={<SettingFilled />} style={{ marginLeft: 'auto' }} />
+              <Button icon={<SettingFilled />} style={TollButtonStyle} />
             </Popover>
           </div>
         </div>

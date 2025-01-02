@@ -14,8 +14,9 @@ import {
 
 import { v4 as uuidv4 } from 'uuid'
 import './VideoDownloader.css'
+import DesktopOnly from '@/components/platform/DesktopOnly'
 
-const { ipcRenderer } = window.electron
+const { ipcRenderer } = window.electron || {}
 const { TextArea } = Input
 const { Title } = Typography
 
@@ -279,4 +280,4 @@ const VideoDownloader: React.FC = () => {
   )
 }
 
-export default VideoDownloader
+export default () => <DesktopOnly children={<VideoDownloader />} />

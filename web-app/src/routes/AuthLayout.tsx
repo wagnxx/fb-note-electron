@@ -74,7 +74,7 @@ const AuthLayout: React.FC = () => {
 
       const menuItem: MenuItem = {
         key: fullPath,
-        label: <Link to={fullPath}>{name}</Link>,
+        label: children ? name : <Link to={fullPath}>{name}</Link>,
       }
 
       if (children) {

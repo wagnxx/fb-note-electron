@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useReducer, useEffect } from 'react'
-import { Button, Modal, Space } from 'antd'
+import { Button, Col, Modal, Row, Space } from 'antd'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 interface Thumbnail {
   id: string
@@ -370,12 +370,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
         <div>
           <Space>
             <Button onClick={handleConfirmScreenshot}>确认截图</Button>
-            <Button onClick={handleStartScreenshot} style={{ marginLeft: 8 }}>
-              开始截图
-            </Button>
-            <Button onClick={handleCancelScreenshot} style={{ marginLeft: 8 }}>
-              取消截图
-            </Button>
+
             <Button onClick={() => handleCancel(true)} style={{ marginLeft: 8 }}>
               清空并退出
             </Button>
@@ -414,18 +409,35 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
         {/* 缩略图浏览按钮 */}
         {thumbnailsInitial && (
-          <div style={{ marginBottom: 4, textAlign: 'center' }}>
-            <Button
-              icon={<LeftOutlined />}
-              onClick={handlePrevThumbnail}
-              disabled={currentIndex === 0}
-              style={{ marginRight: 10 }}
-            />
-            <Button
-              icon={<RightOutlined />}
-              onClick={handleNextThumbnail}
-              disabled={currentIndex === thumbnailsInitial.length - 1}
-            />
+          <div style={{ marginBottom: 4, textAlign: 'right' }}>
+            <Row>
+              <Col span={12}>
+                <Space>
+                  <Button
+                    size="small"
+                    icon={<LeftOutlined />}
+                    onClick={handlePrevThumbnail}
+                    disabled={currentIndex === 0}
+                  />
+                  <Button
+                    size="small"
+                    icon={<RightOutlined />}
+                    onClick={handleNextThumbnail}
+                    disabled={currentIndex === thumbnailsInitial.length - 1}
+                  />
+                </Space>
+              </Col>
+              <Col span={12}>
+                <Space>
+                  <Button size="small" type="primary" onClick={handleStartScreenshot}>
+                    开始截图
+                  </Button>
+                  <Button size="small" color="danger" onClick={handleCancelScreenshot}>
+                    取消截图
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
           </div>
         )}
 

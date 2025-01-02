@@ -7,7 +7,7 @@ import {
   getFieldValues,
 } from '@/firebase/db'
 import { auth } from '@/firebase/authService'
-import { FieldValue, serverTimestamp, where } from 'firebase/firestore'
+import { serverTimestamp, where } from 'firebase/firestore'
 import { ScreenshotDoc } from '@/pges/tools/docSnap/ScreenshotDoc'
 
 const COL_SCREENSHOT = 'screenshotDoc'
@@ -16,7 +16,7 @@ export type DocType = ScreenshotDoc & {
   // docName: string
   // screenshots: Array<string>
   // keyTerms?: Array<string>
-  createTime?: FieldValue
+  // createTime?: FieldValue | string
   createId?: string
 }
 

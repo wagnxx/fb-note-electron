@@ -4,8 +4,9 @@ import MultiDocSnap from '@/pges/tools/docSnap/MultiDocSnap'
 import CinemaMoments from '@/pges/tools/video/CinemaMoments'
 import VideoDownloader from '@/pges/tools/video/components/VideoDownloader'
 import ScreenshotDoc from '@/pges/tools/docSnap/ScreenshotDoc'
+import { RouteConfig } from '../routes'
 
-export const routesTool = {
+export const routesTool: RouteConfig = {
   path: '/tool',
   name: 'Tool',
   component: ParentEmpty,
@@ -29,6 +30,7 @@ export const routesTool = {
           path: 'VideoDownloader',
           name: 'Video Downloader',
           component: VideoDownloader,
+          isDesktop: true,
         },
       ],
     },

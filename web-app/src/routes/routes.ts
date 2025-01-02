@@ -16,6 +16,7 @@ export interface RouteConfig {
   requiresAuth?: boolean
   hidden?: boolean
   isStandalone?: boolean
+  isDesktop?: boolean
   children?: RouteConfig[]
 }
 

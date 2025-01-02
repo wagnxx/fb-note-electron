@@ -1,0 +1,16 @@
+.app-header {
+  height: 28px;
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+  gap: 10px;
+
+  -webkit-app-region: drag
+}
+
+.app-header__item {
+  -webkit-app-region: no-drag
+}
+.app-header__item:hover {
+  cursor: pointer;
+}

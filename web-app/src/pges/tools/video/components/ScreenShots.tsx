@@ -12,7 +12,7 @@ import {
   DragStartEvent,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { Row, Col, Button, Dropdown, Checkbox, Space } from 'antd'
+import { Row, Col, Button, Dropdown, Checkbox, Space, Spin } from 'antd'
 import ScreenshotModal, { Range } from './ScreenshotModal'
 import './ScreenShots.css'
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
@@ -70,6 +70,8 @@ const ScreenShots: FC<ScreenTypes> = ({
   const [isCroping, setIsCroping] = useState(false)
   const [docExisted, setDocExisted] = useState(true)
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null) // 当前拖拽的 id
+
+  const [isCardLoading, setIsCardLoading] = useState(false)
 
   // 使用 useRef 来为每个图片创建一个 ref
   const imgRefs = useRef<{ [key: string]: HTMLImageElement | null }>({})
@@ -310,7 +312,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     }
   }
 
-  const handleSetAsScropted = async () => {
+  const handleSetAsScropted = async (to: boolean = true) => {
     if (!doc || selectedKeys.size === 0) {
       return
     }
@@ -326,7 +328,7 @@ const ScreenShots: FC<ScreenTypes> = ({
 
     onSaveScreenshot({
       docId: doc.docId,
-      screenshots: updated.map(item => ({ ...item, isCropped: true })),
+      screenshots: updated.map(item => ({ ...item, isCropped: to })),
       action: 'modify',
     })
   }
@@ -393,7 +395,7 @@ const ScreenShots: FC<ScreenTypes> = ({
       const updated = doc.screenshots.filter(item => names.includes(item.name))
       onSaveScreenshot({
         docId: doc.docId,
-        screenshots: updated.map(item => ({ ...item, isCropped: true })),
+        screenshots: updated.map(item => ({ ...item, isCropped: byTemplate ? false : true })),
         action: 'modify',
       })
     }
@@ -458,6 +460,7 @@ const ScreenShots: FC<ScreenTypes> = ({
     })
 
     if (!confirmed) return
+    setIsCardLoading(true)
     //Currently, only one merged image is supported
     const filePath = screenshotsMap[names[0]].path
     const fileBuffer = await ipcRenderer?.invoke('read-stream', encodeURIComponent(filePath))
@@ -468,10 +471,19 @@ const ScreenShots: FC<ScreenTypes> = ({
     const fileName = filePath.split('/').pop() // 获取文件名
     const downloadURL = await uploadFileToFirebase(fileBuffer, `screenshotDoc/${fileName}`)
 
-    createScreenshotDoc({
-      docName: video.name,
-      screenshots: [downloadURL],
-    })
+    const r = await handleRequestWithNotification(
+      async () =>
+        await createScreenshotDoc({
+          docName: video.name,
+          screenshots: [downloadURL],
+        }),
+      {
+        successMessage: 'create doc successfully',
+        successField: null,
+        errorField: null,
+      },
+    )
+    setIsCardLoading(false)
   }
 
   const handleCopyImage = async () => {
@@ -690,33 +702,69 @@ const ScreenShots: FC<ScreenTypes> = ({
             >
               Crop By Template
             </Button>
-            <Button onClick={handleSetAsScropted} disabled={selectedKeys.size === 0}>
-              Set As Scroped
+            <Button onClick={() => handleSetAsScropted(true)} disabled={selectedKeys.size === 0}>
+              Set As Cropped
+            </Button>
+            <Button onClick={() => handleSetAsScropted(false)} disabled={selectedKeys.size === 0}>
+              Set As UnCropped
             </Button>
           </Space>
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} justify={'start'} style={{ marginTop: '20px' }}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragOver={handleDragOver}
-          // onDragLeave={handleDragLeave}
-        >
-          <SortableContext
-            items={filteredData.map(item => item.name)}
-            strategy={verticalListSortingStrategy}
+      <Spin spinning={isCardLoading}>
+        <Row gutter={[16, 16]} justify={'start'} style={{ marginTop: '20px' }}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragOver={handleDragOver}
+            // onDragLeave={handleDragLeave}
           >
-            {filteredData.map((item, index) => {
-              return (
-                <Col xs={24} sm={12} md={8} lg={6} xl={4} key={item.name}>
-                  {/* <div className="screenshot-item-container w-full"> */}
-                  {/* <ScreenshotSortableItem key={item.name} id={item.name}> */}
+            <SortableContext
+              items={filteredData.map(item => item.name)}
+              strategy={verticalListSortingStrategy}
+            >
+              {filteredData.map((item, index) => {
+                return (
+                  <Col xs={24} sm={12} md={8} lg={6} xl={4} key={item.name}>
+                    {/* <div className="screenshot-item-container w-full"> */}
+                    {/* <ScreenshotSortableItem key={item.name} id={item.name}> */}
+                    <ScreenshotCardItem
+                      item={item}
+                      imageSizes={imageSizes}
+                      imgRefs={imgRefs}
+                      isCroping={isCroping}
+                      _renderCount={_renderCount}
+                      selectedKeys={selectedKeys}
+                      handleImageLoad={handleImageLoad}
+                      onJumpTo={onJumpTo}
+                      handleCheckboxChange={handleCheckboxChange}
+                      openModal={openModal}
+                    />
+                    {/* <DragOutlined /> */}
+                    {/* </ScreenshotSortableItem> */}
+                    {/* </div> */}
+                  </Col>
+                )
+              })}
+            </SortableContext>
+
+            {/* 拖拽视觉反馈 */}
+            <DragOverlay>
+              {activedItem ? (
+                <div
+                  style={{
+                    padding: '8px',
+                    background: '#e0f7fa',
+                    border: '1px dashed #00796b',
+                    borderRadius: '4px',
+                    cursor: 'grabbing',
+                  }}
+                >
                   <ScreenshotCardItem
-                    item={item}
+                    item={activedItem}
                     imageSizes={imageSizes}
                     imgRefs={imgRefs}
                     isCroping={isCroping}
@@ -727,43 +775,13 @@ const ScreenShots: FC<ScreenTypes> = ({
                     handleCheckboxChange={handleCheckboxChange}
                     openModal={openModal}
                   />
-                  {/* <DragOutlined /> */}
-                  {/* </ScreenshotSortableItem> */}
-                  {/* </div> */}
-                </Col>
-              )
-            })}
-          </SortableContext>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        </Row>
+      </Spin>
 
-          {/* 拖拽视觉反馈 */}
-          <DragOverlay>
-            {activedItem ? (
-              <div
-                style={{
-                  padding: '8px',
-                  background: '#e0f7fa',
-                  border: '1px dashed #00796b',
-                  borderRadius: '4px',
-                  cursor: 'grabbing',
-                }}
-              >
-                <ScreenshotCardItem
-                  item={activedItem}
-                  imageSizes={imageSizes}
-                  imgRefs={imgRefs}
-                  isCroping={isCroping}
-                  _renderCount={_renderCount}
-                  selectedKeys={selectedKeys}
-                  handleImageLoad={handleImageLoad}
-                  onJumpTo={onJumpTo}
-                  handleCheckboxChange={handleCheckboxChange}
-                  openModal={openModal}
-                />
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      </Row>
       <ScreenshotModal
         _renderCount={_renderCount}
         visible={visibleModal}
