@@ -13,56 +13,78 @@ class Downloader {
   private processMap: Map<string, ChildProcessWithoutNullStreams> = new Map();
 
   public startDownload(event: Electron.IpcMainEvent, { videoUrl, enDownloadDir, videoId }: DownloadOptions): void {
-    let videoTitle = '';
-    const downloadDir = decodeURIComponent(enDownloadDir)
+    const downloadDir = decodeURIComponent(enDownloadDir);
 
-    // 使用 yt-dlp 获取视频标题
-    const ytDlpCmd = spawn('yt-dlp', ['-e', videoUrl]);
+    // 获取视频标题和扩展名
+    this.getVideoInfo(videoUrl)
+      .then(({ title, ext }) => {
+        const videoTitle = title || 'unknown_title'; // 如果未获取标题，则使用默认值
+        const outputPath = path.join(downloadDir, `${videoTitle}.${ext}`);
 
-    ytDlpCmd.stdout.on('data', (data) => {
-      videoTitle = data.toString().trim();
-      console.log('视频标题:', videoTitle);
-    });
+        event.reply('download-title', { videoId, videoTitle, outputPath });
 
-    ytDlpCmd.stderr.on('data', (data) => {
-      console.error(`yt-dlp error: ${data}`);
-    });
+        this.downloadVideo(event, videoUrl, outputPath, videoId);
+      })
+      .catch((error) => {
+        console.error('获取视频信息失败:', error.message);
+        event.reply('download-error', { videoId, errorMessage: '获取视频信息失败' });
+      });
+  }
 
-    ytDlpCmd.on('close', (code) => {
-      if (code !== 0) {
-        event.reply('download-error', { videoId, errorMessage: '获取视频标题失败' });
-        return;
-      }
+  private getVideoInfo(videoUrl: string): Promise<{ title: string; ext: string }> {
+    return new Promise((resolve, reject) => {
+      let title = '';
+      let ext = '';
 
-      event.reply('download-title', { videoId, videoTitle });
+      // 使用 yt-dlp 获取视频标题和扩展名
+      const ytDlpCmd = spawn('yt-dlp', ['--print', '%(title)s\n%(ext)s', videoUrl]);
 
-      const outputPath = path.join(downloadDir, `${videoTitle}.mp4`);
-
-      const ytDlpDownloadCmd = spawn('yt-dlp', ['-o', outputPath, videoUrl]);
-      this.processMap.set(videoId, ytDlpDownloadCmd);
-
-      ytDlpDownloadCmd.stdout.on('data', (data) => {
-        const output = data.toString();
-        const progressMatch = output.match(/(\d+\.\d+)%/);
-        if (progressMatch) {
-          const progress = progressMatch[1];
-          event.reply('download-progress', { videoId, progress, path: outputPath });
-        }
+      ytDlpCmd.stdout.on('data', (data) => {
+        const [fetchedTitle, fetchedExt] = data.toString().trim().split('\n');
+        title = fetchedTitle || '';
+        ext = fetchedExt || '';
       });
 
-      ytDlpDownloadCmd.on('close', (code) => {
-        this.processMap.delete(videoId);
-        if (code === 0) {
-          event.reply('download-complete', { videoId, path: outputPath });
-        } else {
-          event.reply('download-error', { videoId, errorMessage: '下载失败' });
-        }
-      });
-
-      ytDlpDownloadCmd.stderr.on('data', (data) => {
+      ytDlpCmd.stderr.on('data', (data) => {
         console.error(`yt-dlp error: ${data}`);
-        event.reply('download-error', { videoId, errorMessage: '下载失败' });
       });
+
+      ytDlpCmd.on('close', (code) => {
+        if (code === 0) {
+          resolve({ title, ext });
+        } else {
+          reject(new Error('yt-dlp 获取视频信息失败'));
+        }
+      });
+    });
+  }
+
+  private downloadVideo(event: Electron.IpcMainEvent, videoUrl: string, outputPath: string, videoId: string): void {
+    const ytDlpDownloadCmd = spawn('yt-dlp', ['-o', outputPath, videoUrl]);
+    this.processMap.set(videoId, ytDlpDownloadCmd);
+
+    ytDlpDownloadCmd.stdout.on('data', (data) => {
+      const output = data.toString();
+      const progressMatch = output.match(/(\d+\.\d+)%/);
+      if (progressMatch) {
+        const progress = progressMatch[1];
+        event.reply('download-progress', { videoId, progress, path: outputPath });
+      }
+    });
+
+    ytDlpDownloadCmd.stderr.on('data', (data) => {
+      console.error(`yt-dlp error: ${data}`);
+      event.reply('download-error', { videoId, errorMessage: '下载失败' });
+    });
+
+    ytDlpDownloadCmd.on('close', (code) => {
+      this.processMap.delete(videoId);
+      if (code === 0) {
+        console.log(`下载完成: ${outputPath}`);
+        event.reply('download-complete', { videoId, path: outputPath });
+      } else {
+        event.reply('download-error', { videoId, errorMessage: '下载失败' });
+      }
     });
   }
 

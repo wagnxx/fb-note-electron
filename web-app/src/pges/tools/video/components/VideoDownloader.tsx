@@ -4,22 +4,34 @@ import {
   Input,
   Slider,
   List,
-  Layout,
   Row,
   Col,
   Space,
   Typography,
-  notification,
   Select,
   Checkbox,
+  Tooltip,
+  Divider,
 } from 'antd'
 
 import { v4 as uuidv4 } from 'uuid'
 import './VideoDownloader.css'
 import { useNotification } from '@/hooks/useNotification'
 import useFirstRender from '@/hooks/useFirstRender'
-import { Content } from 'antd/es/layout/layout'
-import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons'
+import {
+  ArrowLeftOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+  PlusOutlined,
+} from '@ant-design/icons'
+import { useDispatch, useSelector } from 'react-redux'
+import { PlayItem } from './FileUpload'
+import { setPlaylist } from '@/features/video/videoPlayer'
+import { selectPlaylist } from '@/features/video/selectors'
+import PageScroll from '@/components/layout/PageScroll'
+import TitleBar from '@/components/layout/TitleBar'
+import { useNavigate } from 'react-router-dom'
+import useQueryParams from '@/hooks/useQueryParams'
 
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 const { TextArea } = Input
@@ -40,12 +52,27 @@ const VideoDownloader: React.FC = () => {
   const [downloadDir, setDownloadDir] = useState('')
   const [downloadList, setDownloadList] = useState<DownloadItem[]>([])
   const [dirHistoryList, setDirHistoryList] = useState<string[]>([])
-  // const selections = useRef<Set<string>>(new Set())
   const [selections, setSelections] = useState<string[]>([])
+
+  const dispatch = useDispatch()
+
+  const updatePlaylists = (action: PlayItem[] | ((data: PlayItem[]) => PlayItem[])) =>
+    dispatch(setPlaylist(action))
+
+  const playlist = useSelector(selectPlaylist)
+  const isInPlaylist = (itemId: string) => {
+    return playlist.some(item => item.url === itemId)
+  }
 
   const { notification: notificationApi } = useNotification()
 
   const isFirstRender = useFirstRender()
+  const navigate = useNavigate()
+  const { from: actionFrom } = useQueryParams()
+
+  const handleBack = () => {
+    actionFrom === 'button' && navigate(-1)
+  }
 
   const dispatchDownloaAction = ({
     videoRemoteUrl,
@@ -65,10 +92,9 @@ const VideoDownloader: React.FC = () => {
     })
   }
 
-  // https://www.youtube.com/watch?v=zu4pkxePeFw
   const handleDownload = () => {
     if (!videoUrl || !downloadDir) {
-      notification.error({
+      notificationApi.error({
         message: 'Error',
         description: 'Please provide both video URL and download directory',
       })
@@ -173,11 +199,27 @@ const VideoDownloader: React.FC = () => {
     )
   }
 
-  const addToPlayList = (path: string) => {
-    notificationApi.success({
-      message: 'Added to Playlist',
-      description: `Video added: ${path}`,
-    })
+  const handleResetPath = async (tar: DownloadItem) => {
+    const file = await ipcRenderer.invoke(IPC_ACTIONS.SELECT_FILE, { type: 'file' })
+    if (file.path) {
+      setDownloadList(prevList =>
+        prevList.map(item => {
+          if (tar.id === item.id) {
+            item.path = file.path
+          }
+          return item
+        }),
+      )
+      notificationApi.success({ message: 'operation successfuly' })
+    }
+  }
+
+  const addToPlayList = (item: DownloadItem) => {
+    // console.log('item', item)
+    updatePlaylists(prevList => [
+      ...prevList,
+      { url: item.path, name: item.name, played: false, id: item.id },
+    ])
   }
 
   const deleteDownload = (videoId: string) => {
@@ -282,7 +324,10 @@ const VideoDownloader: React.FC = () => {
         })
         return updatedList
       })
-      notification.success({ message: 'Download complete', description: `Video saved at: ${path}` })
+      notificationApi.success({
+        message: 'Download complete',
+        description: `Video saved at: ${path}`,
+      })
     })
 
     ipcRenderer.on('download-error', ({ videoId, errorMessage }) => {
@@ -299,116 +344,140 @@ const VideoDownloader: React.FC = () => {
         })
         return updatedList
       })
-      notification.error({ message: 'Download failed', description: errorMessage })
+      notificationApi.error({ message: 'Download failed', description: errorMessage })
     })
   }, [])
 
   return (
-    <Layout>
-      <Content style={{ padding: '20px' }}>
-        <Title className="section-title">Video Downloader</Title>
-        <Row gutter={16}>
-          <Col span={24}>
-            <Input
-              className="input-group"
-              placeholder="Enter video URL"
-              value={videoUrl}
-              onChange={e => setVideoUrl(e.target.value.trim())}
-            />
-          </Col>
-          <Col span={24}>
-            <Select
-              className="input-group"
-              style={{ width: '100%' }}
-              value={downloadDir}
-              onChange={val => setDownloadDir(val)}
-              placeholder="Select download directory"
-            >
-              {dirHistoryList.map(item => (
-                <Select.Option value={item} key={item}>
-                  {item}{' '}
-                </Select.Option>
-              ))}
-            </Select>
-          </Col>
-          <Col span={24}>
-            <Space>
-              <Button onClick={handleSelectDirectory}>Select Directory</Button>
-              <Button
-                // className="styled-button"
-                onClick={handleDownload}
-                disabled={!downloadDir || downloadList.some(item => item.isDownloading)}
-              >
-                {downloadList.some(item => item.isDownloading)
-                  ? 'Downloading...'
-                  : 'Start Download'}
-              </Button>
-              <Button onClick={handleSetAsCompleted} disabled={selections.length === 0}>
-                set completed
-              </Button>
-            </Space>
-          </Col>
-        </Row>
-        <List
-          className="list-header"
-          style={{ marginTop: '20px' }}
-          header={<div>Download List</div>}
-          bordered
-          dataSource={downloadList}
-          renderItem={item => (
-            <List.Item key={item.id}>
-              <Row align="stretch" style={{ width: '100%', boxSizing: 'border-box' }}>
-                {/* Meta 信息部分 */}
-                <Col sm={24} md={12}>
-                  <List.Item.Meta
-                    avatar={
-                      <Checkbox onChange={e => handleSelectItem(item.id, e.target.checked)} />
-                    }
-                    title={item.name}
-                    description={`Progress: ${item.progress}`}
-                  />
-                  {item.isDownloading && (
-                    <Slider
-                      className="list-item-slider"
-                      value={parseFloat(item.progress)}
-                      max={100}
-                      disabled
-                    />
+    <PageScroll
+      styles={{ height: 'calc(100vh - 30px)' }}
+      contentStyles={{}}
+      footerHeight={30}
+      header={
+        <div className=" p-5">
+          <TitleBar
+            title={<Title className="section-title">Video Downloader</Title>}
+            leftIcon={actionFrom === 'button' ? <ArrowLeftOutlined onClick={handleBack} /> : null}
+          />
+          <Row gutter={16}>
+            <Col span={24}>
+              <Input
+                className="input-group"
+                placeholder="Enter video URL"
+                value={videoUrl}
+                onChange={e => setVideoUrl(e.target.value.trim())}
+              />
+            </Col>
+            <Col span={24}>
+              <div className=" flex  gap-4">
+                <Select
+                  className="input-group flex-1"
+                  // style={{ width: '100%' }}
+                  value={downloadDir}
+                  onChange={val => setDownloadDir(val)}
+                  placeholder="Select download directory"
+                  options={dirHistoryList.map(item => ({ label: item, value: item }))}
+                  dropdownRender={menu => (
+                    <>
+                      <Space style={{ padding: '0 8px 4px' }}>
+                        <Button type="text" icon={<PlusOutlined />} onClick={handleSelectDirectory}>
+                          Add item
+                        </Button>
+                      </Space>
+                      <Divider style={{ margin: '8px 0' }} />
+                      {menu}
+                    </>
                   )}
-                </Col>
+                ></Select>
+              </div>
+            </Col>
+            <Col span={24}>
+              <Space>
+                <Button
+                  // className="styled-button"
+                  onClick={handleDownload}
+                  disabled={!downloadDir || downloadList.some(item => item.isDownloading)}
+                >
+                  {downloadList.some(item => item.isDownloading)
+                    ? 'Downloading...'
+                    : 'Start Download'}
+                </Button>
+                <Button onClick={handleSetAsCompleted} disabled={selections.length === 0}>
+                  set completed
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+        </div>
+      }
+    >
+      <List
+        className="list-header"
+        header={<div>Download List</div>}
+        bordered
+        dataSource={downloadList}
+        renderItem={item => (
+          <List.Item key={item.id}>
+            <Row align="stretch" style={{ width: '100%', boxSizing: 'border-box' }}>
+              {/* Meta 信息部分 */}
+              <Col sm={24} md={12}>
+                <List.Item.Meta
+                  avatar={<Checkbox onChange={e => handleSelectItem(item.id, e.target.checked)} />}
+                  title={
+                    <Tooltip placement="top" title={item.path}>
+                      {item.name}
+                    </Tooltip>
+                  }
+                  description={`Progress: ${item.progress}`}
+                />
+                {item.isDownloading && (
+                  <Slider
+                    className="list-item-slider"
+                    value={parseFloat(item.progress)}
+                    max={100}
+                    disabled
+                  />
+                )}
+              </Col>
 
-                {/* 按钮部分 */}
-                <Col sm={24} md={12}>
-                  <div className="list-actions">
+              {/* 按钮部分 */}
+              <Col sm={24} md={12}>
+                <div className="list-actions">
+                  <Button
+                    onClick={() => addToPlayList(item)}
+                    disabled={item.isDownloading || isInPlaylist(item.path)}
+                    size="small"
+                  >
+                    Add to Playlist
+                  </Button>
+                  <Button
+                    onClick={() => handleResetPath(item)}
+                    disabled={item.isDownloading}
+                    size="small"
+                  >
+                    Reset Path
+                  </Button>
+                  {item.progress !== '100%' && item.progress !== 'Error' && (
                     <Button
-                      onClick={() => addToPlayList(item.path)}
-                      disabled={item.isDownloading}
-                      size="small"
-                    >
-                      Add to Playlist
-                    </Button>
-                    {item.progress !== '100%' && item.progress !== 'Error' && (
-                      <Button
-                        icon={item.isDownloading ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-                        type="text"
-                        onClick={() => handleToggleResume(item)}
-                      ></Button>
-                    )}
+                      icon={item.isDownloading ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+                      type="text"
+                      onClick={() => handleToggleResume(item)}
+                    ></Button>
+                  )}
 
-                    <Button onClick={() => deleteDownload(item.id)} size="small">
-                      Delete
-                    </Button>
-                    {item.progress !== '100%' && !item.isDownloading && (
-                      <Button onClick={() => retryDownload(item.id)}>Retry Download</Button>
-                    )}
-                  </div>
-                </Col>
-              </Row>
-            </List.Item>
-          )}
-        />
-      </Content>
-    </Layout>
+                  <Button onClick={() => deleteDownload(item.id)} size="small">
+                    Delete
+                  </Button>
+                  {item.progress !== '100%' && !item.isDownloading && (
+                    <Button onClick={() => retryDownload(item.id)}>Retry Download</Button>
+                  )}
+                </div>
+              </Col>
+            </Row>
+          </List.Item>
+        )}
+      />
+    </PageScroll>
   )
 }
 

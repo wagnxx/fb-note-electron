@@ -1,36 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Layout, Collapse, CollapseProps } from 'antd'
-import { CaretRightOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
+import { Layout, Collapse, CollapseProps, Button } from 'antd'
+import { CaretRightOutlined, CloudDownloadOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
 import VideoPlayer from './components/VideoPLayer'
 import VideoList from './components/Playlist'
 import FileUpload, { PlayItem } from './components/FileUpload'
 import FloatButton from './components/FloatButton'
 import useFirstRender from '@/hooks/useFirstRender'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
+import {
+  setCurrentVideoId as updateCurrentVideoId,
+  setPlaylist as updatePlayList,
+} from '@/features/video/videoPlayer'
+import { selectCurrentVideo } from '@/features/video/selectors'
+import { useNavigate } from 'react-router-dom'
 
 const { Sider, Content } = Layout
 
 const CinemaMoments: React.FC = () => {
-  // const [currentVideo, setCurrentVideo] = useState<PlayItem | null>(null)
-  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null)
-  const [playlist, setPlaylist] = useState<PlayItem[]>([])
+  const { playlist, currentVideoId } = useSelector((state: RootState) => state.videoPlayer)
+  const currentVideo = useSelector(selectCurrentVideo)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [collapsed, setCollapsed] = useState(false)
   const isFirstRender = useFirstRender()
 
-  const currentVideo = playlist.find(item => item.id === currentVideoId)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
-  // 初始化播放列表
-  useEffect(() => {
-    const savedPlaylist = localStorage.getItem('playlist')
-    const savedCurrentVideoId = localStorage.getItem('currentVideoId')
-
-    if (savedPlaylist) {
-      setPlaylist(JSON.parse(savedPlaylist))
-    }
-    if (savedCurrentVideoId) {
-      setCurrentVideoId(JSON.parse(savedCurrentVideoId))
-    }
-  }, [])
+  const setPlaylist = (action: PlayItem[] | ((data: PlayItem[]) => PlayItem[])) =>
+    dispatch(updatePlayList(action))
+  const setCurrentVideoId = (id: string | null) => dispatch(updateCurrentVideoId(id))
 
   // 保存播放列表到本地存储
   useEffect(() => {
@@ -68,8 +67,12 @@ const CinemaMoments: React.FC = () => {
       label: 'Play List',
       children: (
         <>
-          <div className={`w-full flex justify-start ${collapsed ? 'flex-col' : 'flex-row'}`}>
+          <div className={`w-full flex justify-start gap-2 ${collapsed ? 'flex-col' : 'flex-row'}`}>
             <FileUpload fileInputRef={fileInputRef} setPlaylist={setPlaylist} />
+            <Button
+              icon={<CloudDownloadOutlined />}
+              onClick={() => navigate('/tool/video/videoDownloader?from=button')}
+            />
           </div>
           {!collapsed && (
             <VideoList

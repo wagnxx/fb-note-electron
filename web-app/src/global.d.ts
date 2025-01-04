@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 // global.d.ts
-// import { IPC_ACTIONS } from '../../shared/ipcActions'
-import IPC_ACTIONS from '../shared/ipcActions.json'
+import { IPC_ACTIONS } from '../../shared/ipcActions'
+// import IPC_ACTIONS from '../shared/ipcActions.json'
 
 declare global {
   interface Window {
