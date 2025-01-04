@@ -1,23 +1,2 @@
-export const IPC_ACTIONS = {
-  START_SOCKS_SERVICE: 'start-socks-service' as const,
-  SOCKS_SERVICE_OUTPUT: 'socks-service-output' as const,
-  SOCKS_SERVICE_ERROR: 'socks-service-error' as const,
-  SOCKS_SERVICE_STOPPED: 'socks-service-stopped' as const,
-  STOP_SOCKS_SERVICE: 'stop-socks-service' as const,
-  CHECK_SOCKS_SERVICE: 'check-socks-service' as const,
-  GET_SOCKS_SERVICE_INFO: 'get-socks-service-info' as const,
-  GET_LOGS: 'get-logs' as const,
-  SUBPROCESS_ERROR: 'subprocess-errors' as const,
-  SELECT_FILE: 'select-file' as const,
-  LS_FOLDER: 'ls-folder' as const,
-  LOAD_VIDEO: 'load-video' as const,
-  READ_STREAM: 'read-stream' as const,
-  SAVE_SCREENSHOT: 'save-screenshot' as const,
-  REMOVE_SCREENSHOT: 'remove-screenshot' as const,
-  BATCH_CROP_IMAGE: 'batch-crop-image' as const,
-  MERGE_IMAGES: 'merge-images' as const,
-  COMPARE_IMAGES: 'compare-images' as const,
-  EXRACT_IMAGES_TEXT: 'exract-images-text' as const,
-  EXRACT_VIDEO_FRAME_TEXT: 'exract-video-frame-text' as const,
-  CHECK_FOLDER_EXIST: 'check_folder_exist' as const,
-} as const;
+const { IPC_ACTIONS } = require('../../shared/ipcActions.js');
+export {IPC_ACTIONS}

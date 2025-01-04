@@ -5,6 +5,7 @@ import VideoPlayer from './components/VideoPLayer'
 import VideoList from './components/Playlist'
 import FileUpload, { PlayItem } from './components/FileUpload'
 import FloatButton from './components/FloatButton'
+import useFirstRender from '@/hooks/useFirstRender'
 
 const { Sider, Content } = Layout
 
@@ -14,6 +15,7 @@ const CinemaMoments: React.FC = () => {
   const [playlist, setPlaylist] = useState<PlayItem[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [collapsed, setCollapsed] = useState(false)
+  const isFirstRender = useFirstRender()
 
   const currentVideo = playlist.find(item => item.id === currentVideoId)
 
@@ -32,11 +34,13 @@ const CinemaMoments: React.FC = () => {
 
   // 保存播放列表到本地存储
   useEffect(() => {
+    if (isFirstRender) return
     localStorage.setItem('playlist', JSON.stringify(playlist))
-  }, [playlist])
+  }, [isFirstRender, playlist])
   useEffect(() => {
+    if (isFirstRender) return
     localStorage.setItem('currentVideoId', JSON.stringify(currentVideoId))
-  }, [currentVideoId])
+  }, [currentVideoId, isFirstRender])
 
   const playVideo = (video: PlayItem) => {
     if (!video.id) return

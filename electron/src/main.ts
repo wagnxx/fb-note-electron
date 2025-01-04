@@ -18,8 +18,8 @@ function createWindow() {
     titleBarStyle: 'hidden',
     webPreferences: {
       preload: preloadPath,
-      // nodeIntegration: false,
-      // contextIsolation: true,
+      nodeIntegration: true,
+      contextIsolation: true,
       // webSecurity: false,
       disableBlinkFeatures: 'Autofill',
       allowRunningInsecureContent: true,
