@@ -11,9 +11,7 @@ export const ScreenshotSortableItem = ({ id, children }: SortableItemProps) => {
   })
 
   const style: React.CSSProperties = {
-    transform: transform
-      ? `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`
-      : '',
+    transform: transform ? `translate(${transform.x}px, ${transform.y}px) ` : '',
     transition,
     // padding: '8px',
     // margin: '4px 0',

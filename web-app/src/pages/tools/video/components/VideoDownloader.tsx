@@ -356,7 +356,7 @@ const VideoDownloader: React.FC = () => {
       header={
         <div className=" p-5">
           <TitleBar
-            title={<Title className="section-title">Video Downloader</Title>}
+            title={<Title>Video Downloader</Title>}
             leftIcon={actionFrom === 'button' ? <ArrowLeftOutlined onClick={handleBack} /> : null}
           />
           <Row gutter={16}>

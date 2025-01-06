@@ -1,9 +1,9 @@
 import ParentEmpty from '@/components/layout/ParentEmpty'
-import MindMapManagePage from '@/pges/mindmap/MindMapManagePage'
-import MultiDocSnap from '@/pges/tools/docSnap/MultiDocSnap'
-import CinemaMoments from '@/pges/tools/video/CinemaMoments'
-import VideoDownloader from '@/pges/tools/video/components/VideoDownloader'
-import ScreenshotDoc from '@/pges/tools/docSnap/ScreenshotDoc'
+import MindMapManagePage from '@/pages/mindmap/MindMapManagePage'
+import MultiDocSnap from '@/pages/tools/docSnap/MultiDocSnap'
+import CinemaMoments from '@/pages/tools/video/CinemaMoments'
+import VideoDownloader from '@/pages/tools/video/components/VideoDownloader'
+import ScreenshotDoc from '@/pages/tools/docSnap/ScreenshotDoc'
 import { RouteConfig } from '../routes'
 
 export const routesTool: RouteConfig = {
@@ -31,6 +31,7 @@ export const routesTool: RouteConfig = {
           name: 'Video Downloader',
           component: VideoDownloader,
           isDesktop: true,
+          hidden: true,
         },
       ],
     },

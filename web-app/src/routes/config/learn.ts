@@ -1,7 +1,8 @@
 import ParentEmpty from '@/components/layout/ParentEmpty'
-import Dict from '@/pges/dict/Dict'
-import WordAffix from '@/pges/dict/WordAffix'
-import WordRoot from '@/pges/dict/WordRoot'
+import Dict from '@/pages/dict/Dict'
+import Sentences from '@/pages/dict/Sentences'
+import WordAffix from '@/pages/dict/WordAffix'
+import WordRoot from '@/pages/dict/WordRoot'
 
 export const routesLearn = {
   path: '/learn',
@@ -22,6 +23,11 @@ export const routesLearn = {
       path: 'word-affix',
       name: 'WordAffix',
       component: WordAffix,
+    },
+    {
+      path: 'word-sentences',
+      name: 'Sentences',
+      component: Sentences,
     },
   ],
 }

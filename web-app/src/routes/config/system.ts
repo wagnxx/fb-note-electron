@@ -1,4 +1,4 @@
-import HomePage from '@/pges/home/Home'
+import HomePage from '@/pages/home/Home'
 export const routesSystem = {
   path: '/system',
   name: 'Home',

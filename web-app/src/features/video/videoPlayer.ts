@@ -1,4 +1,4 @@
-import { PlayItem } from '@/pges/tools/video/components/FileUpload'
+import { PlayItem } from '@/pages/tools/video/components/FileUpload'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface VideoPlayerState {

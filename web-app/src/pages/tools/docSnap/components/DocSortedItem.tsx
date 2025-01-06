@@ -10,9 +10,7 @@ const DocSortedItem = ({ item }: { item: Snap }) => {
 
   // 计算拖拽时的样式
   const style: React.CSSProperties = {
-    transform: transform
-      ? `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`
-      : '', // 如果没有拖拽，transform 为空
+    transform: transform ? `translate(${transform.x}px, ${transform.y}px) ` : '', // 如果没有拖拽，transform 为空
     transition,
     position: 'absolute',
     top: 0,

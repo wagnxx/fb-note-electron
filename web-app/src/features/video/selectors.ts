@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit'
-import { PlayItem } from '@/pges/tools/video/components/FileUpload'
+import { PlayItem } from '@/pages/tools/video/components/FileUpload'
 import { RootState } from '@/store/store'
 
 export const selectPlaylist = (state: RootState) => state.videoPlayer.playlist

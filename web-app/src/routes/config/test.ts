@@ -1,4 +1,4 @@
-import TestPage from '@/pges/test/Test'
+import TestPage from '@/pages/test/Test'
 
 export const routesTest = {
   path: '/test',

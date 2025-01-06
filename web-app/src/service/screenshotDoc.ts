@@ -8,7 +8,7 @@ import {
 } from '@/firebase/db'
 import { auth } from '@/firebase/authService'
 import { serverTimestamp, where } from 'firebase/firestore'
-import { ScreenshotDoc } from '@/pges/tools/docSnap/ScreenshotDoc'
+import { ScreenshotDoc } from '@/pages/tools/docSnap/ScreenshotDoc'
 
 const COL_SCREENSHOT = 'screenshotDoc'
 

@@ -38,9 +38,7 @@ const ScreenshotCardItem = ({
   const imageSize = imageSizes[item.name]
 
   const style: React.CSSProperties = {
-    transform: transform
-      ? `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`
-      : '',
+    transform: transform ? `translate(${transform.x}px, ${transform.y}px) ` : '',
     transition,
   }
 
