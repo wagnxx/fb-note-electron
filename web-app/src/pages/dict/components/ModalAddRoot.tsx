@@ -1,6 +1,6 @@
 import { Button, Form, Input, Modal } from 'antd'
 import React, { FC } from 'react'
-import { WordRootType } from '../WordRoot'
+import { WordRootType } from './WordRootManage'
 
 type Props = {
   visible: boolean

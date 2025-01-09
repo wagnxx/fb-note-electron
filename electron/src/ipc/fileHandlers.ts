@@ -3,7 +3,7 @@ import fs from 'fs';
 import { dialog, ipcMain } from 'electron'
 import { IPC_ACTIONS } from '../constants';
 import { spawn } from 'child_process';
-import { fileExists, readDirectory } from '../utils/fileManager';
+import { fileExists, getDirectoryStructureSync, readDirectory } from '../utils/fileManager';
 
 export const setupFileHandler = () => {
     ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async (event, options = { type: 'file' }) => {
@@ -42,7 +42,7 @@ export const setupFileHandler = () => {
 
 
     // 改进的异步生成器，逐步读取文件并返回数据块
-    ipcMain.handle('read-stream', async (event, encodedPath) => {
+    ipcMain.handle(IPC_ACTIONS.READ_STREAM, async (event, encodedPath) => {
         const filePath = path.resolve(decodeURIComponent(encodedPath));
 
         // 创建一个生成器实例来按块读取文件
@@ -58,6 +58,11 @@ export const setupFileHandler = () => {
         const filePath = path.resolve(decodeURIComponent(enFolderPath));
 
         return await readDirectory(filePath)
+    });
+    ipcMain.handle(IPC_ACTIONS.GET_DIRECTORY_STRUCTURE, async (event, enFolderPath) => {
+        const folderPath = path.resolve(decodeURIComponent(enFolderPath));
+
+        return await getDirectoryStructureSync(folderPath)
     });
     ipcMain.handle('check_folder_exist', async (event, enFilePath) => {
         const filePath = path.resolve(decodeURIComponent(enFilePath));

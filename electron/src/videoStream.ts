@@ -1,10 +1,18 @@
 import express, { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
+import cors from 'cors'
 
 // 创建 express 实例
 const server = express();
 const port = 4000;
+
+server.use(cors());
+// 使用中间件控制访问路径
+server.use('/assets', express.static(path.join(__dirname, '..', 'support/assets')));  // 只允许访问 /assets 文件夹
+server.use('/logs', (req: Request, res: Response) => {  // 限制访问 /logs
+    res.status(403).send('Access to logs folder is forbidden');
+});
 
 // 提供视频流的路由
 server.get('/video', (req: Request, res: Response) => {

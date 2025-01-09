@@ -10,6 +10,7 @@
     GET_LOGS: 'get-logs',
     SUBPROCESS_ERROR: 'subprocess-errors',
     SELECT_FILE: 'select-file',
+    GET_DIRECTORY_STRUCTURE: 'get-directory-structure',
     LS_FOLDER: 'ls-folder',
     LOAD_VIDEO: 'load-video',
     READ_STREAM: 'read-stream',

@@ -231,3 +231,40 @@ export const renameAndOverwrite = async (tempOutputPath: string, filePath: strin
         console.error('Error during renaming and overwriting:', error);
     }
 };
+
+
+// 文件系统项的类型
+interface FileSystemItem {
+    name: string;
+    path: string;
+    isDirectory: boolean;
+    children?: FileSystemItem[];  // 子目录内容（递归）
+}
+
+// 同步获取目录的所有文件和子目录结构（递归）
+export const getDirectoryStructureSync = (directoryPath: string): FileSystemItem[] => {
+    const files = fs.readdirSync(directoryPath);  // 读取目录下所有的文件和子目录
+    let fileSystemItems: FileSystemItem[] = [];
+
+    files.forEach((file) => {
+        const fullPath = path.join(directoryPath, file);  // 获取文件或文件夹的完整路径
+        const stats = fs.statSync(fullPath);  // 获取文件或文件夹的状态
+
+        const fileSystemItem: FileSystemItem = {
+            name: file,
+            path: fullPath,
+            isDirectory: stats.isDirectory(),  // 判断是文件还是目录
+            children: stats.isDirectory() ? [] : undefined,  // 如果是目录，后续会递归获取子目录
+        };
+
+        if (stats.isDirectory()) {
+            // 如果是目录，递归获取其内容
+            const subDirectoryContents = getDirectoryStructureSync(fullPath);
+            fileSystemItem.children = subDirectoryContents;
+        }
+
+        fileSystemItems.push(fileSystemItem);  // 将文件或目录添加到结果数组
+    });
+
+    return fileSystemItems;
+}

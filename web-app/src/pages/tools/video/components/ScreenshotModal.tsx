@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useReducer, useEffect } from 'react'
+import React, { useState, useRef, useMemo, useReducer, useEffect, useCallback } from 'react'
 import { Button, Col, Modal, Row, Space } from 'antd'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 interface Thumbnail {
@@ -24,6 +24,7 @@ interface ScreenshotModalProps {
     }[],
   ) => void
 }
+const NEIGHBOR_ITEM_WIDTH = 400 * 1.5
 
 const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   visible,
@@ -44,6 +45,8 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
     height: number
   } | null>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
+  const neighborPrevRef = useRef<HTMLImageElement | null>(null)
+  const neighborNextRef = useRef<HTMLImageElement | null>(null)
 
   const [currentIndex, setCurrentIndex] = useState<number>(-1)
   const [rangeState, updateRangeState] = useReducer(
@@ -95,6 +98,94 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
     return thumbnailsInitial[currentIndex]
   }, [currentImageId, currentIndex, thumbnailsInitial])
 
+  // 计算图片的缩放比例
+  const getImageScaleFactor = useCallback(
+    (
+      containerFn: (...args: any[]) => { width: number; height: number } = getContainerDimensions,
+      applyTargetFn: (...args: any[]) => {
+        width: number
+        height: number
+      } = getImageOriginalDimensions,
+    ) => {
+      const { width: originalWidth, height: originalHeight } = applyTargetFn()
+      const { width: containerWidth, height: containerHeight } = containerFn()
+      const scaleX = containerWidth / originalWidth
+      const scaleY = containerHeight / originalHeight
+      return { scaleX, scaleY }
+    },
+    [],
+  )
+  // 获取容器的尺寸
+  const getContainerDimensions = (
+    containerRef: React.MutableRefObject<HTMLImageElement | null> = imageRef,
+  ) => {
+    if (containerRef.current) {
+      return {
+        width: containerRef.current.clientWidth, // 容器宽度
+        height: containerRef.current.clientHeight, // 容器高度
+      }
+    }
+    return { width: 0, height: 0 }
+  }
+  // 获取容器的尺寸
+
+  const currentNeighborThumbnails = useMemo(() => {
+    if (!thumbnailsInitial?.length || currentIndex === -1) return []
+
+    type Postion = 'prev' | 'next'
+
+    let prevIndex = null
+    let nextIndex = null
+
+    if (currentIndex === 0) {
+      prevIndex = null
+      nextIndex = currentIndex + 1
+    } else if (currentIndex === thumbnails.length - 1) {
+      prevIndex = currentIndex - 1
+      nextIndex = null
+    } else {
+      prevIndex = currentIndex - 1
+      nextIndex = currentIndex + 1
+    }
+
+    const validNumbers: { index: number | null; at: Postion }[] = [
+      { index: prevIndex, at: 'prev' },
+      { index: nextIndex, at: 'next' },
+    ]
+
+    return validNumbers.map(item => {
+      const thum = thumbnailsInitial[item.index ?? -1] || null
+
+      const range = thum ? rangeState[thum.id] : null
+
+      const { scaleX: prevScaleX, scaleY: prevScaleY } = getImageScaleFactor(
+        getContainerDimensions,
+        () => getContainerDimensions(neighborPrevRef),
+      )
+      const { scaleX: nextScaleX, scaleY: nextScaleY } = getImageScaleFactor(
+        getContainerDimensions,
+        () => getContainerDimensions(neighborNextRef),
+      )
+
+      const scaleX = item.at === 'prev' ? prevScaleX : nextScaleX
+      const scaleY = item.at === 'prev' ? prevScaleY : nextScaleY
+
+      return {
+        index: item.index,
+        thumbnail: thum,
+        at: item.at,
+        range: range
+          ? {
+              x: range!.x / scaleX,
+              y: range!.y / scaleY,
+              width: range!.width / scaleX,
+              height: range!.height / scaleY,
+            }
+          : null,
+      }
+    })
+  }, [currentIndex, getImageScaleFactor, rangeState, thumbnails.length, thumbnailsInitial])
+
   const handleSelectThumbnail = (index: number) => {
     setCurrentIndex(index)
   }
@@ -132,26 +223,6 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
       }
     }
     return { width: 0, height: 0 }
-  }
-
-  // 获取容器的尺寸
-  const getContainerDimensions = () => {
-    if (imageRef.current) {
-      return {
-        width: imageRef.current.clientWidth, // 容器宽度
-        height: imageRef.current.clientHeight, // 容器高度
-      }
-    }
-    return { width: 0, height: 0 }
-  }
-
-  // 计算图片的缩放比例
-  const getImageScaleFactor = () => {
-    const { width: originalWidth, height: originalHeight } = getImageOriginalDimensions()
-    const { width: containerWidth, height: containerHeight } = getContainerDimensions()
-    const scaleX = containerWidth / originalWidth
-    const scaleY = containerHeight / originalHeight
-    return { scaleX, scaleY }
   }
 
   // 处理鼠标按下事件，开始拖拽或缩放
@@ -358,180 +429,283 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   }, [currentImageId, thumbnailsInitial, visible])
 
   return (
-    <div>
-      <Modal
-        title="截图预览"
-        open={visible}
-        onCancel={() => handleCancel()}
-        footer={null}
-        width={800}
-        style={{ top: '10%' }}
+    <Modal
+      title="截图预览"
+      footer={null}
+      width="100%"
+      open={visible}
+      onCancel={() => handleCancel()}
+      style={{ top: 0, left: 0, right: 0, bottom: 0, margin: 0 }}
+      styles={{
+        body: {
+          height: '100vh',
+          padding: 0,
+        },
+        footer: {
+          height: 0,
+        },
+      }}
+    >
+      <div
+        className="body-content"
+        style={{
+          height: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          overflow: 'auto',
+        }}
       >
-        <div>
-          <Space>
-            <Button onClick={handleConfirmScreenshot}>确认截图</Button>
+        <div className="body-main" style={{ width: '800px', height: '100%', padding: '0 8px' }}>
+          <div className=" my-3">
+            <Space>
+              <Button onClick={handleConfirmScreenshot}>确认截图</Button>
 
-            <Button onClick={() => handleCancel(true)} style={{ marginLeft: 8 }}>
-              清空并退出
-            </Button>
-          </Space>
-        </div>
-        {/* 缩略图列表 */}
-        <div style={{ overflowX: 'auto', marginBottom: 20 }}>
-          <div style={{ display: 'flex', width: 'max-content' }}>
-            {thumbnailsInitial &&
-              thumbnailsInitial.map((thumbnail, index) => (
+              <Button onClick={() => handleCancel(true)} style={{ marginLeft: 8 }}>
+                清空并退出
+              </Button>
+            </Space>
+          </div>
+          {/* 缩略图列表 */}
+          <div style={{ overflowX: 'auto', marginBottom: 20 }}>
+            <div style={{ display: 'flex', width: 'max-content' }}>
+              {thumbnailsInitial &&
+                thumbnailsInitial.map((thumbnail, index) => (
+                  <div
+                    key={thumbnail.id}
+                    style={{
+                      width: 'fix-content',
+                      marginRight: 10,
+                      cursor: 'pointer',
+                      border: index === currentIndex ? '2px solid #1890ff' : 'none',
+                      // scale: index === currentIndex ? 2 : 1,
+                    }}
+                    onClick={() => handleSelectThumbnail(index)}
+                  >
+                    <img
+                      src={
+                        'http://localhost:4000/image?src=' +
+                        thumbnail.url +
+                        '&_renderCount=' +
+                        _renderCount
+                      }
+                      alt={`Thumbnail ${index}`}
+                      title={thumbnail.id}
+                      style={{
+                        width: 40,
+                        height: 30,
+                        // height: 60,
+                        objectFit: 'cover',
+                      }}
+                    />
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* 缩略图浏览按钮 */}
+          {thumbnailsInitial && (
+            <div style={{ marginBottom: 4, textAlign: 'right' }}>
+              <Row>
+                <Col span={12}>
+                  <Space>
+                    <Button
+                      size="small"
+                      icon={<LeftOutlined />}
+                      onClick={handlePrevThumbnail}
+                      disabled={currentIndex === 0}
+                    />
+                    <Button
+                      size="small"
+                      icon={<RightOutlined />}
+                      onClick={handleNextThumbnail}
+                      disabled={currentIndex === thumbnailsInitial.length - 1}
+                    />
+                  </Space>
+                </Col>
+                <Col span={12}>
+                  <Space>
+                    <Button size="small" type="primary" onClick={handleStartScreenshot}>
+                      开始截图
+                    </Button>
+                    <Button size="small" color="danger" onClick={handleCancelScreenshot}>
+                      取消截图
+                    </Button>
+                  </Space>
+                </Col>
+              </Row>
+            </div>
+          )}
+
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.2)',
+              borderRadius: '8px',
+            }}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            {currentSelectedImage && (
+              <img
+                ref={imageRef}
+                src={
+                  'http://localhost:4000/image?src=' +
+                  currentSelectedImage.url +
+                  '&_renderCount=' +
+                  _renderCount
+                }
+                alt="screenshot"
+                style={{ width: '100%', height: 'auto' }}
+              />
+            )}
+            {currentSelectedRange && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: `${currentSelectedRange.x}px`,
+                  top: `${currentSelectedRange.y}px`,
+                  width: `${currentSelectedRange.width}px`,
+                  height: `${currentSelectedRange.height}px`,
+                  border: '2px solid red',
+                  cursor: 'move',
+                }}
+                onMouseDown={e => handleMouseDown(e)}
+              >
+                {/* 可选：显示四个角的缩放标志 */}
                 <div
-                  key={thumbnail.id}
                   style={{
-                    width: 'fix-content',
-                    marginRight: 10,
-                    cursor: 'pointer',
-                    border: index === currentIndex ? '2px solid #1890ff' : 'none',
+                    position: 'absolute',
+                    top: '-5px',
+                    left: '-5px',
+                    width: '10px',
+                    height: '10px',
+                    backgroundColor: 'green',
+                    cursor: 'nwse-resize',
                   }}
-                  onClick={() => handleSelectThumbnail(index)}
+                  onMouseDown={e => handleMouseDown(e, 'tl')}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-5px',
+                    right: '-5px',
+                    width: '10px',
+                    height: '10px',
+                    backgroundColor: 'green',
+                    cursor: 'nesw-resize',
+                  }}
+                  onMouseDown={e => handleMouseDown(e, 'tr')}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-5px',
+                    left: '-5px',
+                    width: '10px',
+                    height: '10px',
+                    backgroundColor: 'green',
+                    cursor: 'nesw-resize',
+                  }}
+                  onMouseDown={e => handleMouseDown(e, 'bl')}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-5px',
+                    right: '-5px',
+                    width: '10px',
+                    height: '10px',
+                    backgroundColor: 'green',
+                    cursor: 'nwse-resize',
+                  }}
+                  onMouseDown={e => handleMouseDown(e, 'br')}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <div
+          className="body-sider"
+          style={{
+            // background: 'red',
+            // width: '0',
+            flex: '1',
+            height: '100%',
+            overflow: 'auto',
+            zIndex: 9999,
+            right: '0',
+            padding: '10px',
+            top: 0,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              gap: '8px',
+              width: 'max-content',
+              // height: '800px',
+              height: '100%',
+            }}
+          >
+            {currentNeighborThumbnails.length &&
+              currentNeighborThumbnails.map(({ thumbnail, range, index, at }) => (
+                <div
+                  key={at}
+                  style={{
+                    // width: 'fix-content',
+
+                    cursor: 'pointer',
+                    // position: 'absolute',
+                    width: NEIGHBOR_ITEM_WIDTH,
+                    position: 'relative',
+                    top: 0,
+                    left: 0,
+                    marginTop: '12px',
+                  }}
+                  onClick={() => handleSelectThumbnail(index ?? -1)}
                 >
-                  <img
-                    src={
-                      'http://localhost:4000/image?src=' +
-                      thumbnail.url +
-                      '&_renderCount=' +
-                      _renderCount
-                    }
-                    alt={`Thumbnail ${index}`}
-                    title={thumbnail.id}
-                    style={{ width: 80, height: 60, objectFit: 'cover' }}
-                  />
+                  {range && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: range.x,
+                        top: range.y,
+                        width: range.width,
+                        height: range.height,
+                        background: 'rgba(0,0,0, 0.4)',
+                      }}
+                    ></div>
+                  )}
+
+                  {thumbnail ? (
+                    <img
+                      ref={at === 'prev' ? neighborPrevRef : neighborNextRef}
+                      src={
+                        'http://localhost:4000/image?src=' +
+                        thumbnail.url +
+                        '&_renderCount=' +
+                        _renderCount
+                      }
+                      alt={`Thumbnail ${index}`}
+                      title={thumbnail.id}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  ) : (
+                    'No' + at
+                  )}
                 </div>
               ))}
           </div>
         </div>
-
-        {/* 缩略图浏览按钮 */}
-        {thumbnailsInitial && (
-          <div style={{ marginBottom: 4, textAlign: 'right' }}>
-            <Row>
-              <Col span={12}>
-                <Space>
-                  <Button
-                    size="small"
-                    icon={<LeftOutlined />}
-                    onClick={handlePrevThumbnail}
-                    disabled={currentIndex === 0}
-                  />
-                  <Button
-                    size="small"
-                    icon={<RightOutlined />}
-                    onClick={handleNextThumbnail}
-                    disabled={currentIndex === thumbnailsInitial.length - 1}
-                  />
-                </Space>
-              </Col>
-              <Col span={12}>
-                <Space>
-                  <Button size="small" type="primary" onClick={handleStartScreenshot}>
-                    开始截图
-                  </Button>
-                  <Button size="small" color="danger" onClick={handleCancelScreenshot}>
-                    取消截图
-                  </Button>
-                </Space>
-              </Col>
-            </Row>
-          </div>
-        )}
-
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.2)',
-            borderRadius: '8px',
-          }}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
-          {currentSelectedImage && (
-            <img
-              ref={imageRef}
-              src={
-                'http://localhost:4000/image?src=' +
-                currentSelectedImage.url +
-                '&_renderCount=' +
-                _renderCount
-              }
-              alt="screenshot"
-              style={{ width: '100%', height: 'auto' }}
-            />
-          )}
-          {currentSelectedRange && (
-            <div
-              style={{
-                position: 'absolute',
-                left: `${currentSelectedRange.x}px`,
-                top: `${currentSelectedRange.y}px`,
-                width: `${currentSelectedRange.width}px`,
-                height: `${currentSelectedRange.height}px`,
-                border: '2px solid red',
-                cursor: 'move',
-              }}
-              onMouseDown={e => handleMouseDown(e)}
-            >
-              {/* 可选：显示四个角的缩放标志 */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '-5px',
-                  left: '-5px',
-                  width: '10px',
-                  height: '10px',
-                  backgroundColor: 'green',
-                  cursor: 'nwse-resize',
-                }}
-                onMouseDown={e => handleMouseDown(e, 'tl')}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '-5px',
-                  right: '-5px',
-                  width: '10px',
-                  height: '10px',
-                  backgroundColor: 'green',
-                  cursor: 'nesw-resize',
-                }}
-                onMouseDown={e => handleMouseDown(e, 'tr')}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '-5px',
-                  left: '-5px',
-                  width: '10px',
-                  height: '10px',
-                  backgroundColor: 'green',
-                  cursor: 'nesw-resize',
-                }}
-                onMouseDown={e => handleMouseDown(e, 'bl')}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '-5px',
-                  right: '-5px',
-                  width: '10px',
-                  height: '10px',
-                  backgroundColor: 'green',
-                  cursor: 'nwse-resize',
-                }}
-                onMouseDown={e => handleMouseDown(e, 'br')}
-              />
-            </div>
-          )}
-        </div>
-      </Modal>
-    </div>
+      </div>
+    </Modal>
   )
 }
 

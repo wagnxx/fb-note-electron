@@ -15,8 +15,9 @@ import {
   serverTimestamp,
   startAfter,
 } from 'firebase/firestore'
-import { WordRootType } from '@/pages/dict/WordRoot'
+
 import { AffixType } from '@/pages/dict/components/AffixList'
+import { WordRootType } from '@/pages/dict/components/WordRootManage'
 
 const COL_WORD_ROOT = 'wordRoot'
 const COL_WORD_AFFIX = 'wordAffix'
