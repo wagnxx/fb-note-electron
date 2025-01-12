@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo, useReducer, useEffect, useCallback } from 'react'
 import { Button, Col, Modal, Row, Space } from 'antd'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
+import NeighborIndicator from './NeighborIndicator'
 interface Thumbnail {
   id: string
   url: string
@@ -45,9 +46,11 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
     height: number
   } | null>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
+
+  const itemContainersRef = useRef<Map<string, { width: number; height: number }>>(new Map())
   const neighborPrevRef = useRef<HTMLImageElement | null>(null)
   const neighborNextRef = useRef<HTMLImageElement | null>(null)
-
+  const [nextTargetY, setnextTargetY] = useState(0)
   const [currentIndex, setCurrentIndex] = useState<number>(-1)
   const [rangeState, updateRangeState] = useReducer(
     setRangeReducer,
@@ -102,13 +105,16 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   const getImageScaleFactor = useCallback(
     (
       containerFn: (...args: any[]) => { width: number; height: number } = getContainerDimensions,
-      applyTargetFn: (...args: any[]) => {
-        width: number
-        height: number
-      } = getImageOriginalDimensions,
+      applyTo: (...args: any[]) => { width: number; height: number } = getImageOriginalDimensions,
     ) => {
-      const { width: originalWidth, height: originalHeight } = applyTargetFn()
       const { width: containerWidth, height: containerHeight } = containerFn()
+      const { width: originalWidth, height: originalHeight } = applyTo()
+      if (!originalWidth || !originalHeight) {
+        return {
+          scaleX: 1,
+          scaleY: 1,
+        }
+      }
       const scaleX = containerWidth / originalWidth
       const scaleY = containerHeight / originalHeight
       return { scaleX, scaleY }
@@ -117,17 +123,21 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   )
   // 获取容器的尺寸
   const getContainerDimensions = (
-    containerRef: React.MutableRefObject<HTMLImageElement | null> = imageRef,
+    containerRefCurrent: HTMLImageElement | null = imageRef.current,
   ) => {
-    if (containerRef.current) {
+    if (containerRefCurrent) {
       return {
-        width: containerRef.current.clientWidth, // 容器宽度
-        height: containerRef.current.clientHeight, // 容器高度
+        width: containerRefCurrent.clientWidth, // 容器宽度
+        height: containerRefCurrent.clientHeight, // 容器高度
       }
     }
     return { width: 0, height: 0 }
   }
   // 获取容器的尺寸
+  const getContainerSize = (id?: string) => {
+    if (!id) return { width: 0, height: 0 }
+    return itemContainersRef.current.get(id) || { width: 0, height: 0 }
+  }
 
   const currentNeighborThumbnails = useMemo(() => {
     if (!thumbnailsInitial?.length || currentIndex === -1) return []
@@ -153,24 +163,24 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
       { index: nextIndex, at: 'next' },
     ]
 
+    const { scaleX: prevScaleX, scaleY: prevScaleY } = getImageScaleFactor(
+      () => getContainerSize(neighborPrevRef.current?.id),
+      () => getContainerDimensions(neighborPrevRef.current),
+    )
+    const { scaleX: nextScaleX, scaleY: nextScaleY } = getImageScaleFactor(
+      () => getContainerSize(neighborNextRef.current?.id),
+      () => getContainerDimensions(neighborNextRef.current),
+    )
+
     return validNumbers.map(item => {
       const thum = thumbnailsInitial[item.index ?? -1] || null
 
       const range = thum ? rangeState[thum.id] : null
 
-      const { scaleX: prevScaleX, scaleY: prevScaleY } = getImageScaleFactor(
-        getContainerDimensions,
-        () => getContainerDimensions(neighborPrevRef),
-      )
-      const { scaleX: nextScaleX, scaleY: nextScaleY } = getImageScaleFactor(
-        getContainerDimensions,
-        () => getContainerDimensions(neighborNextRef),
-      )
-
       const scaleX = item.at === 'prev' ? prevScaleX : nextScaleX
       const scaleY = item.at === 'prev' ? prevScaleY : nextScaleY
 
-      return {
+      const result = {
         index: item.index,
         thumbnail: thum,
         at: item.at,
@@ -183,8 +193,48 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
             }
           : null,
       }
+      return result
     })
-  }, [currentIndex, getImageScaleFactor, rangeState, thumbnails.length, thumbnailsInitial])
+  }, [thumbnailsInitial, currentIndex, thumbnails.length, rangeState, getImageScaleFactor])
+
+  useEffect(() => {
+    // redord current thumbnail contaienr size
+    if (!thumbnailsInitial?.[currentIndex]) return
+    const currentItemId = thumbnailsInitial[currentIndex].id
+    itemContainersRef.current.set(currentItemId, getContainerDimensions())
+  }, [currentIndex, thumbnailsInitial])
+
+  function update() {
+    const r = neighborPrevRef.current?.clientHeight || 0
+    console.log('neighborPrevRef.current?.clientHeight', neighborPrevRef.current?.clientHeight)
+    setnextTargetY(r)
+  }
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (neighborPrevRef.current) {
+        update()
+      }
+    }
+
+    // 初始化时获取一次高度
+    handleResize()
+
+    // 使用 ResizeObserver 监听高度变化
+    const resizeObserver = new ResizeObserver(handleResize)
+    if (neighborPrevRef.current) {
+      resizeObserver.observe(neighborPrevRef.current)
+    } else {
+      setnextTargetY(0)
+    }
+
+    // 清理观察者
+    return () => {
+      if (neighborPrevRef.current) {
+        resizeObserver.unobserve(neighborPrevRef.current)
+      }
+    }
+  }, [neighborPrevRef.current])
 
   const handleSelectThumbnail = (index: number) => {
     setCurrentIndex(index)
@@ -504,32 +554,33 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
           {/* 缩略图浏览按钮 */}
           {thumbnailsInitial && (
-            <div style={{ marginBottom: 4, textAlign: 'right' }}>
+            <div style={{ marginBottom: 4, background: '#fff', padding: '8px ' }}>
               <Row>
-                <Col span={12}>
+                <Col span={8} style={{ textAlign: 'left' }}>
+                  <Button danger onClick={handleCancelScreenshot}>
+                    取消截图
+                  </Button>
+                </Col>
+                <Col span={8} style={{ textAlign: 'center' }}>
                   <Space>
                     <Button
-                      size="small"
                       icon={<LeftOutlined />}
                       onClick={handlePrevThumbnail}
                       disabled={currentIndex === 0}
                     />
+                    <span>
+                      {currentIndex + 1} / {thumbnailsInitial.length}
+                    </span>
                     <Button
-                      size="small"
                       icon={<RightOutlined />}
                       onClick={handleNextThumbnail}
                       disabled={currentIndex === thumbnailsInitial.length - 1}
                     />
                   </Space>
                 </Col>
-                <Col span={12}>
+                <Col span={8} style={{ textAlign: 'right' }}>
                   <Space>
-                    <Button size="small" type="primary" onClick={handleStartScreenshot}>
-                      开始截图
-                    </Button>
-                    <Button size="small" color="danger" onClick={handleCancelScreenshot}>
-                      取消截图
-                    </Button>
+                    <Button onClick={handleStartScreenshot}>开始截图</Button>
                   </Space>
                 </Col>
               </Row>
@@ -626,6 +677,9 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
             )}
           </div>
         </div>
+        <div className="body-indicator" style={{ width: '50px' }}>
+          <NeighborIndicator containerWidth={50} prevTargetY={50} nextTargetY={nextTargetY + 100} />
+        </div>
         <div
           className="body-sider"
           style={{
@@ -636,16 +690,17 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
             overflow: 'auto',
             zIndex: 9999,
             right: '0',
-            padding: '10px',
+            // padding: '10px',
             top: 0,
+            // border: '1px solid #ddd',
           }}
         >
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              gap: '8px',
+              // display: 'flex',
+              // flexDirection: 'column',
+              // justifyContent: 'center',
+              // gap: '50px',
               width: 'max-content',
               // height: '800px',
               height: '100%',
@@ -664,7 +719,7 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
                     position: 'relative',
                     top: 0,
                     left: 0,
-                    marginTop: '12px',
+                    marginTop: '50px',
                   }}
                   onClick={() => handleSelectThumbnail(index ?? -1)}
                 >
@@ -692,13 +747,16 @@ const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
                       }
                       alt={`Thumbnail ${index}`}
                       title={thumbnail.id}
+                      id={thumbnail.id}
                       style={{
                         width: '100%',
                         height: 'auto',
                       }}
                     />
                   ) : (
-                    'No' + at
+                    <div style={{ background: '#ddd', color: 'red', textIndent: '2em' }}>
+                      {'No ' + at}
+                    </div>
                   )}
                 </div>
               ))}
