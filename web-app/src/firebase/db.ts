@@ -15,6 +15,7 @@ import {
   writeBatch,
   where,
   getCountFromServer,
+  DocumentSnapshot,
 } from 'firebase/firestore'
 
 import { app } from './firebase'
@@ -180,11 +181,11 @@ export const getDocSize = async (colName: string): Promise<number> => {
 }
 // 获取指定字段的值
 
-export const getFieldValues = async (
+export const getFieldValues = async <T extends DocumentData = DocumentData>(
   collectionName: string,
   fieldNames: string[] | 'all',
   conditions: QueryConstraint[] = [],
-): Promise<DocumentData[]> => {
+): Promise<T[]> => {
   try {
     // 构建查询
     const q = query(collection(db, collectionName), ...conditions)
@@ -193,23 +194,33 @@ export const getFieldValues = async (
     const querySnapshot = await getDocs(q)
 
     // 提取字段值
-    const fieldValues: DocumentData[] = []
+    const fieldValues: T[] = []
 
-    querySnapshot.forEach(doc => {
-      let fieldValue: DocumentData = {}
+    querySnapshot.forEach((doc: DocumentSnapshot<DocumentData>) => {
+      let fieldValue: Record<string, any> = {} // 使用 Record 来允许任意字段赋值
+
+      // 获取所有字段
       if (fieldNames === 'all') {
-        fieldValue = doc.data()
-        fieldValue.id = doc.id
+        const docData = doc.data()
+        if (docData) {
+          fieldValue = { ...docData, id: doc.id } // 合并 id 和数据
+        }
       } else {
-        fieldNames.forEach(fieldName => {
+        // 获取指定字段
+        fieldNames.forEach((fieldName: string) => {
           if (fieldName === 'id') {
-            fieldValue[fieldName] = doc.id
+            fieldValue[fieldName] = doc.id // 直接修改 id
           } else {
-            fieldValue[fieldName] = doc.data()[fieldName]
+            const docData = doc.data()
+            if (docData) {
+              fieldValue[fieldName] = docData[fieldName] // 获取特定字段
+            }
           }
         })
       }
-      fieldValues.push(fieldValue)
+
+      // 确保 fieldValue 类型正确
+      fieldValues.push(fieldValue as T) // 使用类型断言
     })
 
     return fieldValues

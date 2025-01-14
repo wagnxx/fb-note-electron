@@ -29,28 +29,12 @@ import { useNotification } from '@/hooks/useNotification'
 import { PlusOutlined } from '@ant-design/icons'
 import { FieldValue, Timestamp } from 'firebase/firestore'
 import { transFBDate2Local } from '@/utils/utilsDate'
+import { sortData } from '@/utils/utilsArray'
+import { shuffleColors } from '@/utils/utilsColor'
 
 const { Meta } = Card
 const { Title, Text } = Typography
 const { Option } = Select
-
-const colors = [
-  'processing',
-  'success',
-  'error',
-  'warning',
-  'magenta',
-  'red',
-  'volcano',
-  'orange',
-  'gold',
-  'lime',
-  'green',
-  'cyan',
-  'blue',
-  'geekblue',
-  'purple',
-]
 
 export type ScreenshotDoc = {
   id?: string
@@ -58,6 +42,7 @@ export type ScreenshotDoc = {
   keyTerms?: string[]
   screenshots: string[]
   createTime?: FieldValue
+  order?: number
 }
 
 const ScreenshotDocs: React.FC = () => {
@@ -76,15 +61,8 @@ const ScreenshotDocs: React.FC = () => {
   const navigate = useNavigate()
 
   const { handleRequestWithNotification, showConfirmModal } = useNotification()
-  const shuffleColors = (arr: string[]) => {
-    let shuffled = [...arr] // 拷贝一份数组，避免改变原数组
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-    }
-    return shuffled
-  }
-  const shuffledColors = shuffleColors(colors)
+
+  const shuffledColors = shuffleColors()
 
   useEffect(() => {
     // 判断是否可以返回
@@ -106,6 +84,7 @@ const ScreenshotDocs: React.FC = () => {
       docName: data.docName,
       keyTerms: data.keyTerms,
       screenshots: data.screenshots,
+      order: data.order,
     }
     console.log('Saved data:', docData)
 
@@ -183,13 +162,16 @@ const ScreenshotDocs: React.FC = () => {
     getAllScreenshotDoc()
       .then(data => {
         if (data) {
+          const sortedData = sortData<ScreenshotDoc>(
+            data as ScreenshotDoc[],
+            ['order', 'createTime'],
+            'desc',
+          )
+
           setData(
-            data.map(item => ({
-              id: item.id,
-              docName: item.docName,
+            sortedData.map(item => ({
+              ...item,
               keyTerms: item.keyTerms || [],
-              screenshots: item.screenshots,
-              createTime: item.createTime,
             })),
           )
         }

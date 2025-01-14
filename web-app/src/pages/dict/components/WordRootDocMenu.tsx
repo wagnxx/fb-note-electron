@@ -22,9 +22,11 @@ interface MenuItem {
   children?: MenuItem[]
 }
 
-interface Props {
+type Props = {
   onItemClick: ({ key }: { key: string }) => void
 }
+
+const commonItems: MenuItem[] = [{ key: 'table', icon: <TableOutlined />, label: '词根管理' }]
 
 const convertToMenuItems = (items: FileSystemItem[]): MenuItem[] => {
   return items.map(item => {
@@ -35,6 +37,13 @@ const convertToMenuItems = (items: FileSystemItem[]): MenuItem[] => {
     }
     return menuItem
   })
+}
+
+const MenuComp: FC<{ menus: MenuItem[] } & Pick<Props, 'onItemClick'>> = ({
+  menus,
+  onItemClick,
+}) => {
+  return <Menu mode="inline" defaultSelectedKeys={['table']} onClick={onItemClick} items={menus} />
 }
 
 const WordRootDocMenu: FC<Props> = ({ onItemClick }) => {
@@ -54,15 +63,12 @@ const WordRootDocMenu: FC<Props> = ({ onItemClick }) => {
   }, [])
 
   return (
-    <Menu
-      mode="inline"
-      defaultSelectedKeys={['table']}
-      onClick={onItemClick}
-      items={[
-        { key: 'table', icon: <TableOutlined />, label: '词根管理' },
-        // { key: 'pdf', icon: <FilePdfOutlined />, label: '文档预览' },
+    <MenuComp
+      menus={[
+        ...commonItems,
         ...menus, // 添加从目录结构转换的菜单项
       ]}
+      onItemClick={onItemClick}
     />
   )
 }
@@ -70,5 +76,8 @@ const WordRootDocMenu: FC<Props> = ({ onItemClick }) => {
 // export default WordRootDocMenu
 
 export default (props: Props) => (
-  <DesktopOnly children={<WordRootDocMenu {...props} />}></DesktopOnly>
+  <DesktopOnly
+    children={<WordRootDocMenu {...props} />}
+    fallback={<MenuComp menus={[...commonItems]} onItemClick={props.onItemClick} />}
+  ></DesktopOnly>
 )

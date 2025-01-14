@@ -135,3 +135,13 @@ function loadImage(url: string): Promise<HTMLImageElement> {
     img.onerror = () => reject(`Failed to load image at ${url}`)
   })
 }
+
+export const copyText = async (text: string): Promise<void> => {
+  try {
+    // 使用 Clipboard API 复制文本
+    await navigator.clipboard.writeText(text)
+    console.log('文本已复制!')
+  } catch (err) {
+    console.error('复制失败:', err)
+  }
+}

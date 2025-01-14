@@ -84,7 +84,11 @@ export const getWordRoots = async ({
     // orderBy('createTime', 'desc'),
   ].filter(Boolean)
 
-  const data = await getFieldValues(COL_WORD_ROOT, 'all', conditions as QueryConstraint[])
+  const data = await getFieldValues<RootDocType>(
+    COL_WORD_ROOT,
+    'all',
+    conditions as QueryConstraint[],
+  )
 
   return {
     total: total,

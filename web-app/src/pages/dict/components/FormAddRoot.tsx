@@ -1,24 +1,30 @@
-import { Button, Form, Input, Modal } from 'antd'
-import React, { FC } from 'react'
-import { WordRootType } from './WordRootManage'
+import { Button, Form, Input, Spin } from 'antd'
+import React, { forwardRef, useImperativeHandle } from 'react'
+import { ModalChildRef } from '@/components/modal/ModalForm'
 
-type Props = {
-  visible: boolean
-  onAdd: ({ root, meaning, wordCount }: Partial<WordRootType>) => void
-}
+const FormAddRoot = forwardRef<
+  ModalChildRef,
+  { onFinish: (values: any) => void; submitLoading: boolean }
+>(({ onFinish, submitLoading }, ref) => {
+  const [form] = Form.useForm()
 
-const ModalAddRoot: FC<Props> = ({ visible, onAdd }) => {
-  const onFinish = (values: any) => {
+  useImperativeHandle(ref, () => ({
+    resetFields: () => form.resetFields(),
+  }))
+
+  const onSubmit = (values: any) => {
     const r = {
       root: values.root.split('/').filter(Boolean),
       meaning: values.meaning,
       wordCount: Number(values.wordCount),
     }
-    onAdd(r)
+    onFinish(r)
   }
+
   return (
-    <Modal open={visible}>
+    <Spin spinning={submitLoading}>
       <Form
+        form={form}
         name="wrap"
         labelCol={{ flex: '110px' }}
         labelAlign="left"
@@ -26,7 +32,7 @@ const ModalAddRoot: FC<Props> = ({ visible, onAdd }) => {
         wrapperCol={{ flex: 1 }}
         colon={false}
         style={{ maxWidth: 600 }}
-        onFinish={onFinish}
+        onFinish={onSubmit}
       >
         <Form.Item label="root" name="root" rules={[{ required: true }]}>
           <Input />
@@ -45,8 +51,8 @@ const ModalAddRoot: FC<Props> = ({ visible, onAdd }) => {
           </Button>
         </Form.Item>
       </Form>
-    </Modal>
+    </Spin>
   )
-}
+})
 
-export default ModalAddRoot
+export default FormAddRoot

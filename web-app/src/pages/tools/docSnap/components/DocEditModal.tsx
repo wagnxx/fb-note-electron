@@ -25,6 +25,7 @@ const DocEditModal: React.FC<DocEditModalProps> = ({ visible, onCancel, onSave, 
       form.setFieldsValue({
         docName: editData.docName,
         key: (editData.keyTerms || []).join('/'),
+        order: editData.order,
       })
       setScreenshots(editData.screenshots || [])
     }
@@ -56,6 +57,7 @@ const DocEditModal: React.FC<DocEditModalProps> = ({ visible, onCancel, onSave, 
           ...values,
           id: editData ? editData.id : void 0,
           keyTerms: values.key.trim().split('/').filter(Boolean),
+          order: Number(values.order),
           screenshots,
         }
         onSave(docData) // 将表单数据和图片列表传递给父组件
@@ -92,6 +94,13 @@ const DocEditModal: React.FC<DocEditModalProps> = ({ visible, onCancel, onSave, 
           rules={[{ required: true, message: 'Please input the key!' }]}
         >
           <Input placeholder="Enter key separated by '/'" />
+        </Form.Item>
+        <Form.Item
+          label="Order"
+          name="order"
+          rules={[{ required: true, message: 'Please input the order!' }]}
+        >
+          <Input placeholder="Enter order number" type="number" />
         </Form.Item>
 
         <Form.Item label="Screenshots" name="screenshots">

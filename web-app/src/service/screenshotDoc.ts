@@ -12,7 +12,7 @@ import { ScreenshotDoc } from '@/pages/tools/docSnap/ScreenshotDoc'
 
 const COL_SCREENSHOT = 'screenshotDoc'
 
-export type DocType = ScreenshotDoc & {
+export type ScreenshotDocType = ScreenshotDoc & {
   // docName: string
   // screenshots: Array<string>
   // keyTerms?: Array<string>
@@ -20,7 +20,7 @@ export type DocType = ScreenshotDoc & {
   createId?: string
 }
 
-export const createScreenshotDoc = (doc: Partial<DocType>) => {
+export const createScreenshotDoc = (doc: Partial<ScreenshotDocType>) => {
   doc.createTime = serverTimestamp()
   if (auth?.currentUser?.uid) {
     doc.createId = auth.currentUser.uid
@@ -29,7 +29,7 @@ export const createScreenshotDoc = (doc: Partial<DocType>) => {
   return Promise.reject('logout')
 }
 
-export const batchUpdateScreenshotDoc = (docs: Partial<DocType>[]) => {
+export const batchUpdateScreenshotDoc = (docs: Partial<ScreenshotDocType>[]) => {
   if (auth?.currentUser?.uid) {
     docs.map(doc => {
       doc.createTime = serverTimestamp()
@@ -52,7 +52,7 @@ export const getAllScreenshotDoc = () => {
   if (!auth?.currentUser?.uid) {
     return Promise.reject('logout')
   }
-  return getFieldValues(
+  return getFieldValues<ScreenshotDocType>(
     COL_SCREENSHOT,
     // ['docName', 'id', 'createTime', 'keyTerms', 'screenshots'],
     'all',

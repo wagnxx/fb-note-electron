@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
-import { Table, Button, Popconfirm, Space, Input, Switch } from 'antd'
+import { Table, Button, Popconfirm, Space, Input, Switch, Tooltip } from 'antd'
 import { ColumnType } from 'antd/es/table'
 import { addWordRoot, batchUpdateWordRoot, deleteWordRoot, getWordRoots } from '@/service/dict'
 import { useAuth } from '@/context/AuthContext'
@@ -12,9 +12,16 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { hasDuplicate } from '@/utils/utilsArray'
-import ModalAddRoot from './ModalAddRoot'
+import { hasCommonElements, hasDuplicate } from '@/utils/utilsArray'
 import { useNotification } from '@/hooks/useNotification'
+import { copyText } from '@/utils/utilsClipboard'
+import { CheckOutlined, DeleteOutlined, EditOutlined, FileImageOutlined } from '@ant-design/icons'
+import { ArrowUturnLeftIcon } from '@heroicons/react/24/solid'
+
+import { getAllScreenshotDoc, ScreenshotDocType } from '@/service/screenshotDoc'
+import ModalForm from '@/components/modal/ModalForm'
+import FormAddRoot from './FormAddRoot'
+import ScreenDocScanner from './ScreenDocScanner'
 
 // 词根类型定义
 export type WordRootType = {
@@ -27,11 +34,11 @@ export type WordRootType = {
   inJson: boolean
   isLinked: boolean
 }
-
+type TableRow = WordRootType & { isScreenDocUploaded?: boolean; screenDoc?: ScreenshotDocType }
 // 自定义可编辑列
-interface EditableColumnProps extends ColumnType<WordRootType> {
+interface EditableColumnProps extends ColumnType<TableRow> {
   editable?: boolean
-  onCell?: (record: WordRootType) => any
+  onCell?: (record: TableRow) => any
 }
 
 type CollectonKeysType = Map<number, { key: number; newKey: number; id: string }>
@@ -63,9 +70,7 @@ const EditableTableCell: React.FC<any> = ({
 }
 
 const WordRootManage = () => {
-  const initialData: WordRootType[] = []
-
-  const [dataSource, setDataSource] = useState<WordRootType[]>(initialData)
+  const [dataSource, setDataSource] = useState<TableRow[]>([])
   const [count, setCount] = useState<number>(dataSource.length)
   const [editingKey, setEditingKey] = useState<number | null>(null)
   const [searchText, setSearchText] = useState('')
@@ -74,11 +79,13 @@ const WordRootManage = () => {
 
   // 分页相关状态
   const [currentPage, setCurrentPage] = useState(1) // 当前页
-  const [pageSize, setPageSize] = useState(10) // 每页条数
+  const [pageSize, setPageSize] = useState(50) // 每页条数
   const [pageTotal, setPageTotal] = useState(0) // 每页条数
   const [loading, setloading] = useState(true)
 
   const [addRootModalVisible, setAddRootModalVisible] = useState(false)
+  const [screenModalVisible, setScreenModalVisible] = useState(false)
+  const [currentScreenDoc, setCurrentScreenDoc] = useState<ScreenshotDocType | null>(null)
 
   const { isAuthenticated } = useAuth()
 
@@ -115,6 +122,13 @@ const WordRootManage = () => {
     })
   }
 
+  const handleScanDoc = (record: TableRow) => {
+    console.log('row record: ', record)
+    if (!record.isScreenDocUploaded || !record.screenDoc) return
+    setCurrentScreenDoc(record.screenDoc)
+    setScreenModalVisible(true)
+  }
+
   const editableColumns: (EditableColumnProps & { isBoolean?: boolean })[] = [
     {
       title: 'Key',
@@ -122,7 +136,7 @@ const WordRootManage = () => {
       isBoolean: false,
       editable: false,
       fixed: true,
-      width: 60,
+      width: 40,
       // render: (text, record) => text.toString(),
       render: (text, record) => (
         <SortableRow id={record.key} collectionRowkeys={collectionRowkeys}>
@@ -157,7 +171,11 @@ const WordRootManage = () => {
             />
           )
         } else {
-          return record.root.join('/')
+          return (
+            <span style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>
+              [{record.root.join(', ')}]
+            </span>
+          )
         }
       },
     },
@@ -172,46 +190,95 @@ const WordRootManage = () => {
       dataIndex: 'wordCount',
       isBoolean: false,
       editable: true,
+      width: 50,
     },
     {
       title: '是否录入文档',
       dataIndex: 'inDocument',
       isBoolean: true,
       editable: true,
+      width: 50,
     },
     {
       title: '是否录入json',
       dataIndex: 'inJson',
       isBoolean: true,
       editable: true,
+      width: 50,
     },
     {
       title: '文档&json是否已关联',
       dataIndex: 'isLinked',
       isBoolean: true,
       editable: true,
+      width: 50,
+    },
+    {
+      title: '文档',
+      dataIndex: 'isScreenDocUploaded',
+      isBoolean: false,
+      editable: false,
+      width: 50,
+      // filtered: true,
+      filters: [
+        { text: 'Uploaded', value: true },
+        { text: 'Not Uploaded', value: false },
+      ],
+      onFilter: (value, record) => (record.isScreenDocUploaded || false) === value,
+      render: (text, record) => {
+        return (
+          <div className="">
+            <Button
+              icon={
+                record.isScreenDocUploaded ? (
+                  <Tooltip title={record.screenDoc?.docName}>
+                    <FileImageOutlined style={{ color: '#1890ff' }} />
+                  </Tooltip>
+                ) : (
+                  <FileImageOutlined />
+                )
+              }
+              type="text"
+              disabled={!record.isScreenDocUploaded}
+              onClick={() => handleScanDoc(record)}
+            />
+          </div>
+        )
+      },
+    },
+    {
+      title: 'json文档',
+      dataIndex: 'jsonDoc',
+      isBoolean: false,
+      editable: false,
+      width: 50,
+      render: () => '-',
     },
     {
       title: '操作',
       dataIndex: 'operation',
-      width: 200,
+      width: 100,
       render: (_, record) =>
         dataSource.length >= 1 ? (
           <Space>
             <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record.key)}>
-              <a>删除</a>
+              <DeleteOutlined className="size-5 text-red-400" />
             </Popconfirm>
             <Button
               size="small"
               type="text"
               onClick={() => {
-                setEditingKey(record.key)
+                setEditingKey(editingKey === record.key ? null : record.key)
               }}
             >
-              Edit
+              {editingKey === record.key ? (
+                <ArrowUturnLeftIcon className=" size-5 text-blue-500" />
+              ) : (
+                <EditOutlined className="size-5" />
+              )}
             </Button>
             <Popconfirm title="确定保存?" onConfirm={() => handleSave(record.key)}>
-              <a>Save</a>
+              <CheckOutlined className="size-5 text-green-500" />
             </Popconfirm>
           </Space>
         ) : null,
@@ -250,15 +317,28 @@ const WordRootManage = () => {
   // const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize)
   const getTableData = useCallback(async () => {
     setloading(true)
-    getWordRoots({
-      pageNumber: currentPage,
-      pageSize,
-      lastVisibleDocData: dataSource[dataSource.length - 1],
-    })
-      .then(res => {
-        if (res) {
-          setDataSource([...(res.data as WordRootType[])])
-          setPageTotal(res.total)
+
+    Promise.all([
+      getWordRoots({
+        pageNumber: currentPage,
+        pageSize,
+        lastVisibleDocData: dataSource[dataSource.length - 1],
+      }),
+      getAllScreenshotDoc(),
+    ])
+      .then(([roots, screen]) => {
+        if (roots.data) {
+          const data: TableRow[] = roots.data.map(item => {
+            const combined = { ...item } as TableRow
+            const tarDoc = screen.find(doc => hasCommonElements(item.root, doc.keyTerms || [], 2))
+            if (tarDoc) {
+              combined.isScreenDocUploaded = true
+              combined.screenDoc = tarDoc
+            }
+            return combined
+          })
+          setDataSource([...data])
+          setPageTotal(roots.total)
         } else {
           setDataSource([])
           setPageTotal(0)
@@ -353,6 +433,12 @@ const WordRootManage = () => {
     }
   }
 
+  const handleCopyURL = () => {
+    copyText(window.location.href).then(() => {
+      showNotification('success', 'Copied successfully', 'message')
+    })
+  }
+
   const handleChange = <K extends keyof WordRootType>({
     value,
     rowKey,
@@ -433,6 +519,7 @@ const WordRootManage = () => {
         errorField: null,
       },
     )
+
     if (r) {
       getTableData()
     }
@@ -445,7 +532,7 @@ const WordRootManage = () => {
   }, [getTableData, isAuthenticated])
 
   return (
-    <div className="container mx-auto p-6 bg-white">
+    <div className=" mx-auto p-6 bg-white">
       <Space style={{ marginBottom: 16 }} className=" items-start">
         <Input.Search
           size="small"
@@ -468,6 +555,9 @@ const WordRootManage = () => {
         <Button onClick={handleSyncKeys} type="primary" size="small">
           Sync Keys
         </Button>
+        <Button onClick={handleCopyURL} type="primary" size="small">
+          Copy Page URL
+        </Button>
       </Space>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
         <SortableContext
@@ -478,16 +568,28 @@ const WordRootManage = () => {
             loading={loading}
             bordered
             size="small"
-            scroll={{ y: 600 }}
+            scroll={{ y: 700 }}
             dataSource={filteredData} // 使用分页后的数据
-            columns={mergedColumns as ColumnType<WordRootType>[]}
+            columns={mergedColumns as ColumnType<TableRow>[]}
             rowClassName="editable-row"
             pagination={paginationConfig} // 配置分页
           />
         </SortableContext>
       </DndContext>
 
-      <ModalAddRoot visible={addRootModalVisible} onAdd={onAddRoot} />
+      <ModalForm
+        visible={addRootModalVisible}
+        onSubmit={onAddRoot}
+        onClose={() => setAddRootModalVisible(false)}
+        Child={FormAddRoot}
+      />
+      <ModalForm
+        visible={screenModalVisible}
+        data={currentScreenDoc}
+        onSubmit={val => console.log('submit ', val)}
+        onClose={() => setScreenModalVisible(false)}
+        Child={ScreenDocScanner}
+      />
     </div>
   )
 }

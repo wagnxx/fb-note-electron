@@ -164,3 +164,87 @@ export function sortGroupedData<T>(
 
   return sortedGroupedData
 }
+
+type SortOrder = 'asc' | 'desc'
+
+interface SortField {
+  field: string // 排序字段名
+  order: SortOrder // 排序方式（'asc' 或 'desc'）
+}
+
+export function sortData<T>(
+  data: T[],
+  sortBy: (SortField | keyof T)[],
+  sortOrder?: SortOrder,
+): T[] {
+  return data.sort((a, b) => {
+    for (let i = 0; i < sortBy.length; i++) {
+      let field: string
+      let order: SortOrder
+
+      // 类型保护：检查是否为 SortField
+      if (typeof sortBy[i] === 'string') {
+        field = sortBy[i] as string
+        order = sortOrder ?? 'asc' // 如果没有传入 sortOrder 参数，默认为 'asc'
+      } else {
+        const item = sortBy[i] as SortField
+        field = item.field
+        order = item.order
+      }
+
+      const valueA = a[field as keyof T]
+      const valueB = b[field as keyof T]
+
+      let comparison = 0
+
+      if (valueA < valueB) {
+        comparison = -1
+      } else if (valueA > valueB) {
+        comparison = 1
+      }
+
+      // 根据排序顺序决定升序或降序
+      if (order === 'desc') {
+        comparison = -comparison
+      }
+
+      // 如果当前字段排序结果是 0，则继续比较下一个字段
+      if (comparison !== 0) {
+        return comparison
+      }
+    }
+
+    return 0 // 如果所有字段都相等，则不排序
+  })
+}
+
+export const hasCommonElements = (
+  arr1: string[],
+  arr2: string[],
+  minCommonElements: number = 2,
+): boolean => {
+  // 如果数组为空，返回 false
+  if (arr1.length === 0 || arr2.length === 0) {
+    return false
+  }
+
+  // 如果其中一个数组只有一个元素，直接在另一个数组中查找该元素
+  if (arr1.length === 1 || arr2.length === 1) {
+    return arr1.some(item => arr2.includes(item)) || arr2.some(item => arr1.includes(item))
+  }
+
+  // 正则匹配，去除元素中的括号及其内容
+  const normalize = (str: string): string => {
+    return str.replace(/\(.*\)/g, '')
+  }
+
+  // 对两个数组中的元素进行归一化处理
+  const normalizedArr1 = arr1.map(normalize)
+  const normalizedArr2 = arr2.map(normalize)
+
+  // 计算交集数量
+  const commonElements = normalizedArr1.filter(item => normalizedArr2.includes(item))
+
+  // 如果交集的数量大于等于指定的最小数量，返回 true，否则返回 false
+  return commonElements.length >= minCommonElements
+}
