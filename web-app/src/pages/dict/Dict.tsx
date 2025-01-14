@@ -1,27 +1,44 @@
 import React, { useMemo, useState } from 'react'
-import barJson from '@/assets/raw/dict/bar.json'
-import rootson from '@/assets/raw/dict/root.json'
-import { Button, Card, Col, Input, List, Row } from 'antd'
+import { Card, Input, List } from 'antd'
+import WordRootJsonMenu from './components/WordRootJsonMenu'
 
-barJson.forEach(item => {
-  rootson.root.push(item.name)
-  rootson.data.push(item)
-})
+type WordType = {
+  name: string
+  meaning: string
+  structurare: string
+  example?: string
+}
+type JsonItem = {
+  name: string
+  siblings?: string[]
+  isPrefix: boolean
+  isSuffix: boolean
+  from: string
+  extension: string
+  group: WordType[]
+}
+
+const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
 const Dict = () => {
   const [rootItemName, setrootItemName] = useState('')
-  // const [rootItem, setrootItem] = useState('')
+  const [rootItem, setrootItem] = useState<JsonItem | null>(null)
 
   const [keywords, setKeywords] = useState('')
 
-  const rootItem = useMemo(() => {
-    return rootson.data.find(item => item.name === rootItemName)
-  }, [rootItemName])
-
   const listData =
     useMemo(() => {
-      return rootItem?.group.filter(item => item.name.includes(keywords)) || []
+      return rootItem?.group?.filter(item => item.name.includes(keywords)) || []
     }, [keywords, rootItem]) || []
+
+  const handleFetchDictItem = async ({ key }: { key: string }) => {
+    ipcRenderer.invoke(IPC_ACTIONS.READ_STREAM, encodeURIComponent(key)).then((res: any) => {
+      const decoder = new TextDecoder('utf-8')
+      const jsonString = decoder.decode(res)
+      const jsonData = JSON.parse(jsonString)
+      setrootItem(jsonData[0])
+    })
+  }
 
   return (
     <div className="w-full flex bg-slate-100">
@@ -29,20 +46,7 @@ const Dict = () => {
         <div className="flex-1">
           <div className=" flex-col flex">
             <h2 className=" font-semibold  bg-slate-200 p-2">Word Root list</h2>
-            <Row>
-              {rootson.root.map(item => {
-                return (
-                  <Col span={4} key={item}>
-                    <Button
-                      onClick={() => setrootItemName(item)}
-                      type={item === rootItemName ? 'primary' : 'text'}
-                    >
-                      -{item}-
-                    </Button>
-                  </Col>
-                )
-              })}
-            </Row>
+            <WordRootJsonMenu onItemClick={handleFetchDictItem} />
           </div>
         </div>
         <div className="flex-1">
@@ -62,9 +66,21 @@ const Dict = () => {
                 <Card.Meta
                   title={
                     <h1 className=" text-center">
-                      {rootItem?.isPrefix && '-'}
-                      {rootItem?.name}
-                      {rootItem?.isSuffix && '-'}
+                      <span>
+                        {rootItem?.isPrefix && '-'}
+                        {rootItem?.name}
+                        {rootItem?.isSuffix && '-'}
+                      </span>
+                      {rootItem.siblings?.length &&
+                        rootItem.siblings
+                          .filter(sb => sb !== rootItem.name)
+                          .map(sb => (
+                            <span key={sb}>
+                              ,{rootItem?.isPrefix && '-'}
+                              {sb}
+                              {rootItem?.isSuffix && '-'}
+                            </span>
+                          ))}
                     </h1>
                   }
                   description={
@@ -100,7 +116,9 @@ const Dict = () => {
                 <List.Item.Meta
                   title={
                     <div className="flex gap-2">
-                      <strong>{item.name}</strong>
+                      <div>
+                        <strong>{item.name}</strong>
+                      </div>
                       <span className=" text-gray-800">{item.meaning}</span>
                     </div>
                   }

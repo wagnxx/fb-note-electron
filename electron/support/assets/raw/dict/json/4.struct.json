@@ -1,0 +1,321 @@
+[
+  {
+    "name": "struct",
+    "isPrefix": true,
+    "isSuffix": true,
+    "from": "来自拉丁语 structura， 装配，布置， 来自struere 连接，组装，建造，堆放，来自PIE*ster，展开，延展，词源同stratum，strew，construct，引申词义结构，构造，体系",
+    "extension": "建造/构造/计划/组织/安排/基础/结构",
+    "group": [
+      {
+        "name": "structure",
+        "meaning": "英/ˈstrʌktʃə(r)/ 美/ˈstrʌktʃər/ n.结构；构造；体系；(尤指)建筑物；结构体；精心组织；周密安排 vt.精心组织；系统安排；使形成体系",
+        "structurare": "-struct- 建造,建立 + -ure 表名词"
+      },
+      {
+        "name": "structured",
+        "meaning": " 有结构的，有组织的",
+        "structurare": "structure + -ed 形容词后缀"
+      },
+      {
+        "name": "structural",
+        "meaning": " 结构的，组织的",
+        "structurare": "structure + -al 形容词后缀"
+      },
+      {
+        "name": "structurally",
+        "meaning": "adv. 在结构上",
+        "structurare": "structural + -ly 副词后缀"
+      },
+      {
+        "name": "substructure",
+        "meaning": "n. 基础，信念，底层构造",
+        "structurare": "sub- 下 +  structure"
+      },
+      {
+        "name": "superstructure",
+        "meaning": "n. 上层建筑，上部构造",
+        "structurare": "super- 在上 +  structure"
+      },
+      {
+        "name": "structruring",
+        "meaning": "n. 结构化",
+        "structurare": "structure + -ing 动名词后缀"
+      },
+      {
+        "name": "structruralism",
+        "meaning": "n. 结构主义，构造主义",
+        "structurare": "structural + -ism 名词后缀"
+      },
+      {
+        "name": "unstructured",
+        "meaning": "adj. 无组织的，松散的",
+        "structurare": "un- 否 + structrued"
+      },
+      {
+        "name": "semi-structured",
+        "meaning": "adj. 半结构化的",
+        "structurare": "semi- 半 + structrued"
+      },
+      {
+        "name": "poststructural",
+        "meaning": "n. 结构",
+        "structurare": "post- 后 + structral"
+      },
+      {
+        "name": "well-structed",
+        "meaning": "adj. 结构良好的",
+        "structurare": "合成词"
+      },
+      {
+        "name": "non-structural",
+        "meaning": "adj. 不用于结构上的",
+        "structurare": "non- 否定"
+      },
+      {
+        "name": "fine-structure",
+        "meaning": "adj. 结构精细的",
+        "structurare": "合成词"
+      },
+      {
+        "name": "microstructure",
+        "meaning": "n. 微观结构，显微结构",
+        "structurare": ""
+      },
+      {
+        "name": "microstructural",
+        "meaning": "adj. 显微结构的",
+        "structurare": ""
+      },
+      {
+        "name": "macro-structure",
+        "meaning": "n. 宏观结构",
+        "structurare": "macro 巨大，大"
+      },
+      {
+        "name": "nanostructure",
+        "meaning": "n. 纳米结构",
+        "structurare": "nano 纳，毫微 Nono人名"
+      },
+      {
+        "name": "nanostructured",
+        "meaning": "adj. 纳米结构",
+        "structurare": "+ -ed"
+      },
+      {
+        "name": "socia-structured",
+        "meaning": "adj. 社会结构的",
+        "structurare": "social adj 社交的，社会的 = -soci- 伙伴，陪伴 + -al 形容词后缀，society n. 社会 = -soci + -e- + -ty"
+      },
+      {
+        "name": "instructor",
+        "meaning": "n. 指导书，教员，指导者",
+        "structurare": "instruct + -or 名词后缀，表人"
+      },
+      {
+        "name": "instruction",
+        "meaning": "n. （常用做复数）指示，说明",
+        "structurare": "instruct + -ion 名词后缀"
+      },
+      {
+        "name": "instructive",
+        "meaning": "adj. 有益的，教育性的",
+        "structurare": "instruct + -ive 形容词后缀"
+      },
+      {
+        "name": "instructional",
+        "meaning": "adj. 教学的，指导的，教育的",
+        "structurare": "instruction + -al 形容词后缀"
+      },
+      {
+        "name": "instructionally",
+        "meaning": "adv. 教学性的，指导性地",
+        "structurare": "instructional + -ly 副词后缀"
+      },
+      {
+        "name": "self-instruction",
+        "meaning": "n. 自学，自我指导",
+        "structurare": "slef + instruction"
+      },
+      {
+        "name": "self-instructional",
+        "meaning": "adj. 自学的，用于自学的",
+        "structurare": "self-instruction + -al 形容词后缀"
+      },
+      {
+        "name": "infrastructure",
+        "meaning": "n. 基础设施，公共建设，下部结构",
+        "structurare": "infra- 下 + structure"
+      },
+      {
+        "name": "infrastructural",
+        "meaning": "adj. 基础结构的，构造基底的",
+        "structurare": "infrastructure + -al 形容词后缀"
+      },
+      {
+        "name": "construct",
+        "meaning": "vt. 构造，建造，创立 n. 构想，概念",
+        "structurare": "con- 在一起 + -struct- 建造 ---- 创立，构想"
+      },
+      {
+        "name": "construction",
+        "meaning": "n. 建造，建设，建筑，造句，解释",
+        "structurare": "construct + -ion 名词后缀"
+      },
+      {
+        "name": "constructionist",
+        "meaning": "n. 宪法解释者，构成派造型艺术家",
+        "structurare": "construction  + -ist 名词后缀，表人"
+      },
+      {
+        "name": "constructor",
+        "meaning": "n. 构造器，构造函数，建造者",
+        "structurare": "construct  + -or 名词后缀，表人或物"
+      },
+      {
+        "name": "constructive",
+        "meaning": "adj. 建设性的，有益的，推定的，构造上的",
+        "structurare": "construct  + -ive 形容词后缀"
+      },
+      {
+        "name": "constructivist",
+        "meaning": "n. 构成主义者",
+        "structurare": "constructive  + -ist 名词后缀，表人"
+      },
+      {
+        "name": "constructively",
+        "meaning": "adv. 建设性地",
+        "structurare": "constructive  + -ly 副词后缀"
+      },
+      {
+        "name": "constructivism",
+        "meaning": "n. 构成主义，构成派",
+        "structurare": "constructive  + -ism 名词后缀， 表主义"
+      },
+      {
+        "name": "constructed-response",
+        "meaning": "n. 构答反应",
+        "structurare": "合成词"
+      },
+      {
+        "name": "well-constructed",
+        "meaning": "adj. 结构合理的，建构完好的",
+        "structurare": "合成词"
+      },
+      {
+        "name": "reconstruction",
+        "meaning": "n. 再建，重建",
+        "structurare": ""
+      },
+      {
+        "name": "reconstructionist",
+        "meaning": "n. (美国内战后)重建主义",
+        "structurare": "reconstruction  + -ist名词后缀"
+      },
+      {
+        "name": "reconstructed",
+        "meaning": "adj. 重建的，改造的",
+        "structurare": "re + construct + -ed 形容词后缀"
+      },
+      {
+        "name": "reconstructive",
+        "meaning": "adj. 重建的，改造的",
+        "structurare": "reconstruct + -ive 形容词后缀"
+      },
+      {
+        "name": "unreconstructed",
+        "meaning": "adj. 旧思想的，脑筋转不过来的",
+        "structurare": "un- + reconstruct + -ed形容词后缀"
+      },
+      {
+        "name": "destruct",
+        "meaning": "vi. 自毁 n. 自毁",
+        "structurare": "de- 分---- 拆卸 + -struct- 建造 ---- 毁掉"
+      },
+      {
+        "name": "destructor",
+        "meaning": "n. 破坏者，垃圾焚毁炉，爆炸装置",
+        "structurare": "destruct + -or名词后缀"
+      },
+      {
+        "name": "destruction",
+        "meaning": "n. 破坏，毁灭，摧毁",
+        "structurare": "destruct + -ion 名词后缀"
+      },
+      {
+        "name": "destructive",
+        "meaning": "adj. 破坏的，毁灭性的",
+        "structurare": "destruct + -ive 形容词后缀"
+      },
+      {
+        "name": "destructively",
+        "meaning": "adv. 破坏地， 狼狈地",
+        "structurare": "destructive + -ly 副词后缀"
+      },
+      {
+        "name": "destructiveness",
+        "meaning": "n. 破坏性，毁灭性，破坏能力",
+        "structurare": "destructive + -ness 名词后缀"
+      },
+      {
+        "name": "indestructible",
+        "meaning": "adj. 不可毁灭的，不能破坏的",
+        "structurare": "in-否定 + destructible"
+      },
+      {
+        "name": "non-destructive",
+        "meaning": "adj. 无损的，非破坏性",
+        "structurare": "non- 否定"
+      },
+      {
+        "name": "self-destruct",
+        "meaning": "vi. 自毁 adj. 自毁的， 自杀的",
+        "structurare": ""
+      },
+      {
+        "name": "self-destructive",
+        "meaning": "adj. 自毁的， 表现自杀欲望的",
+        "structurare": ""
+      },
+      {
+        "name": "self-destructing",
+        "meaning": "adj. 自毁的， 自杀的",
+        "structurare": ""
+      },
+      {
+        "name": "self-destructiveness",
+        "meaning": "n. 破坏性，破坏能力",
+        "structurare": ""
+      },
+      {
+        "name": "obstruct",
+        "meaning": "vt. 妨碍，阻塞，遮断",
+        "structurare": "ob- 反 ---- 反方向 + -struct- 建造 ---- 反向建造 ---- 阻拦，妨碍"
+      },
+      {
+        "name": "obstructed",
+        "meaning": "adj. 阻塞的，不通的",
+        "structurare": "obstruct + -ed形容词后缀"
+      },
+      {
+        "name": "obstruction",
+        "meaning": "n. 阻塞，障碍，妨碍",
+        "structurare": "obstruct + -ion名词后缀"
+      },
+      {
+        "name": "obstructionism",
+        "meaning": "n. 蓄意阻挠",
+        "structurare": "obstruction +ism名词后缀"
+      },
+      {
+        "name": "obstructive",
+        "meaning": "adj. 阻碍的，妨碍的 n. 妨碍物，障碍物",
+        "structurare": "obstruct +ive 形容词或名词后缀"
+      },
+      {
+        "name": "unobstructived",
+        "meaning": "adj. 没有障碍的，畅通无阻的",
+        "structurare": "un- + obstruct + -ed 形容词后缀"
+      }
+    ]
+  }
+]

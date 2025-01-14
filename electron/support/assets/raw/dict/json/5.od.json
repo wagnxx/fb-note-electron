@@ -1,0 +1,116 @@
+[
+  {
+    "name": "od",
+    "isPrefix": true,
+    "isSuffix": true,
+    "from": "来自拉丁语 methodus, 教育方法，来自meta-，在后， -hod，路，词源同 anode，cathode，acced。字面意思即跟随，探询，找到，引申义词因材施教，后词义通用化，用以指方法，措施等",
+    "extension": "道路/方法/周期/调理",
+    "group": [
+      {
+        "name": "method",
+        "meaning": "n. 方法，调理",
+        "structurare": "meth- 在后，强调 + -od- 路 –––– 后路 –––– 方法，策略 "
+      },
+      {
+        "name": "methodical",
+        "meaning": "adj. 有系统的，有方法的",
+        "structurare": "method + -ic + -al形容词后缀"
+      },
+      {
+        "name": "methodology",
+        "meaning": "n. 方法学，方法论",
+        "structurare": "method + -o-  + -logy 名词后缀，表...学"
+      },
+      {
+        "name": "methodological",
+        "meaning": "adj. 方法的，方法论的",
+        "structurare": "methodology + -ic-  + -al 形容词后缀"
+      },
+      {
+        "name": "methodologically",
+        "meaning": "adv. 方法学，在方法论上",
+        "structurare": "methodological + -ly"
+      },
+      {
+        "name": "methodist",
+        "meaning": "n. 卫理公会派教徒 adj. 卫理公会教派的",
+        "structurare": "method + -ism 名词后缀，表人，也表形容词后缀"
+      },
+      {
+        "name": "period",
+        "meaning": "n. 一段时间，周期，期间，时期",
+        "structurare": "pre- 完全 + -i- 连字符 + -od 路 ———— 一段路，完整的路 ———— 周期"
+      },
+      {
+        "name": "periodic",
+        "meaning": "adj. 周期的，定期的",
+        "structurare": "period + -ic 形容词后缀"
+      },
+      {
+        "name": "periodical",
+        "meaning": "adj. 【数】周期的，定期的 n. 期刊 ， 杂志",
+        "structurare": "periodic + -al 形容词或名词后缀"
+      },
+      {
+        "name": "periodically",
+        "meaning": "adv. 周期地，定期地",
+        "structurare": "periodic + -al 形容词或名词后缀"
+      },
+      {
+        "name": "periodicity",
+        "meaning": "n. 【数】周期性，定期性，频率",
+        "structurare": "periodic + -i- + -ty"
+      },
+      {
+        "name": "periodize",
+        "meaning": "vt. 把（绘画，音乐，文学）划分时期或时代",
+        "structurare": "period + -ize 动词后缀"
+      },
+      {
+        "name": "periodization",
+        "meaning": "vt. 【数】周期化，（历史等）时期（或时代）划分",
+        "structurare": "-ation 复合名词后缀"
+      },
+      {
+        "name": "long-period",
+        "meaning": "adj. 长期的",
+        "structurare": "合成词"
+      },
+      {
+        "name": "short-period",
+        "meaning": "adj. 短周期的， 短寿命短",
+        "structurare": "合成词"
+      },
+      {
+        "name": "odograph",
+        "meaning": "n. 里程表，【测】计步器",
+        "structurare": "-od 路 + -o- 连字符 + -graph- 写 ———— 记录 ———— 记录路程"
+      },
+      {
+        "name": "odometer",
+        "meaning": "n. （汽车的）里程表",
+        "structurare": "-od 路 + -o- 连字符 + -meter- 测量 ———— 测量路 ———— 里程"
+      },
+      {
+        "name": "exodus",
+        "meaning": "n. 大批的离去",
+        "structurare": "ex- 向外 + -od 路 ———— 出路 ———— 离开 + -us 名词后缀"
+      },
+      {
+        "name": "periodonal",
+        "meaning": "adj. 齿根膜的，牙周的",
+        "structurare": "period = peri- 周期，周围 + -dont- 牙齿 + -al 形容词后缀"
+      },
+      {
+        "name": "periodontist",
+        "meaning": "n.牙周病医师， 牙周病学家",
+        "structurare": "-ist 名词后缀，表人"
+      },
+      {
+        "name": "periodontitis",
+        "meaning": "n.【口腔】牙周炎",
+        "structurare": "-itis 医学名词后缀"
+      }
+    ]
+  }
+]

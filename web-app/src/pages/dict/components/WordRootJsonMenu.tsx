@@ -4,10 +4,12 @@ import { TableOutlined } from '@ant-design/icons'
 import { Menu } from 'antd'
 import React, { FC, useEffect, useState } from 'react'
 
+const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
+
 // eslint-disable-next-line no-undef
 const { REACT_APP_SOURCE_PATH } = process.env
 
-const DOC_DIR = REACT_APP_SOURCE_PATH + '/dict/docs/'
+const DOC_DIR = REACT_APP_SOURCE_PATH + '/dict/json/'
 
 interface MenuItem {
   key: string
@@ -46,6 +48,7 @@ const WordRootDocMenu: FC<Props> = ({ onItemClick }) => {
   useEffect(() => {
     getDirectoryStructure(encodeURIComponent(DOC_DIR))
       .then(res => {
+        console.log('Directory structure:', res)
         const menuItems = convertToMenuItems(res)
         setMenus(menuItems)
       })
