@@ -8,6 +8,7 @@ import { isDev } from './config/config';
 import { initializeIPCHandlers } from './ipc/handlers';
 import { logger } from './utils/logger';
 import { ChildProcess } from 'child_process';
+import AppWindowManager from './managers/AppWindowManager';
 
 let innerProcess: ChildProcess[] = []
 
@@ -35,13 +36,19 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, '../../web-app/build/index.html'));
   }
+
+  return win
 }
 
 // 启动 HTTP 服务
 startVideoStreamServer();
 
 app?.whenReady()?.then(() => {
-  createWindow();
+  const win = createWindow();
+
+  const appWindowManager = AppWindowManager.getInstance();
+  appWindowManager.setWinInstance(win)
+  appWindowManager.setAppInstance(app); // 设置 app 实例
 
   innerProcess = initializeIPCHandlers() as ChildProcess[]
 

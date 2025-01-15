@@ -13,6 +13,7 @@
     GET_DIRECTORY_STRUCTURE: 'get-directory-structure',
     PARSE_DOC_FILE: 'parse-doc-file',
     CONVERT_DOC_TO_IMAGE: 'convert-doc-to-image',
+    SAVE_BASE64_IMAGE: 'save-base64-image',
     LS_FOLDER: 'ls-folder',
     LOAD_VIDEO: 'load-video',
     READ_STREAM: 'read-stream',

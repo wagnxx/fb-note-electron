@@ -6,9 +6,7 @@ export interface FileSystemItem {
   isDirectory: boolean
   children?: FileSystemItem[]
 }
-export const getDirectoryStructure = <T extends FileSystemItem = FileSystemItem>(
-  path: string,
-): Promise<T[]> => {
+export const getDirectoryStructure = <T extends FileSystemItem = FileSystemItem>(path: string): Promise<T[]> => {
   return ipcRenderer.invoke(IPC_ACTIONS.GET_DIRECTORY_STRUCTURE, path)
 }
 
@@ -16,25 +14,32 @@ export const parseDocFile = (file: string | ArrayBuffer) => {
   return ipcRenderer.invoke(IPC_ACTIONS.PARSE_DOC_FILE, file)
 }
 
-export const converDocToImage = (file: string | ArrayBuffer) => {
+export const converDocToImage = async <T extends string | ArrayBuffer>(
+  file: T,
+): Promise<T extends string ? { arrayBuffer: ArrayBuffer } : { arrayBuffer: ArrayBuffer; filePath: string }> => {
   return ipcRenderer.invoke(IPC_ACTIONS.CONVERT_DOC_TO_IMAGE, file)
+}
+
+export const saveBase64ToImage = async ({
+  imageData,
+  enPath,
+}: {
+  imageData: string
+  enPath?: string
+}): Promise<{ success: true; filePath: string } | { success: false; message: string }> => {
+  return ipcRenderer.invoke(IPC_ACTIONS.SAVE_BASE64_IMAGE, { imageData, enPath })
 }
 
 export const getDirChildren = (
   enPath: string,
-): Promise<
-  { ok: true; data: string[]; message?: string } | { ok: false; message: string; data?: never }
-> => {
+): Promise<{ ok: true; data: string[]; message?: string } | { ok: false; message: string; data?: never }> => {
   return ipcRenderer?.invoke(IPC_ACTIONS.LS_FOLDER, enPath)
 }
 
 export const getFileInfo = async <T extends 'file' | 'directory' | 'both'>(
   type: T,
 ): Promise<
-  | (T extends 'file'
-      ? { path: string; name: string; type: string }
-      : { path: string; type: string })
-  | null
+  (T extends 'file' ? { path: string; name: string; type: string } : { path: string; type: string }) | null
 > => {
   return ipcRenderer?.invoke(IPC_ACTIONS.SELECT_FILE, { type })
 }

@@ -2,9 +2,12 @@ import path from 'path';
 import fs from 'fs';
 import { dialog, ipcMain } from 'electron'
 import { IPC_ACTIONS } from '../constants';
-import { spawn } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { fileExists, getDirectoryStructureSync, readDirectory } from '../utils/fileManager';
 import mammoth from 'mammoth';
+import { convertDocToImage } from '../utils/docUtils';
+import { arrayBuffer } from 'stream/consumers';
+import AppWindowManager from '../managers/AppWindowManager';
 
 export const setupFileHandler = () => {
     ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async (event, options = { type: 'file' }) => {
@@ -92,15 +95,7 @@ export const setupFileHandler = () => {
             const { value: htmlContent } = await mammoth.convertToHtml({ buffer });
             // 将图片转为 base64 URL 形式，并插入 HTML 中
             let htmlWithImages = htmlContent;
-            // images.forEach(image => {
-            //     const imgData = image.buffer; // 获取图片的二进制数据
-            //     const base64Image = `data:${image.contentType};base64,${imgData.toString('base64')}`;
-            //     const imgTag = `<img src="${base64Image}" alt="image" />`;
-
-            //     // 插入到图片位置
-            //     htmlWithImages = htmlWithImages.replace('<img src="image" />', imgTag);
-            // });
-
+            
             return htmlWithImages; // 返回完整的 HTML 内容
         } catch (error) {
             console.error('Error parsing file:', error);
@@ -108,6 +103,81 @@ export const setupFileHandler = () => {
         }
     });
 
+    ipcMain.handle(IPC_ACTIONS.CONVERT_DOC_TO_IMAGE, async (event, file) => {
+        try {
+          const buffer = await  convertDocToImage(file)
+
+          if (file instanceof ArrayBuffer) {
+            return {
+                arrayBuffer: buffer
+            }
+          } else {
+            return {
+                arrayBuffer: buffer,
+                filePath: file.replace('.docx', '.png')
+            }
+          }
+
+        } catch (error) {
+          console.error('Error in convertToImage:', error);
+          throw error;
+        }
+      });
 
 
-};
+      ipcMain.handle(IPC_ACTIONS.SAVE_BASE64_IMAGE, async (event, {imageData, enPath}:{imageData: string, enPath?: string}) => {
+        let filePath
+        // 如果传入了 filePath，直接使用；否则弹出保存文件对话框
+        if (enPath) {
+            filePath = decodeURIComponent(enPath)
+        }
+        if (!filePath) {
+            const appWindowManager = AppWindowManager.getInstance();
+            const win = appWindowManager.getWinInstance()
+            const app = appWindowManager.getAppInstance()
+          // 打开保存文件对话框
+          const result = await dialog.showSaveDialog(win!, {
+            title: 'Save Image',
+            defaultPath: path.join(app!.getPath('desktop'), 'converted_image.png'),
+            filters: [
+              { name: 'Images', extensions: ['png', 'jpg', 'jpeg'] },
+            ],
+          });
+      
+          if (result.filePath) {
+            filePath = result.filePath;  // 获取选择的文件路径
+          }
+        }
+      
+        if (filePath) {
+          try {
+            // 检查目录是否存在
+            const dir = path.dirname(filePath);
+            if (!fs.existsSync(dir)) {
+              // 如果目录不存在，抛出错误
+              throw new Error(`Directory does not exist: ${dir}`);
+            }
+      
+            // Base64 字符串转为 Buffer，去掉前缀部分 (data:image/png;base64,)
+            const base64Data = imageData.split(',')[1];
+            const buffer = Buffer.from(base64Data, 'base64');
+      
+            // 将 Buffer 写入到文件系统
+            fs.writeFileSync(filePath, buffer);
+      
+            // 返回成功状态和文件路径
+            return { success: true, filePath };
+          } catch (error: any) {
+            console.error('Error saving image:', error);
+            return { success: false, message: error.message };
+          }
+        } else {
+          // 如果没有选择路径，返回失败
+          return { success: false, message: 'No file path provided.' }
+        }
+      });
+      
+
+}
+
+
