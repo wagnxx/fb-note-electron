@@ -35,6 +35,7 @@ import { createScreenshotDoc } from '@/service/screenshotDoc'
 import { uploadFileToFirebase } from '@/service/firebaseUploader'
 import { useNavigate } from 'react-router-dom'
 import { useNotification } from '@/hooks/useNotification'
+import { getFileDialogList } from '@/utils/utilsIpc'
 
 export type Snap = {
   name: string
@@ -153,29 +154,23 @@ const MultiDocSnap: React.FC = () => {
   const handleCancel = () => setPreviewVisible(false)
 
   const handleLoadFromLocal = async () => {
-    const folder = await ipcRenderer?.invoke(IPC_ACTIONS.SELECT_FILE, { type: 'directory' })
-
-    if (!folder) {
-      return
-    }
-    console.log('Opened dir: ', folder)
-
-    const docPath = folder.path
-
-    if (snapGroups.some(item => item.path === docPath)) {
-      showNotification('error', `The path "${docPath}" already exists.`, 'message')
-      return
-    }
-
     const r = await handleRequestWithNotification(
-      async () => await ipcRenderer?.invoke(IPC_ACTIONS.LS_FOLDER, encodeURIComponent(docPath)),
+      async () => await getFileDialogList('directory'),
+      { successMessage: '' },
     )
 
-    if (r?.ok) {
+    if (r.ok) {
+      if (snapGroups.some(item => item.path === r.folderPath)) {
+        showNotification('error', `The path "${r.folderPath}" already exists.`, 'message')
+        return
+      }
       const group = {
-        path: docPath,
-        name: getFileName(docPath),
-        snaps: r.data?.map((item: string) => ({ name: item, path: resolvePath(docPath, item) })),
+        path: r.folderPath,
+        name: getFileName(r.folderPath),
+        snaps: r.data?.map((item: string) => ({
+          name: item,
+          path: resolvePath(r.folderPath, item),
+        })),
       }
 
       setSnapGroups(prev => {

@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
-import { Table, Button, Popconfirm, Space, Input, Switch, Tooltip } from 'antd'
+import { Table, Button, Popconfirm, Space, Input, Switch, Tooltip, Tag } from 'antd'
 import { ColumnType } from 'antd/es/table'
 import { addWordRoot, batchUpdateWordRoot, deleteWordRoot, getWordRoots } from '@/service/dict'
 import { useAuth } from '@/context/AuthContext'
@@ -22,6 +22,7 @@ import { getAllScreenshotDoc, ScreenshotDocType } from '@/service/screenshotDoc'
 import ModalForm from '@/components/modal/ModalForm'
 import FormAddRoot from './FormAddRoot'
 import ScreenDocScanner from './ScreenDocScanner'
+import { shuffleColors } from '@/utils/utilsColor'
 
 // 词根类型定义
 export type WordRootType = {
@@ -34,7 +35,7 @@ export type WordRootType = {
   inJson: boolean
   isLinked: boolean
 }
-type TableRow = WordRootType & { isScreenDocUploaded?: boolean; screenDoc?: ScreenshotDocType }
+type TableRow = WordRootType & { isScreenDocUploaded?: boolean; screenDoc?: ScreenshotDocType[] }
 // 自定义可编辑列
 interface EditableColumnProps extends ColumnType<TableRow> {
   editable?: boolean
@@ -90,6 +91,7 @@ const WordRootManage = () => {
   const { isAuthenticated } = useAuth()
 
   const { handleRequestWithNotification, showNotification } = useNotification()
+  const shuffledColors = shuffleColors()
 
   const filteredData = dataSource.filter(
     item =>
@@ -122,10 +124,10 @@ const WordRootManage = () => {
     })
   }
 
-  const handleScanDoc = (record: TableRow) => {
-    console.log('row record: ', record)
-    if (!record.isScreenDocUploaded || !record.screenDoc) return
-    setCurrentScreenDoc(record.screenDoc)
+  const handleScanDoc = (doc: ScreenshotDocType) => {
+    console.log('row record: ', doc)
+    if (!doc) return
+    setCurrentScreenDoc(doc)
     setScreenModalVisible(true)
   }
 
@@ -198,6 +200,11 @@ const WordRootManage = () => {
       isBoolean: true,
       editable: true,
       width: 50,
+      filters: [
+        { text: 'Recorded', value: true },
+        { text: 'Not Recorded', value: false },
+      ],
+      onFilter: (value, record) => (record.inDocument || false) === value,
     },
     {
       title: '是否录入json',
@@ -205,6 +212,11 @@ const WordRootManage = () => {
       isBoolean: true,
       editable: true,
       width: 50,
+      filters: [
+        { text: 'Recorded', value: true },
+        { text: 'Not Recorded', value: false },
+      ],
+      onFilter: (value, record) => (record.inJson || false) === value,
     },
     {
       title: '文档&json是否已关联',
@@ -212,10 +224,15 @@ const WordRootManage = () => {
       isBoolean: true,
       editable: true,
       width: 50,
+      filters: [
+        { text: 'Linked', value: true },
+        { text: 'Not Linked', value: false },
+      ],
+      onFilter: (value, record) => (record.isLinked || false) === value,
     },
     {
       title: '文档',
-      dataIndex: 'isScreenDocUploaded',
+      dataIndex: 'docName',
       isBoolean: false,
       editable: false,
       width: 50,
@@ -227,21 +244,42 @@ const WordRootManage = () => {
       onFilter: (value, record) => (record.isScreenDocUploaded || false) === value,
       render: (text, record) => {
         return (
-          <div className="">
-            <Button
-              icon={
-                record.isScreenDocUploaded ? (
-                  <Tooltip title={record.screenDoc?.docName}>
-                    <FileImageOutlined style={{ color: '#1890ff' }} />
-                  </Tooltip>
-                ) : (
-                  <FileImageOutlined />
-                )
-              }
-              type="text"
-              disabled={!record.isScreenDocUploaded}
-              onClick={() => handleScanDoc(record)}
-            />
+          <div className=" inline-block">
+            {record.isScreenDocUploaded && record.screenDoc?.length && (
+              <div className=" flex flex-wrap">
+                {record.screenDoc.map(doc => (
+                  <Button
+                    icon={
+                      <Tooltip
+                        title={
+                          <div className=" inline-block">
+                            <h2>{doc.docName}</h2>
+                            <div className="flex flex-wrap gap-2">
+                              {doc.keyTerms?.map((tg, index) => (
+                                <Tag
+                                  key={tg}
+                                  bordered={false}
+                                  color={shuffledColors[index % shuffledColors.length]}
+                                >
+                                  {tg}
+                                </Tag>
+                              ))}
+                            </div>
+                          </div>
+                        }
+                      >
+                        <FileImageOutlined style={{ color: '#1890ff' }} />
+                      </Tooltip>
+                    }
+                    type="text"
+                    onClick={() => handleScanDoc(doc)}
+                  ></Button>
+                ))}
+              </div>
+            )}
+            {!record.isScreenDocUploaded && (
+              <Button icon={<FileImageOutlined />} disabled={true} type="text" />
+            )}
           </div>
         )
       },
@@ -330,10 +368,12 @@ const WordRootManage = () => {
         if (roots.data) {
           const data: TableRow[] = roots.data.map(item => {
             const combined = { ...item } as TableRow
-            const tarDoc = screen.find(doc => hasCommonElements(item.root, doc.keyTerms || [], 2))
-            if (tarDoc) {
+            const tarDocs = screen.filter(doc =>
+              hasCommonElements(item.root, doc.keyTerms || [], 2),
+            )
+            if (tarDocs.length) {
               combined.isScreenDocUploaded = true
-              combined.screenDoc = tarDoc
+              combined.screenDoc = tarDocs
             }
             return combined
           })

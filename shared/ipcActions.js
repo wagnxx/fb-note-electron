@@ -11,6 +11,8 @@
     SUBPROCESS_ERROR: 'subprocess-errors',
     SELECT_FILE: 'select-file',
     GET_DIRECTORY_STRUCTURE: 'get-directory-structure',
+    PARSE_DOC_FILE: 'parse-doc-file',
+    CONVERT_DOC_TO_IMAGE: 'convert-doc-to-image',
     LS_FOLDER: 'ls-folder',
     LOAD_VIDEO: 'load-video',
     READ_STREAM: 'read-stream',

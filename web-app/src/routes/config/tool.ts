@@ -5,6 +5,7 @@ import CinemaMoments from '@/pages/tools/video/CinemaMoments'
 import VideoDownloader from '@/pages/tools/video/components/VideoDownloader'
 import ScreenshotDoc from '@/pages/tools/docSnap/ScreenshotDoc'
 import { RouteConfig } from '../routes'
+import DocToImageConverter from '@/pages/tools/docSnap/DocToImageConverter'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -42,13 +43,18 @@ export const routesTool: RouteConfig = {
       children: [
         {
           path: 'manage',
-          name: 'manage',
+          name: 'Doc List',
           component: ScreenshotDoc,
         },
         {
           path: 'multi',
-          name: 'multi Doc',
+          name: 'Multi-Doc Uploader',
           component: MultiDocSnap,
+        },
+        {
+          path: 'docConverter',
+          name: 'Doc Converter',
+          component: DocToImageConverter,
         },
       ],
     },

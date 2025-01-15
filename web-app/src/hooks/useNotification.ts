@@ -93,7 +93,7 @@ export function useNotification() {
 
         if (isSuccess) {
           // 根据传入的通知类型显示成功消息
-          showNotification('success', successMessage, notificationType)
+          successMessage && showNotification('success', successMessage, notificationType)
         } else {
           // 根据传入的通知类型显示错误消息
           showNotification('error', errorMsg, notificationType)

@@ -4,6 +4,7 @@ import { dialog, ipcMain } from 'electron'
 import { IPC_ACTIONS } from '../constants';
 import { spawn } from 'child_process';
 import { fileExists, getDirectoryStructureSync, readDirectory } from '../utils/fileManager';
+import mammoth from 'mammoth';
 
 export const setupFileHandler = () => {
     ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async (event, options = { type: 'file' }) => {
@@ -69,6 +70,42 @@ export const setupFileHandler = () => {
         const folderPath = path.dirname(filePath)
 
         return fileExists(folderPath)
+    });
+
+    ipcMain.handle(IPC_ACTIONS.PARSE_DOC_FILE, async (event, file) => {
+        try {
+            let buffer
+
+            // 判断传入的是文件路径还是文件内容
+            if (typeof file === 'string') {
+                // 如果是文件路径，读取文件内容为 ArrayBuffer
+                const fileBuffer = fs.readFileSync(file);
+                buffer = fileBuffer;
+            } else if (file instanceof ArrayBuffer) {
+                // 如果是 ArrayBuffer，直接使用它
+                buffer = Buffer.from(file);
+            } else {
+                throw new Error('Invalid file type');
+            }
+
+            // 使用 mammoth.js 解析文件
+            const { value: htmlContent } = await mammoth.convertToHtml({ buffer });
+            // 将图片转为 base64 URL 形式，并插入 HTML 中
+            let htmlWithImages = htmlContent;
+            // images.forEach(image => {
+            //     const imgData = image.buffer; // 获取图片的二进制数据
+            //     const base64Image = `data:${image.contentType};base64,${imgData.toString('base64')}`;
+            //     const imgTag = `<img src="${base64Image}" alt="image" />`;
+
+            //     // 插入到图片位置
+            //     htmlWithImages = htmlWithImages.replace('<img src="image" />', imgTag);
+            // });
+
+            return htmlWithImages; // 返回完整的 HTML 内容
+        } catch (error) {
+            console.error('Error parsing file:', error);
+            throw error;
+        }
     });
 
 

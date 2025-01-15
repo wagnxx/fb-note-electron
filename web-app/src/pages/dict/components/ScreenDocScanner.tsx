@@ -1,7 +1,7 @@
 import { ModalChildProps, ModalChildRef } from '@/components/modal/ModalForm'
 import { ScreenshotDocType } from '@/service/screenshotDoc'
 import { shuffleColors } from '@/utils/utilsColor'
-import { Empty, Image, Space, Tag } from 'antd'
+import { Empty, Image, Tag } from 'antd'
 import Title from 'antd/es/typography/Title'
 import React, { forwardRef, useImperativeHandle, useState } from 'react'
 
@@ -21,7 +21,7 @@ const ScreenDocScanner = forwardRef<ModalChildRef, ModalChildProps<ScreenshotDoc
       <div>
         <Title>{data.docName}</Title>
         <div className=" pb-3">
-          <Space>
+          <div className=" flex flex-wrap gap-3">
             {data.keyTerms &&
               data.keyTerms.map((tg, index) => (
                 <Tag
@@ -32,7 +32,7 @@ const ScreenDocScanner = forwardRef<ModalChildRef, ModalChildProps<ScreenshotDoc
                   {tg}
                 </Tag>
               ))}
-          </Space>
+          </div>
         </div>
         <Image.PreviewGroup preview={{ visible, onVisibleChange: setVisible }}>
           {data.screenshots.map(item => (
