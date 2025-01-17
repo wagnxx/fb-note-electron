@@ -1,0 +1,757 @@
+[
+    {
+      "name": "form",
+      "siblings": [],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "① 来源于拉丁语动词 formare 形成,因为该词根常加前缀构词，所以有些词典将其视为后缀,但无论怎么说,该词根所构成的词汇都很容易辨认和理解; ② 来源基础词 form 形状/形成/形态，词根与之同形义。",
+      "extension": "形式/外形/形状/形成",
+      "group": [
+        {
+          "name": "formation",
+          "meaning": "阵型，编队",
+          "structurare": ""
+        },
+        {
+          "name": "star-formation",
+          "meaning": "星形队形",
+          "structurare": ""
+        },
+        {
+          "name": "formative",
+          "meaning": "形成的造型的",
+          "structurare": "form ate ive"
+        },
+        {
+          "name": "formal",
+          "meaning": "正式的",
+          "structurare": ""
+        },
+        {
+          "name": "formally",
+          "meaning": "正式地",
+          "structurare": ""
+        },
+        {
+          "name": "informal",
+          "meaning": "informal",
+          "structurare": ""
+        },
+        {
+          "name": "informally",
+          "meaning": "informally",
+          "structurare": ""
+        },
+        {
+          "name": "formalize",
+          "meaning": "使形式化，使正式",
+          "structurare": ""
+        },
+        {
+          "name": "formality",
+          "meaning": "礼节，拘谨，仪式",
+          "structurare": ""
+        },
+        {
+          "name": "life-form",
+          "meaning": "生物",
+          "structurare": ""
+        },
+        {
+          "name": "formalism",
+          "meaning": "形式主义，形式体系",
+          "structurare": "-ism 名词后缀，抽象含义，表。。。主义"
+        },
+        {
+          "name": "formalized",
+          "meaning": "形式化的，正式的",
+          "structurare": ""
+        },
+        {
+          "name": "waveform",
+          "meaning": "波形",
+          "structurare": ""
+        },
+        {
+          "name": "malformation",
+          "meaning": "畸形",
+          "structurare": "mal- 坏"
+        },
+        {
+          "name": "informaliy",
+          "meaning": "非正式",
+          "structurare": ""
+        },
+        {
+          "name": "formless",
+          "meaning": "没有形状的，无定形的，形状不明的",
+          "structurare": ""
+        },
+        {
+          "name": "free-form",
+          "meaning": "自由形态的",
+          "structurare": ""
+        },
+        {
+          "name": "unformed",
+          "meaning": "未成行的，未充分发展的",
+          "structurare": ""
+        },
+        {
+          "name": "landform",
+          "meaning": "地形",
+          "structurare": ""
+        },
+        {
+          "name": "form-fitting",
+          "meaning": "合身的",
+          "structurare": "fit 健康，适合"
+        },
+        {
+          "name": "malformed",
+          "meaning": "畸形的",
+          "structurare": ""
+        },
+        {
+          "name": "forme",
+          "meaning": "印板",
+          "structurare": "-e 名词后缀"
+        },
+        {
+          "name": "nonformal",
+          "meaning": "非正式的",
+          "structurare": ""
+        },
+        {
+          "name": "well-formed",
+          "meaning": "身材苗条的，结构良好的，符合语法规则的",
+          "structurare": ""
+        },
+        {
+          "name": "formalization",
+          "meaning": "形式化，礼仪化",
+          "structurare": ""
+        },
+        {
+          "name": "formalist",
+          "meaning": "拘泥形式的人，形式主义者，形式主义的，死板的",
+          "structurare": ""
+        },
+        {
+          "name": "formalistic",
+          "meaning": "形式主义的，呆板的",
+          "structurare": "-ic 形容词后缀"
+        },
+        {
+          "name": "forming",
+          "meaning": "n.形成",
+          "structurare": "from + ing 动名词"
+        },
+        {
+          "name": "semiformal",
+          "meaning": "半形式主义",
+          "structurare": "semi-半"
+        },
+        {
+          "name": "habit-forming",
+          "meaning": "adj. 易上瘾的，易成习惯的",
+          "structurare": ""
+        },
+        {
+          "name": "formlessness",
+          "meaning": "n. 无形",
+          "structurare": "-ness名词后缀"
+        },
+        {
+          "name": "long-form",
+          "meaning": "长格式",
+          "structurare": ""
+        },
+        {
+          "name": "newly-formed",
+          "meaning": "adj. 成形的，成形",
+          "structurare": "new + -ly副词后缀 + form + -ed 形容词后缀"
+        },
+        {
+          "name": "anti-reform",
+          "meaning": "adj. 反传统的形式的",
+          "structurare": ""
+        },
+        {
+          "name": "multiform",
+          "meaning": "多样的",
+          "structurare": ""
+        },
+        {
+          "name": "informal-sector",
+          "meaning": "n. testxx",
+          "structurare": "sector = -sect 切——划分——部分 —- 部门 + -or 名词后缀，表物"
+        },
+        {
+          "name": "half-formed",
+          "meaning": "半成形的",
+          "structurare": ""
+        },
+        {
+          "name": "short-form",
+          "meaning": "n. 简易格式",
+          "structurare": ""
+        },
+        {
+          "name": "piriform",
+          "meaning": "梨形的",
+          "structurare": "pir= pear "
+        },
+        {
+          "name": "inform",
+          "meaning": "vt. 通知，告诉，报告",
+          "structurare": "in- 使劲 + form 形成，形式 —— 收集信息 —— 通告"
+        },
+        {
+          "name": "informed",
+          "meaning": "adj. 消息灵通的，见多识广的",
+          "structurare": ""
+        },
+        {
+          "name": "uninformed",
+          "meaning": "无知的，未被通知的",
+          "structurare": ""
+        },
+        {
+          "name": "informant",
+          "meaning": "告密者，提供消息者",
+          "structurare": ""
+        },
+        {
+          "name": "informer",
+          "meaning": "告密者，通知者",
+          "structurare": ""
+        },
+        {
+          "name": "informate",
+          "meaning": "vt. 为。。。 提供信息",
+          "structurare": "inform + -ation = -ate + -ion名词后缀"
+        },
+        {
+          "name": "information",
+          "meaning": "信息",
+          "structurare": ""
+        },
+        {
+          "name": "informative",
+          "meaning": "adj. 情报的",
+          "structurare": "-ive 形容词后缀"
+        },
+        {
+          "name": "bioinformatician",
+          "meaning": "生物信息学者",
+          "structurare": "-bio + informate + -ic + -i- + -an 名词后缀，表人, biology = -bi(o)- + -logy 名词后缀，表…学"
+        },
+        {
+          "name": "disinformation",
+          "meaning": "故意的假情报，虚假信息",
+          "structurare": "dis- 分离 —— 否定"
+        },
+        {
+          "name": "well-informed",
+          "meaning": "消息灵通的",
+          "structurare": ""
+        },
+        {
+          "name": "misinform",
+          "meaning": "vt. 误传，提供错误信息",
+          "structurare": "mis- 错误， mistake = mis + take"
+        },
+        {
+          "name": "misinformation",
+          "meaning": "n. 误报，错误的信息",
+          "structurare": ""
+        },
+        {
+          "name": "informing",
+          "meaning": "adj. 增长见闻的，提供情报的，鼓舞的",
+          "structurare": ""
+        },
+        {
+          "name": "information-based",
+          "meaning": "信息化的，以信息为基础的",
+          "structurare": ""
+        },
+        {
+          "name": "information-gathering",
+          "meaning": "n.信息收集；情报收集",
+          "structurare": "gather vt. 采集 + -ing 动名词后缀"
+        },
+        {
+          "name": "uninformative",
+          "meaning": "adj. 不提供消息的，不增长见闻的",
+          "structurare": ""
+        },
+        {
+          "name": "informatics",
+          "meaning": "情报学，信息学",
+          "structurare": ""
+        },
+        {
+          "name": "information-rich",
+          "meaning": "信息丰富的",
+          "structurare": ""
+        },
+        {
+          "name": "information-age",
+          "meaning": "信息时代",
+          "structurare": ""
+        },
+        {
+          "name": "bioinformatics",
+          "meaning": "生物信息学",
+          "structurare": ""
+        },
+        {
+          "name": "better-informed",
+          "meaning": "消息灵通的",
+          "structurare": "x"
+        },
+        {
+          "name": "information-sharing",
+          "meaning": "n. 信息共享，资讯分享",
+          "structurare": "x"
+        },
+        {
+          "name": "informed-consent",
+          "meaning": "n. 知情同意，知会同意",
+          "structurare": "con-共同—— 相同 + -sent- = -sens- 意义"
+        },
+        {
+          "name": "best-informed",
+          "meaning": "消息灵通的",
+          "structurare": "x"
+        },
+        {
+          "name": "informativeness",
+          "meaning": "n. 信息量，忠实度",
+          "structurare": "x"
+        },
+        {
+          "name": "information-processing",
+          "meaning": "n. 信息处理，信息加工，情报整理",
+          "structurare": "x"
+        },
+        {
+          "name": "information-technology",
+          "meaning": "信息技术",
+          "structurare": "x"
+        },
+        {
+          "name": "ill-informed",
+          "meaning": "adj. 所知不多的，消息不灵通的",
+          "structurare": "x"
+        },
+        {
+          "name": "perform",
+          "meaning": "vi.表现 vt. 预先形成 n. 粗加工的成品",
+          "structurare": "x"
+        },
+        {
+          "name": "performance",
+          "meaning": "n. 表演",
+          "structurare": "-ance 名词后缀；补充说明： 性能，绩效，表演，执行，表现"
+        },
+        {
+          "name": "performative",
+          "meaning": "adj. 表述行为的，n.",
+          "structurare": "x"
+        },
+        {
+          "name": "performer",
+          "meaning": "表演者",
+          "structurare": "x"
+        },
+        {
+          "name": "performing",
+          "meaning": "adj. 表演的，履行的",
+          "structurare": "x"
+        },
+        {
+          "name": "preformed",
+          "meaning": "预成型的，预制成的",
+          "structurare": "x"
+        },
+        {
+          "name": "outperform",
+          "meaning": "vt. 胜过，做的比…好",
+          "structurare": "x"
+        },
+        {
+          "name": "high-performance",
+          "meaning": "高性能的",
+          "structurare": "x"
+        },
+        {
+          "name": "high-perfoming",
+          "meaning": "n. 高绩效的，高效能的",
+          "structurare": "x"
+        },
+        {
+          "name": "performance-enhancing",
+          "meaning": "adj. 增强性能的",
+          "structurare": "enhance vt. 提高，加强"
+        },
+        {
+          "name": "performance-based",
+          "meaning": "绩效为基础的",
+          "structurare": "x"
+        },
+        {
+          "name": "best-performing",
+          "meaning": "n. 表现最好的",
+          "structurare": "x"
+        },
+        {
+          "name": "performance-oriented",
+          "meaning": "adj. 以绩效为导向，绩效导向，绩效型",
+          "structurare": "x"
+        },
+        {
+          "name": "performance-related",
+          "meaning": "adj. 性能相关的，绩效相关的",
+          "structurare": ""
+        },
+        {
+          "name": "pay-for-performance",
+          "meaning": "n. 绩效薪酬",
+          "structurare": ""
+        },
+        {
+          "name": "performativity",
+          "meaning": "n. 表演性",
+          "structurare": ""
+        },
+        {
+          "name": "underperforming",
+          "meaning": "t. （股票等）运作差于（一般市场价） vi. 表现不佳，工作不如预期（或同行）",
+          "structurare": ""
+        },
+        {
+          "name": "underperformance",
+          "meaning": "n. 新股弱势，新股偏弱现象",
+          "structurare": ""
+        },
+        {
+          "name": "non-performing",
+          "meaning": "adj. 不履约",
+          "structurare": ""
+        },
+        {
+          "name": "worst-performing",
+          "meaning": "adj. 表现最差的",
+          "structurare": ""
+        },
+        {
+          "name": "pre-performance",
+          "meaning": "n. 性能，绩效，执行，表现",
+          "structurare": ""
+        },
+        {
+          "name": "nonperformance",
+          "meaning": "n. 不履行，不实行",
+          "structurare": ""
+        },
+        {
+          "name": "post- performance",
+          "meaning": "n. 岗位绩效",
+          "structurare": ""
+        },
+        {
+          "name": "pool-performing",
+          "meaning": "adj. 劣质的",
+          "structurare": ""
+        },
+        {
+          "name": "low-performing",
+          "meaning": "adj. 薄弱点",
+          "structurare": ""
+        },
+        {
+          "name": "wordTest",
+          "meaning": "n. testxx",
+          "structurare": ""
+        },
+        {
+          "name": "top-performing",
+          "meaning": "adj. 表现最好的",
+          "structurare": ""
+        },
+        {
+          "name": "formula",
+          "meaning": "n. 法则，原则，数学公式",
+          "structurare": "-form- 格式 —— 公式，法则 + -ul = -al + -a 集合名词后缀"
+        },
+        {
+          "name": "formulate",
+          "meaning": "vt. 规划，用公式表示",
+          "structurare": ""
+        },
+        {
+          "name": "formulation",
+          "meaning": "n. 构想, 规划，公式化",
+          "structurare": ""
+        },
+        {
+          "name": "formulated",
+          "meaning": "adj. 按配方制造的",
+          "structurare": ""
+        },
+        {
+          "name": "formulaic",
+          "meaning": "adj. 公式化的，刻板的，套话堆砌的",
+          "structurare": "formula + -ic 形容词后缀"
+        },
+        {
+          "name": "reformulate",
+          "meaning": "vt. 在用公式表示",
+          "structurare": ""
+        },
+        {
+          "name": "reformulated",
+          "meaning": "adj. 再阐述",
+          "structurare": ""
+        },
+        {
+          "name": "reformulation",
+          "meaning": "n. 再形成",
+          "structurare": ""
+        },
+        {
+          "name": "formulary",
+          "meaning": "n. 公式集,处方一览表, adj. 规定的，公式的，药方的",
+          "structurare": ""
+        },
+        {
+          "name": "formula-fed",
+          "meaning": "n. 配制饲料，配合饲料",
+          "structurare": "fed 喂养"
+        },
+        {
+          "name": "format",
+          "meaning": "n. 构成，安排  vt. 使格式化",
+          "structurare": "form 形成 —— 规划 + -at = -id 名词或动词后缀"
+        },
+        {
+          "name": "reformat",
+          "meaning": "vt. 重定格式",
+          "structurare": ""
+        },
+        {
+          "name": "formatting",
+          "meaning": "n. 格式化",
+          "structurare": ""
+        },
+        {
+          "name": "large-format",
+          "meaning": "n. 大篇幅",
+          "structurare": ""
+        },
+        {
+          "name": "platform",
+          "meaning": "n. 平台",
+          "structurare": "plat n. 小地方 + form"
+        },
+        {
+          "name": "cross-platform",
+          "meaning": "n. 跨平台",
+          "structurare": ""
+        },
+        {
+          "name": "former",
+          "meaning": "adj. 从前的，前者的，前任的 n. 模型，样板，起形成作用的人",
+          "structurare": ""
+        },
+        {
+          "name": "formerly",
+          "meaning": "adv. 以前，原来",
+          "structurare": ""
+        },
+        {
+          "name": "uniform",
+          "meaning": "adj. 统一的，一致的 n. 制服 vt. 使穿制服，使成一样",
+          "structurare": ""
+        },
+        {
+          "name": "uniformed",
+          "meaning": "adj. 穿制服的",
+          "structurare": ""
+        },
+        {
+          "name": "uniformity",
+          "meaning": "n. 均匀性，一致，同样",
+          "structurare": ""
+        },
+        {
+          "name": "uniformly",
+          "meaning": "adv. 一致地",
+          "structurare": ""
+        },
+        {
+          "name": "uniformitarian",
+          "meaning": "adj. 均辩论，n. 均辩论者",
+          "structurare": "uniform + -it  + -I + -an 名词或形容词后缀"
+        },
+        {
+          "name": "nonuniform",
+          "meaning": "adj. 不均匀的，不一致的",
+          "structurare": ""
+        },
+        {
+          "name": "reform",
+          "meaning": "n. 改革，改良，改正",
+          "structurare": ""
+        },
+        {
+          "name": "reformer",
+          "meaning": "n. 改革家，改革运动者",
+          "structurare": ""
+        },
+        {
+          "name": "reformed",
+          "meaning": "adj. 改革过的，新教的",
+          "structurare": ""
+        },
+        {
+          "name": "reformist",
+          "meaning": "n. 改革者，改革主义者 adj. 改革主义的，改良运动的",
+          "structurare": ""
+        },
+        {
+          "name": "reforming",
+          "meaning": "n.  重整，改进，变换",
+          "structurare": ""
+        },
+        {
+          "name": "reformulate",
+          "meaning": "vt. 再用形式表示",
+          "structurare": ""
+        },
+        {
+          "name": "reformation",
+          "meaning": "n. 革新，改善",
+          "structurare": ""
+        },
+        {
+          "name": "reform-minded",
+          "meaning": "adj. 决心改革的",
+          "structurare": ""
+        },
+        {
+          "name": "counter-reformation",
+          "meaning": "n. 反宗教改革",
+          "structurare": "counter- 反"
+        },
+        {
+          "name": "pro-reform",
+          "meaning": "adj. 支持改革的",
+          "structurare": ""
+        },
+        {
+          "name": "unreformed",
+          "meaning": "adj. 未经宗教改革的",
+          "structurare": ""
+        },
+        {
+          "name": "reformism",
+          "meaning": "n. 改良主义，改革主义",
+          "structurare": ""
+        },
+        {
+          "name": "reformatory",
+          "meaning": "adj. 改革的，感化的 n. 少年管教所，妓女管教所",
+          "structurare": ""
+        },
+        {
+          "name": "welfare-reform",
+          "meaning": "n. 福利改革",
+          "structurare": "welfare n. 福利"
+        },
+        {
+          "name": "helth-reform",
+          "meaning": " n. 卫生改革，医疗改革",
+          "structurare": ""
+        },
+        {
+          "name": "conform",
+          "meaning": "vt. 使遵守，使一致",
+          "structurare": ""
+        },
+        {
+          "name": "conformity",
+          "meaning": "n. 一致，适合，符合",
+          "structurare": ""
+        },
+        {
+          "name": "conformation",
+          "meaning": "n. 构造，一致，符合，构想",
+          "structurare": ""
+        },
+        {
+          "name": "conformist",
+          "meaning": "n. 英国国教徒，遵奉者",
+          "structurare": ""
+        },
+        {
+          "name": "nonconformity",
+          "meaning": "n. 不一致，不信奉国教， 不墨守成规",
+          "structurare": ""
+        },
+        {
+          "name": "nonconformist",
+          "meaning": "n. 不顺从一般公认信念习惯的人 adj. 不墨守成规的",
+          "structurare": ""
+        },
+        {
+          "name": "conformance",
+          "meaning": "n. 一致性，顺应",
+          "structurare": ""
+        },
+        {
+          "name": "conformism",
+          "meaning": "n. 因循守旧，盲从因袭的态度",
+          "structurare": ""
+        },
+        {
+          "name": "non-conforming",
+          "meaning": "adj. 非相容的",
+          "structurare": ""
+        },
+        {
+          "name": "conformal",
+          "meaning": "adj. 保角的，共形的，正形的",
+          "structurare": ""
+        },
+        {
+          "name": "deform",
+          "meaning": "vt. 使变形，使畸形， vi. 变形，变畸形 adj. 畸形的， 丑陋的",
+          "structurare": ""
+        },
+        {
+          "name": "deformed",
+          "meaning": "adj. 畸形的",
+          "structurare": ""
+        },
+        {
+          "name": "deformity",
+          "meaning": "n. 畸形，畸形的人或物",
+          "structurare": ""
+        },
+        {
+          "name": "deformation",
+          "meaning": "n. 变形",
+          "structurare": ""
+        },
+        {
+          "name": "deformable",
+          "meaning": "adj. 可变形的",
+          "structurare": ""
+        }
+      ]
+    }
+  ]

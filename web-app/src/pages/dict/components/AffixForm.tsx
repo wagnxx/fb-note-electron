@@ -17,7 +17,9 @@ const AffixForm: React.FC<AffixFormProps> = ({ affix, onSave }) => {
       form.setFieldsValue({
         affix: affix.affix.join(', '),
         meaning: affix.meaning,
+        affectedPartsOfSpeech: affix.affectedPartsOfSpeech?.join('/'),
         type: affix.type,
+        key: affix.key,
       })
       setType(affix.type)
       setAffixValues(affix.affix)
@@ -31,6 +33,7 @@ const AffixForm: React.FC<AffixFormProps> = ({ affix, onSave }) => {
         affix: values.affix.split(',').map((prefix: string) => prefix.trim()),
         meaning: values.meaning,
         type: values.type,
+        affectedPartsOfSpeech: values.affectedPartsOfSpeech.split('/'),
         key: Number(values.key),
       }
       onSave(updatedAffix as AffixType)
@@ -43,6 +46,9 @@ const AffixForm: React.FC<AffixFormProps> = ({ affix, onSave }) => {
         <Input />
       </Form.Item>
       <Form.Item label="词缀" name="affix" rules={[{ required: true, message: '请输入词缀' }]}>
+        <Input />
+      </Form.Item>
+      <Form.Item label="词性" name="affectedPartsOfSpeech" rules={[{ required: true, message: '请输入词性' }]}>
         <Input />
       </Form.Item>
       <Form.Item label="类型" name="type" rules={[{ required: true, message: '请选择类型' }]}>

@@ -1,16 +1,9 @@
-import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Table, Button, Popconfirm, Space, Input, Switch, Tooltip, Tag } from 'antd'
 import { ColumnType } from 'antd/es/table'
 import { addWordRoot, batchUpdateWordRoot, deleteWordRoot, getWordRoots } from '@/service/dict'
 import { useAuth } from '@/context/AuthContext'
-import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
+import { closestCenter, DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { hasCommonElements, hasDuplicate } from '@/utils/utilsArray'
 import { useNotification } from '@/hooks/useNotification'
@@ -109,6 +102,11 @@ const WordRootManage = () => {
     showTotal: (total: number) => `共 ${total} 条数据`,
   }
 
+  const rootTotalNumber = useMemo(() => {
+    const total = filteredData.reduce((sum, record) => sum + (Number(record.wordCount) || 0), 0)
+    return total
+  }, [filteredData])
+
   const handleChangeWordsText = (val: string, rowKey: number) => {
     let arr = val.split('/')
     setDataSource(preData => {
@@ -167,17 +165,11 @@ const WordRootManage = () => {
           return (
             <Input
               value={record.root.join('/')}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                handleChangeWordsText(e.target.value, record.key)
-              }
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeWordsText(e.target.value, record.key)}
             />
           )
         } else {
-          return (
-            <span style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>
-              [{record.root.join(', ')}]
-            </span>
-          )
+          return <span style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>[{record.root.join(', ')}]</span>
         }
       },
     },
@@ -188,7 +180,7 @@ const WordRootManage = () => {
       editable: true,
     },
     {
-      title: '总词数',
+      title: `总词数(${rootTotalNumber})`,
       dataIndex: 'wordCount',
       isBoolean: false,
       editable: true,
@@ -249,6 +241,7 @@ const WordRootManage = () => {
               <div className=" flex flex-wrap">
                 {record.screenDoc.map(doc => (
                   <Button
+                    key={doc.id}
                     icon={
                       <Tooltip
                         title={
@@ -256,11 +249,7 @@ const WordRootManage = () => {
                             <h2>{doc.docName}</h2>
                             <div className="flex flex-wrap gap-2">
                               {doc.keyTerms?.map((tg, index) => (
-                                <Tag
-                                  key={tg}
-                                  bordered={false}
-                                  color={shuffledColors[index % shuffledColors.length]}
-                                >
+                                <Tag key={tg} bordered={false} color={shuffledColors[index % shuffledColors.length]}>
                                   {tg}
                                 </Tag>
                               ))}
@@ -277,9 +266,7 @@ const WordRootManage = () => {
                 ))}
               </div>
             )}
-            {!record.isScreenDocUploaded && (
-              <Button icon={<FileImageOutlined />} disabled={true} type="text" />
-            )}
+            {!record.isScreenDocUploaded && <Button icon={<FileImageOutlined />} disabled={true} type="text" />}
           </div>
         )
       },
@@ -368,9 +355,7 @@ const WordRootManage = () => {
         if (roots.data) {
           const data: TableRow[] = roots.data.map(item => {
             const combined = { ...item } as TableRow
-            const tarDocs = screen.filter(doc =>
-              hasCommonElements(item.root, doc.keyTerms || [], 2),
-            )
+            const tarDocs = screen.filter(doc => hasCommonElements(item.root, doc.keyTerms || [], 2))
             if (tarDocs.length) {
               combined.isScreenDocUploaded = true
               combined.screenDoc = tarDocs
@@ -443,13 +428,10 @@ const WordRootManage = () => {
       return
     }
 
-    const r = await handleRequestWithNotification(
-      async () => await batchUpdateWordRoot(submiteData),
-      {
-        successField: null,
-        errorField: null,
-      },
-    )
+    const r = await handleRequestWithNotification(async () => await batchUpdateWordRoot(submiteData), {
+      successField: null,
+      errorField: null,
+    })
 
     if (r) {
       collectionRowkeys.current.clear()
@@ -459,13 +441,10 @@ const WordRootManage = () => {
   const handleSync = async () => {
     const submiteData = dataSource.filter(item => editedKeys.current.has(item.key))
 
-    const r = await handleRequestWithNotification(
-      async () => await batchUpdateWordRoot(submiteData),
-      {
-        successField: null,
-        errorField: null,
-      },
-    )
+    const r = await handleRequestWithNotification(async () => await batchUpdateWordRoot(submiteData), {
+      successField: null,
+      errorField: null,
+    })
 
     if (r) {
       setEditingKey(null)
@@ -552,13 +531,10 @@ const WordRootManage = () => {
       isLinked: false,
     }
 
-    const r = await handleRequestWithNotification(
-      async () => await addWordRoot(tar as WordRootType),
-      {
-        successField: null,
-        errorField: null,
-      },
-    )
+    const r = await handleRequestWithNotification(async () => await addWordRoot(tar as WordRootType), {
+      successField: null,
+      errorField: null,
+    })
 
     if (r) {
       getTableData()
@@ -584,12 +560,7 @@ const WordRootManage = () => {
         <Button onClick={handleAdd} type="primary" size="small">
           添加
         </Button>
-        <Button
-          onClick={handleSync}
-          type="primary"
-          size="small"
-          disabled={editedKeys.current.size === 0}
-        >
+        <Button onClick={handleSync} type="primary" size="small" disabled={editedKeys.current.size === 0}>
           Sync Data
         </Button>
         <Button onClick={handleSyncKeys} type="primary" size="small">
@@ -600,10 +571,7 @@ const WordRootManage = () => {
         </Button>
       </Space>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-        <SortableContext
-          items={filteredData.map(item => item.key)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={filteredData.map(item => item.key)} strategy={verticalListSortingStrategy}>
           <Table
             loading={loading}
             bordered
@@ -656,9 +624,7 @@ const SortableRow = ({
   }
 
   if (collectionRowkeys.current?.has(id)) {
-    return (
-      <div style={{ ...styles, backgroundColor: 'green', cursor: 'not-allowed' }}>{children}</div>
-    )
+    return <div style={{ ...styles, backgroundColor: 'green', cursor: 'not-allowed' }}>{children}</div>
   }
 
   return (

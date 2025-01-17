@@ -2,14 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Table, Button, Modal, Space, Popconfirm } from 'antd'
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import AffixForm from './AffixForm'
-import {
-  DndContext,
-  DragEndEvent,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
+import { DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { getDuplicateKeys, hasDuplicate } from '@/utils/utilsArray'
 import { batchUpdateWordAffix } from '@/service/dict'
@@ -48,8 +41,7 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
   const [editingAffix, setEditingAffix] = useState<AffixType | null>(null)
   const [collectionRowkeys, setcollectionRowkeys] = useState<CollectonKeysType>(new Map())
 
-  const { handleRequestWithNotification, showNotification, showConfirmationDialog } =
-    useNotification()
+  const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
 
   useEffect(() => {
     setDataSource(data.map((item, index) => ({ ...item, initialIndex: index })))
@@ -91,8 +83,7 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
     if (!confirmed) return
 
     const r = await handleRequestWithNotification(
-      async () =>
-        await batchUpdateWordAffix(values.map(item => ({ id: item.id, key: item.newKey }))),
+      async () => await batchUpdateWordAffix(values.map(item => ({ id: item.id, key: item.newKey }))),
       {
         successField: null,
         errorField: null,
@@ -184,15 +175,8 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
       width: 90,
       render: (_: any, record: AffixType) => (
         <span>
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => handleEditClick(record)}
-            style={{ marginRight: 8 }}
-          />
-          <Popconfirm
-            title="确定删除?"
-            onConfirm={() => handleDeleteClick(record.id ? record.id : '')}
-          >
+          <Button icon={<EditOutlined />} onClick={() => handleEditClick(record)} style={{ marginRight: 8 }} />
+          <Popconfirm title="确定删除?" onConfirm={() => handleDeleteClick(record.id ? record.id : '')}>
             <DeleteOutlined />
           </Popconfirm>
         </span>
@@ -237,27 +221,15 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
   return (
     <div>
       <Space>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleAddClick}
-          style={{ marginBottom: 16 }}
-        >
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleAddClick} style={{ marginBottom: 16 }}>
           添加
         </Button>
-        <Button
-          onClick={handleUpdateKeys}
-          disabled={collectionRowkeys.size === 0}
-          style={{ marginBottom: 16 }}
-        >
+        <Button onClick={handleUpdateKeys} disabled={collectionRowkeys.size === 0} style={{ marginBottom: 16 }}>
           Update keys
         </Button>
       </Space>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-        <SortableContext
-          items={dataSource.map(item => item.key)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={dataSource.map(item => item.key)} strategy={verticalListSortingStrategy}>
           <Table
             dataSource={dataSource}
             columns={columns}

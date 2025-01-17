@@ -71,8 +71,7 @@ const WordAffix = () => {
   }
 
   // 编辑词缀
-  const handleEdit = (id: string, updatedAffix: AffixType) =>
-    updateAffixData([{ ...updatedAffix, id }])
+  const handleEdit = (id: string, updatedAffix: AffixType) => updateAffixData([{ ...updatedAffix, id }])
 
   useEffect(() => {
     if (!isAuthenticated) return

@@ -1,0 +1,201 @@
+[
+    {
+      "name": "vinc",
+      "siblings": [
+        "vict"
+      ],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "① 来源于拉丁语 vincere 战胜；② 来源典故：凯撒大帝 Caesar 平定庞培部下叛乱后,颁布的“三V 文书”，即 Veni、Vedi、Vici,为拉丁语, 意为“I came, I saw, I conquered”，含义为“到、看、胜”，词根为它的变体，含义与之相同；③ 来源于古罗马神话人 Victoria, 胜利女神。",
+      "extension": "战胜/胜利/征服/克服",
+      "group": [
+        {
+          "name": "province",
+          "meaning": "n. 省，领域，职权",
+          "structurare": ""
+        },
+        {
+          "name": "province-wide",
+          "meaning": "全省的，全省地",
+          "structurare": ""
+        },
+        {
+          "name": "provicial",
+          "meaning": "adj. 省的,地方性的 n. 乡下人，外地人",
+          "structurare": ""
+        },
+        {
+          "name": "provincially",
+          "meaning": "adv. 以地方，偏狭地",
+          "structurare": ""
+        },
+        {
+          "name": "provinciality",
+          "meaning": "n. 乡下西气，粗鄙，偏狭，地方特色",
+          "structurare": ""
+        },
+        {
+          "name": "provincialism",
+          "meaning": "n. 方言，地方风格，乡下习气",
+          "structurare": ""
+        },
+        {
+          "name": "victor",
+          "meaning": "胜利者",
+          "structurare": ""
+        },
+        {
+          "name": "victory",
+          "meaning": "n. 胜利，成功，克服",
+          "structurare": "-ory名词或者形容词后缀，具体看语境"
+        },
+        {
+          "name": "victorious",
+          "meaning": "胜利的",
+          "morphLink": ["danger", "fame"],
+          "structurare": ""
+        },
+        {
+          "name": "victoriusly",
+          "meaning": "adv. 获胜地，凯旋归来地",
+          "structurare": ""
+        },
+        {
+          "name": "Victorian",
+          "meaning": "adj. 维多利亚女王时代的, n. 维多利亚时代",
+          "structurare": "Victoria 胜利女神 + -an名词或形容词后缀"
+        },
+        {
+          "name": "Victorian-era",
+          "meaning": "维多利亚时代",
+          "structurare": ""
+        },
+        {
+          "name": "Victorian-style",
+          "meaning": "维多利亚风格",
+          "structurare": ""
+        },
+        {
+          "name": "late-Victorian",
+          "meaning": "adj. 维多利亚晚期",
+          "structurare": ""
+        },
+        {
+          "name": "neo-Victorian",
+          "meaning": "adj. 新维多利亚的",
+          "structurare": ""
+        },
+        {
+          "name": "victim",
+          "meaning": "n. 受害者",
+          "structurare": "-vict 征服— 俘虏 —— 罪人 —— 受害者 + -im 名词后缀，表人"
+        },
+        {
+          "name": "victimize",
+          "meaning": "vt. 使受害，使牺牲，欺骗",
+          "structurare": ""
+        },
+        {
+          "name": "victimized",
+          "meaning": "victimized",
+          "structurare": "victimize过去式/分词"
+        },
+        {
+          "name": "victimization",
+          "meaning": "n. 牺牲，欺骗",
+          "structurare": ""
+        },
+        {
+          "name": "victimizer",
+          "meaning": "n. 使害者",
+          "structurare": ""
+        },
+        {
+          "name": "convince",
+          "meaning": "vt. 说服，使确信",
+          "structurare": "con- 强调，共同 + vinc —— 使人信服  + -e 动词后缀"
+        },
+        {
+          "name": "convinced",
+          "meaning": "确信的，信服的",
+          "structurare": ""
+        },
+        {
+          "name": "unconvinced",
+          "meaning": "不信服的",
+          "structurare": ""
+        },
+        {
+          "name": "convincing",
+          "meaning": "adj. 令人信服的，有说服力的",
+          "structurare": "-ing 形容词后缀，表 令….的"
+        },
+        {
+          "name": "unconvincing",
+          "meaning": "不足以令人相信的",
+          "structurare": ""
+        },
+        {
+          "name": "convincingly",
+          "meaning": "令人信服地",
+          "structurare": ""
+        },
+        {
+          "name": "convict",
+          "meaning": "n. 囚犯",
+          "structurare": "con + vict 征服—- 俘虏 囚犯，罪人—- 战胜者对战败者对裁定"
+        },
+        {
+          "name": "conviction",
+          "meaning": "n. 定罪",
+          "structurare": ""
+        },
+        {
+          "name": "ex-convict",
+          "meaning": "n. 从前曾被判刑的人",
+          "structurare": "ex- 前任"
+        },
+        {
+          "name": "post-conviction",
+          "meaning": "n.定罪后救济",
+          "structurare": ""
+        },
+        {
+          "name": "evict",
+          "meaning": "vt. 驱逐，逐出",
+          "structurare": "e- 向外 + -vict 征服—— 占领 —— 驱逐"
+        },
+        {
+          "name": "eviction",
+          "meaning": "n. 逐出，赶出，收回",
+          "structurare": ""
+        },
+        {
+          "name": "evicted",
+          "meaning": "adj. 被驱逐的",
+          "structurare": ""
+        },
+        {
+          "name": "evince",
+          "meaning": "vt. 表明 表示，引起",
+          "structurare": "e- 向外 + -vinc 胜利—- 表明，显示 + -e 动词后缀"
+        },
+        {
+          "name": "vincible",
+          "meaning": "可征服的",
+          "structurare": "-ible = -able"
+        },
+        {
+          "name": "invincible",
+          "meaning": "无敌的",
+          "structurare": ""
+        },
+        {
+          "name": "invincibility",
+          "meaning": "n. 无敌",
+          "structurare": "-ibility = ability"
+        }
+
+      ]
+    }
+  ]

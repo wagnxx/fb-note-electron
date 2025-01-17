@@ -1,0 +1,159 @@
+[
+    {
+        "name": "prehend",
+        "siblings": [
+            "prehens"
+        ],
+        "isPrefix": true,
+        "isSuffix": true,
+        "from": "来源于拉丁语动词 prehendere(抓住)，也是英语 predatory 的词源。拉丁语 apprehendere (抓住，了解),由前缀 ap-和 prehendere 复合而成，其潜在的意义为“用记忆抓住”，即“学习”。拉丁语动词apprehendere(抓住，了解)的缩写形式apprendere进入古法语为aprendre，在现代法语中为apprendre(学习)，其派生词 aprentis(学习着的人)进入英语为 apprentice(学徒)；法语 apprendre(学习)的过去分词appris(被教的)是英语 apprise 的词源。",
+        "extension": "抓住/理解/包含",
+        "group": [
+            {
+                "name": "comprehend",
+                "meaning": "vt. 理解，包含，由…组成",
+                "structurare": "com-在一起 + -prehend-抓 —— 抓到一起来 —— 包含 —— 组合"
+            },
+            {
+                "name": "comprehension",
+                "meaning": "n. 理解，领悟",
+                "structurare": ""
+            },
+            {
+                "name": "incomprehension",
+                "meaning": "n. 不了解，缺乏理解",
+                "structurare": ""
+            },
+            {
+                "name": "comprehensive",
+                "meaning": "adj. 综合的，广泛的",
+                "structurare": ""
+            },
+            {
+                "name": "comprehensible",
+                "meaning": "adj. 可理解的",
+                "structurare": ""
+            },
+            {
+                "name": "comprehensibility",
+                "meaning": "n. 可了解性，能理解",
+                "structurare": ""
+            },
+            {
+                "name": "incomprehensible",
+                "meaning": "adj. 费解的，不可思议的，无限的",
+                "structurare": ""
+            },
+            {
+                "name": "incomprehensibly",
+                "meaning": "adv. 不能理解地，不可思议地",
+                "structurare": ""
+            },
+            {
+                "name": "incomprehensibility",
+                "meaning": "n. 不可理解的，不可知性",
+                "structurare": ""
+            },
+            {
+                "name": "comprehensively",
+                "meaning": "adv. 包括地，包括一切地",
+                "structurare": ""
+            },
+            {
+                "name": "uncomprehending",
+                "meaning": "adj. 不了解 的",
+                "structurare": ""
+            },
+            {
+                "name": "uncomprehendingly",
+                "meaning": "adv. 不解地，琢磨不透地",
+                "structurare": ""
+            },
+            {
+                "name": "comprehensiveness",
+                "meaning": "n. 综合，详尽",
+                "structurare": ""
+            },
+            {
+                "name": "apprehension",
+                "meaning": "n. 理解，恐惧，逮捕",
+                "structurare": ""
+            },
+            {
+                "name": "apprehensible",
+                "meaning": "adj. 可理解的",
+                "structurare": ""
+            },
+            {
+                "name": "apprehensive",
+                "meaning": "adj. 忧虑的，不安的",
+                "structurare": ""
+            },
+            {
+                "name": "apprehensively",
+                "meaning": "adv. 但心地",
+                "structurare": ""
+            },
+            {
+                "name": "misapprehend",
+                "meaning": "vt. 误解，误会",
+                "structurare": ""
+            },
+            {
+                "name": "misapprehension",
+                "meaning": "n. 误会 ，误解",
+                "structurare": ""
+            },
+            {
+                "name": "misapprehensive",
+                "meaning": "adj. 误会的",
+                "structurare": ""
+            },
+            {
+                "name": "misapprehensively",
+                "meaning": "adv. 易产生误解的",
+                "structurare": ""
+            },
+            {
+                "name": "prehensile",
+                "meaning": "dj. 适于抓握的，善于领会的",
+                "structurare": "-ile 形容词后缀，表能..的"
+            },
+            {
+                "name": "prehension",
+                "meaning": "n. 理解，抓住",
+                "structurare": ""
+            },
+            {
+                "name": "reprehend",
+                "meaning": "vt. 指责，申诉 n. 责备",
+                "structurare": "re- 往回 + -prehend-抓 —— 抓回来 —— 判罪 —— 责备"
+            },
+            {
+                "name": "reprehension",
+                "meaning": "n. 非难，指责",
+                "structurare": ""
+            },
+            {
+                "name": "reprehensive",
+                "meaning": "adj. 谴责的，非难的",
+                "structurare": "-ive 形容词后缀"
+            },
+            {
+                "name": "reprehensible",
+                "meaning": "adj. 应指责的，应受责备的",
+                "structurare": ""
+            },
+            {
+                "name": "reprehensibly",
+                "meaning": "adv. 应受指责地",
+                "structurare": ""
+            },
+            {
+                "name": "reprehensiblity",
+                "meaning": "n. 应受谴责性",
+                "structurare": ""
+            }
+        ]
+    }
+]
