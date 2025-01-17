@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Table, Button, Modal, Space, Popconfirm } from 'antd'
+import React, { Key, useEffect, useMemo, useState } from 'react'
+import { Table, Button, Modal, Space, Popconfirm, TableProps, Input } from 'antd'
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import AffixForm from './AffixForm'
 import { DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
@@ -35,16 +35,26 @@ interface Props {
 
 type CollectonKeysType = Map<number, { key: number; newKey: number; id: string }>
 
+type OnChange = NonNullable<TableProps<AffixType>['onChange']>
+type Filters = Parameters<OnChange>[1]
+
 const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPage }) => {
   const [dataSource, setDataSource] = useState<AffixType[]>([])
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editingAffix, setEditingAffix] = useState<AffixType | null>(null)
   const [collectionRowkeys, setcollectionRowkeys] = useState<CollectonKeysType>(new Map())
+  const [filteredInfo, setFilteredInfo] = useState<Filters>({})
 
   const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
 
+  const handleFilterChange: OnChange = (pagination, filters, sorter) => {
+    console.log('Various parameters', pagination, filters, sorter)
+    setFilteredInfo(filters)
+  }
+
   useEffect(() => {
     setDataSource(data.map((item, index) => ({ ...item, initialIndex: index })))
+    console.log('data::::', data)
   }, [data])
 
   useEffect(() => {
@@ -158,15 +168,44 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
       render: (_: any, record: AffixType) => {
         return record.affix.join('/')
       },
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            allowClear={true}
+            placeholder="Search Affix"
+            onChange={e => setFilteredInfo({ affix: e.target.value ? [e.target.value] : null })}
+          />
+        </div>
+      ),
+      onFilter: (value: boolean | Key, record: AffixType) => {
+        console.log('filter value: ', value)
+        if (!value) return true
+        return record.affix.some(af => af.includes(value as unknown as string)) // 模糊匹配
+      },
+      filteredValue: filteredInfo.affix || null, // 确保是 string[] 或 null
     },
     {
       title: '词性',
       dataIndex: 'affectedPartsOfSpeech',
-      key: 'affix',
+      key: 'affectedPartsOfSpeech',
       width: 200,
       render: (_: any, record: AffixType) => {
         return record?.affectedPartsOfSpeech?.join('/')
       },
+      filters: [
+        { text: 'Recorded', value: true },
+        { text: 'Not Recorded', value: false },
+      ],
+      onFilter: (value: boolean | Key, record: AffixType) => {
+        const str = (record?.affectedPartsOfSpeech || []).filter(item => Boolean(item.trim()))
+        if (value === true) {
+          return str.length > 0
+        } else if (value === false) {
+          return str.length === 0
+        }
+        return false
+      },
+      filteredValue: filteredInfo.affectedPartsOfSpeech || null, // 确保该字段在没有过滤时为 `null`
     },
     { title: '含义', dataIndex: 'meaning', key: 'meaning' },
     {
@@ -237,6 +276,7 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
             size="small"
             pagination={{ pageSize: 50 }}
             scroll={{ y: 600 }}
+            onChange={handleFilterChange}
           />
         </SortableContext>
       </DndContext>
