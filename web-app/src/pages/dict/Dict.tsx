@@ -7,6 +7,8 @@ type WordType = {
   meaning: string
   structurare: string
   example?: string
+  from?: string // 词源
+  morphLink?: string[] // 结构相似的词
 }
 type JsonItem = {
   name: string
@@ -99,11 +101,7 @@ const Dict = () => {
               </Card>
             )}
           </div>
-          <Input
-            placeholder="enter keywords"
-            value={keywords}
-            onChange={e => setKeywords(e.target.value)}
-          />
+          <Input placeholder="enter keywords" value={keywords} onChange={e => setKeywords(e.target.value)} />
         </div>
         <div style={{ height: 'calc(100vh - 200px)', overflow: 'auto' }}>
           <List

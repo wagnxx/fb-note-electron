@@ -105,7 +105,7 @@ const WordAffix = () => {
           <Spin indicator={<LoadingOutlined spin />} size="large" />
         </div>
       ) : (
-        <div className="p-2">
+        <div className="p-2 box-border">
           <div>
             <Space>
               <Button type="primary" onClick={handleSync} disabled>

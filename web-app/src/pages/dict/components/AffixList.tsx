@@ -1,6 +1,6 @@
 import React, { Key, useEffect, useMemo, useState } from 'react'
 import { Table, Button, Modal, Space, Popconfirm, TableProps, Input } from 'antd'
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import AffixForm from './AffixForm'
 import { DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -169,7 +169,7 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
         return record.affix.join('/')
       },
       filterDropdown: () => (
-        <div className="p-3">
+        <div className="p-3 opacity-40">
           <Input
             allowClear={true}
             placeholder="Search Affix"
@@ -183,6 +183,7 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
         return record.affix.some(af => af.includes(value as unknown as string)) // 模糊匹配
       },
       filteredValue: filteredInfo.affix || null, // 确保是 string[] 或 null
+      filterIcon: (filtered: boolean) => <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />,
     },
     {
       title: '词性',
@@ -275,7 +276,7 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
             rowKey="key"
             size="small"
             pagination={{ pageSize: 50 }}
-            scroll={{ y: 600 }}
+            scroll={{ y: 500 }}
             onChange={handleFilterChange}
           />
         </SortableContext>

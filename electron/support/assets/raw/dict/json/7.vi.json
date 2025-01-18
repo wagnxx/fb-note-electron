@@ -1,0 +1,312 @@
+[
+    {
+      "name": "vi",
+      "siblings": [
+        "via"
+      ],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "来源于拉丁语 via 道路。如基础词 via 经过、通过",
+      "extension": "路/途径",
+      "group": [
+    
+          {
+            "name": "via",
+            "meaning": "prep. 途经；经由；取道",
+            "structurare": ""
+          },
+          {
+            "name": "obviate",
+            "meaning": "vt. 避免，消除（贫困、不方便等）",
+            "structurare": "ob- 相反 ，离开 + -via- 路  ---- 离开路 ---- 避免 + -ate 动词后缀"
+          },
+          {
+            "name": "obvious",
+            "meaning": "adj. 明显的，显而易见的，显著的",
+            "structurare": "ob- 相反,阻拦 + -vi- 路 ---- 挡路 ---- 明显 + -ous形容词后缀。词源: 来自obviate,对着路，挡路， -ous形容词后缀,即挡着路的，引申词义明显的障碍，后词义通用化指明显的"
+          },
+          {
+            "name": "non-obvious",
+            "meaning": "adj. 不明显的，显著的",
+            "structurare": "non- 否定"
+          },
+          {
+            "name": "obviosness",
+            "meaning": " n. 显而易见；明显；显著性；",
+            "structurare": "-ness名词后缀"
+          },
+          {
+            "name": "obviously",
+            "meaning": "adv. 明显地，显著地",
+            "structurare": ""
+          },
+          {
+            "name": "previous",
+            "meaning": "adj. 以前的；从前的；先前的",
+            "structurare": "pre- 前，先 + -vi- 路 ---- 之前的路 ---- 以前的 + ous形容词后缀"
+          },
+          {
+            "name": "previously",
+            "meaning": "adv. 以前；预先；仓促地",
+            "structurare": ""
+          },
+          {
+            "name": "trivia",
+            "meaning": "n. 琐事，不足道的细枝末节；（中世纪大学的）三学科；薄物细故",
+            "structurare": "tri- 三 + -via- 路 ---- 三岔路，市井",
+            "from":"来源于拉丁语 trivia,三岔路, 复数格trivum, 三岔路, 来自 tri- 三,via 路，同 way ，引申词义公共地，闲聊，后用于指琐事，小事"
+          },
+          {
+            "name": "trivial",
+            "meaning": " adj. 平凡的，平常的，不重要的，轻微的，琐细的",
+            "structurare": "-al形容词后缀"
+          },
+          {
+            "name": "nontrivial",
+            "meaning": "adj. 非平凡的",
+            "structurare": ""
+          },
+          {
+            "name": "trivailly",
+            "meaning": "adv. 琐细地；很一般的；无能地；平凡地",
+            "structurare": ""
+          },
+          {
+            "name": "triviality",
+            "meaning": "n. 琐事，琐碎，平凡",
+            "structurare": ""
+          },
+          {
+            "name": "trivialize",
+            "meaning": "vt. <贬>使显得琐碎[不重要、不难等]，轻视",
+            "structurare": ""
+          },
+          {
+            "name": "trivialization",
+            "meaning": "n. 平凡化；浅薄化；",
+            "structurare": ""
+          },
+          {
+            "name": "deviant",
+            "meaning": "n. 不正常的人，异常的人 adj. 不正常的，异常的；离经叛道的",
+            "structurare": "de- 向下，离开 + -vi- 路 ---- 离开路 ---- 偏离正道，不正常 + -ant 名词后缀"
+          },
+          {
+            "name": "deviate",
+            "meaning": "v. 背离(正道)，偏离",
+            "structurare": ""
+          },
+          {
+            "name": "deviation",
+            "meaning": "n. 背离，偏离，偏向，偏差",
+            "structurare": ""
+          },
+          {
+            "name": "deviationist",
+            "meaning": "n. 叛离正道者，(政党的)异端分子",
+            "structurare": ""
+          },
+          {
+            "name": "devious",
+            "meaning": " adj. 远离大道的，偏远的，偏僻的，离开正道的",
+            "structurare": ""
+          },
+          {
+            "name": "deviously",
+            "meaning": "adv. 弯曲地，绕道地",
+            "structurare": ""
+          },
+          {
+            "name": "deviance",
+            "meaning": "n. 偏常，异常，异常行为",
+            "structurare": ""
+          },
+          {
+            "name": "deviancy",
+            "meaning": " n. 偏常；不正常；偏常性；变异性",
+            "structurare": ""
+          },
+          {
+            "name": "deviated",
+            "meaning": " v. 偏离，越轨 (deviate 的过去式和过去分词 )",
+            "structurare": ""
+          },
+          {
+            "name": "viatic",
+            "meaning": "adj. 道路的，旅行的",
+            "structurare": ""
+          },
+          {
+            "name": "viameter",
+            "meaning": "n. 路程计，车程表",
+            "structurare": ""
+          },
+          {
+            "name": "viaduct",
+            "meaning": "n. 高架桥，跨线桥，旱桥，栈桥",
+            "structurare": ""
+          },
+          {
+            "name": "voyage",
+            "meaning": "n. 航行；航程；旅行记 vi. 航行；航海 vt. 飞过；渡过",
+            "structurare": "-voy- 路 ---- 航行 + -age 名词或动词后缀",
+            "from":"来源法语voiage, 旅行，航程,词源同via, way, 后主要指航海"
+          },
+          {
+            "name": "voyager",
+            "meaning": "n. 航海者，航行者",
+            "structurare": ""
+          },
+          {
+            "name": "voyageur",
+            "meaning": "n. 加拿大的船夫或樵夫；旅客",
+            "structurare": ""
+          },
+          {
+            "name": "convoy",
+            "meaning": "n. 护送；护卫；护航队 vt. 护航；护送",
+            "structurare": ""
+          },
+          {
+            "name": "envoy",
+            "meaning": "n. 使者；全权公使",
+            "structurare": ""
+          },
+          {
+            "name": "covey",
+            "meaning": "n. 一队；一群",
+            "structurare": "co- 在一起 + -vey- 路 ---- 在一起上路，一队"
+          },
+          {
+            "name": "convey",
+            "meaning": "vt. 传达；运输；让与",
+            "structurare": "con- 强调 + -vey- 路 ---- 输送"
+          },
+          {
+            "name": "conveyor",
+            "meaning": " n. 输送机，[机] 传送机；传送带；运送者，传播者",
+            "structurare": ""
+          },
+          {
+            "name": "conveyer",
+            "meaning": "n. [机] 输送机；运输器",
+            "structurare": ""
+          },
+          {
+            "name": "conveyance",
+            "meaning": "n. 运输；运输工具；财产让与",
+            "structurare": ""
+          },
+          {
+            "name": "away",
+            "meaning": "adv. 离去，离开；在远处",
+            "structurare": "a- 原理 + -way- 路 ---- 离开"
+          },
+          {
+            "name": "always",
+            "meaning": "adv. 永远，一直；总是；常常",
+            "structurare": "al- = all 全 + -way- 路  + -s副词后缀"
+          },
+          {
+            "name": "anyway",
+            "meaning": "adv. 无论如何，不管怎样；总之",
+            "structurare": ""
+          },
+          {
+            "name": "highway",
+            "meaning": "n. 公路，大路；捷径",
+            "structurare": ""
+          },
+          {
+            "name": "hallway",
+            "meaning": "n. 走廊；门厅；玄关",
+            "structurare": ""
+          },
+          {
+            "name": "doorway",
+            "meaning": "n. 门口；途径",
+            "structurare": ""
+          },
+          {
+            "name": "halfway",
+            "meaning": " adv. 到一半；在中途 adj. 中途的；不彻底的",
+            "structurare": ""
+          },
+          {
+            "name": "runway",
+            "meaning": "n. 跑道；河床；滑道",
+            "structurare": ""
+          },
+          {
+            "name": "runaway",
+            "meaning": " adj. 逃亡的；逃走的 n. 逃跑；逃走的人",
+            "structurare": ""
+          },
+          {
+            "name": "pathway",
+            "meaning": "n. 路，道；途径，路径",
+            "structurare": ""
+          },
+          {
+            "name": "underway",
+            "meaning": "adj. 进行中的；起步的；航行中的 n. [公路] 水底通道",
+            "structurare": ""
+          },
+          {
+            "name": "sideways",
+            "meaning": "adv. 向侧面地；向一旁 adj. 向侧面的；一旁的",
+            "structurare": ""
+          },
+          {
+            "name": "railway",
+            "meaning": "n.（英）铁路；轨道；铁道部门 vi. 乘火车旅行",
+            "structurare": ""
+          },
+          {
+            "name": "fairway",
+            "meaning": "n. 航路；水上飞机升降用的水面跑道；（高尔夫球场上的）平坦球道",
+            "structurare": ""
+          },
+          {
+            "name": "waterway",
+            "meaning": "n. 航道；水路；排水沟",
+            "structurare": ""
+          },
+          {
+            "name": "walkway",
+            "meaning": "n. 通道，[建] 走道",
+            "structurare": ""
+          },
+          {
+            "name": "gateway",
+            "meaning": "n. 门；网关；方法；通道；途径",
+            "structurare": ""
+          },
+          {
+            "name": "stairway",
+            "meaning": "n. 阶梯，楼梯",
+            "structurare": ""
+          },
+          {
+            "name": "getaway",
+            "meaning": "n. 逃走；逃跑；短假；适合旅行的地方",
+            "structurare": ""
+          },
+          {
+            "name": "roadway",
+            "meaning": "n. 道路；路面；车行道；铁路的路基",
+            "structurare": ""
+          },
+          {
+            "name": "one-way",
+            "meaning": "adj. 单程的；单行道的；单方面的",
+            "structurare": ""
+          },
+          {
+            "name": "two-way",
+            "meaning": "adj. 双向的；相互的；两路的",
+            "structurare": ""
+          }
+      ]
+      }
+    ]

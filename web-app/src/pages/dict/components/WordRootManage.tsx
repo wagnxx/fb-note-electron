@@ -548,7 +548,7 @@ const WordRootManage = () => {
   }, [getTableData, isAuthenticated])
 
   return (
-    <div className=" mx-auto p-6 bg-white">
+    <div className=" mx-auto p-6 bg-white box-border">
       <Space style={{ marginBottom: 16 }} className=" items-start">
         <Input.Search
           size="small"
@@ -576,7 +576,7 @@ const WordRootManage = () => {
             loading={loading}
             bordered
             size="small"
-            scroll={{ y: 700 }}
+            scroll={{ y: 600 }}
             dataSource={filteredData} // 使用分页后的数据
             columns={mergedColumns as ColumnType<TableRow>[]}
             rowClassName="editable-row"
