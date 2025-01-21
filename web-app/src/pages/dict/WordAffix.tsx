@@ -99,7 +99,7 @@ const WordAffix = () => {
   ]
 
   return (
-    <div className=" container mx-auto bg-red-300  " style={{ height: 'calc(100vh - 28px)' }}>
+    <div className=" mx-auto  bg-gray-200  " style={{ height: 'calc(100vh - 28px)' }}>
       {isLoading ? (
         <div className=" w-full   h-full flex justify-center items-center">
           <Spin indicator={<LoadingOutlined spin />} size="large" />

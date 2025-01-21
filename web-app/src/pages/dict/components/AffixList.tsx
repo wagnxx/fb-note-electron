@@ -5,7 +5,7 @@ import AffixForm from './AffixForm'
 import { DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { getDuplicateKeys, hasDuplicate } from '@/utils/utilsArray'
-import { batchUpdateWordAffix } from '@/service/dict'
+import { batchUpdateWordAffix, getWordAffixRow } from '@/service/dict'
 import { useNotification } from '@/hooks/useNotification'
 
 export type AffixType = {
@@ -120,11 +120,17 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
     onDelete(id)
   }
 
-  const handleSave = (updatedAffix: AffixType) => {
+  const handleSave = async (updatedAffix: AffixType) => {
     if (editingAffix?.id) {
       onEdit(editingAffix.id, updatedAffix)
     } else {
-      onAdd(updatedAffix)
+      const exist = await getWordAffixRow(updatedAffix.affix)
+
+      if (!exist.length) {
+        onAdd(updatedAffix)
+      } else {
+        showNotification('error', `[${updatedAffix.affix.toLocaleString()}] is existed`, 'message')
+      }
     }
     setIsModalVisible(false)
   }
@@ -172,15 +178,23 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
         <div className="p-3 opacity-40">
           <Input
             allowClear={true}
-            placeholder="Search Affix"
+            placeholder="Keyword, fuzzy search with %."
             onChange={e => setFilteredInfo({ affix: e.target.value ? [e.target.value] : null })}
+            style={{ width: '240px' }}
           />
         </div>
       ),
       onFilter: (value: boolean | Key, record: AffixType) => {
         console.log('filter value: ', value)
-        if (!value) return true
-        return record.affix.some(af => af.includes(value as unknown as string)) // 模糊匹配
+        const inputStr = value as unknown as string
+        if (!inputStr) return true
+
+        if (inputStr.startsWith('%')) {
+          const validStr = inputStr.slice(1)
+          return record.affix.some(af => af.includes(validStr)) // 模糊匹配
+        } else {
+          return record.affix.includes(inputStr)
+        }
       },
       filteredValue: filteredInfo.affix || null, // 确保是 string[] 或 null
       filterIcon: (filtered: boolean) => <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />,
@@ -273,10 +287,10 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
           <Table
             dataSource={dataSource}
             columns={columns}
-            rowKey="key"
+            rowKey="id"
             size="small"
             pagination={{ pageSize: 50 }}
-            scroll={{ y: 500 }}
+            scroll={{ y: 560 }}
             onChange={handleFilterChange}
           />
         </SortableContext>

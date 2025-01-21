@@ -1,14 +1,14 @@
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Table, Button, Popconfirm, Space, Input, Switch, Tooltip, Tag } from 'antd'
 import { ColumnType } from 'antd/es/table'
-import { addWordRoot, batchUpdateWordRoot, deleteWordRoot, getWordRoots } from '@/service/dict'
+import { addWordRoot, batchUpdateWordRoot, deleteWordRoot, getWordRootRow, getWordRoots } from '@/service/dict'
 import { useAuth } from '@/context/AuthContext'
 import { closestCenter, DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { hasCommonElements, hasDuplicate } from '@/utils/utilsArray'
 import { useNotification } from '@/hooks/useNotification'
 import { copyText } from '@/utils/utilsClipboard'
-import { CheckOutlined, DeleteOutlined, EditOutlined, FileImageOutlined } from '@ant-design/icons'
+import { CheckOutlined, CloseOutlined, DeleteOutlined, EditOutlined, FileImageOutlined } from '@ant-design/icons'
 import { ArrowUturnLeftIcon } from '@heroicons/react/24/solid'
 
 import { getAllScreenshotDoc, ScreenshotDocType } from '@/service/screenshotDoc'
@@ -108,7 +108,10 @@ const WordRootManage = () => {
   }, [filteredData])
 
   const handleChangeWordsText = (val: string, rowKey: number) => {
-    let arr = val.split('/')
+    let arr = val
+      .split('/')
+      .map(item => item.trim())
+      .filter(Boolean)
     setDataSource(preData => {
       return preData.map(item => {
         if (item.key === editingKey) {
@@ -292,6 +295,7 @@ const WordRootManage = () => {
             <Button
               size="small"
               type="text"
+              disabled={editingKey !== null && editingKey !== record.key}
               onClick={() => {
                 setEditingKey(editingKey === record.key ? null : record.key)
               }}
@@ -302,9 +306,12 @@ const WordRootManage = () => {
                 <EditOutlined className="size-5" />
               )}
             </Button>
-            <Popconfirm title="确定保存?" onConfirm={() => handleSave(record.key)}>
-              <CheckOutlined className="size-5 text-green-500" />
-            </Popconfirm>
+
+            {editingKey === record.key && (
+              <Popconfirm title="确定保存?" onConfirm={() => handleSave(record.key)}>
+                <CheckOutlined className="size-5 text-green-500" />
+              </Popconfirm>
+            )}
           </Space>
         ) : null,
     },
@@ -331,7 +338,15 @@ const WordRootManage = () => {
           }
         >
           <div style={{ pointerEvents: 'none', userSelect: 'none' }}>
-            {col.isBoolean ? (record[col.dataIndex as keyof WordRootType] ? '√' : '×') : text}
+            {col.isBoolean ? (
+              record[col.dataIndex as keyof WordRootType] ? (
+                <Button icon={<CheckOutlined />} type="text" />
+              ) : (
+                <Button icon={<CloseOutlined />} type="text" danger />
+              )
+            ) : (
+              text
+            )}
           </div>
         </EditableTableCell>
       ),
@@ -521,6 +536,13 @@ const WordRootManage = () => {
   const onAddRoot = async ({ root, meaning, wordCount }: Partial<WordRootType>) => {
     if (!root) return
 
+    const exist = await getWordRootRow(root)
+    if (exist.length) {
+      showNotification('error', `[${root.toLocaleString()} is existed.]`, 'message')
+      setAddRootModalVisible(false)
+      return
+    }
+
     const tar = {
       key: pageTotal + 1,
       root: root,
@@ -548,43 +570,44 @@ const WordRootManage = () => {
   }, [getTableData, isAuthenticated])
 
   return (
-    <div className=" mx-auto p-6 bg-white box-border">
-      <Space style={{ marginBottom: 16 }} className=" items-start">
-        <Input.Search
-          size="small"
-          placeholder="搜索词根或词义"
-          value={searchText}
-          onChange={e => handleSearch(e.target.value)}
-          style={{ marginBottom: 8 }}
-        />
-        <Button onClick={handleAdd} type="primary" size="small">
-          添加
-        </Button>
-        <Button onClick={handleSync} type="primary" size="small" disabled={editedKeys.current.size === 0}>
-          Sync Data
-        </Button>
-        <Button onClick={handleSyncKeys} type="primary" size="small">
-          Sync Keys
-        </Button>
-        <Button onClick={handleCopyURL} type="primary" size="small">
-          Copy Page URL
-        </Button>
-      </Space>
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-        <SortableContext items={filteredData.map(item => item.key)} strategy={verticalListSortingStrategy}>
-          <Table
-            loading={loading}
-            bordered
+    <>
+      <div className=" mx-auto p-6 bg-white box-border">
+        <Space style={{ marginBottom: 16 }} className=" items-start">
+          <Input.Search
             size="small"
-            scroll={{ y: 600 }}
-            dataSource={filteredData} // 使用分页后的数据
-            columns={mergedColumns as ColumnType<TableRow>[]}
-            rowClassName="editable-row"
-            pagination={paginationConfig} // 配置分页
+            placeholder="搜索词根或词义"
+            value={searchText}
+            onChange={e => handleSearch(e.target.value)}
+            style={{ marginBottom: 8 }}
           />
-        </SortableContext>
-      </DndContext>
-
+          <Button onClick={handleAdd} type="primary" size="small">
+            添加
+          </Button>
+          <Button onClick={handleSync} type="primary" size="small" disabled={editedKeys.current.size === 0}>
+            Sync Data
+          </Button>
+          <Button onClick={handleSyncKeys} type="primary" size="small">
+            Sync Keys
+          </Button>
+          <Button onClick={handleCopyURL} type="primary" size="small">
+            Copy Page URL
+          </Button>
+        </Space>
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+          <SortableContext items={filteredData.map(item => item.key)} strategy={verticalListSortingStrategy}>
+            <Table
+              loading={loading}
+              bordered
+              size="small"
+              scroll={{ y: 600 }}
+              dataSource={filteredData} // 使用分页后的数据
+              columns={mergedColumns as ColumnType<TableRow>[]}
+              rowClassName="editable-row"
+              pagination={paginationConfig} // 配置分页
+            />
+          </SortableContext>
+        </DndContext>
+      </div>
       <ModalForm
         visible={addRootModalVisible}
         onSubmit={onAddRoot}
@@ -598,7 +621,7 @@ const WordRootManage = () => {
         onClose={() => setScreenModalVisible(false)}
         Child={ScreenDocScanner}
       />
-    </div>
+    </>
   )
 }
 

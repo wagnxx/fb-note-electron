@@ -1,0 +1,385 @@
+[
+    {
+      "name": "script",
+      "siblings": [
+        "scrib",
+        "scrip"
+      ],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "古代，在墨水发明之前，人们都是用铭刻的方式来写字的，即用尖刻之物在竹简、木板、泥版、蜡板等书写材料上刻画。所以在英语单词中，表示“写”的单词 scribe 及由此衍生的词根 scribe-还含有“刻”的含义。如 inscribe,既表示“题写”，也表示“铭记”。英语单词 scribe 来自拉丁语 scribere, 本意是“刻”。与它同源的单词有: script(脚本)、prescribe(开处方)、describe(描述)、manuscript(手稿)、circumscribe(限制)。而英语中表示“写”的更常用单词write来自古日耳曼语, 本意是scratch(刮擦)",
+      "extension": "写/刻",
+      "group": [
+    
+          {
+            "name": "scrip",
+            "meaning": "n. 便条；纸条；纸片；临时凭证",
+            "structurare": ""
+          },
+          {
+            "name": "scripting",
+            "meaning": "v. 为电影（或戏剧等）写剧本( script 的现在分词 )",
+            "structurare": ""
+          },
+          {
+            "name": "scribe",
+            "meaning": "n. （印刷术发明之前的）抄写员，抄书吏；作家；划线器",
+            "structurare": ""
+          },
+          {
+            "name": "scribal",
+            "meaning": "adj. 抄写的；抄写员的",
+            "structurare": ""
+          },
+          {
+            "name": "scriptorium",
+            "meaning": "n. 写字间",
+            "structurare": "-script- + -or- + -i- + -um名词后缀"
+          },
+          {
+            "name": "script",
+            "meaning": "n.（一种语言的）书写字母；脚本；手迹",
+            "structurare": ""
+          },
+          {
+            "name": "scripted",
+            "meaning": "v. 为电影（或戏剧等）写剧本( script 的过去式和过去分词)",
+            "structurare": ""
+          },
+          {
+            "name": "subscript",
+            "meaning": "adj. 下标的，写在下方的，脚注的 n. 下标，脚注，下角数码",
+            "structurare": ""
+          },
+          {
+            "name": "unscripted",
+            "meaning": "adj. 不用稿子的，不用剧本的",
+            "structurare": ""
+          },
+          {
+            "name": "scribble",
+            "meaning": "vt. & vi. 潦草地书写；乱写，胡写；滥写（文学作品等）； [印，纺]粗梳n. 潦草书写；乱写；拙劣文字；粗制滥造的文章 vi. 乱写，乱涂",
+            "structurare": "-scrib(b)- 写，草写 + -le动词或名词后缀; 来自scribe, 写，-le 表反复，引申义乱写，乱画"
+          },
+          {
+            "name": "scribbled",
+            "meaning": "v. 潦草的书写 ( scribble 的过去式和过去分词); 乱画; 草草地写",
+            "structurare": ""
+          },
+          {
+            "name": "scribbling",
+            "meaning": "n. 乱涂[写]胡[乱]写的文章[作品]",
+            "structurare": ""
+          },
+          {
+            "name": "scribbler",
+            "meaning": "n. 潦草写字的人，三流作家，小文人",
+            "structurare": ""
+          },
+          {
+            "name": "scripture",
+            "meaning": "n. 手稿",
+            "structurare": "-ure 名词后缀，引申词义经文，经典"
+          },
+          {
+            "name": "scriptural",
+            "meaning": "adj. 圣经的；手稿的；依据圣经的",
+            "structurare": "-al 形容词后缀"
+          },
+          {
+            "name": "scripturally",
+            "meaning": "adv. 根据圣经地",
+            "structurare": ""
+          },
+          {
+            "name": "scriptwriter",
+            "meaning": "n.（电影的）编剧",
+            "structurare": ""
+          },
+          {
+            "name": "rescript",
+            "meaning": "n. 法令；布告；抄件",
+            "structurare": ""
+          },
+          {
+            "name": "describe",
+            "meaning": "vt. 描述，形容；描绘",
+            "structurare": ""
+          },
+          {
+            "name": "nondescript",
+            "meaning": "adj. 无明显特征的，难以形容的 n. 难以形容或归类的人或物",
+            "structurare": ""
+          },
+          {
+            "name": "misdescribe",
+            "meaning": "adj. 错误的描述",
+            "structurare": ""
+          },
+          {
+            "name": "descriptor",
+            "meaning": "n. 描述符",
+            "structurare": ""
+          },
+          {
+            "name": "described",
+            "meaning": "adj. 被看到的，被发现的",
+            "structurare": ""
+          },
+          {
+            "name": "describer",
+            "meaning": "n. 描写者；制图者",
+            "structurare": ""
+          },
+          {
+            "name": "description",
+            "meaning": "n. 描述，描写；类型；说明书；记述",
+            "structurare": ""
+          },
+          {
+            "name": "descriptive",
+            "meaning": "adj. 描写的，叙述的；描写性的",
+            "structurare": ""
+          },
+          {
+            "name": "descriptively",
+            "meaning": " adv. 叙述地",
+            "structurare": ""
+          },
+          {
+            "name": "describable",
+            "meaning": "adj. 可记述的；可描写的",
+            "structurare": ""
+          },
+          {
+            "name": "indescribable",
+            "meaning": "adj. 难以形容的；莫名其妙的",
+            "structurare": ""
+          },
+          {
+            "name": "indescribably",
+            "meaning": "adv. 难以形容地，无法描述地",
+            "structurare": ""
+          },
+          {
+            "name": "scripting",
+            "meaning": "v. 为电影（或戏剧等）写剧本(script 的现在分词)",
+            "structurare": ""
+          },
+          {
+            "name": "redescription",
+            "meaning": "n. 描述; 形容; 种类; 类型",
+            "structurare": ""
+          },
+          {
+            "name": "subscription-based",
+            "meaning": "adj. 基于订阅的",
+            "structurare": ""
+          },
+          {
+            "name": "self-described",
+            "meaning": "adj. 自我描述的",
+            "structurare": ""
+          },
+          {
+            "name": "self-description",
+            "meaning": "n. 自描述",
+            "structurare": ""
+          },
+          {
+            "name": "prescribe",
+            "meaning": "vt. 指定，规定; 指定，规定 vi. 建立规定，法律或指示; 开处方，给医",
+            "structurare": "pre- 在前，早于，预先 + -scrib- 写 ---- 商定建立好的规则 + -e动词后缀。词源同describe"
+          },
+          {
+            "name": "prescribed",
+            "meaning": "adj. 规定的，法定的",
+            "structurare": ""
+          },
+          {
+            "name": "prescribing",
+            "meaning": "v. 开药方( prescribe 的现在分词 ); 指示; 规定; 指定遵守",
+            "structurare": ""
+          },
+          {
+            "name": "prescription",
+            "meaning": "n. 处方",
+            "structurare": ""
+          },
+          {
+            "name": "prescription-only",
+            "meaning": "n. 处方",
+            "structurare": ""
+          },
+          {
+            "name": "prescription-drug",
+            "meaning": "n. 处方药",
+            "structurare": ""
+          },
+          {
+            "name": "prescriptive",
+            "meaning": "adj. 规定的; 指定的; 约定俗成的; 惯例的",
+            "structurare": ""
+          },
+          {
+            "name": "manuscript",
+            "meaning": "n. [图情] 手稿；原稿；手稿 adj. 手写的",
+            "structurare": "-manu- 手 + -script- 写"
+          },
+          {
+            "name": "subscribe",
+            "meaning": "vt. 签署；赞成；捐助",
+            "structurare": ""
+          },
+          {
+            "name": "subscriber",
+            "meaning": "n. 订户；签署者；捐献者",
+            "structurare": ""
+          },
+          {
+            "name": "subscription",
+            "meaning": "n. 捐献；订阅；订金；签署",
+            "structurare": ""
+          },
+          {
+            "name": "transcribe",
+            "meaning": "vt. 转录；抄写",
+            "structurare": ""
+          },
+          {
+            "name": "transcribed",
+            "meaning": "v. 转录 transcribe 的过去式和过去分词",
+            "structurare": ""
+          },
+          {
+            "name": "transcriber",
+            "meaning": "n. [计] 信息转换器；[计] 转录器；誊写员",
+            "structurare": ""
+          },
+          {
+            "name": "transcript",
+            "meaning": " n. 成绩单；抄本，副本",
+            "structurare": ""
+          },
+          {
+            "name": "transcription",
+            "meaning": "n. 抄本; 抄写; 录音; 翻译",
+            "structurare": ""
+          },
+          {
+            "name": "transcriptional",
+            "meaning": "n. 转录 adj. 转录的",
+            "structurare": ""
+          },
+          {
+            "name": "transcriptase",
+            "meaning": "n. [生化] 转录酶",
+            "structurare": ""
+          },
+          {
+            "name": "inscribe",
+            "meaning": "v. 题写，刻写；题献；铭记",
+            "structurare": ""
+          },
+          {
+            "name": "inscribed",
+            "meaning": "v. 写，刻( inscribe 的过去式和过去分词); 内接",
+            "structurare": ""
+          },
+          {
+            "name": "inscription",
+            "meaning": "n. 题词；铭文；刻印",
+            "structurare": ""
+          },
+          {
+            "name": "reinscription",
+            "meaning": "n. 重刻铭文；重题题词",
+            "structurare": ""
+          },
+          {
+            "name": "circumscribe",
+            "meaning": "vt. 外切，外接",
+            "structurare": ""
+          },
+          {
+            "name": "circumscribed",
+            "meaning": "adj. [医]局限的：受限制或限于有限空间的",
+            "structurare": ""
+          },
+          {
+            "name": "well-circumscribed",
+            "meaning": "adj. [医]边界清楚的",
+            "structurare": ""
+          },
+          {
+            "name": "circumscription",
+            "meaning": "n. 界限；划界；定义",
+            "structurare": ""
+          },
+          {
+            "name": "conscript",
+            "meaning": "n. 被征入伍者 adj. 被征入伍的 vt. 征兵",
+            "structurare": ""
+          },
+          {
+            "name": "conscription",
+            "meaning": "n. 征兵；征兵制度；征用",
+            "structurare": ""
+          },
+          {
+            "name": "conscribe",
+            "meaning": "vt. 征召入伍",
+            "structurare": ""
+          },
+          {
+            "name": "ascribe",
+            "meaning": "vt. 归因于；归咎于",
+            "structurare": "a- 远离 ---- 分离 + -scrib- 写 ---- 一边写 ---- 一边倒 ---- 归咎于 + -e动词后缀"
+          },
+          {
+            "name": "ascribed",
+            "meaning": "adj. 归于",
+            "structurare": ""
+          },
+          {
+            "name": "ascription",
+            "meaning": "n. 归属；归因；赞美上帝的话",
+            "structurare": ""
+          },
+          {
+            "name": "ascriptive",
+            "meaning": "adj. 涉及原因归属问题的；归属性的；可归因于……的",
+            "structurare": ""
+          },
+          {
+            "name": "proscribe",
+            "meaning": "vt. 正式宣布（某事物）有危险或被禁止",
+            "structurare": "pro- 在前，提前 + -scrib- 写 ---- 提前的约定 ----- 规定 ---- 禁止 + -e动词后缀; 词源同 describe,prescribe,即写在前面的话，引申义为禁令，禁止"
+          },
+          {
+            "name": "proscribed",
+            "meaning": "adj. 被禁止使用或提及",
+            "structurare": ""
+          },
+          {
+            "name": "proscription",
+            "meaning": "n. 禁止；放逐；剥夺人权",
+            "structurare": ""
+          },
+          {
+            "name": "postscript",
+            "meaning": "n. 附言；又及",
+            "structurare": ""
+          },
+          {
+            "name": "typescript",
+            "meaning": "n. 打字文件",
+            "structurare": ""
+          },
+          {
+            "name": "superscript",
+            "meaning": "adj. 标在上方的 n. 上标",
+            "structurare": ""
+          } ]
+      }
+    ]

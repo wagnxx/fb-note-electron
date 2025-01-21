@@ -7,14 +7,7 @@ import {
   getFieldValues,
 } from '@/firebase/db'
 import { auth } from '@/firebase/authService'
-import {
-  FieldValue,
-  limit,
-  orderBy,
-  QueryConstraint,
-  serverTimestamp,
-  startAfter,
-} from 'firebase/firestore'
+import { FieldValue, limit, orderBy, QueryConstraint, serverTimestamp, startAfter, where } from 'firebase/firestore'
 
 import { AffixType } from '@/pages/dict/components/AffixList'
 import { WordRootType } from '@/pages/dict/components/WordRootManage'
@@ -41,6 +34,14 @@ export const addWordRoot = (doc: RootDocType) => {
   }
   return Promise.reject('logout')
 }
+export const getWordRootRow = async (texts: string[]) => {
+  if (!auth?.currentUser?.uid) {
+    return Promise.reject('logout')
+  }
+
+  return getFieldValues(COL_WORD_ROOT, 'all', [where('affix', 'array-contains-any', texts)])
+}
+
 export const batchUpdateWordRoot = (docs: Partial<RootDocType>[]) => {
   if (auth?.currentUser?.uid) {
     docs.map(doc => {
@@ -84,11 +85,7 @@ export const getWordRoots = async ({
     // orderBy('createTime', 'desc'),
   ].filter(Boolean)
 
-  const data = await getFieldValues<RootDocType>(
-    COL_WORD_ROOT,
-    'all',
-    conditions as QueryConstraint[],
-  )
+  const data = await getFieldValues<RootDocType>(COL_WORD_ROOT, 'all', conditions as QueryConstraint[])
 
   return {
     total: total,
@@ -136,4 +133,12 @@ export const getWordAffix = async () => {
   const data = await getFieldValues(COL_WORD_AFFIX, 'all', conditions as QueryConstraint[])
 
   return data
+}
+
+export const getWordAffixRow = async (texts: string[]) => {
+  if (!auth?.currentUser?.uid) {
+    return Promise.reject('logout')
+  }
+
+  return getFieldValues(COL_WORD_AFFIX, 'all', [where('affix', 'array-contains-any', texts)])
 }
