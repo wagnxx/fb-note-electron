@@ -1,0 +1,279 @@
+[
+    {
+      "name": "flu",
+      "siblings": [
+        "flux"
+      ],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "来源于拉丁语 fluere 流动。-flux-为-flu-的变体",
+      "extension": "流出/流利/流畅",
+      "group": [
+          {
+            "name": "flu",
+            "meaning": "n. (=influenza) 流行性感冒",
+            "structurare": "I got flu. 我得流感了"
+          },
+          {
+            "name": "fluent",
+            "meaning": "adj. 流动的，流畅的，(语言)流利的",
+            "structurare": "-ent 形容词后缀"
+          },
+          {
+            "name": "fluence",
+            "meaning": "n. （神秘的）影响；[物] 积分通量",
+            "structurare": ""
+          },
+          {
+            "name": "fluently",
+            "meaning": "adv. 流利地；通畅地",
+            "structurare": ""
+          },
+          {
+            "name": "fluency",
+            "meaning": "n. 流利；流畅",
+            "structurare": ""
+          },
+          {
+            "name": "influent",
+            "meaning": "测试",
+            "structurare": ""
+          },
+          {
+            "name": "influencing",
+            "meaning": "adj. 影响的",
+            "structurare": ""
+          },
+          {
+            "name": "influenza",
+            "meaning": " n. 流行性感冒",
+            "structurare": ""
+          },
+          {
+            "name": "influence",
+            "meaning": "n. 影响，感动，势力 v. 感化，影响，对…有作用，左右",
+            "structurare": ""
+          },
+          {
+            "name": "influenced",
+            "meaning": "adj. 受影响的",
+            "structurare": ""
+          },
+          {
+            "name": "uninfluenced",
+            "meaning": "adj. 未受影响的；自主行动的；公正的",
+            "structurare": ""
+          },
+          {
+            "name": "influential",
+            "meaning": " adj. 有影响的，施以影响的",
+            "structurare": ""
+          },
+          {
+            "name": "uninfluential",
+            "meaning": "adj. 不产生影响的，没有影响的",
+            "structurare": ""
+          },
+          {
+            "name": "confluent",
+            "meaning": "adj. 合流的，汇合的",
+            "structurare": ""
+          },
+          {
+            "name": "confluence",
+            "meaning": "n. 合流，汇合，合流点，汇合处，汇流而成的河",
+            "structurare": ""
+          },
+          {
+            "name": "fluid",
+            "meaning": "adj. 流动的，液体的 n. 流体，液",
+            "structurare": ""
+          },
+          {
+            "name": "fluidity",
+            "meaning": "n. 流动性，流度",
+            "structurare": ""
+          },
+          {
+            "name": "fluid-filled",
+            "meaning": "adj. 充以流体的",
+            "structurare": ""
+          },
+          {
+            "name": "fluidly",
+            "meaning": "adv. 流动地；不定地；液体地；流畅地",
+            "structurare": ""
+          },
+          {
+            "name": "fluidize",
+            "meaning": "vt. 使流体化；使液化",
+            "structurare": ""
+          },
+          {
+            "name": "fluidized",
+            "meaning": "adj. 流态化的；沸腾的",
+            "structurare": ""
+          },
+          {
+            "name": "superfluity",
+            "meaning": "n. 奢侈品；额外；过剩",
+            "structurare": "super- 在前"
+          },
+          {
+            "name": "superfluid",
+            "meaning": "n. 超流体 adj. 超流体性的",
+            "structurare": ""
+          },
+          {
+            "name": "superfluidity",
+            "meaning": "n. [低温] 超流动性；超流态",
+            "structurare": ""
+          },
+          {
+            "name": "superfluous",
+            "meaning": "adj. 多余的；不必要的；奢侈的",
+            "structurare": ""
+          },
+          {
+            "name": "refluent",
+            "meaning": "adj. 倒流的，退潮的",
+            "structurare": ""
+          },
+          {
+            "name": "refluence",
+            "meaning": "n. 倒流，逆流，回流，退潮",
+            "structurare": ""
+          },
+          {
+            "name": "defluent",
+            "meaning": "adj. 向下流的",
+            "structurare": ""
+          },
+          {
+            "name": "circumfluent",
+            "meaning": "adj. 周流的，环流的",
+            "structurare": ""
+          },
+          {
+            "name": "effluent",
+            "meaning": "adj. 流出的，发出的",
+            "structurare": ""
+          },
+          {
+            "name": "interfluent",
+            "meaning": "adj. 交流的，流在中间的",
+            "structurare": "inter- 相互"
+          },
+          {
+            "name": "flux",
+            "meaning": "n. 流，流出，流动，变动",
+            "structurare": ""
+          },
+          {
+            "name": "fluxion",
+            "meaning": "n. 流动，流出物，变动",
+            "structurare": ""
+          },
+          {
+            "name": "fluxional",
+            "meaning": "adj. 流动的，变动的",
+            "structurare": ""
+          },
+          {
+            "name": "afflux",
+            "meaning": "n. 流向，流入",
+            "structurare": ""
+          },
+          {
+            "name": "efflux",
+            "meaning": "n. 流出；消逝；流出物；结束",
+            "structurare": ""
+          },
+          {
+            "name": "reflux",
+            "meaning": "n. 回流；倒流；逆流",
+            "structurare": ""
+          },
+          {
+            "name": "influx",
+            "meaning": "n. 流入",
+            "structurare": ""
+          },
+          {
+            "name": "flush",
+            "meaning": " n. 激动，洋溢；面红；萌芽；旺盛；奔流 vt. 使齐平；发红，使发亮；用水冲洗；使激动vi. 发红，脸红；奔涌；被冲洗 adj. 大量的；齐平的；丰足的，洋溢的；挥霍的",
+            "structurare": ""
+          },
+          {
+            "name": "flush-mounted",
+            "meaning": " adj. 找平安装；嵌装",
+            "structurare": ""
+          },
+          {
+            "name": "flushed",
+            "meaning": "adj. 激动的；心情愉快的",
+            "structurare": ""
+          },
+          {
+            "name": "flushing",
+            "meaning": "n. 脸红 adj. 使人脸红的",
+            "structurare": ""
+          },
+          {
+            "name": "affluent",
+            "meaning": "adj. 富裕的；丰富的；流畅的 n. 支流；富人",
+            "structurare": ""
+          },
+          {
+            "name": "affluence",
+            "meaning": "n. 富裕；丰富；流入；汇聚",
+            "structurare": ""
+          },
+          {
+            "name": "flue",
+            "meaning": "n. 烟道；暖气管；蓬松的东西；钩爪；渔网（等于 flew）",
+            "structurare": ""
+          },
+          {
+            "name": "flu-like",
+            "meaning": "adj. 类似感冒的",
+            "structurare": ""
+          },
+          {
+            "name": "flume",
+            "meaning": "n. 水道；笕槽；引水槽 vt. 用引水槽输送；用引水槽引",
+            "structurare": ""
+          },
+          {
+            "name": "mellifluous",
+            "meaning": "adj. 流畅的；如蜜般的",
+            "structurare": ""
+          },
+          {
+            "name": "fluvial",
+            "meaning": "fluvial",
+            "structurare": ""
+          },
+          {
+            "name": "influence-peddling",
+            "meaning": "n. 招权纳贿；以权谋私",
+            "structurare": ""
+          },
+          {
+            "name": "microfluidic",
+            "meaning": "n. 微流体",
+            "structurare": ""
+          },
+          {
+            "name": "flue-cured",
+            "meaning": "adj. 熏制的；烤干的；烤烟的",
+            "structurare": ""
+          },
+          {
+            "name": "fluoroscopy",
+            "meaning": "n. [特医] 荧光镜检查；X 线透视检查",
+            "structurare": ""
+          }
+      ]
+      }
+    ]

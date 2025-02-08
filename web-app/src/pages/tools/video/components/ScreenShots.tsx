@@ -51,17 +51,8 @@ const normalizeTime = (time: string): string => {
 
 type ScreenTypes = Prop & { _renderCount: number; _refreshPage: () => void }
 // type ScreenTypes = Prop
-const ScreenShots: FC<ScreenTypes> = ({
-  doc,
-  video,
-  onSaveScreenshot,
-  onJumpTo,
-  _renderCount,
-  _refreshPage,
-}) => {
-  const [imageSizes, setImageSizes] = useState<Record<string, { width: number; height: number }>>(
-    {},
-  )
+const ScreenShots: FC<ScreenTypes> = ({ doc, video, onSaveScreenshot, onJumpTo, _renderCount, _refreshPage }) => {
+  const [imageSizes, setImageSizes] = useState<Record<string, { width: number; height: number }>>({})
   const [visibleModal, setVisibleModal] = useState<boolean>(false)
   const [currentImage, setCurrentImage] = useState<string>('')
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set())
@@ -78,8 +69,7 @@ const ScreenShots: FC<ScreenTypes> = ({
 
   const navigate = useNavigate()
 
-  const { handleRequestWithNotification, showNotification, showConfirmationDialog } =
-    useNotification()
+  const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
 
   const { isAuthenticated } = useAuth()
 
@@ -340,11 +330,8 @@ const ScreenShots: FC<ScreenTypes> = ({
     }
 
     if (byTemplate && cropRange.length > 1) {
-      showNotification(
-        'error',
-        'When you choose the "bytemplate" option, the cropRange length must be 1.',
-        'message',
-      )
+      showNotification('error', 'When you choose the "bytemplate" option, the cropRange length must be 1.', 'message')
+      return
     }
 
     const names = sortedselectedKeys.filter(item => {
@@ -494,12 +481,9 @@ const ScreenShots: FC<ScreenTypes> = ({
     const names = sortedselectedKeys
     const selectedImages = names.map(key => imgRefs.current[key]) as HTMLImageElement[]
 
-    handleRequestWithNotification(
-      async () => await copyImagesFromElementsToClipboard(selectedImages),
-      {
-        successMessage: 'Copyed successfully',
-      },
-    )
+    handleRequestWithNotification(async () => await copyImagesFromElementsToClipboard(selectedImages), {
+      successMessage: 'Copyed successfully',
+    })
   }
   const handleExtractText = async () => {
     if (selectedKeys.size === 0) {
@@ -619,16 +603,12 @@ const ScreenShots: FC<ScreenTypes> = ({
         </Dropdown>
         <Dropdown menu={{ items: stateMenu }} trigger={['click']}>
           <Button>
-            Filter state By:{' '}
-            {filter?.isCroped === undefined ? 'All' : filter?.isCroped ? 'Croped' : 'Uncroped'}
+            Filter state By: {filter?.isCroped === undefined ? 'All' : filter?.isCroped ? 'Croped' : 'Uncroped'}
           </Button>
         </Dropdown>
 
         {/* 排序按钮 */}
-        <Button
-          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-          style={{ marginLeft: '10px' }}
-        >
+        <Button onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')} style={{ marginLeft: '10px' }}>
           Sort by Time ({sortOrder === 'asc' ? 'Asc' : 'Desc'})
         </Button>
 
@@ -690,16 +670,10 @@ const ScreenShots: FC<ScreenTypes> = ({
               </Space>
             )} */}
             {/* 裁剪按钮 */}
-            <Button
-              onClick={() => handleCrop(false)}
-              disabled={!cropRange || selectedKeys.size === 0 || !isCroping}
-            >
+            <Button onClick={() => handleCrop(false)} disabled={!cropRange || selectedKeys.size === 0 || !isCroping}>
               Crop
             </Button>
-            <Button
-              onClick={() => handleCrop(true)}
-              disabled={!cropRange || selectedKeys.size === 0 || !isCroping}
-            >
+            <Button onClick={() => handleCrop(true)} disabled={!cropRange || selectedKeys.size === 0 || !isCroping}>
               Crop By Template
             </Button>
             <Button onClick={() => handleSetAsScropted(true)} disabled={selectedKeys.size === 0}>
@@ -722,10 +696,7 @@ const ScreenShots: FC<ScreenTypes> = ({
             onDragOver={handleDragOver}
             // onDragLeave={handleDragLeave}
           >
-            <SortableContext
-              items={filteredData.map(item => item.name)}
-              strategy={verticalListSortingStrategy}
-            >
+            <SortableContext items={filteredData.map(item => item.name)} strategy={verticalListSortingStrategy}>
               {filteredData.map((item, index) => {
                 return (
                   <Col xs={24} sm={12} md={8} lg={6} xl={4} key={item.name}>

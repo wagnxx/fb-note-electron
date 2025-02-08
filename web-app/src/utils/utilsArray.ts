@@ -16,11 +16,11 @@ export const findItemFromArrayByKey = (items: Item[], key: string): Item | null 
   }
   return null
 }
-export const calculateMiddleValue: (
+export const calculateMiddleValue: (numbers: number[], referenceValue: number, interval: number) => number = (
   numbers: number[],
   referenceValue: number,
-  interval: number,
-) => number = (numbers: number[], referenceValue: number, interval: number = 100) => {
+  interval: number = 100,
+) => {
   // 如果数组为空，返回基准值
   if (numbers.length === 0) {
     return referenceValue
@@ -93,11 +93,7 @@ export const hasDuplicate = (arr: any[], field: string): boolean => {
   return false // 没有重复
 }
 
-export const getDuplicateKeys = (
-  arr: any[],
-  fields: string | string[],
-  initial: any[] = [],
-): any[] => {
+export const getDuplicateKeys = (arr: any[], fields: string | string[], initial: any[] = []): any[] => {
   if (arr.length === 1) return []
 
   const normalizedFields = Array.isArray(fields) ? fields : [fields]
@@ -119,10 +115,7 @@ export const getDuplicateKeys = (
   }, initial) // 初始值为空数组或由外部传入的值
 }
 
-export const groupBy = <T>(
-  array: T[],
-  key: keyof T | ((item: T) => string),
-): Record<string, T[]> => {
+export const groupBy = <T>(array: T[], key: keyof T | ((item: T) => string)): Record<string, T[]> => {
   return array.reduce(
     (result, item) => {
       // 获取分组的 key，确保其为 string 类型
@@ -172,11 +165,7 @@ interface SortField {
   order: SortOrder // 排序方式（'asc' 或 'desc'）
 }
 
-export function sortData<T>(
-  data: T[],
-  sortBy: (SortField | keyof T)[],
-  sortOrder?: SortOrder,
-): T[] {
+export function sortData<T>(data: T[], sortBy: (SortField | keyof T)[], sortOrder?: SortOrder): T[] {
   return data.sort((a, b) => {
     for (let i = 0; i < sortBy.length; i++) {
       let field: string
@@ -218,11 +207,7 @@ export function sortData<T>(
   })
 }
 
-export const hasCommonElements = (
-  arr1: string[],
-  arr2: string[],
-  minCommonElements: number = 2,
-): boolean => {
+export const hasCommonElements = (arr1: string[], arr2: string[], minCommonElements: number = 2): boolean => {
   // 如果数组为空，返回 false
   if (arr1.length === 0 || arr2.length === 0) {
     return false

@@ -35,10 +35,7 @@ const convertToMenuItems = (items: FileSystemItem[]): MenuItem[] => {
   })
 }
 
-const MenuComp: FC<{ menus: MenuItem[] } & Pick<Props, 'onItemClick'>> = ({
-  menus,
-  onItemClick,
-}) => {
+const MenuComp: FC<{ menus: MenuItem[] } & Pick<Props, 'onItemClick'>> = ({ menus, onItemClick }) => {
   return <Menu mode="inline" defaultSelectedKeys={['table']} onClick={onItemClick} items={menus} />
 }
 
@@ -49,6 +46,11 @@ const WordRootDocMenu: FC<Props> = ({ onItemClick }) => {
     getDirectoryStructure(encodeURIComponent(DOC_DIR))
       .then(res => {
         console.log('Directory structure:', res)
+        const sortedData = res.sort((a, b) => {
+          let an = (a.name || '').match(/^(\d+)\./)?.[1] || 0
+          let bn = (b.name || '').match(/^(\d+)\./)?.[1] || 0
+          return Number(an) - Number(bn)
+        })
         const menuItems = convertToMenuItems(res)
         setMenus(menuItems)
       })

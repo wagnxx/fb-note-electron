@@ -86,10 +86,8 @@ export function useNotification() {
         const result = await actionFunc() // 调用传入的方法
 
         // 根据传入的字段名检查返回结果
-        const isSuccess =
-          successField === null && result ? true : (result as ApiResponse)?.[successField!] === true
-        const errorMsg =
-          errorField === null ? errorMessage : (result as ApiResponse)?.[errorField] || errorMessage
+        const isSuccess = successField === null && result ? true : (result as ApiResponse)?.[successField!] === true
+        const errorMsg = errorField === null ? errorMessage : (result as ApiResponse)?.[errorField] || errorMessage
 
         if (isSuccess) {
           // 根据传入的通知类型显示成功消息

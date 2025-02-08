@@ -8,7 +8,7 @@ import WordRootDoc from './components/WordRootDoc'
 const { Header, Content, Sider } = Layout
 
 const RootStudio: React.FC = () => {
-  const [view, setView] = useState<'table' | string>('')
+  const [view, setView] = useState<'table' | string>('table')
   const [isSiderOpen, setIsSiderOpen] = useState(false)
 
   const handleMenuClick = ({ key }: { key: string }) => setView(key as 'pdf' | 'table')

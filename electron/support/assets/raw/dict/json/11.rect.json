@@ -1,0 +1,484 @@
+[
+    {
+      "name": "rect",
+      "siblings": [
+      ],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "来源于拉丁语 regere 直，-reg-经过音变为-rect-。",
+      "extension": "统治/支配/控制/直的/僵直",
+      "group": [
+          {
+            "name": "correct",
+            "meaning": "v. 改正，纠正 adj. 正确的",
+            "structurare": "cor- 强调 + -rect- 正 ---- 改正，修正,词根直接结尾的单词99%是多词性"
+          },
+          {
+            "name": "correctly",
+            "meaning": "adv. 正确地；得体地",
+            "structurare": ""
+          },
+          {
+            "name": "correctness",
+            "meaning": "n. 正确性",
+            "structurare": ""
+          },
+          {
+            "name": "correction",
+            "meaning": "n. 改正，纠正，矫正，校正",
+            "structurare": ""
+          },
+          {
+            "name": "corrected",
+            "meaning": " adj. 修正的；校正的；折算的",
+            "structurare": ""
+          },
+          {
+            "name": "correctional",
+            "meaning": "adj. 矫正的；修正的",
+            "structurare": ""
+          },
+          {
+            "name": "corrective",
+            "meaning": "adj. 改正的，纠正的，矫正的",
+            "structurare": ""
+          },
+          {
+            "name": "correcting",
+            "meaning": "n. 校正；[印刷] 改版 adj. 修正的",
+            "structurare": ""
+          },
+          {
+            "name": "corrector",
+            "meaning": "n. 改正者，矫正者，校正者",
+            "structurare": ""
+          },
+          {
+            "name": "correctitude",
+            "meaning": "n. (行为的)端正",
+            "structurare": ""
+          },
+          {
+            "name": "uncorrected",
+            "meaning": "adj. 未修正的；未加管教的；未调整的",
+            "structurare": ""
+          },
+          {
+            "name": "correctable",
+            "meaning": "adj. 可校正的",
+            "structurare": ""
+          },
+          {
+            "name": "incorrect",
+            "meaning": "adj. 不正确的",
+            "structurare": ""
+          },
+          {
+            "name": "incorrectly",
+            "meaning": "adv. 不正确地",
+            "structurare": ""
+          },
+          {
+            "name": "direct",
+            "meaning": "vt. 指挥，指示，指挥，命令 adj. 直接的",
+            "structurare": "di- 分 + -rect- 正， 直 ---- 改正 ---- 导向正确 "
+          },
+          {
+            "name": "directed",
+            "meaning": " adj. 定向的；经指导的；被控制的",
+            "structurare": ""
+          },
+          {
+            "name": "directness",
+            "meaning": "n. 直接；率直；笔直",
+            "structurare": ""
+          },
+          {
+            "name": "direction",
+            "meaning": "n. 指示，指引，说明，指导，方向，方位",
+            "structurare": ""
+          },
+          {
+            "name": "directive",
+            "meaning": "n. 指示；指令 adj. 指导的；管理的",
+            "structurare": ""
+          },
+          {
+            "name": "directing",
+            "meaning": "adj. 指导的；指向的 n. 指导；导演",
+            "structurare": ""
+          },
+          {
+            "name": "directory",
+            "meaning": "n. 名录；指南",
+            "structurare": ""
+          },
+          {
+            "name": "directional",
+            "meaning": "adj. 方向的，定向的",
+            "structurare": ""
+          },
+          {
+            "name": "director",
+            "meaning": "n. 指导者，处长，局长，主任，指挥，导演",
+            "structurare": ""
+          },
+          {
+            "name": "directorate",
+            "meaning": "n. 董事会；理事会；指挥部",
+            "structurare": ""
+          },
+          {
+            "name": "directorial",
+            "meaning": "adj. 管理的；指挥的，指挥者的",
+            "structurare": ""
+          },
+          {
+            "name": "co-director",
+            "meaning": "n. 主任",
+            "structurare": "co- 在一起 + director 共同引领 ---- 主要责任人"
+          },
+          {
+            "name": "directress",
+            "meaning": "n. 女指导者，女指挥，女导演",
+            "structurare": "-ess 女性名词后缀"
+          },
+          {
+            "name": "directly",
+            "meaning": "adv. 直接地",
+            "structurare": ""
+          },
+          {
+            "name": "indirect",
+            "meaning": "adj. 间接的，迂回的",
+            "structurare": ""
+          },
+          {
+            "name": "directionless",
+            "meaning": "adj. 没有方向的；没有目标的",
+            "structurare": ""
+          },
+          {
+            "name": "self-directed",
+            "meaning": " adj. 自主的；自我指导的",
+            "structurare": ""
+          },
+          {
+            "name": "misdirect",
+            "meaning": "vt. 误导；写错地址",
+            "structurare": ""
+          },
+          {
+            "name": "indirection",
+            "meaning": "n. 间接，迂回，兜圈子",
+            "structurare": ""
+          },
+          {
+            "name": "indirectly",
+            "meaning": "adv. 间接地",
+            "structurare": ""
+          },
+          {
+            "name": "directorship",
+            "meaning": "n. 管理者的职位",
+            "structurare": ""
+          },
+          {
+            "name": "direct-mail",
+            "meaning": "n. 直接邮件；直接邮寄广告",
+            "structurare": ""
+          },
+          {
+            "name": "undirected",
+            "meaning": "adj. 未受指导的；无收件人姓名的",
+            "structurare": ""
+          },
+          {
+            "name": "multidirectional",
+            "meaning": "测试",
+            "structurare": ""
+          },
+          {
+            "name": "rectify",
+            "meaning": "v. 改正，纠正，整顿",
+            "structurare": "-fy 动词后缀"
+          },
+          {
+            "name": "rectifier",
+            "meaning": " n. 纠正者，整顿者，矫正器",
+            "structurare": ""
+          },
+          {
+            "name": "rectification",
+            "meaning": "n. 纠正，整顿",
+            "structurare": ""
+          },
+          {
+            "name": "rectitude",
+            "meaning": "n. 正直，得寸，笔直",
+            "structurare": ""
+          },
+          {
+            "name": "rectilineal",
+            "meaning": "adj. 直线的，直线运动的",
+            "structurare": ""
+          },
+          {
+            "name": "rectangle",
+            "meaning": "n. 矩形，长方形",
+            "structurare": "-rect- 直 + angle 角 ---- 直角，矩形"
+          },
+          {
+            "name": "rectal",
+            "meaning": "adj. 直肠的",
+            "structurare": ""
+          },
+          {
+            "name": "rector",
+            "meaning": "n. 校长；院长；教区牧师",
+            "structurare": "-rect- 直，正 ---- 修正者，指导者 + -or 名词后缀，表人"
+          },
+          {
+            "name": "rectory",
+            "meaning": "n. 教区长的管区",
+            "structurare": "-ory 名词后缀"
+          },
+          {
+            "name": "erect",
+            "meaning": "v. 直立，垂直的，使竖直，使竖立（雕像等）",
+            "structurare": ""
+          },
+          {
+            "name": "erectile",
+            "meaning": "adj. 可竖直的",
+            "structurare": ""
+          },
+          {
+            "name": "erection",
+            "meaning": " n. 直立，竖直",
+            "structurare": ""
+          },
+          {
+            "name": "erective",
+            "meaning": "adj. 直立的，竖起的",
+            "structurare": ""
+          },
+          {
+            "name": "erector",
+            "meaning": "n. 树立者，建立者",
+            "structurare": ""
+          },
+          {
+            "name": "rectum",
+            "meaning": "n. 直肠",
+            "structurare": ""
+          },
+          {
+            "name": "resurrect",
+            "meaning": "vt. 使复活；复兴；挖出 vi. 复活",
+            "structurare": "re- 再次 + sur- 下 + -rect- 直 ---- 再次直立 ---- 从坟墓中破土而出"
+          },
+          {
+            "name": "resurrection",
+            "meaning": "n. 复活；恢复；复兴",
+            "structurare": ""
+          },
+          {
+            "name": "redirect",
+            "meaning": "vt. 使改方向；重新寄送 adj. 再直接的 n. 再直接询问",
+            "structurare": ""
+          },
+          {
+            "name": "redirection",
+            "meaning": "n. 重寄；改道；转移呼叫",
+            "structurare": ""
+          },
+          {
+            "name": "insurrection",
+            "meaning": "n. 暴动；叛乱",
+            "structurare": "in- 使动 + -sur 下 + -rect- 直 ---- 立起来 ---- 反抗，暴动 + -ion名词后缀"
+          },
+          {
+            "name": "insurrectionist",
+            "meaning": "n. 起义者；造反者；暴动者",
+            "structurare": ""
+          },
+          {
+            "name": "insurrectionary",
+            "meaning": "n. 暴动者，起义者 adj. 暴动的；起义的，造反的",
+            "structurare": ""
+          },
+          {
+            "name": "colorectal",
+            "meaning": "adj. 结肠直肠的",
+            "structurare": ""
+          },
+          {
+            "name": "rectitude",
+            "meaning": "n. 公正；诚实；清廉",
+            "structurare": ""
+          },
+          {
+            "name": "bidirectional",
+            "meaning": "adj. 双向的；双向作用的",
+            "structurare": "bi- 分 ---- 二"
+          },
+          {
+            "name": "unidirectional",
+            "meaning": "adj. 单向的；单向性的",
+            "structurare": "-un- 整体，单一"
+          },
+          {
+            "name": "misdirection",
+            "meaning": "n. 指示错误，指导错误；写错信封地址",
+            "structurare": ""
+          },
+          {
+            "name": "misdirected",
+            "meaning": "vt. 误导；写错地址",
+            "structurare": ""
+          },
+          {
+            "name": "rectus",
+            "meaning": " n. [解剖] 直肌",
+            "structurare": "-us 名词后缀"
+          },
+          {
+            "name": "writer-director",
+            "meaning": "n. 编剧加导演",
+            "structurare": ""
+          },
+          {
+            "name": "self-direction",
+            "meaning": "n. 自动引导",
+            "structurare": ""
+          },
+          {
+            "name": "goal-directed",
+            "meaning": "adj. 有用意的，有目的的；有意图的",
+            "structurare": ""
+          },
+          {
+            "name": "self-correcting",
+            "meaning": "adj. 自动修正的，自动调整的",
+            "structurare": ""
+          },
+          {
+            "name": "directionality",
+            "meaning": "n. 定向性，方向性；方向感知",
+            "structurare": ""
+          },
+          {
+            "name": "teacher-directed",
+            "meaning": " adj. 以教师为主导的",
+            "structurare": ""
+          },
+          {
+            "name": "incorrectness",
+            "meaning": "n. 错误；不合适；不真实",
+            "structurare": ""
+          },
+          {
+            "name": "recto",
+            "meaning": "n. （书中的）右页；纸张的正面",
+            "structurare": "-rect- 正，正面 + -o名词后缀"
+          },
+          {
+            "name": "non-directive",
+            "meaning": "adj. 不定向的",
+            "structurare": ""
+          },
+          {
+            "name": "state-directed",
+            "meaning": " adj. 主导的",
+            "structurare": ""
+          },
+          {
+            "name": "other-directed",
+            "meaning": "adj. 受人支配的；缺少自主性的",
+            "structurare": ""
+          },
+          {
+            "name": "self-correction",
+            "meaning": "n. 自我修正；[计] 自校正",
+            "structurare": ""
+          },
+          {
+            "name": "omnidirectional",
+            "meaning": " adj. 全方向的",
+            "structurare": "-omni- 全"
+          },
+          {
+            "name": "direct-marketing",
+            "meaning": "n. 直复营销",
+            "structurare": ""
+          },
+          {
+            "name": "direct-drive",
+            "meaning": "n. 直接激励",
+            "structurare": "drive n. 驱动器，驾车；【心理】内驱力，推进力；快车道"
+          },
+          {
+            "name": "direct-injection",
+            "meaning": "n. 直接注射",
+            "structurare": ""
+          },
+          {
+            "name": "producer-director",
+            "meaning": "n. 编导",
+            "structurare": ""
+          },
+          {
+            "name": "direct-view",
+            "meaning": "n. 直观",
+            "structurare": ""
+          },
+          {
+            "name": "direct-action",
+            "meaning": "n. 直接传动",
+            "structurare": ""
+          },
+          {
+            "name": "endarterectomy",
+            "meaning": "n. 动脉内膜切除术",
+            "structurare": ""
+          },
+          {
+            "name": "student-directed",
+            "meaning": "adj. 学生导向的",
+            "structurare": ""
+          },
+          {
+            "name": "consumer-directed",
+            "meaning": "adj. 消费者主导的",
+            "structurare": ""
+          },
+          {
+            "name": "direct-to-video",
+            "meaning": "n. 录像带首映",
+            "structurare": ""
+          },
+          {
+            "name": "nephrectomy",
+            "meaning": "n. [泌尿] 肾切除术",
+            "structurare": ""
+          },
+          {
+            "name": "direct-response",
+            "meaning": "n. 直接回应",
+            "structurare": ""
+          },
+          {
+            "name": "direct-sales",
+            "meaning": "adj. 直接销售",
+            "structurare": ""
+          },
+          {
+            "name": "anorectal",
+            "meaning": "adj. [解剖] 肛门直肠的",
+            "structurare": ""
+          }
+
+      ]
+      }
+    ]

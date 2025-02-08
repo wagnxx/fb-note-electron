@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Table, Button, Popconfirm, Space, Input, Switch, Tooltip, Tag } from 'antd'
-import { ColumnType } from 'antd/es/table'
-import { addWordRoot, batchUpdateWordRoot, deleteWordRoot, getWordRootRow, getWordRoots } from '@/service/dict'
+import { ColumnType, TablePaginationConfig } from 'antd/es/table'
+import { batchUpdateWordRoot, deleteWordRoot, getWordRootRow, getWordRoots } from '@/service/dict'
 import { useAuth } from '@/context/AuthContext'
 import { closestCenter, DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -16,6 +16,7 @@ import ModalForm from '@/components/modal/ModalForm'
 import FormAddRoot from './FormAddRoot'
 import ScreenDocScanner from './ScreenDocScanner'
 import { shuffleColors } from '@/utils/utilsColor'
+import { FilterValue, SorterResult } from 'antd/es/table/interface'
 
 // 词根类型定义
 export type WordRootType = {
@@ -65,6 +66,7 @@ const EditableTableCell: React.FC<any> = ({
 
 const WordRootManage = () => {
   const [dataSource, setDataSource] = useState<TableRow[]>([])
+  const [filteredData, setFilteredData] = useState<TableRow[]>([])
   const [count, setCount] = useState<number>(dataSource.length)
   const [editingKey, setEditingKey] = useState<number | null>(null)
   const [searchText, setSearchText] = useState('')
@@ -86,11 +88,11 @@ const WordRootManage = () => {
   const { handleRequestWithNotification, showNotification } = useNotification()
   const shuffledColors = shuffleColors()
 
-  const filteredData = dataSource.filter(
-    item =>
-      item.root.some(word => word.toLowerCase().includes(searchText.toLowerCase())) ||
-      item.meaning.toLowerCase().includes(searchText.toLowerCase()),
-  )
+  // const filteredData = dataSource.filter(
+  //   item =>
+  //     item.root.some(word => word.toLowerCase().includes(searchText.toLowerCase())) ||
+  //     item.meaning.toLowerCase().includes(searchText.toLowerCase()),
+  // )
   // 分页配置
   const paginationConfig = {
     current: currentPage,
@@ -373,11 +375,12 @@ const WordRootManage = () => {
             const tarDocs = screen.filter(doc => hasCommonElements(item.root, doc.keyTerms || [], 2))
             if (tarDocs.length) {
               combined.isScreenDocUploaded = true
-              combined.screenDoc = tarDocs
+              combined.screenDoc = tarDocs.sort((a, b) => (a.order || 0) - (b.order || 0))
             }
             return combined
           })
           setDataSource([...data])
+          setFilteredData([...data])
           setPageTotal(roots.total)
         } else {
           setDataSource([])
@@ -389,6 +392,40 @@ const WordRootManage = () => {
         editedKeys.current.clear()
       })
   }, [currentPage, pageSize])
+
+  // 过滤逻辑
+  const handleTableChange = (
+    pagination: TablePaginationConfig,
+    filters: Record<string, FilterValue | null>,
+    sorter: SorterResult<TableRow> | SorterResult<TableRow>[],
+  ) => {
+    console.log('filters : ', filters)
+    setFilteredData(() => {
+      let updatedData = [...dataSource]
+
+      updatedData = updatedData.filter(item => {
+        return mergedColumns
+          .filter(column => column.onFilter)
+          .filter(column => filters[column.dataIndex as string])
+          .every(column => {
+            let filterValue = filters[column.dataIndex as string]
+
+            if (filterValue === null) return true
+            filterValue = (filterValue?.[0] || null) as unknown as FilterValue
+            if (filterValue === null) return true
+            if (
+              typeof filterValue === 'boolean' ||
+              typeof filterValue === 'string' ||
+              typeof filterValue === 'number'
+            ) {
+              return column.onFilter?.(filterValue, item)
+            }
+          })
+      })
+      console.log('updatedData lenght: ', updatedData.length)
+      return updatedData
+    })
+  }
 
   // 过滤函数
   const handleSearch = (value: string) => {
@@ -533,27 +570,49 @@ const WordRootManage = () => {
     }
   }
 
-  const onAddRoot = async ({ root, meaning, wordCount }: Partial<WordRootType>) => {
-    if (!root) return
+  const onAddRoot = async (queue: Partial<WordRootType>[]) => {
+    // { root, meaning, wordCount }
+    if (!queue.length) return
 
-    const exist = await getWordRootRow(root)
+    const allRoots = queue.reduce((pre, cur) => {
+      const curRoots = cur.root || []
+      return pre.concat(curRoots)
+    }, [] as string[])
+
+    const exist = await getWordRootRow(allRoots)
     if (exist.length) {
-      showNotification('error', `[${root.toLocaleString()} is existed.]`, 'message')
+      const existRoots = exist.map(item => item.root.join(','))
+      showNotification('error', `[${existRoots.toLocaleString()} is existed.]`, 'message')
       setAddRootModalVisible(false)
       return
     }
 
-    const tar = {
-      key: pageTotal + 1,
-      root: root,
-      meaning: meaning,
-      wordCount: wordCount,
-      inDocument: false,
-      inJson: false,
-      isLinked: false,
-    }
+    const submitTars = queue.map((q, index) => {
+      const tar = {
+        key: pageTotal + 1 + index,
+        root: q.root,
+        meaning: q.meaning,
+        wordCount: q.meaning,
+        inDocument: false,
+        inJson: false,
+        isLinked: false,
+      }
+      return tar
+    }) as Partial<WordRootType>[]
 
-    const r = await handleRequestWithNotification(async () => await addWordRoot(tar as WordRootType), {
+    // const tar = {
+    //   key: pageTotal + 1,
+    //   root: root,
+    //   meaning: meaning,
+    //   wordCount: wordCount,
+    //   inDocument: false,
+    //   inJson: false,
+    //   isLinked: false,
+    // }
+
+    // batchUpdateWordRoot
+
+    const r = await handleRequestWithNotification(async () => await batchUpdateWordRoot(submitTars), {
       successField: null,
       errorField: null,
     })
@@ -594,23 +653,25 @@ const WordRootManage = () => {
           </Button>
         </Space>
         <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-          <SortableContext items={filteredData.map(item => item.key)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={dataSource.map(item => item.key)} strategy={verticalListSortingStrategy}>
             <Table
               loading={loading}
               bordered
               size="small"
               scroll={{ y: 600 }}
-              dataSource={filteredData} // 使用分页后的数据
+              dataSource={dataSource} // 使用分页后的数据
               columns={mergedColumns as ColumnType<TableRow>[]}
               rowClassName="editable-row"
               pagination={paginationConfig} // 配置分页
+              onChange={handleTableChange}
             />
           </SortableContext>
         </DndContext>
       </div>
-      <ModalForm
+      <ModalForm<WordRootType, 'batch'>
+        width={800}
         visible={addRootModalVisible}
-        onSubmit={onAddRoot}
+        onBatchSubmit={onAddRoot}
         onClose={() => setAddRootModalVisible(false)}
         Child={FormAddRoot}
       />
