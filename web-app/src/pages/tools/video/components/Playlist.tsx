@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Button, List } from 'antd'
 import './Playlist.css'
 import { PlayItem } from './FileUpload'
-import { DeleteOutlined } from '@ant-design/icons'
 import { PlayerAtTime } from './VideoPLayer'
+import { MinusOutlined } from '@ant-design/icons'
 
 interface VideoListProps {
   currentVideo?: PlayItem | null
@@ -13,13 +13,7 @@ interface VideoListProps {
   removeItemVideo: (target: PlayItem) => void
 }
 
-const VideoList: React.FC<VideoListProps> = ({
-  currentVideo,
-  playlist,
-  playVideo,
-  setPlaylist,
-  removeItemVideo,
-}) => {
+const VideoList: React.FC<VideoListProps> = ({ currentVideo, playlist, playVideo, setPlaylist, removeItemVideo }) => {
   const [playerAtTimeRate, setPlayerAtTimeRate] = useState<{ videoId: string; rate: number }[]>([])
 
   // 从 localStorage 获取视频播放进度并计算比例
@@ -72,12 +66,7 @@ const VideoList: React.FC<VideoListProps> = ({
               }}
               className={item.disabled ? 'disabled' : ''}
               actions={[
-                <Button
-                  size="small"
-                  icon={<DeleteOutlined />}
-                  disabled={false}
-                  onClick={() => handleDelete(item)}
-                />,
+                <Button size="small" icon={<MinusOutlined />} disabled={false} onClick={() => handleDelete(item)} />,
               ]}
               onClick={() => {
                 !item.disabled && playVideo(item)

@@ -1,0 +1,210 @@
+[
+    {
+      "name": "pear",
+      "siblings": [
+        "par"
+      ],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "来源于拉丁语 parere 生产。",
+      "extension": "生/生产",
+      "group": [
+        {
+          "name": "appear",
+          "meaning": "vi. 出现；显得；似乎；出庭；登场",
+          "structurare": ""
+        },
+        {
+          "name": "appearance",
+          "meaning": "n. 外貌，外观；出现，露面",
+          "structurare": ""
+        },
+        {
+          "name": "disappear",
+          "meaning": "vi. 不见；消失",
+          "structurare": ""
+        },
+        {
+          "name": "disappearance",
+          "meaning": "n. 消失；不见",
+          "structurare": ""
+        },
+        {
+          "name": "disappeared",
+          "meaning": "adj. 消失的；消失了的",
+          "structurare": ""
+        },
+        {
+          "name": "reappear",
+          "meaning": "vi. 再出现",
+          "structurare": ""
+        },
+        {
+          "name": "reappearance",
+          "meaning": "n. 再现",
+          "structurare": ""
+        },
+        {
+          "name": "parent",
+          "meaning": "n. 父亲，母亲；双亲，父母",
+          "structurare": ""
+        },
+        {
+          "name": "parental",
+          "meaning": "adj. 父母的",
+          "structurare": ""
+        },
+        {
+          "name": "biparental",
+          "meaning": "adj. 双亲的",
+          "structurare": ""
+        },
+        {
+          "name": "stepparent",
+          "meaning": "n. 继母；继父",
+          "structurare": ""
+        },
+        {
+          "name": "grandparent",
+          "meaning": "n. 祖父母；祖父或祖母；外祖父母；外祖父或外祖母",
+          "structurare": ""
+        },
+        {
+          "name": "great-grandparent",
+          "meaning": "n. 曾祖父或曾祖母；外曾祖父或外曾祖母",
+          "structurare": ""
+        },
+        {
+          "name": "godparent",
+          "meaning": "n. 教父或教母",
+          "structurare": ""
+        },
+        {
+          "name": "parentage",
+          "meaning": "n. 出身，家系，门第",
+          "structurare": ""
+        },
+        {
+          "name": "parenting",
+          "meaning": "n. 父母对子女的养育",
+          "structurare": ""
+        },
+        {
+          "name": "one-parent",
+          "meaning": "adj. 单亲的，只有父亲(或母亲)的",
+          "structurare": ""
+        },
+        {
+          "name": "two-parent",
+          "meaning": "adj. 双亲的",
+          "structurare": ""
+        },
+        {
+          "name": "single-parent",
+          "meaning": "n. 单亲；单身母亲；单身父亲",
+          "structurare": ""
+        },
+        {
+          "name": "parent-adolescent",
+          "meaning": "n. 亲子",
+          "structurare": ""
+        },
+        {
+          "name": "heir-apparent",
+          "meaning": "n. 法定继承人，有确定继承权的人",
+          "structurare": ""
+        },
+        {
+          "name": "non-parental",
+          "meaning": "adj. 非亲的",
+          "structurare": ""
+        },
+        {
+          "name": "parenthood",
+          "meaning": "n. 亲子关系；父母身份",
+          "structurare": ""
+        },
+        {
+          "name": "parent-child",
+          "meaning": "adj. 父子关系；主从关系",
+          "structurare": ""
+        },
+        {
+          "name": "apparent",
+          "meaning": "adj. 显然的；表面上的",
+          "structurare": ""
+        },
+        {
+          "name": "apparently",
+          "meaning": "adv. 看起来；显然；据说，听说，似乎",
+          "structurare": ""
+        },
+        {
+          "name": "apparition",
+          "meaning": "n. 幽灵；幻影；鬼怪；离奇出现的东西",
+          "structurare": ""
+        },
+        {
+          "name": "transparent",
+          "meaning": "adj. 透明的；显然的；坦率的；易懂的",
+          "structurare": ""
+        },
+        {
+          "name": "transparently",
+          "meaning": "adv. 显然地，易觉察地；明亮地",
+          "structurare": ""
+        },
+        {
+          "name": "transparentize",
+          "meaning": "vt. 使更接近透明；使透明",
+          "structurare": ""
+        },
+        {
+          "name": "transparence",
+          "meaning": "n. 透明；透明度",
+          "structurare": ""
+        },
+        {
+          "name": "transparency",
+          "meaning": "n. 透明，透明度；幻灯片；有图案的玻璃",
+          "structurare": ""
+        },
+        {
+          "name": "semi-transparent",
+          "meaning": "adj. 半透明的",
+          "structurare": ""
+        },
+        {
+          "name": "primipara",
+          "meaning": "n. 初产妇",
+          "structurare": ""
+        },
+        {
+          "name": "primiparity",
+          "meaning": "n. 初产",
+          "structurare": ""
+        },
+        {
+          "name": "primiparous",
+          "meaning": "adj. 初产的",
+          "structurare": ""
+        },
+        {
+          "name": "biparous",
+          "meaning": "adj. 双生的，一产双胎的",
+          "structurare": ""
+        },
+        {
+          "name": "multiparous",
+          "meaning": "adj. 多产的，一产多胎的",
+          "structurare": ""
+        },
+        {
+          "name": "fissiparous",
+          "meaning": "adj. (生物)分裂生殖的，分体繁殖的",
+          "structurare": ""
+        }
+         ]
+  
+      }
+    ]
