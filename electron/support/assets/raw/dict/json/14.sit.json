@@ -1,0 +1,703 @@
+[
+    {
+      "name": "sit",
+      "siblings": [
+        "sid",
+        "sed",
+        "sess"
+      ],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "词根 sid 来源于拉丁语的不定式词干 sidere,词根 sess 来自动名词词干，都意为 tosit（坐）或 tosettl （安定）。sid 为元音弱化后形成的词根。sid, sess 属于一对同源异形根，反义词根有来自拉丁语的 st,stat,stit,sist 等。",
+      "extension": "坐/坐落于/处境",
+      "group": [
+        {
+          "name": "sit",
+          "meaning": "vi. 坐；位于",
+          "structurare": ""
+        },
+        {
+          "name": "siting",
+          "meaning": " [saɪt] n. 选址；定位",
+          "structurare": ""
+        },
+        {
+          "name": "sitting",
+          "meaning": "n. 入席，就坐；开庭；孵卵；坐着的一段时间 adj. 坐着的；孵卵中的；在任期中的",
+          "structurare": ""
+        },
+        {
+          "name": "sitter",
+          "meaning": " n. 代人临时看管小孩的人；当模特儿的人；坐着的人",
+          "structurare": ""
+        },
+        {
+          "name": "site",
+          "meaning": "n. 场所；遗址",
+          "structurare": ""
+        },
+        {
+          "name": "website",
+          "meaning": "n. 网站；网址",
+          "structurare": ""
+        },
+        {
+          "name": "situate",
+          "meaning": "vt. 使位于；使处于",
+          "structurare": ""
+        },
+        {
+          "name": "situated",
+          "meaning": "adj. 坐落（某处）的；位于（某处）的",
+          "structurare": ""
+        },
+        {
+          "name": "situating",
+          "meaning": "vt. 使位于；使处于 adj. 位于…的",
+          "structurare": ""
+        },
+        {
+          "name": "situation",
+          "meaning": "n. 情况；形势",
+          "structurare": ""
+        },
+        {
+          "name": "situatedness",
+          "meaning": "n. 现场即席性；情境性",
+          "structurare": ""
+        },
+        {
+          "name": "situational",
+          "meaning": "adj. 环境形成的；情形的",
+          "structurare": ""
+        },
+        {
+          "name": "sitcom",
+          "meaning": "abbr. 情景喜剧（situation comedy）",
+          "structurare": ""
+        },
+        {
+          "name": "baby-sit",
+          "meaning": "vi. 当临时保姆；代人承担照料责任 vt. 为人临时照看；照顾婴儿",
+          "structurare": ""
+        },
+        {
+          "name": "baby-sitting",
+          "meaning": "当临时保姆（baby-sit 的现在分词 ）",
+          "structurare": ""
+        },
+        {
+          "name": "sit-up",
+          "meaning": "n. 仰卧起坐",
+          "structurare": ""
+        },
+        {
+          "name": "sit-down",
+          "meaning": "n. 静坐抗议；静坐罢工 adj. 静坐罢工（或示威）的",
+          "structurare": ""
+        },
+        {
+          "name": "sit-in",
+          "meaning": "n. 静坐抗议；静坐罢工",
+          "structurare": ""
+        },
+        {
+          "name": "off-site",
+          "meaning": "n. 工地外；厂区外",
+          "structurare": ""
+        },
+        {
+          "name": "worksite",
+          "meaning": "n. 工地",
+          "structurare": ""
+        },
+        {
+          "name": "homesite",
+          "meaning": "n. 住宅基地；家",
+          "structurare": ""
+        },
+        {
+          "name": "in-situ",
+          "meaning": "n. 原位；现场",
+          "structurare": ""
+        },
+        {
+          "name": "sitting-room",
+          "meaning": "n. 起居室；客厅",
+          "structurare": ""
+        },
+        {
+          "name": "consider",
+          "meaning": "vt. 考虑；认为；考虑到；细想 vi. 考虑；认为；细想",
+          "structurare": ""
+        },
+        {
+          "name": "considering",
+          "meaning": "prep. 考虑到；就...而论 conj. 考虑到",
+          "structurare": ""
+        },
+        {
+          "name": "considered",
+          "meaning": "adj. 经过深思熟虑的；被尊重的",
+          "structurare": ""
+        },
+        {
+          "name": "unconsidered",
+          "meaning": "adj. 不值得考虑的；被忽视的；不重要的",
+          "structurare": ""
+        },
+        {
+          "name": "considerate",
+          "meaning": "adj. 体贴的，体谅的，考虑周到的",
+          "structurare": ""
+        },
+        {
+          "name": "inconsiderate",
+          "meaning": "adj. 轻率的；不顾别人的；无谋得",
+          "structurare": ""
+        },
+        {
+          "name": "considerately",
+          "meaning": "adv. 体谅地",
+          "structurare": ""
+        },
+        {
+          "name": "consideration",
+          "meaning": "n. 考虑；原因；关心；报酬",
+          "structurare": ""
+        },
+        {
+          "name": "considerable",
+          "meaning": "adj. 相当大的；相当多的",
+          "structurare": ""
+        },
+        {
+          "name": "considerably",
+          "meaning": "adv. 相当地；非常地",
+          "structurare": ""
+        },
+        {
+          "name": "inconsiderable",
+          "meaning": "adj. 不足取的；不值得考虑的；琐屑的",
+          "structurare": ""
+        },
+        {
+          "name": "reconsider",
+          "meaning": "vt. 重新考虑；重新审议 vi. 重新考虑",
+          "structurare": ""
+        },
+        {
+          "name": "reconsideration",
+          "meaning": "n. 再议；再考虑；再审查",
+          "structurare": ""
+        },
+        {
+          "name": "ill-considered",
+          "meaning": "adj. 考虑不充分的，欠考虑的；不妥当的",
+          "structurare": ""
+        },
+        {
+          "name": "well-considered",
+          "meaning": "adj. 考虑周密的; 深思熟虑的",
+          "structurare": ""
+        },
+        {
+          "name": "preside",
+          "meaning": "vi. 主持，担任会议主席 vt. 管理",
+          "structurare": ""
+        },
+        {
+          "name": "presider",
+          "meaning": "n. 主席；主持者",
+          "structurare": ""
+        },
+        {
+          "name": "president",
+          "meaning": "n. 总统，大学校长，会长，总裁",
+          "structurare": ""
+        },
+        {
+          "name": "presidential",
+          "meaning": "adj. 总统(或校长)的，总统(或校长)职务的",
+          "structurare": ""
+        },
+        {
+          "name": "unpresidential",
+          "meaning": "adj. 非统辖的",
+          "structurare": ""
+        },
+        {
+          "name": "presidentially",
+          "meaning": "adv. 以总统的资格",
+          "structurare": ""
+        },
+        {
+          "name": "presidency",
+          "meaning": "n. 总统（或董事长、会长、大学校长等）的职位（任期）；管辖；支配",
+          "structurare": ""
+        },
+        {
+          "name": "co-president",
+          "meaning": "n. 共同会长；两名总裁之一",
+          "structurare": ""
+        },
+        {
+          "name": "vice-president",
+          "meaning": "n. 副总裁；副总统；副校长",
+          "structurare": ""
+        },
+        {
+          "name": "vice-presidential",
+          "meaning": "adj. 副主席的",
+          "structurare": ""
+        },
+        {
+          "name": "vice-presidency",
+          "meaning": "n. 副董事长职位",
+          "structurare": ""
+        },
+        {
+          "name": "ex-president",
+          "meaning": "n. 前任总统",
+          "structurare": ""
+        },
+        {
+          "name": "then-president",
+          "meaning": "n. 当时的总统",
+          "structurare": ""
+        },
+        {
+          "name": "post-presidential",
+          "meaning": "adj. 卸任总统的",
+          "structurare": ""
+        },
+        {
+          "name": "presidium",
+          "meaning": "n. 主席团",
+          "structurare": ""
+        },
+        {
+          "name": "presiding",
+          "meaning": "adj. 首席的；主持会议的，指挥的",
+          "structurare": ""
+        },
+        {
+          "name": "presidio",
+          "meaning": "n. 要塞；流放地；充军地",
+          "structurare": ""
+        },
+        {
+          "name": "reside",
+          "meaning": "vi. 住，居住；属于",
+          "structurare": ""
+        },
+        {
+          "name": "resident",
+          "meaning": "n. 居民；adj. 居住的，居留的",
+          "structurare": ""
+        },
+        {
+          "name": "residence",
+          "meaning": "n. 居住，住宅，住处，住处，公馆",
+          "structurare": ""
+        },
+        {
+          "name": "residency",
+          "meaning": "n. 住处；住院医生实习期",
+          "structurare": ""
+        },
+        {
+          "name": "residential",
+          "meaning": "adj. 居住的，住宅的",
+          "structurare": ""
+        },
+        {
+          "name": "residentially",
+          "meaning": "adv. 居住地",
+          "structurare": ""
+        },
+        {
+          "name": "non-resident",
+          "meaning": " n. 非居民 adj. 非驻留的",
+          "structurare": ""
+        },
+        {
+          "name": "nonresidential",
+          "meaning": "adj. 非住宅的；非居住的",
+          "structurare": ""
+        },
+        {
+          "name": "artist-in-residence",
+          "meaning": "n. 艺术进驻",
+          "structurare": ""
+        },
+        {
+          "name": "writer-in-residence",
+          "meaning": "n. 作者；住校作家",
+          "structurare": ""
+        },
+        {
+          "name": "residue",
+          "meaning": "n. 残渣；剩余；滤渣",
+          "structurare": ""
+        },
+        {
+          "name": "residual",
+          "meaning": "n. 剩余；残渣 adj. 剩余的；残留的",
+          "structurare": ""
+        },
+        {
+          "name": "residuals",
+          "meaning": "n. [数] 残差（residual 的复数）；剩余误差；残留物",
+          "structurare": ""
+        },
+        {
+          "name": "residuum",
+          "meaning": "n. 残留物；剩余；残渣；剩余遗产；社会渣滓",
+          "structurare": ""
+        },
+        {
+          "name": "subside",
+          "meaning": "vi. 平息；减弱；沉淀；坐下",
+          "structurare": ""
+        },
+        {
+          "name": "subsidy",
+          "meaning": "n. 补贴；津贴；补助金",
+          "structurare": ""
+        },
+        {
+          "name": "subsiding",
+          "meaning": "n. 下沉",
+          "structurare": ""
+        },
+        {
+          "name": "subsidence",
+          "meaning": "n. 沉降，沉淀，平息",
+          "structurare": ""
+        },
+        {
+          "name": "subsidize",
+          "meaning": "vt. 资助；给与奖助金；向…行贿",
+          "structurare": ""
+        },
+        {
+          "name": "subsidized",
+          "meaning": "adj. 补贴的，补助的",
+          "structurare": ""
+        },
+        {
+          "name": "unsubsidized",
+          "meaning": "adj. 没有补助金的；未受资助的",
+          "structurare": ""
+        },
+        {
+          "name": "subsidiary",
+          "meaning": "adj. 附属的；辅助的 n. 子公司；辅助者",
+          "structurare": ""
+        },
+        {
+          "name": "subsidiarity",
+          "meaning": "n. 辅助性原则",
+          "structurare": ""
+        },
+        {
+          "name": "subsidization",
+          "meaning": "n. 补助；提供津贴；奖金",
+          "structurare": ""
+        },
+        {
+          "name": "government-subsidized",
+          "meaning": "adj. 国家助学",
+          "structurare": ""
+        },
+        {
+          "name": "state-subsidized",
+          "meaning": "adj. 国家资助的",
+          "structurare": ""
+        },
+        {
+          "name": "dissidence",
+          "meaning": "n. 意见不同，不一致，不同意，异议",
+          "structurare": ""
+        },
+        {
+          "name": "dissident",
+          "meaning": "adj. 不同意的人，持异议的",
+          "structurare": ""
+        },
+        {
+          "name": "assiduous",
+          "meaning": "adj. 刻苦的，勤奋的",
+          "structurare": ""
+        },
+        {
+          "name": "assiduously",
+          "meaning": "adv. 刻苦地；勤勉地",
+          "structurare": ""
+        },
+        {
+          "name": "possess",
+          "meaning": "vt. 控制；使掌握；持有；迷住；拥有，具备",
+          "structurare": ""
+        },
+        {
+          "name": "possession",
+          "meaning": "n. 拥有；财产；领地；自制；着迷",
+          "structurare": ""
+        },
+        {
+          "name": "possessive",
+          "meaning": "adj. 占有的；所有的；所有格的；占有欲强的 n. 所有格",
+          "structurare": ""
+        },
+        {
+          "name": "possessively",
+          "meaning": "adv. 占有地；所属关系地",
+          "structurare": ""
+        },
+        {
+          "name": "possessiveness",
+          "meaning": "n. 占有；自制力",
+          "structurare": ""
+        },
+        {
+          "name": "possessor",
+          "meaning": "n. 持有人；所有人",
+          "structurare": ""
+        },
+        {
+          "name": "possessory",
+          "meaning": "adj. 所有的；所有者的",
+          "structurare": ""
+        },
+        {
+          "name": "possessed",
+          "meaning": "adj. 疯狂的；着魔的",
+          "structurare": ""
+        },
+        {
+          "name": "prepossess",
+          "meaning": "vt. 使先具有；预先灌输情感（或思想等）；使…先怀偏见；先有好感",
+          "structurare": ""
+        },
+        {
+          "name": "prepossessing",
+          "meaning": "adj. 给人好感的；有魅力的；引人注意的",
+          "structurare": ""
+        },
+        {
+          "name": "unprepossessing",
+          "meaning": "adj. 不吸引人的；不讨人喜欢的",
+          "structurare": ""
+        },
+        {
+          "name": "self-possessed",
+          "meaning": "adj. 镇静的；冷静的；有自制力的",
+          "structurare": ""
+        },
+        {
+          "name": "self-possession",
+          "meaning": "n. 沉着，泰然自若",
+          "structurare": ""
+        },
+        {
+          "name": "dispossess",
+          "meaning": "vt. 剥夺；使失去；逐出；霸占",
+          "structurare": ""
+        },
+        {
+          "name": "dispossession",
+          "meaning": "n. 剥夺；驱逐；强占不动产",
+          "structurare": ""
+        },
+        {
+          "name": "dispossessed",
+          "meaning": "adj. 被逐出的；无依无靠的；失去产业的",
+          "structurare": ""
+        },
+        {
+          "name": "repossess",
+          "meaning": "vt. 收回；取复；重新获得",
+          "structurare": ""
+        },
+        {
+          "name": "repossession",
+          "meaning": "n. 恢复；取回",
+          "structurare": ""
+        },
+        {
+          "name": "obsess",
+          "meaning": "vt. 迷住，缠住；使…着迷；使…困扰",
+          "structurare": ""
+        },
+        {
+          "name": "obsession",
+          "meaning": "n 着魔，迷恋，困扰人的想法",
+          "structurare": ""
+        },
+        {
+          "name": "obsessional",
+          "meaning": "adj. 摆脱不了的",
+          "structurare": ""
+        },
+        {
+          "name": "obsessive",
+          "meaning": "adj. 强迫性的；着迷的；分神的",
+          "structurare": ""
+        },
+        {
+          "name": "obsessively",
+          "meaning": "adv. 过分地；着迷地，着魔似地",
+          "structurare": ""
+        },
+        {
+          "name": "obsessiveness",
+          "meaning": "n. 执念",
+          "structurare": ""
+        },
+        {
+          "name": "obsessed",
+          "meaning": "adj. 着迷的；无法摆脱的",
+          "structurare": ""
+        },
+        {
+          "name": "self-obsessed",
+          "meaning": "adj. 自我痴念的，自恋的",
+          "structurare": ""
+        },
+        {
+          "name": "sex-obsessed",
+          "meaning": "adj. 性着迷的",
+          "structurare": ""
+        },
+        {
+          "name": "assess",
+          "meaning": "vt. 评定；估价；对…征税",
+          "structurare": ""
+        },
+        {
+          "name": "assessment",
+          "meaning": "n. 评定；估价",
+          "structurare": ""
+        },
+        {
+          "name": "assessor",
+          "meaning": "n. 评审员；确定税款的人；顾问",
+          "structurare": ""
+        },
+        {
+          "name": "assessable",
+          "meaning": "adj. 可估价的；可评价的；可征收的；可征税的",
+          "structurare": ""
+        },
+        {
+          "name": "self-assessed",
+          "meaning": "adj. 自我评估的",
+          "structurare": ""
+        },
+        {
+          "name": "self-assessment",
+          "meaning": "n. 自我评估",
+          "structurare": ""
+        },
+        {
+          "name": "reassess",
+          "meaning": "vt. 再评价；再课税；再摊派",
+          "structurare": ""
+        },
+        {
+          "name": "reassessment",
+          "meaning": "n. 重新评估；[经] 重新估价；重新考虑",
+          "structurare": ""
+        },
+        {
+          "name": "preassessment",
+          "meaning": "n. 预评审",
+          "structurare": ""
+        },
+        {
+          "name": "risk-assessment",
+          "meaning": "n. [经] 风险估计，危险率估计",
+          "structurare": ""
+        },
+        {
+          "name": "session",
+          "meaning": "n. 从事某项活动的集会（或一段时间）；会议；（法庭的）开庭；（议会等的）开会；学期；讲习会",
+          "structurare": ""
+        },
+        {
+          "name": "sessional",
+          "meaning": "adj. 开庭的；开会的；法庭的；会议的",
+          "structurare": ""
+        },
+        {
+          "name": "intersession",
+          "meaning": "n. （美）学期与学期之间的短假期",
+          "structurare": ""
+        },
+        {
+          "name": "supersede",
+          "meaning": "vt. 取代，代替；紧接着……而到来 vi. 推迟行动",
+          "structurare": ""
+        },
+        {
+          "name": "supersession",
+          "meaning": "n. 废弃；代替",
+          "structurare": ""
+        },
+        {
+          "name": "sediment",
+          "meaning": "n. 沉积；沉淀物",
+          "structurare": ""
+        },
+        {
+          "name": "sedimentary",
+          "meaning": "adj. 沉淀的",
+          "structurare": ""
+        },
+        {
+          "name": "sedimentation",
+          "meaning": "n. [矿业][物化] 沉降，[化学] 沉淀",
+          "structurare": ""
+        },
+        {
+          "name": "sedate",
+          "meaning": "adj. 安静的；沉着的 vt. 给…服镇静剂",
+          "structurare": ""
+        },
+        {
+          "name": "sedately",
+          "meaning": "adv. 安详地；镇静地",
+          "structurare": ""
+        },
+        {
+          "name": "sedative",
+          "meaning": "n. [药] 镇静剂；能使安静的东西；止痛药 adj. 使镇静的；使安静的",
+          "structurare": ""
+        },
+        {
+          "name": "sedation",
+          "meaning": "n. 镇静；镇静作用；镇静状态",
+          "structurare": ""
+        },
+        {
+          "name": "sessile",
+          "meaning": "adj. 无柄的；固着的",
+          "structurare": ""
+        },
+        {
+          "name": "sedentary",
+          "meaning": "adj. 久坐的；坐惯的；定栖的；静坐的",
+          "structurare": ""
+        },
+        {
+          "name": "sedan",
+          "meaning": "n. 轿车；轿子",
+          "structurare": ""
+        }
+     
+      ]
+  
+      }
+    ]

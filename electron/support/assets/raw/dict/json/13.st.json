@@ -1,0 +1,3628 @@
+[
+    {
+      "name": "st",
+      "siblings": [
+        "sist",
+        "stat",
+        "stin",
+        "stem"
+      ],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "① 来源于拉丁语 sistere 站立，此词根属于富贵词根，古代社会为更好地区分社会等级，专门编造了专供富人使用的词根。② 来源于拉丁语 stare 站立的动名词 status 的词干部分。",
+      "extension": "直立/安置/固定/停止/安放/被放置/立/站立/静止",
+      "group": [
+  
+          {
+            "name": "system",
+            "meaning": "n. 制度；体系；系统",
+            "structurare": "-sy- = -sym- 一起，相似 + -st- 站 ---- 站在一起 ---- 组合 ---- 系统，制度，体系 + -em 名词后缀"
+          },
+          {
+            "name": "subsystem",
+            "meaning": "n. 子系统；次要系统",
+            "structurare": "sub- 下 ---- 次一级"
+          },
+          {
+            "name": "systemic",
+            "meaning": "adj. 系统的；全身的；体系的",
+            "structurare": "-ic 形容词后缀"
+          },
+          {
+            "name": "systemically",
+            "meaning": "adv. 全身地；系统地；影响全身地",
+            "structurare": "systemic + -al- + ly"
+          },
+          {
+            "name": "systematic",
+            "meaning": "adj. 系统的；体系的；有系统的；[图情] 分类的；一贯的，惯常的",
+            "structurare": "system + -ate- + -ic形容词后缀"
+          },
+          {
+            "name": "systematics",
+            "meaning": "n. 系统学；分类学",
+            "structurare": "-s 名词后缀，表复数；-ic + -s = -ics 表学术名词后缀"
+          },
+          {
+            "name": "systeatize",
+            "meaning": "vt. 使系统化；使组织化；将…分类",
+            "structurare": ""
+          },
+          {
+            "name": "systematized",
+            "meaning": "adj. 系统化的",
+            "structurare": ""
+          },
+          {
+            "name": "systematization",
+            "meaning": "n. 系统化；组织化；分类",
+            "structurare": ""
+          },
+          {
+            "name": "systematically",
+            "meaning": "adv. 有系统地；有组织地",
+            "structurare": ""
+          },
+          {
+            "name": "operating-system",
+            "meaning": "n. [计] 操作系统",
+            "structurare": ""
+          },
+          {
+            "name": "system-wide",
+            "meaning": "adj. 全系统的；系统范围的；系统级的；整个系统的",
+            "structurare": ""
+          },
+          {
+            "name": "world-system",
+            "meaning": "n. 世界体系",
+            "structurare": ""
+          },
+          {
+            "name": "ecosystem-based",
+            "meaning": "adj. 基于生态系统的",
+            "structurare": "-eco- 环境，经济 + system + base + -ed形容词后缀"
+          },
+          {
+            "name": "system-level",
+            "meaning": "n. 系统级",
+            "structurare": ""
+          },
+          {
+            "name": "assist",
+            "meaning": "v. 帮助，协助，辅助，援助",
+            "structurare": "as- 强调 + -sist- 站 ---- 立于一侧 ---- 协助 ，辅助"
+          },
+          {
+            "name": "assistant",
+            "meaning": " n. 助手，助理，助教 adj. 辅助的；助理的；有帮助的",
+            "structurare": "-ant 名词（表人）或形容词后缀"
+          },
+          {
+            "name": "assistance",
+            "meaning": "n. 帮助，援助，辅助",
+            "structurare": ""
+          },
+          {
+            "name": "assisted",
+            "meaning": "adj. 辅助的",
+            "structurare": ""
+          },
+          {
+            "name": "unassisted",
+            "meaning": "adj. 无助的",
+            "structurare": ""
+          },
+          {
+            "name": "assisting",
+            "meaning": "v. 协助（assist 的现在分词）",
+            "structurare": ""
+          },
+          {
+            "name": "assistive",
+            "meaning": "adj. 辅助的",
+            "structurare": "-ive 形容词后缀"
+          },
+          {
+            "name": "assistantship",
+            "meaning": "n. 助教奖学金；助理职务",
+            "structurare": ""
+          },
+          {
+            "name": "assisted-suicide",
+            "meaning": "adj. 辅助的协助自杀；帮助自杀",
+            "structurare": ""
+          },
+          {
+            "name": "assisted-living",
+            "meaning": "n. 赡养院；生活协助",
+            "structurare": ""
+          },
+          {
+            "name": "computer-assisted",
+            "meaning": "adj. 计算机辅助的",
+            "structurare": ""
+          },
+          {
+            "name": "resist",
+            "meaning": "v. 抵抗，反抗 n. 反抗；抵抗；对抗",
+            "structurare": "re- 往回  + -sist- 站 --- 往回站 ---- 抵制，抵抗"
+          },
+          {
+            "name": "resistor",
+            "meaning": "n. [电] 电阻器",
+            "structurare": "-or 名词后缀，表物"
+          },
+          {
+            "name": "resister",
+            "meaning": "n. 抵抗者；反抗者；电阻器",
+            "structurare": "-er 名词后缀，表人"
+          },
+          {
+            "name": "resistance",
+            "meaning": "n. 抵抗，反抗，（尤指对疾病或药物的）抵抗力",
+            "structurare": "-ance 名词后缀"
+          },
+          {
+            "name": "resistant",
+            "meaning": "adj. 不受影响的，不受伤害的，抵抗的 n. 抵抗者",
+            "structurare": "-ant 名词（表人）或形容词后缀"
+          },
+          {
+            "name": "resistible",
+            "meaning": "adj. 可抵抗的，抵抗得住的",
+            "structurare": ""
+          },
+          {
+            "name": "resistive",
+            "meaning": "adj. 有抵抗力的",
+            "structurare": ""
+          },
+          {
+            "name": "resistively",
+            "meaning": "adv. 有抵抗力地；抵抗地",
+            "structurare": ""
+          },
+          {
+            "name": "resistivity",
+            "meaning": "n. [电] 电阻率；抵抗力；电阻系数",
+            "structurare": ""
+          },
+          {
+            "name": "irresistible",
+            "meaning": "adj. 不可抵抗的；不能压制的；极为诱人的",
+            "structurare": "ir- 否定"
+          },
+          {
+            "name": "irresistibly",
+            "meaning": "adv. 无法抵抗地；不能压制地；极为诱惑人地",
+            "structurare": ""
+          },
+          {
+            "name": "drought-resistant",
+            "meaning": "adj. 抗旱的",
+            "structurare": "drought n. 干旱，缺乏"
+          },
+          {
+            "name": "resisting",
+            "meaning": "adj. 稳定的；坚固的",
+            "structurare": ""
+          },
+          {
+            "name": "water-resistant",
+            "meaning": "adj. 抗水的",
+            "structurare": ""
+          },
+          {
+            "name": "drug-resistant",
+            "meaning": "adj. 耐药的；抗药性的",
+            "structurare": ""
+          },
+          {
+            "name": "corrosion-resistant",
+            "meaning": "测试",
+            "structurare": "合成词。 cor- 强调 + -ros- 熟，熟烂，腐烂，腐坏 + -ion名词后缀"
+          },
+          {
+            "name": "disease-resistant",
+            "meaning": "adj. 抗病",
+            "structurare": ""
+          },
+          {
+            "name": "fire-resistant",
+            "meaning": "adj. 耐火的（等于 fire-retardnat）；防火的",
+            "structurare": ""
+          },
+          {
+            "name": "heat-resistant",
+            "meaning": "adj. 抗热的",
+            "structurare": ""
+          },
+          {
+            "name": "weather-resistant",
+            "meaning": "adj. 抗风化的；耐风雨的",
+            "structurare": ""
+          },
+          {
+            "name": "rot-resistant",
+            "meaning": "adj. 抗腐烂的",
+            "structurare": "rot 腐烂，腐坏"
+          },
+          {
+            "name": "pest-resistant",
+            "meaning": "adj. 抗虫害的",
+            "structurare": "pest 害虫（协议记忆 拍死它）"
+          },
+          {
+            "name": "stain-resistant",
+            "meaning": "adj. 耐沾污的；防污渍的",
+            "structurare": ""
+          },
+          {
+            "name": "herbicide-resistant",
+            "meaning": "adj. 抗除草剂的",
+            "structurare": "herb 草 + -i- + -cid- 杀 + -e 名词或动词后缀"
+          },
+          {
+            "name": "multidrug-resistant",
+            "meaning": "adj. 多药耐药的",
+            "structurare": ""
+          },
+          {
+            "name": "penicillin-resistant",
+            "meaning": "adj. 青霉素耐药的",
+            "structurare": "penicillin 音译，盘尼西林"
+          },
+          {
+            "name": "wind-resistant",
+            "meaning": "adj. 抗风的",
+            "structurare": ""
+          },
+          {
+            "name": "recession-resistant",
+            "meaning": "adj. 抗衰退的",
+            "structurare": ""
+          },
+          {
+            "name": "abrasion-resistant",
+            "meaning": "adj. 耐磨的",
+            "structurare": ""
+          },
+          {
+            "name": "earthquake-resistant",
+            "meaning": "adj. 抗震的；耐震的",
+            "structurare": ""
+          },
+          {
+            "name": "tamper-resistant",
+            "meaning": "adj. 防包装拆封的；（包装等）难以破坏的",
+            "structurare": ""
+          },
+          {
+            "name": "consist",
+            "meaning": "v. 由…组成，在于；符合",
+            "structurare": "con- 在一起 + -sist- 站 ---- 站在一次，组合在一起"
+          },
+          {
+            "name": "consistent",
+            "meaning": "adj. 一致的；吻合的；始终如一的，坚持的",
+            "structurare": ""
+          },
+          {
+            "name": "consistence",
+            "meaning": "n. 浓度；[流] 稠度；坚固性（等于 consistency）",
+            "structurare": ""
+          },
+          {
+            "name": "consistently",
+            "meaning": "adv. 一贯地；一致地；坚实地",
+            "structurare": ""
+          },
+          {
+            "name": "self-consistent",
+            "meaning": "adj. 有条理的；首尾一致的",
+            "structurare": "self + consistent ---- 自我一致，手尾一致 ---- 有条理"
+          },
+          {
+            "name": "inconsistent",
+            "meaning": "adj. 不一致的；前后矛盾的",
+            "structurare": "in- 否定"
+          },
+          {
+            "name": "inconsistency",
+            "meaning": "n. 不一致；易变",
+            "structurare": ""
+          },
+          {
+            "name": "inconsistently",
+            "meaning": "adv. 不一致地",
+            "structurare": ""
+          },
+          {
+            "name": "state",
+            "meaning": "n. 国家；州；情形；状态；状况 vt. 规定;声明;陈述; adj. 国家的；州的；正式的",
+            "structurare": "-stat- 站 ---- 建立 ---- 立国， 周围的处境,（站立）宣讲。state表示政治形态的国家 ---- 文艺复兴先驱，马基雅维利 --- 《君主论/君王论》"
+          },
+          {
+            "name": "statistic",
+            "meaning": "adj. 统计的，统计学的 n. 统计数值",
+            "structurare": "-stat- 规定，陈述 ---- 统计 + -ist- + -ic 形容词或名词后缀"
+          },
+          {
+            "name": "statistics",
+            "meaning": "n. （复）统计数字",
+            "structurare": ""
+          },
+          {
+            "name": "statistician",
+            "meaning": "n. 统计学家，统计员",
+            "structurare": ""
+          },
+          {
+            "name": "statistical",
+            "meaning": "adj. 统计的；统计学的",
+            "structurare": ""
+          },
+          {
+            "name": "statistically",
+            "meaning": "adv. 统计地；统计学上",
+            "structurare": ""
+          },
+          {
+            "name": "statewide",
+            "meaning": "adj. 遍及全州的；遍及全州地",
+            "structurare": ""
+          },
+          {
+            "name": "interstate",
+            "meaning": "adj. 州际的；州与州之间的 n. （美）州际公路",
+            "structurare": "inter 在。。。 之间"
+          },
+          {
+            "name": "statement",
+            "meaning": "n. 声明；陈述，叙述；报表，清单",
+            "structurare": ""
+          },
+          {
+            "name": "state-of-the-art",
+            "meaning": "adj. 最先进的；已经发展的；达到最高水准的",
+            "structurare": ""
+          },
+          {
+            "name": "statesman",
+            "meaning": "n. 政治家",
+            "structurare": ""
+          },
+          {
+            "name": "stateswoman",
+            "meaning": "n. 在某一领域受尊敬的女性领导人物",
+            "structurare": ""
+          },
+          {
+            "name": "apostate",
+            "meaning": "adj. 变节的；脱党的；背教的 n. 脱党者；变节者；叛教者",
+            "structurare": "apo- 分 ---- 脱离 + state 国家，政党，教会，组织。基础词: apology n 道歉"
+          },
+          {
+            "name": "prostate",
+            "meaning": "adj. 前列腺的 n. [解剖] 前列腺",
+            "structurare": ""
+          },
+          {
+            "name": "estate",
+            "meaning": "n. 房地产；财产；身份",
+            "structurare": "e- 特别 + state 等级 ---- 财富； 单词estate源自status，表示地位，等同于state"
+          },
+          {
+            "name": "nation-state",
+            "meaning": "n. 单一民族国家",
+            "structurare": ""
+          },
+          {
+            "name": "overstate",
+            "meaning": "vt. 夸张；夸大的叙述",
+            "structurare": ""
+          },
+          {
+            "name": "stated",
+            "meaning": "adj. 规定的；阐明的；定期的",
+            "structurare": ""
+          },
+          {
+            "name": "upstate",
+            "meaning": "adj. 北部的；偏僻的 n. 州的北部; adv. 在州的北部；在州内远离大城市地区",
+            "structurare": ""
+          },
+          {
+            "name": "reinstate",
+            "meaning": " vt. 使恢复；使复原",
+            "structurare": ""
+          },
+          {
+            "name": "stately",
+            "meaning": "adj. 庄严的；堂皇的，宏伟的",
+            "structurare": ""
+          },
+          {
+            "name": "workstation",
+            "meaning": "n. 工作站",
+            "structurare": ""
+          },
+          {
+            "name": "state-owned",
+            "meaning": "adj. 国有的；国营的；州立的",
+            "structurare": ""
+          },
+          {
+            "name": "understate",
+            "meaning": "vt. 少说，少报；保守地说；有意轻描淡写 vi. 保守地说；有意轻描淡写",
+            "structurare": ""
+          },
+          {
+            "name": "understated",
+            "meaning": "adj. 低调的；朴素的；轻描淡写的；不夸张的",
+            "structurare": ""
+          },
+          {
+            "name": "understatement",
+            "meaning": "n. 保守的陈述；不充分的陈述；有保留的陈述",
+            "structurare": ""
+          },
+          {
+            "name": "state-run",
+            "meaning": "adj. [经] 国营的；州立的",
+            "structurare": ""
+          },
+          {
+            "name": "statehood",
+            "meaning": "n. 国家地位；州的状态或地位",
+            "structurare": ""
+          },
+          {
+            "name": "out-of-state",
+            "meaning": "n. 州外学生",
+            "structurare": ""
+          },
+          {
+            "name": "stateroom",
+            "meaning": "n. 政府公寓；特等舱；包房",
+            "structurare": ""
+          },
+          {
+            "name": "restate",
+            "meaning": "vt. 重申；重新叙述；重讲",
+            "structurare": ""
+          },
+          {
+            "name": "state-sponsored",
+            "meaning": "adj. 国家支持的",
+            "structurare": ""
+          },
+          {
+            "name": "misstate",
+            "meaning": "vt. 说错；作虚伪叙述，谎报",
+            "structurare": ""
+          },
+          {
+            "name": "in-state",
+            "meaning": "adv. 庄重地；正式地",
+            "structurare": "in- 使动 + state 等级 ---- 处于等级 ---- 等级森严 ---- 庄重"
+          },
+          {
+            "name": "city-state",
+            "meaning": "n. 城邦",
+            "structurare": ""
+          },
+          {
+            "name": "reinstatement",
+            "meaning": "n. 恢复；复原；复职",
+            "structurare": ""
+          },
+          {
+            "name": "overstatement",
+            "meaning": "n. 大话，夸大的叙述",
+            "structurare": ""
+          },
+          {
+            "name": "church-state",
+            "meaning": "n. 宗教政治",
+            "structurare": ""
+          },
+          {
+            "name": "statehouse",
+            "meaning": "n. 州议会的议场；州议会大厦",
+            "structurare": ""
+          },
+          {
+            "name": "unstated",
+            "meaning": "adj. 未声明的；未明确说明的",
+            "structurare": ""
+          },
+          {
+            "name": "substation",
+            "meaning": "n. 分局；变电所；分所；分台",
+            "structurare": ""
+          },
+          {
+            "name": "state-level",
+            "meaning": "n. 国家层面，州级",
+            "structurare": ""
+          },
+          {
+            "name": "state-controlled",
+            "meaning": " adj. 由政府控制的",
+            "structurare": ""
+          },
+          {
+            "name": "misstatement",
+            "meaning": "n. 虚伪的陈述；误述",
+            "structurare": ""
+          },
+          {
+            "name": "solid-state",
+            "meaning": "adj. 固态的；固态电子学的；固态物理学的；使用电晶体的",
+            "structurare": ""
+          },
+          {
+            "name": "restatement",
+            "meaning": "n. 重述；再次声明",
+            "structurare": ""
+          },
+          {
+            "name": "steady-state",
+            "meaning": "adj. 不变的；永恒的",
+            "structurare": "-stead- 站 ---- 停驻 ---- 永久 + -y 形容词后缀"
+          },
+          {
+            "name": "state-funded",
+            "meaning": "n. 国家资金",
+            "structurare": ""
+          },
+          {
+            "name": "all-state",
+            "meaning": "adj. [美国英国](尤指体育运动方面)州代表队的，代表全州的[亦作 all-State]",
+            "structurare": ""
+          },
+          {
+            "name": "statecraft",
+            "meaning": "n. 治国才能；管理国家的本领",
+            "structurare": ""
+          },
+          {
+            "name": "statesmanship",
+            "meaning": "n. 政治才能；政治家的风度",
+            "structurare": ""
+          },
+          {
+            "name": "state-by-state",
+            "meaning": "各州；各国",
+            "structurare": ""
+          },
+          {
+            "name": "state-to-state",
+            "meaning": "n. 国与国",
+            "structurare": ""
+          },
+          {
+            "name": "two-state",
+            "meaning": "adj. 双态的",
+            "structurare": ""
+          },
+          {
+            "name": "stateless",
+            "meaning": "adj. 没有国家的；无国家主权的",
+            "structurare": ""
+          },
+          {
+            "name": "state-mandated",
+            "meaning": "adj. 国家规定的",
+            "structurare": ""
+          },
+          {
+            "name": "non-state",
+            "meaning": "n.非国家；非国有；非政府",
+            "structurare": ""
+          },
+          {
+            "name": "state-supported",
+            "meaning": "adj. 国家资助的；国家支持的",
+            "structurare": ""
+          },
+          {
+            "name": "prostatectomy",
+            "meaning": "n. [泌尿] 前列腺切除术",
+            "structurare": ""
+          },
+          {
+            "name": "statesmanlike",
+            "meaning": "adj. 与政治家相称的；有政治家风度的",
+            "structurare": ""
+          },
+          {
+            "name": "state-sanctioned",
+            "meaning": "adj. 国家批准的；国家认可的",
+            "structurare": ""
+          },
+          {
+            "name": "federal-state",
+            "meaning": "n. 联邦国家",
+            "structurare": ""
+          },
+          {
+            "name": "state-led",
+            "meaning": "adj. 国家领导的；国家机关为主导的；政府主导的",
+            "structurare": "led是lead的过去分词"
+          },
+          {
+            "name": "state-based",
+            "meaning": "adj. 状态 基于状态 基于运动状态",
+            "structurare": ""
+          },
+          {
+            "name": "home-state",
+            "meaning": "n. 家乡的州；本国",
+            "structurare": ""
+          },
+          {
+            "name": "prostate-cancer",
+            "meaning": "n. 前列腺癌",
+            "structurare": ""
+          },
+          {
+            "name": "superstate",
+            "meaning": "n. 超大国；极权主义国家；整体主义国家",
+            "structurare": ""
+          },
+          {
+            "name": "estate-planning",
+            "meaning": "n. 财产规划",
+            "structurare": ""
+          },
+          {
+            "name": "tri-state",
+            "meaning": "n. 三态",
+            "structurare": ""
+          },
+          {
+            "name": "state-chartered",
+            "meaning": "adj. 国家特许的；州特许的",
+            "structurare": ""
+          },
+          {
+            "name": "state-imposed",
+            "meaning": "adj. 国家强制的",
+            "structurare": ""
+          },
+          {
+            "name": "stater",
+            "meaning": "n. 古代希腊的金币单位",
+            "structurare": ""
+          },
+          {
+            "name": "prostate-specific",
+            "meaning": "adj.前列腺特异，前列腺组织特异性，前列腺特异性",
+            "structurare": ""
+          },        {
+            "name": "state-approved",
+            "meaning": "adj. 国家批准的",
+            "structurare": ""
+          },
+          {
+            "name": "state-centered",
+            "meaning": " adj. 国家中心；国家中心论；国家为中心；析的中心",
+            "structurare": ""
+          },
+          {
+            "name": "state-centric",
+            "meaning": "adj. 以国家为中心的",
+            "structurare": ""
+          },
+          {
+            "name": "estate-tax",
+            "meaning": "n.（英）房地产遗产税",
+            "structurare": ""
+          },
+          {
+            "name": "state-issued",
+            "meaning": "adj. 特殊国有许可的",
+            "structurare": ""
+          },
+          {
+            "name": "state-federal",
+            "meaning": "adj. 州联邦的",
+            "structurare": ""
+          },
+          {
+            "name": "state-building",
+            "meaning": "n. 国家建设",
+            "structurare": ""
+          },
+          {
+            "name": "state-licensed",
+            "meaning": "adj. 州授权的，国家授权的",
+            "structurare": ""
+          },
+          {
+            "name": "state-operated",
+            "meaning": "adj. 国营的",
+            "structurare": ""
+          },
+          {
+            "name": "state-subsidized",
+            "meaning": "adj. 国家资助的",
+            "structurare": ""
+          },
+          {
+            "name": "multi-state",
+            "meaning": "adj. 多级的",
+            "structurare": ""
+          },
+          {
+            "name": "state-certified",
+            "meaning": "adj. 国家认可的",
+            "structurare": ""
+          },
+          {
+            "name": "overstated",
+            "meaning": "adj. 夸张的；过高的",
+            "structurare": ""
+          },
+          {
+            "name": "state-regulated",
+            "meaning": "adj. 国家调控的",
+            "structurare": ""
+          },
+          {
+            "name": "state-financed",
+            "meaning": "n. 国家财政",
+            "structurare": ""
+          },
+          {
+            "name": "pre-state",
+            "meaning": "adj. 前状态的",
+            "structurare": ""
+          },
+          {
+            "name": "state-appointed",
+            "meaning": "adj. 国家任命的",
+            "structurare": ""
+          },
+          {
+            "name": "state-dominated",
+            "meaning": "adj. 国家支配的",
+            "structurare": ""
+          },
+          {
+            "name": "oft-stated",
+            "meaning": "adj. 常说的",
+            "structurare": ""
+          },
+          {
+            "name": "red-state",
+            "meaning": "n. 红色州（选民倾向于投票给共和党的州）",
+            "structurare": ""
+          },
+          {
+            "name": "state-managed",
+            "meaning": "adj. 政府管理的",
+            "structurare": ""
+          },
+          {
+            "name": "welfare-state",
+            "meaning": "n. 福利国家",
+            "structurare": ""
+          },
+          {
+            "name": "state-enforced",
+            "meaning": "adj. 国家强制的",
+            "structurare": ""
+          },
+          {
+            "name": "antistate",
+            "meaning": "antistate",
+            "structurare": ""
+          },
+          {
+            "name": "state-record",
+            "meaning": "n. 国家档案",
+            "structurare": ""
+          },
+          {
+            "name": "cross-state",
+            "meaning": "adj. 观全国的",
+            "structurare": ""
+          },
+          {
+            "name": "instate",
+            "meaning": "vt. 任命",
+            "structurare": "in- 使动 + state 站 ---- 确立 + -e 动词后缀"
+          },
+          {
+            "name": "ground-state",
+            "meaning": "n. [物] 基态",
+            "structurare": ""
+          },
+          {
+            "name": "party-state",
+            "meaning": "n. 政党国家",
+            "structurare": ""
+          },
+          {
+            "name": "state-directed",
+            "meaning": " adj. 国家主导的",
+            "structurare": ""
+          },
+          {
+            "name": "one-state",
+            "meaning": "n. 单态，一状态",
+            "structurare": ""
+          },
+          {
+            "name": "single-state",
+            "meaning": "n. 单极并网逆变器",
+            "structurare": ""
+          },
+          {
+            "name": "three-state",
+            "meaning": "n. 三态",
+            "structurare": ""
+          },
+          {
+            "name": "five-state",
+            "meaning": "n. 五态",
+            "structurare": ""
+          },
+          {
+            "name": "stand",
+            "meaning": "vi. 站立；位于；停滞 vt. 使站立；忍受；抵抗 n. 站立；立场；看台；停止",
+            "structurare": ""
+          },
+          {
+            "name": "long-standing",
+            "meaning": "adj. 长期存在的；存在已久的",
+            "structurare": ""
+          },
+          {
+            "name": "understand",
+            "meaning": "vt. 理解；懂；获悉；推断；省略 vi. 理解；懂得；熟悉",
+            "structurare": ""
+          },
+          {
+            "name": "understood",
+            "meaning": "adj. 被充分理解的；心照不宣的",
+            "structurare": ""
+          },
+          {
+            "name": "understanding",
+            "meaning": " n. 谅解，理解；理解力；协议; adj. 了解的；聪明的；有理解力的",
+            "structurare": "understand 的代名词或者形容词"
+          },
+          {
+            "name": "understandingly",
+            "meaning": "adv. 领悟地；宽容地",
+            "structurare": ""
+          },
+          {
+            "name": "understandable",
+            "meaning": "adj. 可以理解的；可以了解的",
+            "structurare": ""
+          },
+          {
+            "name": "misunderstand",
+            "meaning": "vt. 误解；误会",
+            "structurare": ""
+          },
+          {
+            "name": "misunderstood",
+            "meaning": "adj. 被误解的",
+            "structurare": ""
+          },
+          {
+            "name": "misunderstanding",
+            "meaning": "n. 误解；误会；不和",
+            "structurare": ""
+          },
+          {
+            "name": "bystander",
+            "meaning": "n. 旁观者；看热闹的人",
+            "structurare": ""
+          },
+          {
+            "name": "standing",
+            "meaning": "adj. 长期的；直立的；固定的 n. 站立；持续；身分",
+            "structurare": ""
+          },
+          {
+            "name": "outstanding",
+            "meaning": "adj. 杰出的；显著的；未解决的；未偿付的 n. 未偿贷款",
+            "structurare": ""
+          },
+          {
+            "name": "standpoint",
+            "meaning": " n. 立场；观点",
+            "structurare": ""
+          },
+          {
+            "name": "withstand",
+            "meaning": "vt. 抵挡；禁得起；反抗 vi. 反抗",
+            "structurare": ""
+          },
+          {
+            "name": "standoff",
+            "meaning": "n. 和局；僵持；冷淡；平衡 adj. 冷淡的；有支架的",
+            "structurare": ""
+          },
+          {
+            "name": "understandably",
+            "meaning": "adv. 可理解地",
+            "structurare": ""
+          },
+          {
+            "name": "notwithstanding",
+            "meaning": "adv. 尽管，仍然 prep. 尽管，虽然 conj. 虽然",
+            "structurare": ""
+          },
+          {
+            "name": "standout",
+            "meaning": "n. 杰出的人；突出度 adj. 杰出的；出色的",
+            "structurare": ""
+          },
+          {
+            "name": "standard",
+            "meaning": "n. 标准；水准；旗；度量衡标准 adj. 标准的；合规格的；公认为优秀的",
+            "structurare": ""
+          },
+          {
+            "name": "standardize",
+            "meaning": "vt. 使标准化；用标准检验",
+            "structurare": ""
+          },
+          {
+            "name": "standardized",
+            "meaning": "adj. 标准的；标准化的；定型的",
+            "structurare": ""
+          },
+          {
+            "name": "stand-up",
+            "meaning": "adj. 站立的；直立的；说单口相声的",
+            "structurare": ""
+          },
+          {
+            "name": "newsstand",
+            "meaning": "n. 报摊；杂志摊",
+            "structurare": ""
+          },
+          {
+            "name": "standardization",
+            "meaning": "n. 标准化；[数] 规格化；校准",
+            "structurare": ""
+          },
+          {
+            "name": "standstill",
+            "meaning": "n. 停顿；停止",
+            "structurare": ""
+          },
+          {
+            "name": "nightstand",
+            "meaning": "n. （美）床头几（等于 night table）",
+            "structurare": ""
+          },
+          {
+            "name": "stand-alone",
+            "meaning": "n. 独立；单机 adj. 独立的；独立操作的",
+            "structurare": ""
+          },
+          {
+            "name": "standby",
+            "meaning": " n. 备用品；可信赖的人 adj. 备用的 adv. 备用地；待命地",
+            "structurare": ""
+          },
+          {
+            "name": "free-standing",
+            "meaning": "adj. 独立的；不需依靠支撑物的",
+            "structurare": ""
+          },
+          {
+            "name": "substandard",
+            "meaning": "adj. 不合规格的；标准以下的",
+            "structurare": ""
+          },
+          {
+            "name": "stand-in",
+            "meaning": "n. 替身",
+            "structurare": ""
+          },
+          {
+            "name": "grandstand",
+            "meaning": "n. 正面看台；观众；哗众取宠的表演 vi. 做博取观众喝采的演技; adj. 看台上的",
+            "structurare": ""
+          },
+          {
+            "name": "grandstanding",
+            "meaning": "n. 哗众取宠；炫耀",
+            "structurare": ""
+          },
+          {
+            "name": "upstanding",
+            "meaning": "adj. 良好的；正直的；直立的；姿势笔直的",
+            "structurare": ""
+          },        {
+            "name": "standards-based",
+            "meaning": " adj. 基于标准",
+            "structurare": ""
+          },
+          {
+            "name": "self-understanding",
+            "meaning": "n. 自我理解；自知之明",
+            "structurare": ""
+          },
+          {
+            "name": "standard-bearer",
+            "meaning": "n. 旗手；领导人",
+            "structurare": ""
+          },
+          {
+            "name": "standing-room",
+            "meaning": "n. 站席",
+            "structurare": ""
+          },
+          {
+            "name": "standard-size",
+            "meaning": "n. [计量] 标准尺寸",
+            "structurare": ""
+          },
+          {
+            "name": "standard-setting",
+            "meaning": "n. 标准设定；标准设置",
+            "structurare": ""
+          },
+          {
+            "name": "industry-standard",
+            "meaning": "n. 行业标准",
+            "structurare": ""
+          },
+          {
+            "name": "outstandingly",
+            "meaning": "adv. 醒目地",
+            "structurare": ""
+          },
+          {
+            "name": "non-standard",
+            "meaning": " adj. 不标准的，不规范的（词、发音）",
+            "structurare": ""
+          },
+          {
+            "name": "standardised",
+            "meaning": "vt. 使…符合标准；使…标准化；使…统一",
+            "structurare": ""
+          },
+          {
+            "name": "unstandardized",
+            "meaning": "adj. 不标准的；不规范的",
+            "structurare": ""
+          },
+          {
+            "name": "nonstandardized",
+            "meaning": "adj. 非标准化的",
+            "structurare": ""
+          },
+          {
+            "name": "freestanding",
+            "meaning": "adj. 独立式的；非附属的；不需依靠支撑物的",
+            "structurare": ""
+          },
+          {
+            "name": "kickstand",
+            "meaning": "n. 支架；撑脚架",
+            "structurare": ""
+          },
+          {
+            "name": "standard-sized",
+            "meaning": "adj. 标准尺寸的",
+            "structurare": ""
+          },
+          {
+            "name": "double-standard",
+            "meaning": "n. 双重标准",
+            "structurare": ""
+          },
+          {
+            "name": "stander",
+            "meaning": "n. 机架；竖立的东西；煤柱；采伐残留木",
+            "structurare": ""
+          },
+          {
+            "name": "gold-standard",
+            "meaning": "n. [金融] 金本位，金本位制",
+            "structurare": ""
+          },
+          {
+            "name": "bedstand",
+            "meaning": "n. 试验台；床头柜",
+            "structurare": ""
+          },
+          {
+            "name": "still-standing",
+            "meaning": "n. 静置",
+            "structurare": ""
+          },
+          {
+            "name": "stand-down",
+            "meaning": "n. 暂停；停止；停工（等于 standdown）",
+            "structurare": ""
+          },
+          {
+            "name": "tree-stand",
+            "meaning": "n. 树架",
+            "structurare": ""
+          },
+          {
+            "name": "still",
+            "meaning": "adv. 仍然；更；静止地 adj. 静止的，不动的；寂静的，平静的；不起泡的; n. 寂静；剧照；蒸馏室 conj. 仍然；但是；尽管如此 vt. 蒸馏；使…静止；使…平静下来; vi. 静止；平静；蒸馏",
+            "structurare": ""
+          },
+          {
+            "name": "stillness",
+            "meaning": "n. 静止；沉静",
+            "structurare": ""
+          },
+          {
+            "name": "stillborn",
+            "meaning": "adj. 死胎的，生下来已死的",
+            "structurare": ""
+          },
+          {
+            "name": "instill",
+            "meaning": "vt. 徐徐滴入；逐渐灌输",
+            "structurare": ""
+          },
+          {
+            "name": "instillation",
+            "meaning": "n. 慢慢灌输；滴注法；滴剂",
+            "structurare": ""
+          },
+          {
+            "name": "distill",
+            "meaning": " vt. 提取；蒸馏；使滴下 vi. 蒸馏；滴下；作为精华产生（等于 distil）",
+            "structurare": ""
+          },
+          {
+            "name": "distiller",
+            "meaning": "n. 蒸馏器；蒸馏酒者",
+            "structurare": ""
+          },
+          {
+            "name": "distilled",
+            "meaning": "adj. 由蒸馏得来的；净化的",
+            "structurare": ""
+          },
+          {
+            "name": "distillation",
+            "meaning": "n. 精馏，蒸馏，净化；蒸馏法；精华，蒸馏物",
+            "structurare": ""
+          },
+          {
+            "name": "distillery",
+            "meaning": "n. 酿酒厂；蒸馏室",
+            "structurare": ""
+          },
+          {
+            "name": "stock-still",
+            "meaning": "adj. 静止的 adv. 静止地",
+            "structurare": ""
+          },
+          {
+            "name": "still-life",
+            "meaning": "n. 静物；静物画",
+            "structurare": ""
+          },
+          {
+            "name": "still-warm",
+            "meaning": "adj. 余温的",
+            "structurare": ""
+          },
+          {
+            "name": "still-living",
+            "meaning": "adj. 仍然活着的",
+            "structurare": ""
+          },
+          {
+            "name": "still-hot",
+            "meaning": "adj. 依旧火爆的",
+            "structurare": ""
+          },
+          {
+            "name": "still-young",
+            "meaning": "adj. 依然年轻的",
+            "structurare": ""
+          },
+          {
+            "name": "stay",
+            "meaning": "vi. 停留；坚持；暂住",
+            "structurare": ""
+          },
+          {
+            "name": "stayer",
+            "meaning": "n. 滞留者；抑制物；支持者；耐性极强的人",
+            "structurare": ""
+          },
+          {
+            "name": "staying",
+            "meaning": "n. 刚性结合；撑法；加劲；[机] 拉线",
+            "structurare": ""
+          },
+          {
+            "name": "overstay",
+            "meaning": "vi. 逗留得过久 vt. 呆得超过…的限度；货物保留过久错过最赚钱的机会",
+            "structurare": ""
+          },
+          {
+            "name": "stage",
+            "meaning": "n. 阶段；舞台；戏剧；驿站",
+            "structurare": ""
+          },
+          {
+            "name": "staging",
+            "meaning": "n. 上演；分段运输；脚手架；乘驿马车的旅行",
+            "structurare": ""
+          },
+          {
+            "name": "stagy",
+            "meaning": "adj. 做作的，不自然的",
+            "structurare": ""
+          },
+          {
+            "name": "stagey",
+            "meaning": "adj. 做作的（等于 stagy）",
+            "structurare": ""
+          },
+          {
+            "name": "stagflation",
+            "meaning": "n. [经] 滞胀，不景气状况下之物价上涨",
+            "structurare": ""
+          },
+          {
+            "name": "onstage",
+            "meaning": "adj. 台上的；台上演出的 adv. 上台；上场",
+            "structurare": ""
+          },
+          {
+            "name": "backstage",
+            "meaning": "adv. 在后台；向后台",
+            "structurare": ""
+          },
+          {
+            "name": "offstage",
+            "meaning": "n. 舞台后面；舞台内部 adj. 舞台内部的 adv. 在舞台内部；私生活里",
+            "structurare": ""
+          },
+          {
+            "name": "upstage",
+            "meaning": "vt. 抢…镜头；使相形见绌 adj. 自负的；在舞台后部的 adv. 在舞台后方; n. 舞台后部",
+            "structurare": ""
+          },
+          {
+            "name": "staged",
+            "meaning": "adj. 分期的",
+            "structurare": ""
+          },
+          {
+            "name": "stagecoach",
+            "meaning": "n. 公共马车；驿站马车",
+            "structurare": ""
+          },
+          {
+            "name": "stagehand",
+            "meaning": "n. 舞台工作人员；舞台管理",
+            "structurare": ""
+          },
+          {
+            "name": "soundstage",
+            "meaning": " n. 隔音摄影棚",
+            "structurare": ""
+          },
+          {
+            "name": "multistage",
+            "meaning": "adj. 多级的；多阶段的；多节的 vt. 使成多级；使分成多阶段",
+            "structurare": ""
+          },
+          {
+            "name": "restage",
+            "meaning": "v. 再组织；重新表演；重新上演",
+            "structurare": ""
+          },
+          {
+            "name": "stagecraft",
+            "meaning": "n. 编剧才能；演出技术",
+            "structurare": ""
+          },
+          {
+            "name": "downstage",
+            "meaning": "adj. 前台的；向舞台前方的 adv. 在舞台前地 n. 舞台的前半部",
+            "structurare": ""
+          },
+          {
+            "name": "single-stage",
+            "meaning": "adj. (火箭、导弹等)单级的",
+            "structurare": ""
+          },
+          {
+            "name": "two-stage",
+            "meaning": "n. 两级；双级 adj. 二级的",
+            "structurare": ""
+          },
+          {
+            "name": "three-stage",
+            "meaning": "adj. 三级的",
+            "structurare": ""
+          },
+          {
+            "name": "four-stage",
+            "meaning": "adj. 四级的",
+            "structurare": ""
+          },
+          {
+            "name": "five-stage",
+            "meaning": "n. 五阶段",
+            "structurare": ""
+          },
+          {
+            "name": "early-stage",
+            "meaning": "n. 早期，初期",
+            "structurare": ""
+          },
+          {
+            "name": "stage-managed",
+            "meaning": "vt. 担任……之舞台监督；幕后监督；指挥 vi. 担任舞台监督",
+            "structurare": ""
+          },
+          {
+            "name": "first-stage",
+            "meaning": "n. 第一阶段的；第一级的；第一期的",
+            "structurare": ""
+          },
+          {
+            "name": "second-stage",
+            "meaning": "n. 第二级",
+            "structurare": ""
+          },
+          {
+            "name": "third-stage",
+            "meaning": "n. 第三阶段；第三级",
+            "structurare": ""
+          },        {
+            "name": "stage-like",
+            "meaning": "n. 阶段",
+            "structurare": ""
+          },
+          {
+            "name": "rest",
+            "meaning": "vt. 使休息，使轻松 n. 休息，静止；休息时间；剩余部分",
+            "structurare": ""
+          },
+          {
+            "name": "unrest",
+            "meaning": "n. 不安；动荡的局面；不安的状态",
+            "structurare": ""
+          },
+          {
+            "name": "restless",
+            "meaning": "adj. 焦躁不安的；不安宁的；得不到满足的",
+            "structurare": ""
+          },
+          {
+            "name": "restlessly",
+            "meaning": "adv. 不安地；慌张地",
+            "structurare": ""
+          },
+          {
+            "name": "restful",
+            "meaning": "adj. 宁静的；安静的；给人休息的",
+            "structurare": ""
+          },
+          {
+            "name": "resting",
+            "meaning": "adj. 静止的；休眠的",
+            "structurare": ""
+          },
+          {
+            "name": "restive",
+            "meaning": "adj. 倔强的；难驾御的；不安宁的",
+            "structurare": ""
+          },
+          {
+            "name": "rested",
+            "meaning": "adj. 精力充沛的；休息得好的",
+            "structurare": ""
+          },
+          {
+            "name": "restitution",
+            "meaning": "n. 恢复；赔偿；归还",
+            "structurare": ""
+          },
+          {
+            "name": "restlessness",
+            "meaning": "n. 坐立不安；不安定",
+            "structurare": ""
+          },
+          {
+            "name": "restroom",
+            "meaning": "n. 厕所；洗手间",
+            "structurare": ""
+          },
+          {
+            "name": "restaurant",
+            "meaning": "n. 餐馆；[经] 饭店",
+            "structurare": ""
+          },
+          {
+            "name": "restaurateur",
+            "meaning": "n. 饭店主人；餐馆老板",
+            "structurare": ""
+          },
+          {
+            "name": "restiveness",
+            "meaning": "n. 难以驾御；倔强",
+            "structurare": ""
+          },
+          {
+            "name": "underestimated",
+            "meaning": "vt. 低估；看轻 n. 低估",
+            "structurare": ""
+          },
+          {
+            "name": "arrest",
+            "meaning": "vt. 逮捕；阻止；吸引 n. 逮捕；监禁",
+            "structurare": ""
+          },
+          {
+            "name": "arrested",
+            "meaning": "adj. 逮捕的；被捕的；被拘留的",
+            "structurare": ""
+          },
+          {
+            "name": "arresting",
+            "meaning": "adj. 醒目的，有趣的；引人注意的",
+            "structurare": ""
+          },
+          {
+            "name": "store",
+            "meaning": "n. 商店；储备，贮藏；仓库 vt. 贮藏，储存",
+            "structurare": ""
+          },
+          {
+            "name": "stored",
+            "meaning": "adj. 储存的",
+            "structurare": ""
+          },
+          {
+            "name": "storeroom",
+            "meaning": " n. 库房；储藏室",
+            "structurare": ""
+          },
+          {
+            "name": "storefront",
+            "meaning": "n. [贸易] 店面；店头",
+            "structurare": ""
+          },
+          {
+            "name": "store-bought",
+            "meaning": "adj. 现成的；店里买的",
+            "structurare": ""
+          },
+          {
+            "name": "storage",
+            "meaning": "n. 存储；仓库；贮藏所",
+            "structurare": ""
+          },
+          {
+            "name": "self-storage",
+            "meaning": "n. 自我保管；自存储；自我储存",
+            "structurare": ""
+          },
+          {
+            "name": "cold-storage",
+            "meaning": "n. 冷藏；坟墓",
+            "structurare": ""
+          },
+          {
+            "name": "storable",
+            "meaning": "adj. 可储存的；耐贮藏的 n. 耐贮藏的物品",
+            "structurare": ""
+          },
+          {
+            "name": "bookstore",
+            "meaning": "n. 书店（等于 bookshop）",
+            "structurare": ""
+          },
+          {
+            "name": "drugstore",
+            "meaning": "n. [药] 药房（常兼售化妆品、杂志等杂货）；（美）杂货店",
+            "structurare": ""
+          },
+          {
+            "name": "superstore",
+            "meaning": "n. 大型超级市场；大型超市",
+            "structurare": ""
+          },
+          {
+            "name": "restore",
+            "meaning": "vt. 恢复；修复；归还 vi. 恢复；还原",
+            "structurare": ""
+          },
+          {
+            "name": "restoration",
+            "meaning": "n. 恢复；复位；王政复辟；归还",
+            "structurare": ""
+          },
+          {
+            "name": "restored",
+            "meaning": "adj. 精力充沛的；精力恢复的",
+            "structurare": ""
+          },
+          {
+            "name": "restoring",
+            "meaning": "adj. 恢复的",
+            "structurare": ""
+          },
+          {
+            "name": "restorative",
+            "meaning": "n. [药] 恢复药，滋补剂 adj. 滋补的，有助于复元的；恢复健康的",
+            "structurare": ""
+          },
+          {
+            "name": "restorer",
+            "meaning": "n. 修补者；[计] 复位器；[计] 恢复设备；修建者",
+            "structurare": ""
+          },
+          {
+            "name": "restorationist",
+            "meaning": "n. 1. 众生复位说信徒 2. (旧建筑物等的)修复者; adj. [R-](英国)王政复辟时期的；带有王政复辟时期色彩的",
+            "structurare": ""
+          },
+          {
+            "name": "transistor",
+            "meaning": "n. 晶体管（收音机）",
+            "structurare": ""
+          },
+          {
+            "name": "test",
+            "meaning": "n. 试验；检验 vt. 试验；测试 vi. 试验；测试",
+            "structurare": ""
+          },
+          {
+            "name": "testing",
+            "meaning": "n. [试验] 测试 adj. 试验的；棘手的",
+            "structurare": ""
+          },
+          {
+            "name": "testimony",
+            "meaning": "n. [法] 证词，证言；证据",
+            "structurare": ""
+          },
+          {
+            "name": "testify",
+            "meaning": "vt. 证明，证实；作证 vi. 作证；证明",
+            "structurare": ""
+          },
+          {
+            "name": "tester",
+            "meaning": "n. 天盖；检验器；试验员",
+            "structurare": ""
+          },
+          {
+            "name": "testament",
+            "meaning": "n. [法] 遗嘱；圣约；确实的证明",
+            "structurare": ""
+          },
+          {
+            "name": "subtest",
+            "meaning": "n. 分测验；子测验",
+            "structurare": ""
+          },
+          {
+            "name": "testimonial",
+            "meaning": "n. 证明书；推荐书 adj. 证明的；褒奖的；表扬的",
+            "structurare": ""
+          },
+          {
+            "name": "testicle",
+            "meaning": "n. [解剖] 睾丸",
+            "structurare": ""
+          },
+          {
+            "name": "t-test",
+            "meaning": "n. 检定；分析；检验；考验",
+            "structurare": ""
+          },
+          {
+            "name": "untested",
+            "meaning": "adj. 未经检验的；[试验] 未试验的",
+            "structurare": ""
+          },
+          {
+            "name": "test-retest",
+            "meaning": "adj.【心理学】两次试验法的",
+            "structurare": ""
+          },
+          {
+            "name": "tested",
+            "meaning": "adj. 经受过考验的；经验定的",
+            "structurare": ""
+          },
+          {
+            "name": "testicular",
+            "meaning": "adj. [解剖] 睾丸的；睾丸状的",
+            "structurare": ""
+          },
+          {
+            "name": "testable",
+            "meaning": "adj. 可试验的；有资格立遗嘱的；可根据遗嘱处理的；有资格作证人的",
+            "structurare": ""
+          },
+          {
+            "name": "time-tested",
+            "meaning": "adj. 久经试验的；经受时间考验的",
+            "structurare": ""
+          },
+          {
+            "name": "test-taking",
+            "meaning": "n. 应试；参加测试",
+            "structurare": ""
+          },
+          {
+            "name": "test-taker",
+            "meaning": "n. 测试对象；考生",
+            "structurare": ""
+          },
+          {
+            "name": "means-tested",
+            "meaning": "adj. 经过经济情况调查的",
+            "structurare": ""
+          },
+          {
+            "name": "testis",
+            "meaning": "n. [解剖] 睾丸",
+            "structurare": ""
+          },
+          {
+            "name": "self-test",
+            "meaning": "n. 自检测试",
+            "structurare": ""
+          },
+          {
+            "name": "test-ban",
+            "meaning": "n. [核] 禁止核试验的",
+            "structurare": ""
+          },
+          {
+            "name": "test-score",
+            "meaning": "n. 成绩；校验得分；测验分数",
+            "structurare": ""
+          },
+          {
+            "name": "pre-tested",
+            "meaning": "adj. 先期测验的",
+            "structurare": ""
+          },
+          {
+            "name": "field-testing",
+            "meaning": "n. 实地测试；[农] 田间试验",
+            "structurare": ""
+          },
+          {
+            "name": "testbed",
+            "meaning": "n. 试验台",
+            "structurare": ""
+          },
+          {
+            "name": "test-fired",
+            "meaning": "vt. 试射",
+            "structurare": ""
+          },
+          {
+            "name": "protest",
+            "meaning": "vi. 抗议；断言 vt. 抗议；断言 n. 抗议 adj. 表示抗议的；抗议性的",
+            "structurare": ""
+          },
+          {
+            "name": "protestor",
+            "meaning": "n. 抗议者",
+            "structurare": ""
+          },
+          {
+            "name": "protestation",
+            "meaning": "n. 抗议，异议；声明；断言",
+            "structurare": ""
+          },        {
+            "name": "protester",
+            "meaning": "n. 抗议者；反对者；持异议者",
+            "structurare": ""
+          },
+          {
+            "name": "protesting",
+            "meaning": " n. 抗议【动名词 ing】",
+            "structurare": ""
+          },
+          {
+            "name": "protestant",
+            "meaning": " adj. 抗议的；持异议的；新教的 n. 抗议者；持异议者；新教徒",
+            "structurare": ""
+          },
+          {
+            "name": "contest",
+            "meaning": "vt. 争辩；质疑 vi. 竞争；争辩 n. 竞赛；争夺；争论",
+            "structurare": ""
+          },
+          {
+            "name": "contestation",
+            "meaning": " n. 争论；主张",
+            "structurare": ""
+          },
+          {
+            "name": "no-contest",
+            "meaning": "n. 无赛事；无竞争；不抗辩；无争议",
+            "structurare": ""
+          },
+          {
+            "name": "contestant",
+            "meaning": "n. 竞争者；争辩者",
+            "structurare": ""
+          },
+          {
+            "name": "contested",
+            "meaning": "adj. 必争的",
+            "structurare": ""
+          },
+          {
+            "name": "uncontested",
+            "meaning": " adj. 无竞争的；无异议的；无争议的",
+            "structurare": ""
+          },
+          {
+            "name": "contesting",
+            "meaning": " n. 争辩（contest 的现在分词）",
+            "structurare": ""
+          },
+          {
+            "name": "contestable",
+            "meaning": "adj. 争论的；可争的",
+            "structurare": ""
+          },
+          {
+            "name": "incontestable",
+            "meaning": " adj. 无可争辩的；无可置疑的，不可否认的；明确的",
+            "structurare": ""
+          },
+          {
+            "name": "detest",
+            "meaning": "vt. 厌恶；憎恨",
+            "structurare": ""
+          },
+          {
+            "name": "detested",
+            "meaning": "adj. 厌恨的",
+            "structurare": ""
+          },
+          {
+            "name": "detestable",
+            "meaning": "adj. 可憎的，可恶的；嫌恶的",
+            "structurare": ""
+          },
+          {
+            "name": "detestation",
+            "meaning": "n. 嫌恶，痛恨，憎恶；令人厌恶的人",
+            "structurare": ""
+          },
+          {
+            "name": "attestation",
+            "meaning": "n. 证明；证据；证实；宣誓",
+            "structurare": ""
+          },
+          {
+            "name": "pretest",
+            "meaning": "n. 预备考试；预备调查 vt. 进行预备考试；进行预测; vi. 进行预备考试；进行预测",
+            "structurare": ""
+          },
+          {
+            "name": "pre-testing",
+            "meaning": "n. 预先测试（pre-test 的 ing 形式）",
+            "structurare": ""
+          },
+          {
+            "name": "retest",
+            "meaning": "n. 再测验；再考验 vt. 再考验；[试验] 重复测试",
+            "structurare": ""
+          },
+          {
+            "name": "retesting",
+            "meaning": " n. 重新检验；重新试验",
+            "structurare": ""
+          },
+          {
+            "name": "testily",
+            "meaning": "adv. 暴躁地，易怒地；恼火地，不耐烦地",
+            "structurare": ""
+          },
+          {
+            "name": "untestable",
+            "meaning": "adj. 不可验证的",
+            "structurare": ""
+          },
+          {
+            "name": "testamentary",
+            "meaning": "adj. 遗嘱的，据遗嘱的；遗嘱中写明的",
+            "structurare": ""
+          },
+          {
+            "name": "exist",
+            "meaning": "v. 存在",
+            "structurare": ""
+          },
+          {
+            "name": "existent",
+            "meaning": "adj. 存在的",
+            "structurare": ""
+          },
+          {
+            "name": "nonexistent",
+            "meaning": "adj. 不存在的",
+            "structurare": ""
+          },
+          {
+            "name": "existential",
+            "meaning": "adj. 存在主义的；有关存在的；存在判断的",
+            "structurare": ""
+          },
+          {
+            "name": "existentialist",
+            "meaning": "n. 存在主义者 adj. 存在主义的",
+            "structurare": ""
+          },
+          {
+            "name": "existentialism",
+            "meaning": "n. 存在主义",
+            "structurare": ""
+          },
+          {
+            "name": "existence",
+            "meaning": "n. 存在，存在物",
+            "structurare": ""
+          },
+          {
+            "name": "nonexistence",
+            "meaning": "n. 不存在；不存在的事",
+            "structurare": ""
+          },
+          {
+            "name": "existed",
+            "meaning": "adj. 生存的，存在的",
+            "structurare": ""
+          },
+          {
+            "name": "existing",
+            "meaning": "adj. 目前的；现存的",
+            "structurare": ""
+          },
+          {
+            "name": "coexist",
+            "meaning": "vi. 共存；和平共处",
+            "structurare": ""
+          },
+          {
+            "name": "coexistent",
+            "meaning": "adj. 同时共存的；同时代的",
+            "structurare": ""
+          },
+          {
+            "name": "coexistence",
+            "meaning": "n. 共存；和平共处；并立",
+            "structurare": ""
+          },
+          {
+            "name": "coexisting",
+            "meaning": "adj. 共存的",
+            "structurare": ""
+          },
+          {
+            "name": "preexist",
+            "meaning": "vi. 先前存在 vt. 先于…存在",
+            "structurare": ""
+          },
+          {
+            "name": "preexistent",
+            "meaning": "adj. 先在的；事先存在",
+            "structurare": ""
+          },
+          {
+            "name": "preexistence",
+            "meaning": "n. 前世；先存在；灵魂先存",
+            "structurare": ""
+          },
+          {
+            "name": "pre-existing",
+            "meaning": "adj. 先已存在的",
+            "structurare": ""
+          },
+          {
+            "name": "steel",
+            "meaning": "n. 钢铁；钢制品；坚固 vt. 钢化；使冷酷; adj. 钢制的；钢铁业的；坚强的",
+            "structurare": ""
+          },
+          {
+            "name": "steely",
+            "meaning": "adj. 似钢的，钢铁般的；钢制的；严格的",
+            "structurare": ""
+          },
+          {
+            "name": "steeliness",
+            "meaning": "n. 钢制；冷酷；顽固",
+            "structurare": ""
+          },
+          {
+            "name": "steelhead",
+            "meaning": "n. 虹鳟；硬头鳟；北美鳟鱼",
+            "structurare": ""
+          },
+          {
+            "name": "steelworker",
+            "meaning": "n. 炼钢工人",
+            "structurare": ""
+          },
+          {
+            "name": "steelmaker",
+            "meaning": "n. 钢铁制造商；炼钢工",
+            "structurare": ""
+          },
+          {
+            "name": "steelwork",
+            "meaning": "n. 钢制品；炼钢厂；钢铁构造",
+            "structurare": ""
+          },
+          {
+            "name": "steel-gray",
+            "meaning": "adj. 稍带蓝色的灰色",
+            "structurare": ""
+          },
+          {
+            "name": "steel-toed",
+            "meaning": "adj. 钢制鞋头的",
+            "structurare": ""
+          },
+          {
+            "name": "steely-eyed",
+            "meaning": "adj. 目光坚毅的",
+            "structurare": ""
+          },
+          {
+            "name": "steel-rimmed",
+            "meaning": "adj. 镶钢边的",
+            "structurare": ""
+          },
+          {
+            "name": "steel-blue",
+            "meaning": "n. 钢青色 adj. 钢青色的",
+            "structurare": ""
+          },
+          {
+            "name": "steel-framed",
+            "meaning": "adj. 钢架的",
+            "structurare": ""
+          },
+          {
+            "name": "steel-and-glass",
+            "meaning": "n. 玻璃钢",
+            "structurare": ""
+          },
+          {
+            "name": "station",
+            "meaning": "n 根据地，驻扎地，基地",
+            "structurare": ""
+          },
+          {
+            "name": "stationary",
+            "meaning": "adj. 固定的；静止的；定居的；常备军的 n. 不动的人；驻军",
+            "structurare": ""
+          },
+          {
+            "name": "stationery",
+            "meaning": "n. 文具；信纸",
+            "structurare": ""
+          },
+          {
+            "name": "stationer",
+            "meaning": "n. 文具店；文具商",
+            "structurare": ""
+          },
+          {
+            "name": "stationing",
+            "meaning": "n. 驻军",
+            "structurare": ""
+          },
+          {
+            "name": "molestation",
+            "meaning": "n. 干扰，妨害；折磨；调戏",
+            "structurare": ""
+          },
+          {
+            "name": "child-molestation",
+            "meaning": "n. 儿童性骚扰",
+            "structurare": ""
+          },
+          {
+            "name": "superstation",
+            "meaning": "n. 特大型发电厂；特大功率电台",
+            "structurare": ""
+          },
+          {
+            "name": "gas-station",
+            "meaning": "n. 加油站",
+            "structurare": ""
+          },
+          {
+            "name": "geostationary",
+            "meaning": "adj. 与地球旋转同步的",
+            "structurare": ""
+          },
+          {
+            "name": "stationmaster",
+            "meaning": "n. （火车站）站长",
+            "structurare": ""
+          },
+          {
+            "name": "space-station",
+            "meaning": "n. 空间站，太空站",
+            "structurare": ""
+          },
+          {
+            "name": "stationhouse",
+            "meaning": "n. 消防队；派出所",
+            "structurare": ""
+          },        {
+            "name": "distant",
+            "meaning": "adj. 遥远的；冷漠的；远隔的；不友好的，冷淡的",
+            "structurare": ""
+          },
+          {
+            "name": "distantly",
+            "meaning": "adv. 远离地；疏远地；冷淡地",
+            "structurare": ""
+          },
+          {
+            "name": "distance",
+            "meaning": "n. 距离；远方；疏远",
+            "structurare": ""
+          },
+          {
+            "name": "distancing",
+            "meaning": "n. 距离",
+            "structurare": ""
+          },
+          {
+            "name": "distal",
+            "meaning": "adj. [解剖] 末梢的，末端的",
+            "structurare": ""
+          },
+          {
+            "name": "distally",
+            "meaning": "adv. 远侧地",
+            "structurare": ""
+          },
+          {
+            "name": "distance-learning",
+            "meaning": "n. 远程教育；函授学习",
+            "structurare": ""
+          },
+          {
+            "name": "distant-water",
+            "meaning": "adj. 远海的，远洋的",
+            "structurare": ""
+          },
+          {
+            "name": "far-distant",
+            "meaning": " adj. 非常遥远的",
+            "structurare": ""
+          },
+          {
+            "name": "short-distance",
+            "meaning": "n. 短途",
+            "structurare": ""
+          },
+          {
+            "name": "long-distance",
+            "meaning": "adj. [通信][交]长途的；长距离的 vt. 打长途电话给 adv. 通过长途电话",
+            "structurare": ""
+          },
+          {
+            "name": "not-too-distant",
+            "meaning": "adj. 不远的；不久的",
+            "structurare": ""
+          },
+          {
+            "name": "not-so-distant",
+            "meaning": "adj. 不远的",
+            "structurare": ""
+          },
+          {
+            "name": "middle-distance",
+            "meaning": "adj. 中等距离的",
+            "structurare": ""
+          },
+          {
+            "name": "stance",
+            "meaning": "n. 立场；姿态；位置",
+            "structurare": ""
+          },
+          {
+            "name": "stanza",
+            "meaning": " n. 演出期；局；场；诗的一节",
+            "structurare": ""
+          },
+          {
+            "name": "stanchion",
+            "meaning": "n. 支柱 vt. 用支柱支撑",
+            "structurare": ""
+          },
+          {
+            "name": "circumstance",
+            "meaning": "n. 环境；情况；事件；境遇",
+            "structurare": ""
+          },
+          {
+            "name": "circumstantial",
+            "meaning": "adj. 依照情况的；详细的，详尽的；偶然的",
+            "structurare": ""
+          },
+          {
+            "name": "circumstantially",
+            "meaning": "adv. 依照情况地",
+            "structurare": ""
+          },
+          {
+            "name": "instant",
+            "meaning": "adj. 立即的；紧急的；紧迫的",
+            "structurare": ""
+          },
+          {
+            "name": "instantly",
+            "meaning": "adv. 立即地；马上地；即刻地 conj. 一…就…",
+            "structurare": ""
+          },
+          {
+            "name": "instancy",
+            "meaning": "n. 迫切；紧急；瞬间",
+            "structurare": ""
+          },
+          {
+            "name": "instance",
+            "meaning": "n. 实例；情况；建议 vt. 举...为例",
+            "structurare": ""
+          },
+          {
+            "name": "instantaneous",
+            "meaning": "adj. 瞬间的；即时的；猝发的",
+            "structurare": ""
+          },
+          {
+            "name": "instantaneously",
+            "meaning": "adv. 即刻；突如其来地",
+            "structurare": ""
+          },
+          {
+            "name": "instantiate",
+            "meaning": "vt. 例示，举例说明",
+            "structurare": ""
+          },
+          {
+            "name": "instant-read",
+            "meaning": "n. 即时读取",
+            "structurare": ""
+          },
+          {
+            "name": "instant-messaging",
+            "meaning": "n. 即时通讯",
+            "structurare": ""
+          },
+          {
+            "name": "substantiate",
+            "meaning": "vt. 证实；使实体化",
+            "structurare": ""
+          },
+          {
+            "name": "substantiation",
+            "meaning": "n. 证实；实体化",
+            "structurare": ""
+          },
+          {
+            "name": "substantiated",
+            "meaning": "adj. 实体化的；被证实了的",
+            "structurare": ""
+          },
+          {
+            "name": "substantial",
+            "meaning": "adj. 大量的；实质的；内容充实的 n. 本质；重要材料",
+            "structurare": ""
+          },
+          {
+            "name": "substantiality",
+            "meaning": "n. 实体；实质性；真实价值；内容",
+            "structurare": ""
+          },
+          {
+            "name": "insubstantial",
+            "meaning": "adj. 脆弱的；无实体的；幻想的，非真实的",
+            "structurare": ""
+          },
+          {
+            "name": "unsubstantiated",
+            "meaning": "adj. 未经证实的，无事实根据的",
+            "structurare": ""
+          },
+          {
+            "name": "substance",
+            "meaning": "n. 物质；实质；资产；主旨",
+            "structurare": ""
+          },
+          {
+            "name": "substance-use",
+            "meaning": "n. 物质使用",
+            "structurare": ""
+          },
+          {
+            "name": "substantially",
+            "meaning": "adv. 实质上；大体上；充分地",
+            "structurare": ""
+          },
+          {
+            "name": "substantive",
+            "meaning": " adj. 有实质的；大量的；真实的；独立存在的; n. 名词性实词；独立存在的实体",
+            "structurare": ""
+          },
+          {
+            "name": "substantively",
+            "meaning": "adv. 实质上",
+            "structurare": ""
+          },
+          {
+            "name": "constant",
+            "meaning": "adj. 不变的；恒定的",
+            "structurare": ""
+          },
+          {
+            "name": "constantly",
+            "meaning": "adv. 实质上",
+            "structurare": ""
+          },
+          {
+            "name": "constancy",
+            "meaning": "n. 坚定不移；恒久不变",
+            "structurare": ""
+          },
+          {
+            "name": "near-constant",
+            "meaning": "adj. 几乎不停的",
+            "structurare": ""
+          },
+          {
+            "name": "inconstant",
+            "meaning": "adj. 变化无常的；易变的；多变的",
+            "structurare": ""
+          },
+          {
+            "name": "inconstancy",
+            "meaning": " n. 反复无常，易变；不定性",
+            "structurare": ""
+          },
+          {
+            "name": "constable",
+            "meaning": "n. 治安官，巡警；警察",
+            "structurare": ""
+          },
+          {
+            "name": "constabulary",
+            "meaning": "n. 警察；警官队 adj. 警官的，警察的",
+            "structurare": ""
+          },
+          {
+            "name": "estancia",
+            "meaning": "n. 大牧场（拉丁美洲的）；大庄园（拉丁美洲的）",
+            "structurare": ""
+          },
+          {
+            "name": "happenstance",
+            "meaning": "n. 意外事件，偶然事件",
+            "structurare": ""
+          },
+          {
+            "name": "statue",
+            "meaning": "n. 雕像，塑像 vt. 以雕像装饰",
+            "structurare": ""
+          },
+          {
+            "name": "stature",
+            "meaning": "n. 身高，身材；（精神、道德等的）高度",
+            "structurare": ""
+          },
+          {
+            "name": "statutory",
+            "meaning": "adj. 法定的；法令的；可依法惩处的",
+            "structurare": ""
+          },
+          {
+            "name": "statuette",
+            "meaning": " n. 小雕（塑）像",
+            "structurare": ""
+          },
+          {
+            "name": "statuary",
+            "meaning": "n. 雕像；雕像艺术 adj. 雕塑的；雕像用的",
+            "structurare": ""
+          },
+          {
+            "name": "statuesque",
+            "meaning": "adj. 雕像般的；轮廓清晰的；均衡的",
+            "structurare": ""
+          },
+          {
+            "name": "statutorily",
+            "meaning": "adv. 根据法律条文地",
+            "structurare": ""
+          },
+          {
+            "name": "serostatus",
+            "meaning": "n. 感染状况",
+            "structurare": ""
+          },
+          {
+            "name": "high-status",
+            "meaning": "adj. 地位高的",
+            "structurare": ""
+          },
+          {
+            "name": "low-status",
+            "meaning": "adj. 地位低的",
+            "structurare": ""
+          },
+          {
+            "name": "status-conscious",
+            "meaning": "adj. 地位意识强的；重视地位的",
+            "structurare": ""
+          },
+          {
+            "name": "final-status",
+            "meaning": "n. 最终地位",
+            "structurare": ""
+          },
+          {
+            "name": "insist",
+            "meaning": "v. 坚决主张，坚持",
+            "structurare": ""
+          },
+          {
+            "name": "insistent",
+            "meaning": "adj. 坚持的；迫切的；显著的；引人注目的；紧急的",
+            "structurare": ""
+          },
+          {
+            "name": "insistently",
+            "meaning": "adv. 坚持地；强求地",
+            "structurare": ""
+          },
+          {
+            "name": "insistence",
+            "meaning": "n. 坚决主张，坚持",
+            "structurare": ""
+          },
+          {
+            "name": "persist",
+            "meaning": "v. 坚持，持续",
+            "structurare": ""
+          },
+          {
+            "name": "persistent",
+            "meaning": "adj. 坚持的，持续的",
+            "structurare": ""
+          },
+          {
+            "name": "persistently",
+            "meaning": "adv. 坚持地；固执地",
+            "structurare": ""
+          },
+          {
+            "name": "persistence",
+            "meaning": "n. 坚持，持续",
+            "structurare": ""
+          },
+          {
+            "name": "contrast",
+            "meaning": "vi 对比；形成对照",
+            "structurare": ""
+          },
+          {
+            "name": "high-contrast",
+            "meaning": "n. 【书画刻印艺术】高反差，高对比度",
+            "structurare": ""
+          },
+          {
+            "name": "contrasty",
+            "meaning": "adj. 硬调的，明暗差别强烈的",
+            "structurare": ""
+          },
+          {
+            "name": "contrasting",
+            "meaning": "adj. 形成鲜明对比的；差异大的",
+            "structurare": ""
+          },
+          {
+            "name": "contrasted",
+            "meaning": "adj. 比较；对比的",
+            "structurare": ""
+          },
+          {
+            "name": "contrastive",
+            "meaning": "adj. 对比的",
+            "structurare": ""
+          },
+          {
+            "name": "cost",
+            "meaning": "vt. 花费；使付出；使花许多钱 n. 费用，代价，成本；损失 vi. 花费",
+            "structurare": ""
+          },
+          {
+            "name": "costless",
+            "meaning": "adj. 不花钱的；无须付出代价的",
+            "structurare": ""
+          },
+          {
+            "name": "costume",
+            "meaning": "n. 服装，装束；戏装，剧装 vt. 给…穿上服装",
+            "structurare": ""
+          },
+          {
+            "name": "costly",
+            "meaning": "adj. 昂贵的；代价高的",
+            "structurare": ""
+          },
+          {
+            "name": "low-cost",
+            "meaning": "adj. 廉价的；价格便宜的",
+            "structurare": ""
+          },
+          {
+            "name": "high-cost",
+            "meaning": "adj. 高成本的",
+            "structurare": ""
+          },
+          {
+            "name": "lower-cost",
+            "meaning": "adj. 更低成本的",
+            "structurare": ""
+          },
+          {
+            "name": "lowest-cost",
+            "meaning": "adj. 最低成本的",
+            "structurare": ""
+          },
+          {
+            "name": "cost-cutting",
+            "meaning": "n. 削减成本",
+            "structurare": ""
+          },
+          {
+            "name": "cost-sharing",
+            "meaning": "adj. 费用分担的",
+            "structurare": ""
+          },
+          {
+            "name": "cost-plus",
+            "meaning": "adj. 成本加成的",
+            "structurare": ""
+          },
+          {
+            "name": "staff",
+            "meaning": "n. 职员；参谋；棒；支撑 adj. 职员的；行政工作的 vt. 供给人员；给…配备职员; vi. 雇用工作人员",
+            "structurare": ""
+          },
+          {
+            "name": "staffer",
+            "meaning": "n. 职员；编辑；采访记者",
+            "structurare": ""
+          },
+          {
+            "name": "staffing",
+            "meaning": "n. 安置职工",
+            "structurare": ""
+          },
+          {
+            "name": "understaffed",
+            "meaning": "adj. 人手不足的；人员不足的",
+            "structurare": ""
+          },
+          {
+            "name": "well-staffed",
+            "meaning": "adj. 人员配备精良的",
+            "structurare": ""
+          },
+          {
+            "name": "stuff",
+            "meaning": "n. 东西；材料；填充物；素材资料 vt. 塞满；填塞；让吃饱 vi. 吃得过多",
+            "structurare": ""
+          },
+          {
+            "name": "stuffing",
+            "meaning": "n. 填料，填塞物",
+            "structurare": ""
+          },
+          {
+            "name": "overstuff",
+            "meaning": "vt. 装填过度；给（软椅、沙发等）加厚软垫",
+            "structurare": ""
+          },
+          {
+            "name": "overstuffed",
+            "meaning": "adj. 垫得又软又厚的；冗长的；多油的",
+            "structurare": ""
+          },
+          {
+            "name": "unstuffed",
+            "meaning": "adj. 不拥挤的；未填塞（或装满）的",
+            "structurare": ""
+          },
+          {
+            "name": "stable",
+            "meaning": "adj. 稳定的；牢固的；坚定的",
+            "structurare": ""
+          },
+          {
+            "name": "unstable",
+            "meaning": "adj. 不稳定的；动荡的；易变的",
+            "structurare": ""
+          },
+          {
+            "name": "stably",
+            "meaning": "adv. 平稳地；坚固地；安定地",
+            "structurare": ""
+          },
+          {
+            "name": "stability",
+            "meaning": "n. 稳定性；坚定，恒心",
+            "structurare": ""
+          },
+          {
+            "name": "instability",
+            "meaning": "n. 不稳定（性）；基础薄弱；不安定",
+            "structurare": ""
+          },
+          {
+            "name": "stabilize",
+            "meaning": "vt. 使稳固，使安定 vi. 稳定，安定",
+            "structurare": ""
+          },
+          {
+            "name": "stabilizer",
+            "meaning": "n. [助剂] 稳定剂；稳定器；安定装置",
+            "structurare": ""
+          },
+          {
+            "name": "stabilizing",
+            "meaning": "n. 稳定化；稳定化处理",
+            "structurare": ""
+          },
+          {
+            "name": "stabilized",
+            "meaning": "adj. 稳定的；减摇的",
+            "structurare": ""
+          },
+          {
+            "name": "stabilization",
+            "meaning": "n. 稳定；稳定化",
+            "structurare": ""
+          },
+          {
+            "name": "stablemate",
+            "meaning": "n. 同一马主的马；与他马同厩之马",
+            "structurare": ""
+          },
+          {
+            "name": "stableman",
+            "meaning": "n. 马夫",
+            "structurare": ""
+          },
+          {
+            "name": "stableboy",
+            "meaning": "n. 马夫；马童",
+            "structurare": ""
+          },
+          {
+            "name": "destabilize",
+            "meaning": "vt. 使动摇",
+            "structurare": ""
+          },
+          {
+            "name": "destabilizing",
+            "meaning": "n. 减稳",
+            "structurare": ""
+          },
+          {
+            "name": "destabilized",
+            "meaning": "adj. 非稳定的",
+            "structurare": ""
+          },
+          {
+            "name": "destabilization",
+            "meaning": "n. 不稳定；扰动",
+            "structurare": ""
+          },
+          {
+            "name": "rent-stabilized",
+            "meaning": "adj. 租金稳定；房租稳定",
+            "structurare": ""
+          },
+          {
+            "name": "shelf-stable",
+            "meaning": "adj. 耐储藏的",
+            "structurare": ""
+          },
+          {
+            "name": "metastable",
+            "meaning": "adj. [物][化学] 亚稳的；相对稳定的",
+            "structurare": ""
+          },
+          {
+            "name": "establish",
+            "meaning": "vt. 建立；创办；安置",
+            "structurare": ""
+          },
+          {
+            "name": "establishment",
+            "meaning": "n. 确立；制定；公司；设施",
+            "structurare": ""
+          },
+          {
+            "name": "established",
+            "meaning": "adj. 确定的；已制定的，已建立的",
+            "structurare": ""
+          },
+          {
+            "name": "disestablish",
+            "meaning": "vt. 废除；使政教分离；解除…官职",
+            "structurare": ""
+          },
+          {
+            "name": "disestablishment",
+            "meaning": "n. 解除官职；政教分离",
+            "structurare": ""
+          },
+          {
+            "name": "re-establish",
+            "meaning": "vt. 重建；恢复；重新安置",
+            "structurare": ""
+          },
+          {
+            "name": "reestablishment",
+            "meaning": "n. 恢复，重建",
+            "structurare": ""
+          },
+          {
+            "name": "well-established",
+            "meaning": "adj. 得到确认的；固定下来的",
+            "structurare": ""
+          },
+          {
+            "name": "long-established",
+            "meaning": "adj. 多年从事经营的；开办很久的",
+            "structurare": ""
+          },
+          {
+            "name": "anti-establishment",
+            "meaning": "n. 反建制；反政府情绪; adj. 反正统的；反对现有权力结构的",
+            "structurare": ""
+          },
+          {
+            "name": "institute",
+            "meaning": "vt. 开始 （调查）； 制定； 创立； 提起（ 诉讼） n. 学会，协会；学院",
+            "structurare": ""
+          },
+          {
+            "name": "institution",
+            "meaning": "n. 制度；建立；（社会或宗教等）公共机构；习俗",
+            "structurare": ""
+          },
+          {
+            "name": "institutional",
+            "meaning": " adj. 制度的；制度上的；学会的；由来已久的；习以为常的；公共机构的； 慈善机构的",
+            "structurare": ""
+          },
+          {
+            "name": "institutionalize",
+            "meaning": "vt. 使…制度化",
+            "structurare": ""
+          },
+          {
+            "name": "institutionalized",
+            "meaning": "adj. 使成惯例的；有组织的；遭受收容机构所产生的不良影响的",
+            "structurare": ""
+          },
+          {
+            "name": "institutionalization",
+            "meaning": "n. 制度化；体制化",
+            "structurare": ""
+          },
+          {
+            "name": "institutionally",
+            "meaning": "adv. 从制度上",
+            "structurare": ""
+          },
+          {
+            "name": "institutionalism",
+            "meaning": "n. 设立；制式主义",
+            "structurare": ""
+          },
+          {
+            "name": "reinstitution",
+            "meaning": "n. 再建立，重新建立",
+            "structurare": ""
+          },
+          {
+            "name": "anti-institutional",
+            "meaning": "adj. 反制度的",
+            "structurare": ""
+          },
+          {
+            "name": "obstacle",
+            "meaning": "n. 障碍；干扰；妨害物",
+            "structurare": ""
+          },
+          {
+            "name": "obstetric",
+            "meaning": "adj. 产科的；生产的，分娩的",
+            "structurare": ""
+          },
+          {
+            "name": "obstetrics",
+            "meaning": "n. 产科学，助产术",
+            "structurare": ""
+          },
+          {
+            "name": "obstinacy",
+            "meaning": "n. 固执，顽固；（病痛等的）难治，难解除",
+            "structurare": ""
+          },
+          {
+            "name": "obstetrician",
+            "meaning": "n. 产科医师",
+            "structurare": ""
+          },
+          {
+            "name": "constitute",
+            "meaning": "vt. 组成，构成；建立；任命",
+            "structurare": ""
+          },
+          {
+            "name": "constitution",
+            "meaning": "n. 宪法；体制；章程；构造；建立，组成；体格",
+            "structurare": ""
+          },
+          {
+            "name": "constitutional",
+            "meaning": "adj. 宪法的；本质的；体质上的；保健的； n. 保健散步；保健运动",
+            "structurare": ""
+          },
+          {
+            "name": "constitutionality",
+            "meaning": "n. 符合宪法；立宪",
+            "structurare": ""
+          },
+          {
+            "name": "constitutionally",
+            "meaning": "adv. 本质地；体质上；天生",
+            "structurare": ""
+          },
+          {
+            "name": "constitutionalist",
+            "meaning": "n. 立宪主义者",
+            "structurare": ""
+          },
+          {
+            "name": "constitutionalism",
+            "meaning": "n. 立宪；立宪主义，立宪制度",
+            "structurare": ""
+          },
+          {
+            "name": "constituent",
+            "meaning": "n. 成分；选民；委托人 adj. 构成的；选举的",
+            "structurare": ""
+          },
+          {
+            "name": "constituency",
+            "meaning": "n. （选区的）选民；支持者；（一批）顾客",
+            "structurare": ""
+          },
+          {
+            "name": "constitutive",
+            "meaning": "adj. 基本的；本质的；制定的；构成分子的 n. 要素",
+            "structurare": ""
+          },
+          {
+            "name": "unconstitutional",
+            "meaning": "adj. 违反宪法的；违反宪法地",
+            "structurare": ""
+          },
+          {
+            "name": "unconstitutionality",
+            "meaning": "n. 违反宪法；不合宪法",
+            "structurare": ""
+          },
+          {
+            "name": "unconstitutionally",
+            "meaning": "adv. 无意识的",
+            "structurare": ""
+          },
+          {
+            "name": "extra-constitutional",
+            "meaning": "adj. 宪法中还没规定的；宪法以外的",
+            "structurare": ""
+          },
+          {
+            "name": "anti-constitutional",
+            "meaning": "adj. 反宪法的",
+            "structurare": ""
+          },
+          {
+            "name": "self-constitution",
+            "meaning": "n. 自我建构",
+            "structurare": ""
+          },
+          {
+            "name": "reconstitute",
+            "meaning": "vt. 重新设立；重新组成",
+            "structurare": ""
+          },
+          {
+            "name": "reconstituted",
+            "meaning": "adj. 再造的",
+            "structurare": ""
+          },
+          {
+            "name": "reconstitution",
+            "meaning": "n. 【食品工业】冲调，复水；(干果或干菜)泡涨；浓缩食品稀释至初始浓度【材料学】再构成，再组成，再生，还原",
+            "structurare": ""
+          },
+          {
+            "name": "consternation",
+            "meaning": "n. 惊愕；惊惶失措；恐怖",
+            "structurare": ""
+          },
+          {
+            "name": "constipation",
+            "meaning": "n. [临床] 便秘；受限制",
+            "structurare": ""
+          },
+          {
+            "name": "stall",
+            "meaning": "n. 货摊；畜栏；托辞 vi. 停止，停转；拖延 vt. 拖延；使停转；使陷于泥中",
+            "structurare": ""
+          },
+          {
+            "name": "stalled",
+            "meaning": "失速的",
+            "structurare": ""
+          },
+          {
+            "name": "stalling",
+            "meaning": "n. [航] 失速，停转",
+            "structurare": ""
+          },
+          {
+            "name": "stallion",
+            "meaning": "n. 种马；成年公马",
+            "structurare": ""
+          },
+          {
+            "name": "long-stalled",
+            "meaning": "adj. 长期停滞的",
+            "structurare": ""
+          },
+          {
+            "name": "install",
+            "meaning": "vt. 安装；任命；安顿",
+            "structurare": ""
+          },
+          {
+            "name": "installation",
+            "meaning": "n. 安装，装置；就职",
+            "structurare": ""
+          },
+          {
+            "name": "installment",
+            "meaning": "n. 安装；分期付款；部分；就职",
+            "structurare": ""
+          },
+          {
+            "name": "installer",
+            "meaning": "n. 安装程序；安装者，安装工",
+            "structurare": ""
+          },
+          {
+            "name": "installed",
+            "meaning": "adj. 安装的；已装入的",
+            "structurare": ""
+          },
+          {
+            "name": "reinstall",
+            "meaning": "vt. 重新设置，重新安装；使从新正式就职",
+            "structurare": ""
+          },
+          {
+            "name": "bookstall",
+            "meaning": "n. 书报摊",
+            "structurare": ""
+          },
+          {
+            "name": "uninstalled",
+            "meaning": "adj. 未安装的",
+            "structurare": ""
+          },
+          {
+            "name": "substitute",
+            "meaning": "n. 代用品；代替者 vi. 替代 vt. 代替",
+            "structurare": ""
+          },
+          {
+            "name": "substitution",
+            "meaning": "n. 代替；[数] 置换；代替物",
+            "structurare": ""
+          },
+          {
+            "name": "substituted",
+            "meaning": "adj. 取代的，代替的",
+            "structurare": ""
+          },
+          {
+            "name": "substitutive",
+            "meaning": "adj. 代用的；代替的；代理的",
+            "structurare": ""
+          },
+          {
+            "name": "substitutable",
+            "meaning": "adj. 可替换的",
+            "structurare": ""
+          },
+          {
+            "name": "substitutability",
+            "meaning": " n. [计] 可代换性；[计] 可置换性",
+            "structurare": ""
+          },
+          {
+            "name": "substitutionary",
+            "meaning": "adj. 取代的；代理的；代用的",
+            "structurare": ""
+          },
+          {
+            "name": "import-substitution",
+            "meaning": "n. 进口替代",
+            "structurare": ""
+          },
+          {
+            "name": "substituting",
+            "meaning": "n. 取代；[数] 代入",
+            "structurare": ""
+          },
+          {
+            "name": "import-substituting",
+            "meaning": " adj. 国产化",
+            "structurare": ""
+          },
+          {
+            "name": "prostitute",
+            "meaning": "vt. 使沦为妓女 adj. 卖淫的；堕落的 n. 妓女",
+            "structurare": ""
+          },
+          {
+            "name": "prostitution",
+            "meaning": "n. 卖淫；滥用；出卖灵魂",
+            "structurare": ""
+          },
+          {
+            "name": "destine",
+            "meaning": " vt. 注定；命定；预定",
+            "structurare": ""
+          },
+          {
+            "name": "destiny",
+            "meaning": "n. 命运，定数，天命",
+            "structurare": ""
+          },
+          {
+            "name": "destined",
+            "meaning": " adj. 注定的；命定的；去往…的",
+            "structurare": ""
+          },
+          {
+            "name": "destitute",
+            "meaning": "adj. 穷困的；无的；缺乏的 n. 赤贫者 vt. 使穷困；夺去",
+            "structurare": ""
+          },
+          {
+            "name": "destination",
+            "meaning": "n. 目的地，终点",
+            "structurare": ""
+          },
+          {
+            "name": "stead",
+            "meaning": "n. 代替；用处 vt. 对…有利",
+            "structurare": ""
+          },
+          {
+            "name": "steady",
+            "meaning": "adj. 稳定的；不变的；沉着的 vi. 稳固 vt. 使稳定；稳固；使坚定 adv. 稳定地；稳固地 n. 关系固定的情侣；固定支架",
+            "structurare": ""
+          },
+          {
+            "name": "steadily",
+            "meaning": "adv. 稳定地；稳固地；有规则地",
+            "structurare": ""
+          },
+          {
+            "name": "steadiness",
+            "meaning": "n. 稳定；稳健；不变；稳固",
+            "structurare": ""
+          },
+          {
+            "name": "unsteady",
+            "meaning": "adj. 不稳定的；不规则的；摇摆的；无常的",
+            "structurare": ""
+          },
+          {
+            "name": "unsteadily",
+            "meaning": "adv. 不稳定地；摇摆地  （unsteady 的副词） vt. 使不稳定",
+            "structurare": ""
+          },
+          {
+            "name": "unsteadiness",
+            "meaning": "n. 不稳定；动摇；不规则；古怪",
+            "structurare": ""
+          },
+          {
+            "name": "homestead",
+            "meaning": "n. 宅地；家园；田产",
+            "structurare": ""
+          },
+          {
+            "name": "farmstead",
+            "meaning": "n. 农庄；农场及其建筑物",
+            "structurare": ""
+          },
+          {
+            "name": "bedstead",
+            "meaning": "n. 床架",
+            "structurare": ""
+          },
+          {
+            "name": "steadfastly",
+            "meaning": "adv. 踏实地；不变地",
+            "structurare": ""
+          },
+          {
+            "name": "instead",
+            "meaning": "adv. 代替；反而；相反",
+            "structurare": ""
+          },
+          {
+            "name": "sturdy",
+            "meaning": " adj. 坚定的；强健的；健全的 n. 羊晕倒病",
+            "structurare": ""
+          },
+          {
+            "name": "sturdily",
+            "meaning": "adv. 坚毅地，坚强地；强壮地",
+            "structurare": ""
+          },
+          {
+            "name": "nest",
+            "meaning": "n. 巢，窝；安乐窝；温床 vt. 筑巢；嵌套 vi. 筑巢；找鸟巢",
+            "structurare": ""
+          },
+          {
+            "name": "nested",
+            "meaning": "adj. 嵌套的，内装的",
+            "structurare": ""
+          },
+          {
+            "name": "nester",
+            "meaning": "n. 穴居的兽；筑巢的鸟；放牧地自耕农；试验筛组的单位筛",
+            "structurare": ""
+          },
+          {
+            "name": "nestle",
+            "meaning": "vi. 舒适地坐定；偎依；半隐半现地处于 vt. 抱；安置",
+            "structurare": ""
+          },
+          {
+            "name": "nesting",
+            "meaning": "n. [计] 嵌套；造巢；镶嵌",
+            "structurare": ""
+          },
+          {
+            "name": "empty-nest",
+            "meaning": "n. 独守空闺",
+            "structurare": ""
+          },
+          {
+            "name": "stadia",
+            "meaning": "n. 视距； 视距仪（ stadium 的复数）",
+            "structurare": ""
+          },
+          {
+            "name": "stadium",
+            "meaning": "n. 体育场；露天大型运动场",
+            "structurare": ""
+          },
+          {
+            "name": "steer",
+            "meaning": "vt. 控制，引导；驾驶 vi. 驾驶，掌舵；行驶 n. 阉牛",
+            "structurare": ""
+          },
+          {
+            "name": "steering",
+            "meaning": "n. 操纵；指导；掌舵",
+            "structurare": ""
+          },
+          {
+            "name": "understeer",
+            "meaning": "n. 转向不足 vi. 操纵失灵，驾驶盘失灵",
+            "structurare": ""
+          },
+          {
+            "name": "steering-wheel",
+            "meaning": "n. 方向盘，舵轮",
+            "structurare": ""
+          },
+          {
+            "name": "stat",
+            "meaning": "n. 静；斯达（放射性强度单位）",
+            "structurare": ""
+          },
+          {
+            "name": "static",
+            "meaning": "adj. 静态的；静电的；静力的 n. 静电；静电干扰",
+            "structurare": ""
+          },
+          {
+            "name": "statics",
+            "meaning": "n. [力] 静力学",
+            "structurare": ""
+          },
+          {
+            "name": "stator",
+            "meaning": "n. 固定片，定子",
+            "structurare": ""
+          },
+          {
+            "name": "statin",
+            "meaning": "n. 他汀类；抑制素",
+            "structurare": ""
+          },
+          {
+            "name": "statism",
+            "meaning": "n. 国家主义；中央集权制；中央集权下的经济统制",
+            "structurare": ""
+          },
+          {
+            "name": "staticky",
+            "meaning": "adj. 带静电的",
+            "structurare": ""
+          },
+          {
+            "name": "statically",
+            "meaning": "adv. 静态地；静止地",
+            "structurare": ""
+          },
+          {
+            "name": "stative",
+            "meaning": "adj. 状态动词的",
+            "structurare": ""
+          },
+          {
+            "name": "hydrostatic",
+            "meaning": "adj. 流体静力学的；静水力学的",
+            "structurare": ""
+          },
+          {
+            "name": "prostatic",
+            "meaning": "adj. 前列腺的",
+            "structurare": ""
+          },
+          {
+            "name": "homeostatic",
+            "meaning": "adj. 自我平衡的；原状稳定的",
+            "structurare": ""
+          },
+          {
+            "name": "apostatize",
+            "meaning": "vi. 变节，脱党；放弃信仰",
+            "structurare": ""
+          },
+          {
+            "name": "hemostat",
+            "meaning": "n. 止血剂；止血钳子",
+            "structurare": ""
+          },
+          {
+            "name": "hemostatic",
+            "meaning": "n. [药] 止血剂 adj. 止血的",
+            "structurare": ""
+          },
+          {
+            "name": "ecstatic",
+            "meaning": "adj. 狂喜的；入迷的 n. 狂喜的人",
+            "structurare": ""
+          },
+          {
+            "name": "ecstatically",
+            "meaning": "adv. 心醉神迷地；狂喜地",
+            "structurare": ""
+          },
+          {
+            "name": "thermostat",
+            "meaning": "n. 恒温器；自动调温器 vt. 为…配备恒温器；用恒温器控制",
+            "structurare": ""
+          },
+          {
+            "name": "metastatic",
+            "meaning": "adj. （癌细胞的）转移性的；变形的；新陈代谢的",
+            "structurare": ""
+          },
+          {
+            "name": "electrostatic",
+            "meaning": "adj. 静电的；静电学的",
+            "structurare": ""
+          },
+          {
+            "name": "electrostatically",
+            "meaning": "静电地（electrostatic 的副词形式）",
+            "structurare": ""
+          },
+          {
+            "name": "parastatal",
+            "meaning": "adj. 半国营的 n. 半国营集团",
+            "structurare": ""
+          },
+          {
+            "name": "prostatitis",
+            "meaning": "n. [泌尿] 前列腺炎，摄护腺炎",
+            "structurare": ""
+          },
+          {
+            "name": "biostatistics",
+            "meaning": "n. 生物统计学；生命统计",
+            "structurare": ""
+          },
+          {
+            "name": "biostatistician",
+            "meaning": "n. 生物统计学家",
+            "structurare": ""
+          },
+          {
+            "name": "orthostatic",
+            "meaning": "adj. [医] 直立的；由正立位置引起的；正立位置的",
+            "structurare": ""
+          },
+          {
+            "name": "quasi-static",
+            "meaning": "adj. [力] 准静态的；似稳的；准静力的",
+            "structurare": ""
+          },
+          {
+            "name": "cryostat",
+            "meaning": "n. 低温恒温器",
+            "structurare": ""
+          },
+          {
+            "name": "anti-static",
+            "meaning": "adj. 抗静电的",
+            "structurare": ""
+          },
+          {
+            "name": "rheostat",
+            "meaning": "n. [电] 变阻器",
+            "structurare": ""
+          },
+          {
+            "name": "photostat",
+            "meaning": "n. 直接复印机；直接复印照片 v. 复印照片",
+            "structurare": ""
+          },
+          {
+            "name": "hypostatic",
+            "meaning": "adj. 实体的；本质的；实在的；神性的",
+            "structurare": ""
+          },
+          {
+            "name": "aerostat",
+            "meaning": "n. 航空器；高空气球",
+            "structurare": ""
+          },
+          {
+            "name": "subsist",
+            "meaning": "vi. 存在；维持生活 vt. 供养",
+            "structurare": ""
+          },
+          {
+            "name": "subsistence",
+            "meaning": "n. 生活；生存；存在",
+            "structurare": ""
+          },
+          {
+            "name": "desist",
+            "meaning": "vi. 停止；断念",
+            "structurare": ""
+          },
+          {
+            "name": "superstition",
+            "meaning": "n. 迷信",
+            "structurare": ""
+          },
+          {
+            "name": "superstitious",
+            "meaning": "adj. 迷信的；由迷信引起的",
+            "structurare": ""
+          },
+          {
+            "name": "superstitiously",
+            "meaning": "adv. 迷信地；被邪教所支配",
+            "structurare": ""
+          },
+          {
+            "name": "interstitial",
+            "meaning": "adj. 间质的；空隙的；填隙的 n. 填隙原子；节间",
+            "structurare": ""
+          },
+          {
+            "name": "stem",
+            "meaning": "n. 干；茎；船首；血统 vt. 阻止；除去…的茎；给…装柄 vi. 阻止；起源于某事物；逆行",
+            "structurare": ""
+          },
+          {
+            "name": "stemmed",
+            "meaning": "adj. 去掉茎或梗的；有茎或梗的；装有…柄的",
+            "structurare": ""
+          },
+          {
+            "name": "stemware",
+            "meaning": "n. 高脚器皿",
+            "structurare": ""
+          },
+          {
+            "name": "epistemological",
+            "meaning": "adj. 认识论的",
+            "structurare": ""
+          },
+          {
+            "name": "stem-cell",
+            "meaning": "n. 干细胞；骨髓干细胞",
+            "structurare": ""
+          },
+          {
+            "name": "long-stemmed",
+            "meaning": "adj. 1. 【植物学】长茎的 2. 细高的；颀长而苗条的",
+            "structurare": ""
+          },
+          {
+            "name": "stomp",
+            "meaning": "vt. 跺脚，重踩；践踏 n. 跺脚，重踩；顿足爵士舞",
+            "structurare": ""
+          },
+          {
+            "name": "stomping",
+            "meaning": "v. 跺脚（stomp 的 ing 形式）",
+            "structurare": ""
+          },
+          {
+            "name": "stalk",
+            "meaning": "n. （植物的）茎，秆；（支持叶子、果实和花的）梗，柄；追踪；高视阔步 vt. 追踪，潜近；高视阔步 vi. 高视阔步地走；潜近，偷偷接近",
+            "structurare": ""
+          },
+          {
+            "name": "stalking",
+            "meaning": "n. 围捕；潜行追踪",
+            "structurare": ""
+          },
+          {
+            "name": "stale",
+            "meaning": " adj. 陈腐的；不新鲜的 vi. 变陈旧；撒尿；变得不新鲜 vt. 使变旧；变得不新鲜 n. 尿",
+            "structurare": ""
+          },
+          {
+            "name": "staleness",
+            "meaning": "n. 泄气，陈腐，腐败",
+            "structurare": ""
+          },
+          {
+            "name": "stalemate",
+            "meaning": "n. 僵局；陷于困境 vt. 使僵持；使陷入困境 vi. 僵持；陷入僵局",
+            "structurare": ""
+          },
+          {
+            "name": "stalwart",
+            "meaning": "adj. 坚定的；健壮的 n. 坚定分子",
+            "structurare": ""
+          },
+          {
+            "name": "oust",
+            "meaning": "vt. 驱逐；剥夺；取代",
+            "structurare": ""
+          },
+          {
+            "name": "ousting",
+            "meaning": "v. 驱逐(oust 的现在分词)",
+            "structurare": ""
+          },
+          {
+            "name": "stiff",
+            "meaning": "adj. 呆板的；坚硬的；严厉的；拘谨的 adv. 僵硬地；彻底地 n. 死尸；令人讨厌者；流通票据；劳动者 vt. 诈骗；失信",
+            "structurare": ""
+          },
+          {
+            "name": "stiffen",
+            "meaning": "vi. 变硬；变猛烈；变粘 vt. 使变硬；使粘稠",
+            "structurare": ""
+          },
+          {
+            "name": "stiffened",
+            "meaning": "adj. 加强的",
+            "structurare": ""
+          },
+          {
+            "name": "stub",
+            "meaning": "n. 存根；烟蒂；树桩；断株 vt. 踩熄；连根拔除",
+            "structurare": ""
+          },
+          {
+            "name": "stubborn",
+            "meaning": "adj. 顽固的；顽强的；难处理的",
+            "structurare": ""
+          },
+          {
+            "name": "stubbornness",
+            "meaning": "n. 倔强；顽强；棘手",
+            "structurare": ""
+          },
+          {
+            "name": "stamp",
+            "meaning": "n. 邮票；印记；标志；跺脚 vt. 铭记；标出；盖章于…；贴邮票于…；用脚踩踏 vi. 跺脚；捣碎；毁掉",
+            "structurare": ""
+          },
+          {
+            "name": "stamped",
+            "meaning": "adj. 铭刻的；盖上邮戳的；顿足的",
+            "structurare": ""
+          },
+          {
+            "name": "stampede",
+            "meaning": " n. 惊跑；人群的蜂拥；军队溃败 vi. 蜂拥；逃窜 vt. 使…惊逃；抢占",
+            "structurare": ""
+          },
+          {
+            "name": "stamping",
+            "meaning": "v. 冲压 n. 冲击制品",
+            "structurare": ""
+          },
+          {
+            "name": "stern",
+            "meaning": "n. 船尾；末端 adj. 严厉的；坚定的",
+            "structurare": ""
+          },
+          {
+            "name": "staple",
+            "meaning": "n. 主要产品；订书钉；主题；主食 adj. 主要的，大宗生产的；常用的；纺织纤维的 vt. 把…分级；钉住",
+            "structurare": ""
+          },
+          {
+            "name": "stapler",
+            "meaning": "n. [轻] 订书机；主要商品批发商；把羊毛分级的人",
+            "structurare": ""
+          },
+          {
+            "name": "stoic",
+            "meaning": "n. 斯多葛学派哲学家；禁欲主义者；恬淡寡欲的人，不以苦乐为意的人 adj. 坚忍的，苦修的；斯多葛派的；禁欲主义的",
+            "structurare": ""
+          },
+          {
+            "name": "stoically",
+            "meaning": "adv. 坚忍地；恬淡寡欲地",
+            "structurare": ""
+          },
+          {
+            "name": "stoicism",
+            "meaning": "n. 斯多葛哲学，斯多葛学派；恬淡寡欲",
+            "structurare": ""
+          },
+          {
+            "name": "stumble",
+            "meaning": "vi. 踌躇，蹒跚；失足；犯错 vt. 使…困惑；使…绊倒 n. 绊倒；蹒跚而行",
+            "structurare": ""
+          },
+          {
+            "name": "stumbling",
+            "meaning": " adj. 障碍的",
+            "structurare": ""
+          },
+          {
+            "name": "armistice",
+            "meaning": "n. 停战；休战；休战协议",
+            "structurare": ""
+          },
+          {
+            "name": "interstice",
+            "meaning": "n. [建] 裂缝；空隙",
+            "structurare": ""
+          },
+          {
+            "name": "stasis",
+            "meaning": "n. [医] 郁积，停滞；血行停滞",
+            "structurare": ""
+          },
+          {
+            "name": "stet",
+            "meaning": "n. 保留，不删",
+            "structurare": ""
+          },
+          {
+            "name": "cast",
+            "meaning": "vt. 投，抛；计算；浇铸；投射（光、影、视线等） n. 投掷，抛；铸件，[古生] 铸型；演员阵容；脱落物 vi. 投，抛垂钓鱼钩；计算，把几个数字加起来",
+            "structurare": ""
+          },
+          {
+            "name": "stool",
+            "meaning": " n. 凳子；粪便；厕所 vi. 长新枝；分檗 vt. 引诱，诱捕",
+            "structurare": ""
+          },
+          {
+            "name": "stow",
+            "meaning": "vt. 装载；收藏；使暂留；堆装",
+            "structurare": ""
+          },
+          {
+            "name": "stamina",
+            "meaning": "n. 毅力；精力；活力；持久力",
+            "structurare": ""
+          },
+          {
+            "name": "stud",
+            "meaning": "n. 种马；大头钉；饰纽；壁骨 vt. 散布；用许多饰钮等装饰 adj. 种马的；为配种而饲养的",
+            "structurare": ""
+          },
+          {
+            "name": "stilt",
+            "meaning": "n. 高跷；支柱，支撑物 vt. 使踏上高跷",
+            "structurare": ""
+          },
+          {
+            "name": "systolic",
+            "meaning": "adj. 心脏收缩的",
+            "structurare": ""
+          },
+          {
+            "name": "diastolic",
+            "meaning": "adj. 心脏舒张的",
+            "structurare": ""
+          },
+          {
+            "name": "stamen",
+            "meaning": "n. [植] 雄蕊",
+            "structurare": ""
+          },
+          {
+            "name": "stilted",
+            "meaning": " adj. 不自然的；呆板的；僵硬的",
+            "structurare": ""
+          },
+          {
+            "name": "abstinent",
+            "meaning": "adj. 禁欲的；有节制的；饮食有度的 n. 禁欲者",
+            "structurare": ""
+          }
+      ]
+      }
+    ]

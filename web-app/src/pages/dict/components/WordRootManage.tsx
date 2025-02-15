@@ -85,7 +85,7 @@ const WordRootManage = () => {
 
   const { isAuthenticated } = useAuth()
 
-  const { handleRequestWithNotification, showNotification } = useNotification()
+  const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
   const shuffledColors = shuffleColors()
 
   // const filteredData = dataSource.filter(
@@ -470,6 +470,9 @@ const WordRootManage = () => {
     setAddRootModalVisible(true)
   }
   const handleSyncKeys = async () => {
+    const confirmed = await showConfirmationDialog({ content: 'Are you sure you want to sync this data?' })
+    if (!confirmed) return
+
     console.log('collectionRowkeys: ', collectionRowkeys.current.values())
     const submiteData = Array.from(collectionRowkeys.current.values()).map(item => ({
       id: item.id,
@@ -491,6 +494,9 @@ const WordRootManage = () => {
     }
   }
   const handleSync = async () => {
+    const confirmed = await showConfirmationDialog({ content: 'Are you sure you want to sync this data?' })
+    if (!confirmed) return
+
     const submiteData = dataSource.filter(item => editedKeys.current.has(item.key))
 
     const r = await handleRequestWithNotification(async () => await batchUpdateWordRoot(submiteData), {
@@ -592,7 +598,7 @@ const WordRootManage = () => {
         key: pageTotal + 1 + index,
         root: q.root,
         meaning: q.meaning,
-        wordCount: q.meaning,
+        wordCount: q.wordCount,
         inDocument: false,
         inJson: false,
         isLinked: false,

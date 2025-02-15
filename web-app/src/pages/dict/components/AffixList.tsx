@@ -48,13 +48,11 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
   const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
 
   const handleFilterChange: OnChange = (pagination, filters, sorter) => {
-    console.log('Various parameters', pagination, filters, sorter)
     setFilteredInfo(filters)
   }
 
   useEffect(() => {
     setDataSource(data.map((item, index) => ({ ...item, initialIndex: index })))
-    console.log('data::::', data)
   }, [data])
 
   useEffect(() => {
@@ -185,7 +183,6 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
         </div>
       ),
       onFilter: (value: boolean | Key, record: AffixType) => {
-        console.log('filter value: ', value)
         const inputStr = value as unknown as string
         if (!inputStr) return true
 
@@ -222,7 +219,14 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
       },
       filteredValue: filteredInfo.affectedPartsOfSpeech || null, // 确保该字段在没有过滤时为 `null`
     },
-    { title: '含义', dataIndex: 'meaning', key: 'meaning' },
+    {
+      title: '含义',
+      dataIndex: 'meaning',
+      key: 'meaning',
+      render: (_: any, record: AffixType) => (
+        <div style={{ whiteSpace: 'pre-line', maxHeight: '150px', overflowY: 'auto' }}>{record.meaning}</div>
+      ),
+    },
     {
       title: '操作',
       key: 'action',
