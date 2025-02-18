@@ -3,22 +3,15 @@ import React from 'react'
 import { Button, Space } from 'antd'
 
 interface ToolbarProps {
-  onAddNode: () => void
-  onDelete: () => void
-  onUndo: () => void
-  onRedo: () => void
-  onSave: () => void
-  onOpen: () => void
+  onAddNode?: () => void
+  onDelete?: () => void
+  onUndo?: () => void
+  onRedo?: () => void
+  onSave?: () => void
+  onOpen?: () => void
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({
-  onAddNode,
-  onDelete,
-  onUndo,
-  onRedo,
-  onSave,
-  onOpen,
-}) => {
+const Toolbar: React.FC<ToolbarProps> = ({ onAddNode, onDelete, onUndo, onRedo, onSave, onOpen }) => {
   return (
     <div
       style={{
@@ -35,13 +28,19 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <Button type="primary" onClick={onAddNode}>
           添加节点
         </Button>
-        <Button onClick={onDelete}>删除节点</Button>
-        <Button onClick={onUndo}>撤销</Button>
-        <Button onClick={onRedo}>重做</Button>
-        <Button type="default" onClick={onSave}>
+        <Button onClick={onDelete} disabled={!onDelete}>
+          删除节点
+        </Button>
+        <Button onClick={onUndo} disabled={!onUndo}>
+          撤销
+        </Button>
+        <Button onClick={onRedo} disabled={!onRedo}>
+          重做
+        </Button>
+        <Button type="default" onClick={onSave} disabled={!onSave}>
           保存
         </Button>
-        <Button type="default" onClick={onOpen}>
+        <Button type="default" onClick={onOpen} disabled={!onOpen}>
           打开文件
         </Button>
       </Space>

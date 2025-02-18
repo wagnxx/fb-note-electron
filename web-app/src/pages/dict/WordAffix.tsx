@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import AffixList, { AffixType } from './components/AffixList'
-import { Tabs, Button, Space, Spin } from 'antd'
+import { Tabs, Spin } from 'antd'
 import { groupBy, sortGroupedData } from '@/utils/utilsArray'
 import { batchUpdateWordAffix, deleteWordAffix, getWordAffix } from '@/service/dict'
 import { useAuth } from '@/context/AuthContext'
@@ -83,6 +83,7 @@ const WordAffix = () => {
     onDelete: handleDelete,
     onAdd: handleAdd,
     onRefreshPage: getTableData,
+    handleSync: handleSync,
   }
 
   const tabItems = [
@@ -106,13 +107,6 @@ const WordAffix = () => {
         </div>
       ) : (
         <div className="p-2 box-border">
-          <div>
-            <Space>
-              <Button type="primary" onClick={handleSync} disabled>
-                Sync Data
-              </Button>
-            </Space>
-          </div>
           <Tabs activeKey={activeKey} onChange={handleTabChange} items={tabItems}></Tabs>
         </div>
       )}

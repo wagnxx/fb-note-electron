@@ -1,4 +1,4 @@
-import React, { useState, useCallback, ChangeEvent } from 'react'
+import React, { useCallback, ChangeEvent, useEffect, FC, useState } from 'react'
 import ReactFlow, {
   addEdge,
   MiniMap,
@@ -11,9 +11,14 @@ import ReactFlow, {
   useReactFlow,
 } from 'react-flow-renderer'
 // 引入 uuid 库
-import './FlowDiagram.css'
+import { v4 as uuidv4 } from 'uuid'
+import { noop } from '@/utils/utilsMisc'
+
 import CustomNode, { CustomNodeData } from './CustomNode'
 import { calculateMiddleValue } from '@/utils/utilsArray'
+import Toolbar from './Toolbar'
+import './FlowDiagram.css'
+import { useNotification } from '@/hooks/useNotification'
 
 export interface ExtendedNode extends Node<CustomNodeData> {
   isHidden?: boolean
@@ -36,13 +41,13 @@ type Props = {
   className?: string
   nodeList: ExtendedNode[]
   edgeList: Edge[]
-  onNodeListChange: (nodes: ExtendedNode[]) => void
-  onEdgeListChange: (edgeList: Edge[]) => void
+  // The property is only used to test。It is used in the effect function and the DEFAULT_NODES.
+  compId: string
+  onNodeListChange?: (fn: (data: ExtendedNode[]) => ExtendedNode[]) => void
+  onEdgeListChange?: (fn: (data: Edge[]) => Edge[]) => void
 }
 
-const voidFunc = () => {}
-
-const FlowDiagram: React.FC<Props> = ({
+const FlowDiagram: FC<Props> = ({
   bgVType = BackgroundVariant.Dots,
   bgColor = '#ddd',
   bgGap = 20,
@@ -50,38 +55,66 @@ const FlowDiagram: React.FC<Props> = ({
   className = ' ',
   nodeList,
   edgeList,
-  onNodeListChange = voidFunc,
-  onEdgeListChange = voidFunc,
+  compId,
+  onNodeListChange = noop,
+  onEdgeListChange = noop,
 }) => {
   const { getZoom } = useReactFlow()
-  const [nodes, setNodes] = useState<ExtendedNode[]>(
-    nodeList?.length > 0
-      ? nodeList
-      : [
-          {
-            id: '1',
-            type: 'customNode',
-            data: {
-              label: 'Root Node',
-              isExpanded: true,
-              onExpandToggle: () => toggleExpand('1'),
-              onAddChild: () => addChildNode('1', getZoom),
-              onDelete: () => deleteNode('1'),
-              onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel('1', e.target.value),
-              rectRange: {
-                top: 5,
-                bottom: NODE_HEIGHT + 5,
-                left: 250,
-                right: 250 + NODE_WIDTH,
-              },
-            },
-            position: { x: 250, y: 5 },
-            isHidden: false,
-            children: [],
-          },
-        ],
+  const [nodes, setNodes] = useState<ExtendedNode[]>(nodeList)
+  const [edges, setEdges] = useState<Edge[]>(edgeList)
+
+  const { showNotification } = useNotification()
+
+  // Unify the method entry.
+  const updateNodeList = useCallback(
+    (fn: (data: ExtendedNode[]) => ExtendedNode[]) => {
+      onNodeListChange(fn)
+      setNodes(fn)
+    },
+    [onNodeListChange, setNodes],
   )
-  const [edges, setEdges] = useState<Edge[]>(edgeList?.length > 0 ? edgeList : [])
+
+  const updateEdgeList = useCallback(
+    (fn: (data: Edge[]) => Edge[]) => {
+      onEdgeListChange(fn)
+      setEdges(fn)
+    },
+    [onEdgeListChange, setEdges],
+  )
+
+  const HandleAddRootNode = () => {
+    if (nodes.length > 0) {
+      showNotification('error', 'It is used to create root nodes.', 'message')
+      return
+    }
+    // It  won't be used for now. It's only used for the root node.
+    const DEFAULT_NODES = [
+      {
+        id: compId,
+        type: 'customNode',
+        data: {
+          label: compId,
+          isExpanded: true,
+          isRoot: true,
+          onExpandToggle: () => toggleExpand(compId),
+          onAddChild: () => addChildNode(compId, getZoom),
+          onDelete: () => deleteNode(compId),
+          onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel(compId, e.target.value),
+          rectRange: {
+            top: 5,
+            bottom: NODE_HEIGHT + 5,
+            left: 250,
+            right: 250 + NODE_WIDTH,
+          },
+        },
+        position: { x: 250, y: 5 },
+        isHidden: false,
+        children: [],
+      },
+    ]
+    const nodesFn = (nds: ExtendedNode[]) => DEFAULT_NODES
+    updateNodeList(nodesFn)
+  }
 
   const getGroupNodeIds: (node: ExtendedNode) => Set<string> = useCallback(
     (node: ExtendedNode) => {
@@ -107,61 +140,69 @@ const FlowDiagram: React.FC<Props> = ({
     [nodes],
   )
 
-  const changeLabel = useCallback((nodeId: string, value: string) => {
-    setNodes(nds => {
-      return nds.map(node => {
-        if (node.id === nodeId) {
-          node.data.label = value
-        }
-        return node
-      })
-    })
-  }, [])
-
-  const toggleExpand = useCallback((id: string) => {
-    setNodes(nds => {
-      const currentNode = nds.find(n => n.id === id)
-      if (!currentNode) return nds
-
-      const updateNodes = new Set<string>()
-
-      // 递归收集所有子节点
-      function collectionChildren(currentId: string, state: boolean) {
-        const node = nds.find(n => n.id === currentId)
-        if (node) {
-          updateNodes.add(currentId)
-          if (node.children) {
-            node.children.forEach(childId => collectionChildren(childId, state))
+  const changeLabel = useCallback(
+    (nodeId: string, value: string) => {
+      const nodesFn = (nds: ExtendedNode[]) => {
+        return nds.map(node => {
+          if (node.id === nodeId) {
+            node.data.label = value
           }
-        }
+          return node
+        })
       }
+      updateNodeList(nodesFn)
+    },
+    [updateNodeList],
+  )
 
-      const newExpandedState = !currentNode.data.isExpanded
-      collectionChildren(currentNode.id, newExpandedState)
+  const toggleExpand = useCallback(
+    (id: string) => {
+      const nodesFn = (nds: ExtendedNode[]) => {
+        const currentNode = nds.find(n => n.id === id)
+        if (!currentNode) return nds
 
-      return nds.map(n => {
-        if (n.id === id) {
-          return {
-            ...n,
-            data: { ...n.data, isExpanded: newExpandedState },
+        const updateNodes = new Set<string>()
+
+        // 递归收集所有子节点
+        function collectionChildren(currentId: string, state: boolean) {
+          const node = nds.find(n => n.id === currentId)
+          if (node) {
+            updateNodes.add(currentId)
+            if (node.children) {
+              node.children.forEach(childId => collectionChildren(childId, state))
+            }
           }
         }
 
-        if (updateNodes.has(n.id)) {
-          return {
-            ...n,
-            isHidden: !newExpandedState, // 根据展开状态更新隐藏状态
-          }
-        }
+        const newExpandedState = !currentNode.data.isExpanded
+        collectionChildren(currentNode.id, newExpandedState)
 
-        return n
-      })
-    })
-  }, [])
+        return nds.map(n => {
+          if (n.id === id) {
+            return {
+              ...n,
+              data: { ...n.data, isExpanded: newExpandedState },
+            }
+          }
+
+          if (updateNodes.has(n.id)) {
+            return {
+              ...n,
+              isHidden: !newExpandedState, // 根据展开状态更新隐藏状态
+            }
+          }
+
+          return n
+        })
+      }
+      updateNodeList(nodesFn)
+    },
+    [updateNodeList],
+  )
 
   const deleteNode = useCallback(
     (id: string) => {
-      setNodes(nds => {
+      const nodesFn = (nds: ExtendedNode[]) => {
         const parentNode = nds.find(n => n.children?.includes(id))
         if (!parentNode) return nds // 如果没有找到父节点，直接返回
 
@@ -170,11 +211,11 @@ const FlowDiagram: React.FC<Props> = ({
           children: parentNode.children?.filter(nodeId => nodeId !== id) || [],
         }
 
-        setEdges(eds => {
+        const edsFn = (eds: Edge[]) => {
           const updateEds = eds.filter(ed => ed.target !== id)
-          onEdgeListChange(updateEds)
           return updateEds
-        })
+        }
+        updateEdgeList(edsFn)
 
         let updateNds = nds.filter(n => n.id !== id) || []
         updateNds = updateNds.map(n => {
@@ -184,20 +225,19 @@ const FlowDiagram: React.FC<Props> = ({
           return n
         })
 
-        onNodeListChange(updateNds)
-
         return updateNds
-      })
+      }
+      updateNodeList(nodesFn)
     },
-    [onEdgeListChange, onNodeListChange],
+    [updateEdgeList, updateNodeList],
   )
 
   const addChildNode = useCallback(
     (parentId: string, getZoomFunc: () => number) => {
-      const newNodeId = `${parentId}-child-${Math.random().toString(36).substr(2, 9)}`
+      const newNodeId = `${parentId}_${uuidv4()}`
       const zoom = getZoomFunc()
 
-      setNodes(nds => {
+      const nodesFn: (nds: ExtendedNode[]) => ExtendedNode[] = (nds: ExtendedNode[]) => {
         const parentNodeIndex = nds.findIndex(n => n.id === parentId)
         if (parentNodeIndex === -1) return nds // 确保找到父节点
 
@@ -205,11 +245,7 @@ const FlowDiagram: React.FC<Props> = ({
 
         const siblinsNodes = nds.filter(node => parentNode.children?.includes(node.id))
         const siblingsPositionY = [...new Set(siblinsNodes.map(item => item.position.y))] // 去重
-        const nicePostionY = calculateMiddleValue(
-          siblingsPositionY,
-          parentNode.position.y,
-          50 / zoom,
-        )
+        const nicePostionY = calculateMiddleValue(siblingsPositionY, parentNode.position.y, 50 / zoom)
 
         const newNodePostion = {
           x: parentNode.position.x + NODE_DISTANCE,
@@ -225,8 +261,7 @@ const FlowDiagram: React.FC<Props> = ({
             onExpandToggle: () => toggleExpand(newNodeId),
             onAddChild: () => addChildNode(newNodeId, getZoom),
             onDelete: () => deleteNode(newNodeId),
-            onChangeLabel: (e: ChangeEvent<HTMLInputElement>) =>
-              changeLabel(newNodeId, e.target.value),
+            onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel(newNodeId, e.target.value),
           },
           position: newNodePostion,
           isHidden: false,
@@ -265,10 +300,9 @@ const FlowDiagram: React.FC<Props> = ({
           ...nds.slice(parentNodeIndex + 1),
         ]
 
-        onNodeListChange(updatedNodes)
-
         return updatedNodes
-      })
+      }
+      updateNodeList(nodesFn)
 
       const newEdge: Edge = {
         id: `${parentId}-${newNodeId}`, // 确保这个ID是唯一的
@@ -276,26 +310,32 @@ const FlowDiagram: React.FC<Props> = ({
         target: newNodeId,
       }
 
-      setEdges(eds => {
+      const edgesFn = (eds: Edge[]) => {
         // 确保没有重复的边
         if (!eds.some(edge => edge.id === newEdge.id)) {
           return [...eds, newEdge]
         }
-        onEdgeListChange(eds)
+
         return eds // 防止添加重复的边
-      })
+      }
+      updateEdgeList(edgesFn)
     },
-    [changeLabel, deleteNode, getZoom, onNodeListChange, toggleExpand],
+    [changeLabel, deleteNode, getZoom, toggleExpand, updateEdgeList, updateNodeList],
   )
 
-  const onConnect = useCallback((params: Connection) => {
-    setEdges(eds => addEdge(params, eds))
-  }, [])
+  const onConnect = useCallback(
+    (params: Connection) => {
+      console.log('Edge connectd:', params)
+      const edgesFn = (eds: Edge[]) => addEdge(params, eds)
+      updateEdgeList(edgesFn)
+    },
+    [updateEdgeList],
+  )
   const onNodeDragStop = useCallback(
     (event: React.MouseEvent, node: ExtendedNode) => {
       const zoom = getZoom()
       const updatedGroupNodeIds = getGroupNodeIds(node)
-      setNodes(nds => {
+      const nodesFn = (nds: ExtendedNode[]) => {
         const currentNode = nds.find(n => n.id === node.id)
         if (!currentNode) return nds
 
@@ -333,9 +373,7 @@ const FlowDiagram: React.FC<Props> = ({
           }
           const newChildren: string[] = [...siblingsNodesIds]
 
-          const newChildrenNodes = nds
-            .filter(node => newChildren.includes(node.id))
-            .concat(parentNode)
+          const newChildrenNodes = nds.filter(node => newChildren.includes(node.id)).concat(parentNode)
           const newChildrenNodesPosY = newChildrenNodes.map(item => item.position.y)
           const newChildrenNodesPosX = newChildrenNodes.map(item => item.position.x)
 
@@ -358,7 +396,8 @@ const FlowDiagram: React.FC<Props> = ({
           )
 
           if (runAwayNodes.size > 0) {
-            setEdges(eds => eds.filter(ed => !runAwayNodes.has(ed.target)))
+            const edsFn = (eds: Edge[]) => eds.filter(ed => !runAwayNodes.has(ed.target))
+            updateEdgeList(edsFn)
           }
           // updatedGroupNodeIds
           return updatedNodes.map(n => {
@@ -419,12 +458,13 @@ const FlowDiagram: React.FC<Props> = ({
           }
 
           // Check if the edge already exists before adding
-          setEdges(eds => {
+          const edsFn = (eds: Edge[]) => {
             if (!eds.some(edge => edge.id === newEdge.id)) {
               return [...eds, newEdge]
             }
             return eds // Prevent adding duplicate edges
-          })
+          }
+          updateEdgeList(edsFn)
 
           const curNodeFixedPosition = {
             x: newParentNode.position.x + NODE_DISTANCE,
@@ -472,9 +512,10 @@ const FlowDiagram: React.FC<Props> = ({
           }
           return n
         })
-      })
+      }
+      updateNodeList(nodesFn)
     },
-    [getGroupNodeIds, getZoom],
+    [getGroupNodeIds, getZoom, updateEdgeList, updateNodeList],
   )
 
   const onNodeDrag = useCallback(
@@ -483,7 +524,7 @@ const FlowDiagram: React.FC<Props> = ({
 
       const updateNodeIds = getGroupNodeIds(node)
 
-      setNodes(nds => {
+      const nodesFn = (nds: ExtendedNode[]) => {
         return nds.map(n => {
           const newPosition = {
             x: node.position.x + event.movementX / zoom,
@@ -518,13 +559,22 @@ const FlowDiagram: React.FC<Props> = ({
 
           return n
         })
-      })
+      }
+      updateNodeList(nodesFn)
     },
-    [getGroupNodeIds, getZoom],
+    [getGroupNodeIds, getZoom, updateNodeList],
   )
+
+  useEffect(() => {
+    console.log('Flow component Mounted', compId)
+    return () => {
+      console.log('Fow component UnMounted', compId)
+    }
+  }, [compId])
 
   return (
     <div style={{ position: 'relative' }} className={className}>
+      <Toolbar onAddNode={HandleAddRootNode} />
       <ReactFlow
         nodes={nodes.filter(n => !n.isHidden)}
         edges={edges}
@@ -534,12 +584,7 @@ const FlowDiagram: React.FC<Props> = ({
         onNodeDrag={onNodeDrag}
         fitView
       >
-        <Background
-          variant={bgVType}
-          color={bgColor}
-          size={bgSize / getZoom()}
-          gap={bgGap / getZoom()}
-        />
+        <Background variant={bgVType} color={bgColor} size={bgSize / getZoom()} gap={bgGap / getZoom()} />
         <MiniMap />
         <Controls />
       </ReactFlow>

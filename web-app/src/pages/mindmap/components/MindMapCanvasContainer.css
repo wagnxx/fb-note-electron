@@ -1,0 +1,8 @@
+.ant-tabs-content {
+  height: 100%;
+}
+
+.ant-tabs-tabpane {
+  height: 100%;
+  overflow: auto;  /* 可选：如果内容超出 Tab 高度，可以启用滚动 */
+}

@@ -5,6 +5,7 @@ import { Handle, NodeProps, Position, useNodes } from 'react-flow-renderer'
 export interface CustomNodeData {
   label: string
   isExpanded: boolean
+  isRoot?: boolean
   onExpandToggle: () => void
   onAddChild: () => void
   onDelete: () => void
@@ -36,7 +37,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
 
   return (
     <div className="custom-node" onDoubleClickCapture={dbClickNodeHandler}>
-      {id === '1' && data.isExpanded && (
+      {data.isRoot && data.isExpanded && (
         <div
           style={{
             position: 'absolute',
@@ -71,16 +72,11 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
         </div>
       </div>
       {(data?.childCount || 0) > 0 && (
-        <div
-          className={`node-switch-container ${data.isExpanded ? 'expand' : ''}`}
-          onClick={data.onExpandToggle}
-        >
+        <div className={`node-switch-container ${data.isExpanded ? 'expand' : ''}`} onClick={data.onExpandToggle}>
           {data.isExpanded ? (
             <span className="expand-icon">-</span>
           ) : (
-            data.childCount !== undefined && (
-              <span className="child-count">[{data.childCount}]</span>
-            )
+            data.childCount !== undefined && <span className="child-count">[{data.childCount}]</span>
           )}
         </div>
       )}

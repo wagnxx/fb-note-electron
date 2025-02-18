@@ -31,6 +31,7 @@ interface Props {
   onDelete: (id: string) => void
   onAdd: (newAffix: AffixType) => void
   onRefreshPage: () => void
+  handleSync: () => void
 }
 
 type CollectonKeysType = Map<number, { key: number; newKey: number; id: string }>
@@ -38,7 +39,7 @@ type CollectonKeysType = Map<number, { key: number; newKey: number; id: string }
 type OnChange = NonNullable<TableProps<AffixType>['onChange']>
 type Filters = Parameters<OnChange>[1]
 
-const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPage }) => {
+const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPage, handleSync }) => {
   const [dataSource, setDataSource] = useState<AffixType[]>([])
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editingAffix, setEditingAffix] = useState<AffixType | null>(null)
@@ -278,12 +279,15 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
 
   return (
     <div>
-      <Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAddClick} style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: '16px' }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleAddClick}>
           添加
         </Button>
-        <Button onClick={handleUpdateKeys} disabled={collectionRowkeys.size === 0} style={{ marginBottom: 16 }}>
+        <Button onClick={handleUpdateKeys} disabled={collectionRowkeys.size === 0}>
           Update keys
+        </Button>
+        <Button type="primary" onClick={handleSync} disabled>
+          Sync Data
         </Button>
       </Space>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
@@ -294,7 +298,7 @@ const AffixList: React.FC<Props> = ({ data, onEdit, onDelete, onAdd, onRefreshPa
             rowKey="id"
             size="small"
             pagination={{ pageSize: 50 }}
-            scroll={{ y: 560 }}
+            scroll={{ y: 670 }}
             onChange={handleFilterChange}
           />
         </SortableContext>
