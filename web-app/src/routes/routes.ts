@@ -2,7 +2,7 @@
 import React from 'react'
 import NotFound from '@/pages/error/NotFound'
 import GuidePage from '@/pages/home/GuidePage'
-import MindMapPage from '@/pages/mindmap/MindMapPage'
+import MindMapPage from '@/pages/mindmap/MindMap'
 import Login from '@/pages/login/Login'
 import { routesTool } from './config/tool'
 import { routesLearn } from './config/learn'

@@ -1,5 +1,5 @@
 import ParentEmpty from '@/components/layout/ParentEmpty'
-import MindMapManagePage from '@/pages/mindmap/MindMapManagePage'
+import MindMapManagePage from '@/pages/mindmap'
 import MultiDocSnap from '@/pages/tools/docSnap/MultiDocSnap'
 import CinemaMoments from '@/pages/tools/video/CinemaMoments'
 import VideoDownloader from '@/pages/tools/video/components/VideoDownloader'

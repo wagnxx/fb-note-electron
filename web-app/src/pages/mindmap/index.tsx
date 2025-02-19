@@ -3,7 +3,7 @@ import React from 'react'
 import { Button } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
-const MindMapManagePage: React.FC = () => {
+const MindMapNav: React.FC = () => {
   const navigate = useNavigate()
   return (
     <div style={{ height: 'calc(100vh - 60px)' }}>
@@ -12,4 +12,4 @@ const MindMapManagePage: React.FC = () => {
   )
 }
 
-export default MindMapManagePage
+export default MindMapNav

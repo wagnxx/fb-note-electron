@@ -3,11 +3,12 @@ import fs from 'fs';
 import { dialog, ipcMain } from 'electron'
 import { IPC_ACTIONS } from '../constants';
 import { exec, spawn } from 'child_process';
-import { fileExists, getDirectoryStructureSync, readDirectory } from '../utils/fileManager';
+import { deleteFile, fileExists, getDirectoryStructureSync, readDirectory } from '../utils/fileManager';
 import mammoth from 'mammoth';
 import { convertDocToImage } from '../utils/docUtils';
 import { arrayBuffer } from 'stream/consumers';
 import AppWindowManager from '../managers/AppWindowManager';
+import { DOWNLOAD_DIR } from '../config/config';
 
 export const setupFileHandler = () => {
     ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async (event, options = { type: 'file' }) => {
@@ -174,6 +175,40 @@ export const setupFileHandler = () => {
         } else {
           // 如果没有选择路径，返回失败
           return { success: false, message: 'No file path provided.' }
+        }
+      });
+
+      
+      ipcMain.handle(IPC_ACTIONS.READ_JSON, async (event,filename) => {
+        const filePath = path.join(DOWNLOAD_DIR, `${filename}.json`);
+        try {
+          const data = fs.readFileSync(filePath, 'utf-8');
+          return JSON.parse(data); // 返回 JSON 数据
+        } catch (error) {
+          console.error('读取文件出错:', error);
+          return null;
+        }
+      });
+
+      ipcMain.handle(IPC_ACTIONS.SAVE_JSON, async (event, {data, filename}) => {
+        const filePath = path.join(DOWNLOAD_DIR, `${filename}.json`);
+        try {
+          fs.writeFileSync(filePath, JSON.stringify(data, null, 2)); // 格式化保存 JSON 数据
+          return filePath;
+        } catch (error) {
+          console.error('保存文件出错:', error);
+          return null;
+        }
+      });
+      ipcMain.handle(IPC_ACTIONS.DELETE_FILE, async (event, filename) => {
+        // const filePath = path.resolve(decodeURIComponent(enPath));
+        const filePath = path.join(DOWNLOAD_DIR, `${filename}.json`);
+        try {
+          await deleteFile(filePath)
+          return true;
+        } catch (error) {
+          console.error('delete文件出错:', error);
+          return false;
         }
       });
       

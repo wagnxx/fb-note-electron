@@ -67,3 +67,15 @@ export const getFileDialogList = async <T extends 'file' | 'directory' | 'both'>
     return result
   }
 }
+
+export const saveJsonToDocFile = (filename: string, data: any): Promise<string | null> => {
+  return ipcRenderer.invoke(IPC_ACTIONS.SAVE_JSON, { data, filename })
+}
+
+export const getJsonFromDocFile = <T>(filename: string): Promise<T[] | null> => {
+  return ipcRenderer.invoke(IPC_ACTIONS.READ_JSON, filename)
+}
+
+export const delJsonFile = <T>(filename: string): Promise<T[] | null> => {
+  return ipcRenderer.invoke(IPC_ACTIONS.DELETE_FILE, filename)
+}

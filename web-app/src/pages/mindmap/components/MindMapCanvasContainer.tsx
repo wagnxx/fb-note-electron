@@ -1,12 +1,14 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Tabs, Input } from 'antd'
 import MindMapCanvas, { ExtendedNode } from '@/features/mindmap/components/FlowDiagram'
 import { Edge } from 'react-flow-renderer'
+import { v4 as uuidv4 } from 'uuid'
 import './MindMapCanvasContainer.css'
+import { Action } from '@/utils/utilsAction'
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string
 
-type TabItem = {
+export type TabItem = {
   key: string
   name: string
   nodes: ExtendedNode[] // 添加节点数据
@@ -15,7 +17,7 @@ type TabItem = {
 
 const initialItems: TabItem[] = []
 
-const MindMapCanvasContainer: React.FC = () => {
+const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
   const [activeKey, setActiveKey] = useState<string>()
   const [items, setItems] = useState(initialItems)
   const [editKey, setEditKey] = useState<string | null>(null)
@@ -23,21 +25,47 @@ const MindMapCanvasContainer: React.FC = () => {
 
   const newTabIndex = useRef(0)
 
+  useImperativeHandle(ref, () => {
+    return {
+      getData() {
+        return items
+      },
+      resetItems(data) {
+        if (data.length === 0) return
+        const action = Action.getInstance()
+
+        action
+          .do(() => {
+            console.log('do umonute cavas component')
+            setActiveKey(undefined)
+          })
+          .sleep(100)
+          .then(() => {
+            setItems(data)
+            setActiveKey(data[0].key)
+            newTabIndex.current = data.length
+          })
+      },
+    }
+  }, [items])
+
   const onChange = (newActiveKey: string) => {
     setActiveKey(newActiveKey)
   }
 
   const add = () => {
-    const newActiveKey = `tab${newTabIndex.current++}`
+    const tabName = `tab${newTabIndex.current++}`
+    const tabKey = uuidv4()
     const newPanes = [...items]
     newPanes.push({
-      key: newActiveKey,
-      name: newActiveKey,
+      // key: newActiveKey,
+      key: tabKey,
+      name: tabName,
       nodes: [],
       edges: [],
     })
     setItems(newPanes)
-    setActiveKey(newActiveKey)
+    setActiveKey(tabKey)
   }
 
   const remove = (targetKey: TargetKey) => {
@@ -132,7 +160,6 @@ const MindMapCanvasContainer: React.FC = () => {
       style={{ width: '100%', flex: 1 }}
       type="editable-card"
       tabPosition="bottom"
-      animated
       activeKey={activeKey}
       onChange={onChange}
       onEdit={onEdit}
@@ -140,6 +167,11 @@ const MindMapCanvasContainer: React.FC = () => {
       renderTabBar={(tabBarProps, DefaultTabBar) => <DefaultTabBar {...tabBarProps} />}
     />
   )
+})
+
+export type MindMapRef = {
+  getData: () => TabItem[]
+  resetItems: (data: TabItem[]) => void
 }
 
 export default MindMapCanvasContainer

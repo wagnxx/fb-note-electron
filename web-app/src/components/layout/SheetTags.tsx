@@ -1,14 +1,16 @@
 import { PlusOutlined } from '@ant-design/icons'
 import { Input, Tag } from 'antd'
 import React, { FC, useState } from 'react'
-import { SheetTag } from '../MindMapPage'
+
 import { useNotification } from '@/hooks/useNotification'
 
 export type ChangeNameParams = {
   tagName: string
   newName: string
 }
-
+type SheetTag = {
+  name: string
+}
 const SheetTags: FC<{
   tags: SheetTag[]
   currentTag?: SheetTag

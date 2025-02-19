@@ -7,8 +7,10 @@
     STOP_SOCKS_SERVICE: 'stop-socks-service',
     CHECK_SOCKS_SERVICE: 'check-socks-service',
     GET_SOCKS_SERVICE_INFO: 'get-socks-service-info',
+
     GET_LOGS: 'get-logs',
     SUBPROCESS_ERROR: 'subprocess-errors',
+
     SELECT_FILE: 'select-file',
     GET_DIRECTORY_STRUCTURE: 'get-directory-structure',
     PARSE_DOC_FILE: 'parse-doc-file',
@@ -17,6 +19,11 @@
     LS_FOLDER: 'ls-folder',
     LOAD_VIDEO: 'load-video',
     READ_STREAM: 'read-stream',
+    CHECK_FOLDER_EXIST: 'check_folder_exist',
+    READ_JSON: 'read-json',
+    SAVE_JSON: 'save-json',
+    DELETE_FILE: 'delete-file',
+    
     SAVE_SCREENSHOT: 'save-screenshot',
     REMOVE_SCREENSHOT: 'remove-screenshot',
     BATCH_CROP_IMAGE: 'batch-crop-image',
@@ -24,7 +31,6 @@
     COMPARE_IMAGES: 'compare-images',
     EXRACT_IMAGES_TEXT: 'exract-images-text',
     EXRACT_VIDEO_FRAME_TEXT: 'exract-video-frame-text',
-    CHECK_FOLDER_EXIST: 'check_folder_exist',
     PAUSE_DOWNLOAD: 'pause-download',
     RESUME_DOWNLOAD: 'resume-download',
     CANCEL_DOWNLOAD: 'cancel-download',

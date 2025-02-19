@@ -1,15 +1,15 @@
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
-import React, { ChangeEvent, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Handle, NodeProps, Position, useNodes } from 'react-flow-renderer'
 
 export interface CustomNodeData {
   label: string
   isExpanded: boolean
   isRoot?: boolean
-  onExpandToggle: () => void
-  onAddChild: () => void
-  onDelete: () => void
-  onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => void
+  // onExpandToggle: () => void
+  // onAddChild: () => void
+  // onDelete: () => void
+  // onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => void
   childCount?: number
   rectRange?: {
     left: number
@@ -18,8 +18,15 @@ export interface CustomNodeData {
     bottom: number
   }
 }
+// 方法类型
+export interface CustomNodeProps extends NodeProps<CustomNodeData> {
+  onAddChild: () => void
+  onExpandToggle: () => void
+  onDelete: () => void
+  onChangeLabel: (label: string) => void
+}
 
-const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
+const CustomNode: React.FC<CustomNodeProps> = ({ data, id, onAddChild, onExpandToggle, onDelete, onChangeLabel }) => {
   const nodes = useNodes()
   const currentNode = nodes.find(node => node.id === id)
   const isDragging = currentNode?.dragging || false
@@ -33,6 +40,11 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
     // inputLabel?.current?.select()
     inputLabel?.current?.focus()
     setCanEditLabel(true)
+  }
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setCanEditLabel(false)
+
+    onChangeLabel(e.target.value)
   }
 
   return (
@@ -62,9 +74,9 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
           <input
             ref={inputLabel}
             readOnly={!canEditLabel}
-            onBlur={() => setCanEditLabel(false)}
-            value={data.label}
-            onChange={data.onChangeLabel}
+            onBlur={e => handleInputBlur(e)}
+            defaultValue={data.label}
+            // onChange={onChangeLabel}
             className="node-input"
             title={data.label}
           />
@@ -72,7 +84,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
         </div>
       </div>
       {(data?.childCount || 0) > 0 && (
-        <div className={`node-switch-container ${data.isExpanded ? 'expand' : ''}`} onClick={data.onExpandToggle}>
+        <div className={`node-switch-container ${data.isExpanded ? 'expand' : ''}`} onClick={onExpandToggle}>
           {data.isExpanded ? (
             <span className="expand-icon">-</span>
           ) : (
@@ -87,10 +99,10 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
       <div className={`context-menu-container ${isDragging ? 'hidden' : ''}`}>
         <div className="context-menu">
           <div className="context-menu-list">
-            <button onClick={data.onAddChild}>
+            <button onClick={onAddChild}>
               <PlusOutlined />
             </button>
-            <button onClick={data.onDelete}>
+            <button onClick={onDelete}>
               <MinusOutlined />
             </button>
           </div>

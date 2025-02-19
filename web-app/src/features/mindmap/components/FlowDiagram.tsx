@@ -1,4 +1,4 @@
-import React, { useCallback, ChangeEvent, useEffect, FC, useState } from 'react'
+import React, { useCallback, useEffect, FC, useState } from 'react'
 import ReactFlow, {
   addEdge,
   MiniMap,
@@ -93,13 +93,13 @@ const FlowDiagram: FC<Props> = ({
         id: compId,
         type: 'customNode',
         data: {
-          label: compId,
+          label: 'root',
           isExpanded: true,
           isRoot: true,
-          onExpandToggle: () => toggleExpand(compId),
-          onAddChild: () => addChildNode(compId, getZoom),
-          onDelete: () => deleteNode(compId),
-          onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel(compId, e.target.value),
+          // onExpandToggle: () => toggleExpand(compId),
+          // onAddChild: () => addChildNode(compId, getZoom),
+          // onDelete: () => deleteNode(compId),
+          // onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel(compId, e.target.value),
           rectRange: {
             top: 5,
             bottom: NODE_HEIGHT + 5,
@@ -258,10 +258,6 @@ const FlowDiagram: FC<Props> = ({
           data: {
             label: `Child of ${parentId}`,
             isExpanded: true,
-            onExpandToggle: () => toggleExpand(newNodeId),
-            onAddChild: () => addChildNode(newNodeId, getZoom),
-            onDelete: () => deleteNode(newNodeId),
-            onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => changeLabel(newNodeId, e.target.value),
           },
           position: newNodePostion,
           isHidden: false,
@@ -320,7 +316,7 @@ const FlowDiagram: FC<Props> = ({
       }
       updateEdgeList(edgesFn)
     },
-    [changeLabel, deleteNode, getZoom, toggleExpand, updateEdgeList, updateNodeList],
+    [updateEdgeList, updateNodeList],
   )
 
   const onConnect = useCallback(
@@ -579,7 +575,18 @@ const FlowDiagram: FC<Props> = ({
         nodes={nodes.filter(n => !n.isHidden)}
         edges={edges}
         onConnect={onConnect}
-        nodeTypes={nodeTypes}
+        // nodeTypes={nodeTypes}
+        nodeTypes={{
+          customNode: props => (
+            <CustomNode
+              {...props}
+              onAddChild={() => addChildNode(props.id, getZoom)}
+              onExpandToggle={() => toggleExpand(props.id)}
+              onDelete={() => deleteNode(props.id)}
+              onChangeLabel={(label: string) => changeLabel(props.id, label)}
+            />
+          ), // 绑定 onAddChild
+        }}
         onNodeDragStop={onNodeDragStop}
         onNodeDrag={onNodeDrag}
         fitView

@@ -109,7 +109,7 @@ export function useNotification() {
     [showNotification],
   )
 
-  const showConfirmModal = ({
+  const showConfirmModal = <T>({
     title,
     content,
     okText = 'OK',
@@ -117,7 +117,7 @@ export function useNotification() {
     onOk,
     onCancel,
   }: ConfirmModalProps) => {
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       modal.confirm({
         title,
         content,

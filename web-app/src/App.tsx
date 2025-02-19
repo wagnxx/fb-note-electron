@@ -11,6 +11,13 @@ import './i18n'
 const config: ThemeConfig = {
   token: {
     colorPrimary: '#1890ff',
+    borderRadius: 2,
+
+    // 派生变量，影响范围小
+    // colorBgContainer: '#f6ffed',
+  },
+  components: {
+    List: {},
   },
 }
 
