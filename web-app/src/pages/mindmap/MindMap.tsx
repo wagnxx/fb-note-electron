@@ -27,11 +27,11 @@ const FILELIST_STORAGE_KEY = 'MaindMap_paeg_file_list_key'
 
 const MindMapPage: React.FC = () => {
   const [fileList, setFileList] = useState<StoragedFile[]>([])
-  const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<StoragedFile | null>(null)
   const [isDrawerVisible, setvIsDrawerVisible] = React.useState<boolean>(false)
   const mindRef = useRef<MindMapRef>(null)
 
-  const { showConfirmModal, showNotification } = useNotification()
+  const { showConfirmModal, showNotification, handleRequestWithNotification } = useNotification()
   const isFirstRender = useFirstRender()
 
   useEffect(() => {
@@ -44,13 +44,13 @@ const MindMapPage: React.FC = () => {
     setFileList(data)
   }, [])
 
-  const handleSaveLocal = () => {
+  const handleSaveLocal = async () => {
     const data = mindRef.current?.getData()
     if (!data) return
     // localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     const docTypeFormRef = React.createRef<FormInstance<any>>()
 
-    showConfirmModal<{ filename: string }>({
+    const values = await showConfirmModal<{ filename: string }>({
       title: 'Input File Name',
       content: (
         <Form ref={docTypeFormRef}>
@@ -60,54 +60,64 @@ const MindMapPage: React.FC = () => {
         </Form>
       ),
     })
-      .then(values => {
-        const filename = values.filename
-        if (!filename) return
-        console.log('onOk : ', values)
-        if (fileList.some(file => file.name === filename)) {
-          showNotification('error', `The name '${filename}' is already taken. Please change it.`, 'message')
-          return
-        }
-        saveJsonToDocFile(filename, data)
-          .then(filepath => {
-            if (!filepath) return
-            setFileList(prevList => {
-              return [...prevList, { name: filename, path: filepath, lastModified: Date.now() }]
-            })
-          })
-          .catch(err => {})
+
+    if (!values) return
+
+    const filename = values.filename
+    if (!filename) return
+
+    if (fileList.some(file => file.name === filename)) {
+      showNotification('error', `The name '${filename}' is already taken. Please change it.`, 'message')
+      return
+    }
+
+    const filepath = await handleRequestWithNotification(async () => saveJsonToDocFile(filename, data), {
+      successField: null,
+      successMessage: 'Saved successfully',
+    })
+
+    if (filepath) {
+      const file = { name: filename, path: filepath, lastModified: Date.now() }
+      setFileList(prevList => {
+        return [...prevList, file]
       })
-      .catch(reason => {
-        console.log('closed reason: ', reason)
-      })
+      setSelectedFile(file)
+    }
   }
 
-  const handleGetLocalFile = async (filename: string) => {
-    const data = await getJsonFromDocFile<TabItem>(filename)
+  const handleGetLocalFile = async (file: StoragedFile) => {
+    const data = await getJsonFromDocFile<TabItem>(file.name)
     if (data) {
       mindRef.current?.resetItems(data)
     }
-    setSelectedFileName(filename)
+    setSelectedFile(file)
   }
 
-  const handleRemoveItem = (filepath: string) => {
-    delJsonFile(filepath).then(res => {
-      if (res) {
-        setFileList(prevList => prevList.filter(file => file.path !== filepath))
-      }
-    })
+  const handleRemoveItem = async (file: StoragedFile) => {
+    const r = await handleRequestWithNotification(async () => delJsonFile(file.path), { successField: null })
+
+    if (r) {
+      setFileList(prevList => prevList.filter(f => f.path !== file.path))
+    }
+
+    if (r && file.path === selectedFile?.path) {
+      setSelectedFile(null)
+      mindRef.current?.resetItems([])
+    }
   }
-  const handleSaveItem = (filename: string) => {
+  const handleSaveItem = async (file: StoragedFile) => {
     const data = mindRef.current?.getData()
     if (!data) return
-    saveJsonToDocFile(filename, data)
-      .then(res => {
-        showNotification('success', 'Operation successful', 'message')
-        setFileList(prevList => {
-          return prevList.map(file => (file.name === filename ? { ...file, lastModified: Date.now() } : file))
-        })
+    const filepath = await handleRequestWithNotification(async () => saveJsonToDocFile(file.name, data), {
+      successField: null,
+      successMessage: 'Saved successfully',
+    })
+
+    if (filepath) {
+      setFileList(prevList => {
+        return prevList.map(f => (f.name === file.name ? { ...f, lastModified: Date.now() } : f))
       })
-      .catch(err => {})
+    }
   }
 
   return (
@@ -116,7 +126,7 @@ const MindMapPage: React.FC = () => {
         <Splitter.Panel defaultSize="30%" min="2%" max="40%">
           <SidebarTabs
             fileList={fileList}
-            selectedFileName={selectedFileName}
+            selectedFile={selectedFile}
             onSaveLocal={handleSaveLocal}
             onGetLocalFile={handleGetLocalFile}
             onRemoveItem={handleRemoveItem}

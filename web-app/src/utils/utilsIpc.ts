@@ -76,6 +76,6 @@ export const getJsonFromDocFile = <T>(filename: string): Promise<T[] | null> => 
   return ipcRenderer.invoke(IPC_ACTIONS.READ_JSON, filename)
 }
 
-export const delJsonFile = <T>(filename: string): Promise<T[] | null> => {
-  return ipcRenderer.invoke(IPC_ACTIONS.DELETE_FILE, filename)
+export const delJsonFile = (filePath: string): Promise<boolean> => {
+  return ipcRenderer.invoke(IPC_ACTIONS.DELETE_FILE, filePath)
 }

@@ -117,7 +117,7 @@ export function useNotification() {
     onOk,
     onCancel,
   }: ConfirmModalProps) => {
-    return new Promise<T>((resolve, reject) => {
+    return new Promise<T | false>((resolve, reject) => {
       modal.confirm({
         title,
         content,
@@ -130,11 +130,11 @@ export function useNotification() {
             resolve(values)
             onOk?.(values)
           } else {
-            reject('No form data found')
+            resolve(false)
           }
         },
         onCancel() {
-          reject('Cancelled')
+          resolve(false)
           onCancel?.() // 调用传入的 onCancel
         },
       })

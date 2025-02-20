@@ -200,9 +200,9 @@ export const setupFileHandler = () => {
           return null;
         }
       });
-      ipcMain.handle(IPC_ACTIONS.DELETE_FILE, async (event, filename) => {
-        // const filePath = path.resolve(decodeURIComponent(enPath));
-        const filePath = path.join(DOWNLOAD_DIR, `${filename}.json`);
+      ipcMain.handle(IPC_ACTIONS.DELETE_FILE, async (event, enPath) => {
+        const filePath = path.resolve(decodeURIComponent(enPath));
+        // const filePath = path.join(DOWNLOAD_DIR, `${filename}.json`);
         try {
           await deleteFile(filePath)
           return true;

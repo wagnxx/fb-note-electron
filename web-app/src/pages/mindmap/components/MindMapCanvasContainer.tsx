@@ -31,7 +31,6 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
         return items
       },
       resetItems(data) {
-        if (data.length === 0) return
         const action = Action.getInstance()
 
         action
@@ -42,7 +41,7 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
           .sleep(100)
           .then(() => {
             setItems(data)
-            setActiveKey(data[0].key)
+            setActiveKey(data[0]?.key) // Allowing data length to be 0
             newTabIndex.current = data.length
           })
       },
@@ -154,6 +153,24 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
       ),
     }))
   }, [activeKey, editKey, handleDoubleClick, items, newLabel, updateEdges, updateNodes])
+
+  // if (items.length === 0) {
+  //   return (
+  //     <div
+  //       style={{
+  //         width: '100%',
+  //         flex: 1,
+  //         display: 'flex',
+  //         justifyContent: 'center',
+  //         flexDirection: 'column',
+  //         // padding: '20px',
+  //         // textAlign: 'center',
+  //       }}
+  //     >
+  //       <Empty description="No selected" />
+  //     </div>
+  //   )
+  // }
 
   return (
     <Tabs
