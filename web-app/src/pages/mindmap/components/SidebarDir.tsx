@@ -1,0 +1,151 @@
+import { DownOutlined, LeftOutlined } from '@ant-design/icons'
+import { Button, Dropdown, Form, FormInstance, Input, MenuProps, Tabs, TabsProps } from 'antd'
+import React, { FC, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import TabpanelLocal from './TabpanelLocal'
+import { TabItem } from './MindMapCanvasContainer'
+import TabpanelCloud from './TabpanelCloud'
+import { useNotification } from '@/hooks/useNotification'
+
+type StorageType = 'local' | 'cloud'
+
+// 使用 StorageType 来限制 key 和 value 类型
+const TABS_KEY: Record<StorageType, StorageType> = {
+  local: 'local',
+  cloud: 'cloud',
+}
+
+// 通过 typeof 获取 Tabs_key 的类型
+type TabsKeyType = typeof TABS_KEY
+
+export type TabpanelRef = {
+  saveNewFile: (filename: string, data: TabItem[]) => Promise<boolean>
+  saveFile: () => void
+}
+
+const SidebarDir: FC<{
+  getCanvasData: () => TabItem[] | undefined
+  resetCanvasData: (data: TabItem[]) => void
+}> = ({ getCanvasData, resetCanvasData }) => {
+  const [isSaving, setIsSaving] = useState(false)
+  const [activeTabsKey, setActiveTabsKey] = useState<StorageType>(TABS_KEY.local)
+  const localRef = useRef<TabpanelRef>(null)
+  const cloudRef = useRef<TabpanelRef>(null)
+
+  const { showConfirmModal } = useNotification()
+
+  const navigate = useNavigate()
+
+  const onChange = (key: StorageType) => {
+    setActiveTabsKey(key)
+  }
+
+  // TODO child ref implement
+  const handleSaveAsNew = async (typ: StorageType) => {
+    const data = getCanvasData()
+    if (!data) return
+    const docTypeFormRef = React.createRef<FormInstance<any>>()
+
+    const values = await showConfirmModal<{ filename: string }>({
+      title: 'Input File Name',
+      content: (
+        <Form ref={docTypeFormRef}>
+          <Form.Item name="filename" rules={[{ required: true, message: 'Please input filername!' }]}>
+            <Input />
+          </Form.Item>
+        </Form>
+      ),
+    })
+    if (!values) return
+
+    setIsSaving(true)
+
+    if (typ === TABS_KEY.local) {
+      localRef.current?.saveNewFile(values.filename, data).finally(() => {
+        setIsSaving(false)
+      })
+    }
+    if (typ === TABS_KEY.cloud) {
+      cloudRef.current?.saveNewFile(values.filename, data).finally(() => {
+        setIsSaving(false)
+      })
+    }
+  }
+
+  const handleSaveCurrentFile = async () => {
+    if (activeTabsKey === TABS_KEY.local) {
+      localRef.current?.saveFile()
+    }
+    if (activeTabsKey === TABS_KEY.cloud) {
+      cloudRef.current?.saveFile()
+    }
+  }
+
+  const tabsItems: TabsProps['items'] = [
+    {
+      key: TABS_KEY.local,
+      label: 'Local',
+      children: <TabpanelLocal ref={localRef} getCanvasData={getCanvasData} resetCanvasData={resetCanvasData} />,
+    },
+    {
+      key: TABS_KEY.cloud,
+      label: 'Cloud-based',
+      children: <TabpanelCloud ref={cloudRef} getCanvasData={getCanvasData} resetCanvasData={resetCanvasData} />,
+    },
+  ]
+
+  const memuItems: MenuProps['items'] = [
+    {
+      key: '1',
+      label: (
+        <Button
+          type="text"
+          style={{ display: 'unset', textAlign: 'left' }}
+          block
+          onClick={() => handleSaveAsNew('local')}
+          disabled={activeTabsKey !== TABS_KEY.local}
+        >
+          Save Locally As New
+        </Button>
+      ),
+    },
+    {
+      key: '2',
+      label: (
+        <Button
+          type="text"
+          style={{ display: 'unset', textAlign: 'left' }}
+          block
+          onClick={() => handleSaveAsNew('cloud')}
+          disabled={activeTabsKey !== TABS_KEY.cloud}
+        >
+          Save to Cloud As New
+        </Button>
+      ),
+    },
+    {
+      key: '3',
+      label: (
+        <Button type="text" style={{ display: 'unset', textAlign: 'left' }} block onClick={handleSaveCurrentFile}>
+          Save File
+        </Button>
+      ),
+    },
+  ]
+
+  return (
+    <div className="p-2">
+      <div className="flex flex-row justify-between items-center">
+        <Button icon={<LeftOutlined />} type="text" onClick={() => navigate(-1)}></Button>
+        <Dropdown menu={{ items: memuItems }} trigger={['click']}>
+          <Button loading={isSaving} icon={<DownOutlined />} iconPosition="end">
+            Save
+          </Button>
+        </Dropdown>
+      </div>
+      <Tabs accessKey={activeTabsKey} items={tabsItems} onChange={val => onChange(val as StorageType)} />
+    </div>
+  )
+}
+
+export default SidebarDir

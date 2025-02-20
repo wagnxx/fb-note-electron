@@ -1,15 +1,14 @@
 // src/pages/MindMapPage.tsx
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { ExtendedNode } from '@/features/mindmap/components/FlowDiagram'
 import { Edge, ReactFlowProvider } from 'react-flow-renderer'
 import { Button, Form, FormInstance, Input, Splitter } from 'antd'
-import SidebarTabs from './components/SidebarTabs'
+import SidebarDir from './components/SidebarDir'
 import SideDrawer from './components/SideDrawer'
 import MindMapCanvasContainer, { MindMapRef, TabItem } from './components/MindMapCanvasContainer'
 import { SettingFilled } from '@ant-design/icons'
 import { useNotification } from '@/hooks/useNotification'
 import { delJsonFile, getJsonFromDocFile, saveJsonToDocFile } from '@/utils/utilsIpc'
-import useFirstRender from '@/hooks/useFirstRender'
 
 export type SheetTag = {
   name: string
@@ -23,8 +22,6 @@ export type StoragedFile = {
   lastModified: number
 }
 
-const FILELIST_STORAGE_KEY = 'MaindMap_paeg_file_list_key'
-
 const MindMapPage: React.FC = () => {
   const [fileList, setFileList] = useState<StoragedFile[]>([])
   const [selectedFile, setSelectedFile] = useState<StoragedFile | null>(null)
@@ -32,17 +29,14 @@ const MindMapPage: React.FC = () => {
   const mindRef = useRef<MindMapRef>(null)
 
   const { showConfirmModal, showNotification, handleRequestWithNotification } = useNotification()
-  const isFirstRender = useFirstRender()
 
-  useEffect(() => {
-    if (isFirstRender) return
-    localStorage.setItem(FILELIST_STORAGE_KEY, JSON.stringify(fileList))
-  }, [fileList, isFirstRender])
-  useEffect(() => {
-    const dataStr = localStorage.getItem(FILELIST_STORAGE_KEY)
-    const data = JSON.parse(dataStr!)
-    setFileList(data)
-  }, [])
+  const getCanvasData = () => {
+    return mindRef.current?.getData()
+  }
+
+  const resetCanvasData = (data: TabItem[]) => {
+    mindRef.current?.resetItems(data)
+  }
 
   const handleSaveLocal = async () => {
     const data = mindRef.current?.getData()
@@ -124,14 +118,7 @@ const MindMapPage: React.FC = () => {
     <ReactFlowProvider>
       <Splitter style={{ height: 'calc(100vh - 30px)', boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)' }}>
         <Splitter.Panel defaultSize="30%" min="2%" max="40%">
-          <SidebarTabs
-            fileList={fileList}
-            selectedFile={selectedFile}
-            onSaveLocal={handleSaveLocal}
-            onGetLocalFile={handleGetLocalFile}
-            onRemoveItem={handleRemoveItem}
-            onSaveItem={handleSaveItem}
-          />
+          <SidebarDir getCanvasData={getCanvasData} resetCanvasData={resetCanvasData} />
         </Splitter.Panel>
         <Splitter.Panel>
           <div className=" flex flex-row p-2" style={{ height: 'calc(100%)', width: '100%' }}>

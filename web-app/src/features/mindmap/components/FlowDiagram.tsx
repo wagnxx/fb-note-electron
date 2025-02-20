@@ -65,6 +65,8 @@ const FlowDiagram: FC<Props> = ({
 
   const { showNotification } = useNotification()
 
+  const rootId = compId
+
   // Unify the method entry.
   const updateNodeList = useCallback(
     (fn: (data: ExtendedNode[]) => ExtendedNode[]) => {
@@ -90,7 +92,7 @@ const FlowDiagram: FC<Props> = ({
     // It  won't be used for now. It's only used for the root node.
     const DEFAULT_NODES = [
       {
-        id: compId,
+        id: rootId,
         type: 'customNode',
         data: {
           label: 'root',
@@ -234,7 +236,7 @@ const FlowDiagram: FC<Props> = ({
 
   const addChildNode = useCallback(
     (parentId: string, getZoomFunc: () => number) => {
-      const newNodeId = `${parentId}_${uuidv4()}`
+      const newNodeId = `${rootId}_${uuidv4()}`
       const zoom = getZoomFunc()
 
       const nodesFn: (nds: ExtendedNode[]) => ExtendedNode[] = (nds: ExtendedNode[]) => {
