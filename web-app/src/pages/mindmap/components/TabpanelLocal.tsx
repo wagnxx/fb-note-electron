@@ -1,6 +1,3 @@
-import { formatDate } from '@/utils/utilsDate'
-import { CloseOutlined, CheckOutlined } from '@ant-design/icons'
-import { List, Popconfirm, Button } from 'antd'
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react'
 import { StoragedFile } from '../MindMap'
 import { useNotification } from '@/hooks/useNotification'
@@ -8,6 +5,8 @@ import { delJsonFile, getJsonFromDocFile, saveJsonToDocFile } from '@/utils/util
 import useFirstRender from '@/hooks/useFirstRender'
 import { TabItem } from './MindMapCanvasContainer'
 import { TabpanelRef } from './SidebarDir'
+import TabpanelList from './TabpanelList'
+import { Spin } from 'antd'
 
 const FILELIST_STORAGE_KEY = 'MaindMap_paeg_file_list_key'
 
@@ -19,6 +18,7 @@ type Props = {
 const TabpanelLocal = forwardRef<TabpanelRef, Props>(({ getCanvasData, resetCanvasData }, ref) => {
   const [fileList, setFileList] = useState<StoragedFile[]>([])
   const [selectedFile, setSelectedFile] = useState<StoragedFile | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const { handleRequestWithNotification, showNotification } = useNotification()
 
@@ -35,7 +35,7 @@ const TabpanelLocal = forwardRef<TabpanelRef, Props>(({ getCanvasData, resetCanv
   }, [])
 
   const handleRemoveItem = async (file: StoragedFile) => {
-    const r = await handleRequestWithNotification(async () => delJsonFile(file.path), { successField: null })
+    const r = await handleRequestWithNotification(async () => delJsonFile(file.path!), { successField: null })
 
     if (r) {
       setFileList(prevList => prevList.filter(f => f.path !== file.path))
@@ -46,20 +46,25 @@ const TabpanelLocal = forwardRef<TabpanelRef, Props>(({ getCanvasData, resetCanv
       resetCanvasData([])
     }
   }
-  const handleSaveItem = async (file: StoragedFile) => {
-    const data = getCanvasData()
-    if (!data) return
-    const filepath = await handleRequestWithNotification(async () => saveJsonToDocFile(file.name, data), {
-      successField: null,
-      successMessage: 'Saved successfully',
-    })
-
-    if (filepath) {
-      setFileList(prevList => {
-        return prevList.map(f => (f.name === file.name ? { ...f, lastModified: Date.now() } : f))
+  const handleSaveItem = useCallback(
+    async (file: StoragedFile): Promise<boolean> => {
+      const data = getCanvasData()
+      if (!data) return false
+      const filepath = await handleRequestWithNotification(async () => saveJsonToDocFile(file.name, data), {
+        successField: null,
+        successMessage: 'Saved successfully',
       })
-    }
-  }
+
+      if (filepath) {
+        setFileList(prevList => {
+          return prevList.map(f => (f.name === file.name ? { ...f, lastModified: Date.now() } : f))
+        })
+        return true
+      }
+      return false
+    },
+    [getCanvasData, handleRequestWithNotification],
+  )
 
   const handleGetLocalFile = async (file: StoragedFile) => {
     const data = await getJsonFromDocFile<TabItem>(file.name)
@@ -97,61 +102,25 @@ const TabpanelLocal = forwardRef<TabpanelRef, Props>(({ getCanvasData, resetCanv
   useImperativeHandle(ref, () => {
     return {
       saveNewFile: handleSaveAsNew,
-      saveFile() {},
+      async saveFile() {
+        if (selectedFile) {
+          return handleSaveItem(selectedFile)
+        }
+        return false
+      },
     }
-  }, [handleSaveAsNew])
+  }, [handleSaveAsNew, handleSaveItem, selectedFile])
 
   return (
-    <div>
-      <List
-        dataSource={fileList}
-        renderItem={item => (
-          <List.Item
-            style={{ background: selectedFile?.name === item.name ? '#e6f7ff' : '' }}
-            actions={[
-              <Popconfirm
-                title="Delete the task"
-                description="Are you sure to delete the file?"
-                onConfirm={() => handleRemoveItem(item)}
-                okText="Yes"
-                cancelText="No"
-              >
-                <CloseOutlined />
-              </Popconfirm>,
-              <Popconfirm
-                title="Submit the task"
-                description="Are you sure to resave file?"
-                onConfirm={() => handleSaveItem(item)}
-                okText="Yes"
-                cancelText="No"
-                disabled={selectedFile?.name !== item.name}
-              >
-                <CheckOutlined />
-              </Popconfirm>,
-            ]}
-          >
-            <List.Item.Meta
-              title={
-                <div
-                  style={{ cursor: selectedFile?.name === item.name ? 'no-allowd' : 'pointer' }}
-                  onClick={() => handleGetLocalFile(item)}
-                >
-                  <Button
-                    disabled={selectedFile?.name === item.name}
-                    block
-                    type="text"
-                    style={{ textAlign: 'left', display: 'unset' }}
-                  >
-                    {item.name}
-                  </Button>
-                </div>
-              }
-              description={formatDate(new Date(item.lastModified))}
-            />
-          </List.Item>
-        )}
+    <Spin spinning={loading}>
+      <TabpanelList
+        fileList={fileList}
+        selectedFile={selectedFile}
+        onRemoveItem={handleRemoveItem}
+        onSaveItem={handleSaveItem}
+        onClickItem={handleGetLocalFile}
       />
-    </div>
+    </Spin>
   )
 })
 

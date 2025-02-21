@@ -1,14 +1,12 @@
 // src/pages/MindMapPage.tsx
-import React, { useRef, useState } from 'react'
+import React, { useRef } from 'react'
 import { ExtendedNode } from '@/features/mindmap/components/FlowDiagram'
 import { Edge, ReactFlowProvider } from 'react-flow-renderer'
-import { Button, Form, FormInstance, Input, Splitter } from 'antd'
+import { Button, Splitter } from 'antd'
 import SidebarDir from './components/SidebarDir'
 import SideDrawer from './components/SideDrawer'
 import MindMapCanvasContainer, { MindMapRef, TabItem } from './components/MindMapCanvasContainer'
 import { SettingFilled } from '@ant-design/icons'
-import { useNotification } from '@/hooks/useNotification'
-import { delJsonFile, getJsonFromDocFile, saveJsonToDocFile } from '@/utils/utilsIpc'
 
 export type SheetTag = {
   name: string
@@ -18,17 +16,16 @@ export type SheetTag = {
 }
 export type StoragedFile = {
   name: string
-  path: string
+  path?: string
+  id?: string
   lastModified: number
+  data?: TabItem[]
+  order?: number
 }
 
 const MindMapPage: React.FC = () => {
-  const [fileList, setFileList] = useState<StoragedFile[]>([])
-  const [selectedFile, setSelectedFile] = useState<StoragedFile | null>(null)
   const [isDrawerVisible, setvIsDrawerVisible] = React.useState<boolean>(false)
   const mindRef = useRef<MindMapRef>(null)
-
-  const { showConfirmModal, showNotification, handleRequestWithNotification } = useNotification()
 
   const getCanvasData = () => {
     return mindRef.current?.getData()
@@ -36,82 +33,6 @@ const MindMapPage: React.FC = () => {
 
   const resetCanvasData = (data: TabItem[]) => {
     mindRef.current?.resetItems(data)
-  }
-
-  const handleSaveLocal = async () => {
-    const data = mindRef.current?.getData()
-    if (!data) return
-    // localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-    const docTypeFormRef = React.createRef<FormInstance<any>>()
-
-    const values = await showConfirmModal<{ filename: string }>({
-      title: 'Input File Name',
-      content: (
-        <Form ref={docTypeFormRef}>
-          <Form.Item name="filename" rules={[{ required: true, message: 'Please input filername!' }]}>
-            <Input />
-          </Form.Item>
-        </Form>
-      ),
-    })
-
-    if (!values) return
-
-    const filename = values.filename
-    if (!filename) return
-
-    if (fileList.some(file => file.name === filename)) {
-      showNotification('error', `The name '${filename}' is already taken. Please change it.`, 'message')
-      return
-    }
-
-    const filepath = await handleRequestWithNotification(async () => saveJsonToDocFile(filename, data), {
-      successField: null,
-      successMessage: 'Saved successfully',
-    })
-
-    if (filepath) {
-      const file = { name: filename, path: filepath, lastModified: Date.now() }
-      setFileList(prevList => {
-        return [...prevList, file]
-      })
-      setSelectedFile(file)
-    }
-  }
-
-  const handleGetLocalFile = async (file: StoragedFile) => {
-    const data = await getJsonFromDocFile<TabItem>(file.name)
-    if (data) {
-      mindRef.current?.resetItems(data)
-    }
-    setSelectedFile(file)
-  }
-
-  const handleRemoveItem = async (file: StoragedFile) => {
-    const r = await handleRequestWithNotification(async () => delJsonFile(file.path), { successField: null })
-
-    if (r) {
-      setFileList(prevList => prevList.filter(f => f.path !== file.path))
-    }
-
-    if (r && file.path === selectedFile?.path) {
-      setSelectedFile(null)
-      mindRef.current?.resetItems([])
-    }
-  }
-  const handleSaveItem = async (file: StoragedFile) => {
-    const data = mindRef.current?.getData()
-    if (!data) return
-    const filepath = await handleRequestWithNotification(async () => saveJsonToDocFile(file.name, data), {
-      successField: null,
-      successMessage: 'Saved successfully',
-    })
-
-    if (filepath) {
-      setFileList(prevList => {
-        return prevList.map(f => (f.name === file.name ? { ...f, lastModified: Date.now() } : f))
-      })
-    }
   }
 
   return (
@@ -123,27 +44,22 @@ const MindMapPage: React.FC = () => {
         <Splitter.Panel>
           <div className=" flex flex-row p-2" style={{ height: 'calc(100%)', width: '100%' }}>
             <div
+              className="flex flex-col h-full"
               style={{
-                height: '100%',
                 width: 'calc(100% - 30px)',
-                display: 'flex',
-                flexDirection: 'column',
                 background: '#fff',
               }}
             >
               <MindMapCanvasContainer ref={mindRef} />
             </div>
             <div
+              className="flex flex-col justify-start"
               style={{
                 width: '30px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
                 background: '#eaeaea',
               }}
             >
               <Button icon={<SettingFilled />} type="text" onClick={() => setvIsDrawerVisible(true)} />
-              {/* <Button icon={<PlusOutlined />} type="text" onClick={() => setvIsDrawerVisible(true)} /> */}
             </div>
           </div>
         </Splitter.Panel>

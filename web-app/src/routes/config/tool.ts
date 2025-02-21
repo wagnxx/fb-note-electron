@@ -6,6 +6,7 @@ import VideoDownloader from '@/pages/tools/video/components/VideoDownloader'
 import ScreenshotDoc from '@/pages/tools/docSnap/ScreenshotDoc'
 import { RouteConfig } from '../routes'
 import DocToImageConverter from '@/pages/tools/docSnap/DocToImageConverter'
+import MindMap from '@/pages/mindmap/MindMap'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -13,9 +14,18 @@ export const routesTool: RouteConfig = {
   component: ParentEmpty,
   children: [
     {
-      path: 'mindmapManage',
+      path: 'mindmap',
       name: 'Mind',
       component: MindMapManagePage,
+      children: [
+        {
+          path: 'cloud',
+          name: 'MindMapCloud',
+          component: MindMap,
+          isDesktop: true,
+          // hidden: true,
+        },
+      ],
     },
     {
       path: 'video',

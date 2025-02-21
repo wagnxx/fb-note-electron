@@ -20,7 +20,7 @@ type TabsKeyType = typeof TABS_KEY
 
 export type TabpanelRef = {
   saveNewFile: (filename: string, data: TabItem[]) => Promise<boolean>
-  saveFile: () => void
+  saveFile: () => Promise<boolean>
 }
 
 const SidebarDir: FC<{
@@ -38,6 +38,7 @@ const SidebarDir: FC<{
 
   const onChange = (key: StorageType) => {
     setActiveTabsKey(key)
+    resetCanvasData([])
   }
 
   // TODO child ref implement
@@ -85,12 +86,26 @@ const SidebarDir: FC<{
     {
       key: TABS_KEY.local,
       label: 'Local',
-      children: <TabpanelLocal ref={localRef} getCanvasData={getCanvasData} resetCanvasData={resetCanvasData} />,
+      children: (
+        <TabpanelLocal
+          key={activeTabsKey}
+          ref={localRef}
+          getCanvasData={getCanvasData}
+          resetCanvasData={resetCanvasData}
+        />
+      ),
     },
     {
       key: TABS_KEY.cloud,
       label: 'Cloud-based',
-      children: <TabpanelCloud ref={cloudRef} getCanvasData={getCanvasData} resetCanvasData={resetCanvasData} />,
+      children: (
+        <TabpanelCloud
+          key={activeTabsKey}
+          ref={cloudRef}
+          getCanvasData={getCanvasData}
+          resetCanvasData={resetCanvasData}
+        />
+      ),
     },
   ]
 

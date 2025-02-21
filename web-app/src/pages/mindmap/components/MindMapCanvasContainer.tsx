@@ -30,23 +30,25 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
       getData() {
         return items
       },
-      resetItems(data) {
-        const action = Action.getInstance()
-
-        action
-          .do(() => {
-            console.log('do umonute cavas component')
-            setActiveKey(undefined)
-          })
-          .sleep(100)
-          .then(() => {
-            setItems(data)
-            setActiveKey(data[0]?.key) // Allowing data length to be 0
-            newTabIndex.current = data.length
-          })
-      },
+      resetItems,
     }
   }, [items])
+
+  const resetItems = (data: TabItem[]) => {
+    const action = Action.getInstance()
+
+    action
+      .do(() => {
+        console.log('do umonute cavas component')
+        setActiveKey(undefined)
+      })
+      .sleep(100)
+      .then(() => {
+        setItems(data)
+        setActiveKey(data[0]?.key) // Allowing data length to be 0
+        newTabIndex.current = data.length
+      })
+  }
 
   const onChange = (newActiveKey: string) => {
     setActiveKey(newActiveKey)

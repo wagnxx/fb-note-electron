@@ -2,7 +2,7 @@
 import React from 'react'
 import NotFound from '@/pages/error/NotFound'
 import GuidePage from '@/pages/home/GuidePage'
-import MindMapPage from '@/pages/mindmap/MindMap'
+import MindMap from '@/pages/mindmap/MindMap'
 import Login from '@/pages/login/Login'
 import { routesTool } from './config/tool'
 import { routesLearn } from './config/learn'
@@ -41,9 +41,9 @@ export const standaloneRoutes: RouteConfig[] = [
     component: Login,
   },
   {
-    path: 'tool/mindmap',
-    name: 'MindMapPage',
-    component: MindMapPage,
+    path: 'tool/mindmap/local',
+    name: 'MindMapLocal',
+    component: MindMap,
   },
   // 其他独立页面路由
 ]

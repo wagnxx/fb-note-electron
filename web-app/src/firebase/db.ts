@@ -105,12 +105,14 @@ export const updateDocData = async (
   colName: string,
   docId: string,
   newData: Partial<DocumentData>,
-): Promise<void> => {
+): Promise<boolean> => {
   try {
     await updateDoc(doc(db, colName, docId), newData)
     LogInfo('Document updated successfully')
+    return true
   } catch (error: unknown) {
     dealError(error)
+    return false
   }
 }
 

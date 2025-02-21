@@ -1,0 +1,66 @@
+import React, { FC } from 'react'
+import { formatDate } from '@/utils/utilsDate'
+import { CloseOutlined, CheckOutlined } from '@ant-design/icons'
+import { List, Popconfirm, Button } from 'antd'
+import { StoragedFile } from '../MindMap'
+
+const TabpanelList: FC<{
+  fileList: StoragedFile[]
+  selectedFile: StoragedFile | null
+  onRemoveItem: (item: StoragedFile) => void
+  onSaveItem: (item: StoragedFile) => void
+  onClickItem: (item: StoragedFile) => void
+}> = ({ fileList, selectedFile, onRemoveItem, onSaveItem, onClickItem }) => {
+  return (
+    <List
+      dataSource={fileList}
+      renderItem={item => (
+        <List.Item
+          style={{ background: selectedFile?.name === item.name ? '#e6f7ff' : '' }}
+          actions={[
+            <Popconfirm
+              title="Delete the task"
+              description="Are you sure to delete the file?"
+              onConfirm={() => onRemoveItem(item)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <CloseOutlined />
+            </Popconfirm>,
+            <Popconfirm
+              title="Submit the task"
+              description="Are you sure to resave file?"
+              onConfirm={() => onSaveItem(item)}
+              okText="Yes"
+              cancelText="No"
+              disabled={selectedFile?.name !== item.name}
+            >
+              <CheckOutlined />
+            </Popconfirm>,
+          ]}
+        >
+          <List.Item.Meta
+            title={
+              <div
+                style={{ cursor: selectedFile?.name === item.name ? 'no-allowd' : 'pointer' }}
+                onClick={() => onClickItem(item)}
+              >
+                <Button
+                  disabled={selectedFile?.name === item.name}
+                  block
+                  type="text"
+                  style={{ textAlign: 'left', display: 'unset' }}
+                >
+                  {item.name}
+                </Button>
+              </div>
+            }
+            description={formatDate(new Date(item.lastModified))}
+          />
+        </List.Item>
+      )}
+    />
+  )
+}
+
+export default TabpanelList

@@ -74,7 +74,8 @@ const AuthLayout: React.FC = () => {
 
       const menuItem: MenuItem = {
         key: fullPath,
-        label: children ? name : <Link to={fullPath}>{name}</Link>,
+        // label: children ? name : <Link to={fullPath}>{name}</Link>,
+        label: <Link to={fullPath}>{name}</Link>,
       }
 
       if (children) {
@@ -89,13 +90,7 @@ const AuthLayout: React.FC = () => {
 
   return (
     <Layout>
-      <Sider
-        width={200}
-        trigger={null}
-        collapsedWidth={0}
-        collapsible
-        collapsed={sidbarCfdsfollapsed}
-      >
+      <Sider width={200} trigger={null} collapsedWidth={0} collapsible collapsed={sidbarCfdsfollapsed}>
         <div className=" flex justify-center py-2">
           {isAuthenticated ? (
             <>
