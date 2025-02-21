@@ -5,10 +5,13 @@ node_modules
 .env
 
 web-app/build
+web-app/src/assets/raw/dict/playground.json
 
 electron/build-service
 electron/temps
 electron/logs
 electron/release
+electron/support/download
+
 
 test/
