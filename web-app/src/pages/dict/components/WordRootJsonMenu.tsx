@@ -20,6 +20,7 @@ interface MenuItem {
 
 type Props = {
   onItemClick: ({ key }: { key: string }) => void
+  rootLabel: string
 }
 
 const commonItems: MenuItem[] = [{ key: 'table', icon: <TableOutlined />, label: '词根管理' }]
@@ -35,34 +36,59 @@ const convertToMenuItems = (items: FileSystemItem[]): MenuItem[] => {
   })
 }
 
-const MenuComp: FC<{ menus: MenuItem[] } & Pick<Props, 'onItemClick'>> = ({ menus, onItemClick }) => {
-  return <Menu mode="inline" defaultSelectedKeys={['table']} onClick={onItemClick} items={menus} />
+// const MenuComp: FC<{ menus: MenuItem[]; rootLable: string } & Pick<Props, 'onItemClick'>> = ({
+//   menus,
+//   rootLable,
+//   onItemClick,
+// }) => {
+//   return (
+//     <Dropdown
+//       menu={{
+//         items: menus.map(item => ({
+//           ...item,
+//           label: <span onClick={() => onItemClick({ key: item.key })}>{item.label}</span>,
+//         })),
+//       }}
+//       trigger={['click']}
+//     >
+//       <Button icon={<DownOutlined />} iconPosition="end">
+//         {rootLable}
+//       </Button>
+//     </Dropdown>
+//   )
+// }
+const MenuComp: FC<{ menus: MenuItem[]; rootLable: string } & Pick<Props, 'onItemClick'>> = ({
+  menus,
+  onItemClick,
+}) => {
+  return <Menu mode="vertical" defaultSelectedKeys={['table']} onClick={onItemClick} items={menus} />
 }
 
-const WordRootDocMenu: FC<Props> = ({ onItemClick }) => {
+const WordRootDocMenu: FC<Props> = ({ onItemClick, rootLabel }) => {
   const [menus, setMenus] = useState<MenuItem[]>([])
 
   useEffect(() => {
     getDirectoryStructure(encodeURIComponent(DOC_DIR))
       .then(res => {
-        console.log('Directory structure:', res)
         const sortedData = res.sort((a, b) => {
           let an = (a.name || '').match(/^(\d+)\./)?.[1] || 0
           let bn = (b.name || '').match(/^(\d+)\./)?.[1] || 0
           return Number(an) - Number(bn)
         })
         const menuItems = convertToMenuItems(res)
-        setMenus(menuItems)
+        const mergeMenu = [{ key: 'table', icon: <TableOutlined />, label: rootLabel, children: menuItems }]
+        setMenus(mergeMenu)
       })
       .catch((error: Error) => {
         console.error('Error fetching directory structure:', error)
       })
-  }, [])
+  }, [rootLabel])
 
   return (
     <MenuComp
+      rootLable={rootLabel}
       menus={[
-        ...commonItems,
+        // ...commonItems,
         ...menus, // 添加从目录结构转换的菜单项
       ]}
       onItemClick={onItemClick}
@@ -75,6 +101,6 @@ const WordRootDocMenu: FC<Props> = ({ onItemClick }) => {
 export default (props: Props) => (
   <DesktopOnly
     children={<WordRootDocMenu {...props} />}
-    fallback={<MenuComp menus={[...commonItems]} onItemClick={props.onItemClick} />}
+    fallback={<MenuComp menus={[...commonItems]} onItemClick={props.onItemClick} rootLable={props.rootLabel} />}
   ></DesktopOnly>
 )

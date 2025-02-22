@@ -102,6 +102,7 @@
 }
 
 .context-menu button {
+  display: block;
   font-size: 10px;
   /* 调整按钮字体大小 */
   background: transparent;
@@ -122,7 +123,7 @@
   /* 防止按钮文本换行 */
   width: auto;
   /* 按钮宽度自适应 */
-  max-width: 70px;
+  max-width: 100px;
   /* 设置按钮的最大宽度 */
   margin: 2px 0;
   /* 按钮上下外边距 */

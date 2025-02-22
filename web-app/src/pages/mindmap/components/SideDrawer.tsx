@@ -1,4 +1,5 @@
 import { Drawer } from 'antd'
+import Title from 'antd/es/typography/Title'
 import React, { FC, useState } from 'react'
 
 const SideDrawer: FC<{
@@ -17,6 +18,7 @@ const SideDrawer: FC<{
       loading={loading}
       onClose={() => onClose()}
     >
+      <Title level={4}>This feature is under development.</Title>
       <p>Defualt Zoom</p>
       <p>Background Color</p>
       <p>Edage Color</p>

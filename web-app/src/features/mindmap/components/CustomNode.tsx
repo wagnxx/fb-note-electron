@@ -1,7 +1,14 @@
+import { useNotification } from '@/hooks/useNotification'
+import { copyText } from '@/utils/utilsClipboard'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
-import React, { useRef, useState } from 'react'
+import { Form, FormInstance, Select } from 'antd'
+import React, { useMemo, useRef, useState } from 'react'
 import { Handle, NodeProps, Position, useNodes } from 'react-flow-renderer'
 
+export type CustomItem = {
+  label: string
+  value: string
+}
 export interface CustomNodeData {
   label: string
   isExpanded: boolean
@@ -20,21 +27,45 @@ export interface CustomNodeData {
 }
 // 方法类型
 export interface CustomNodeProps extends NodeProps<CustomNodeData> {
-  onAddChild: () => void
+  getSelectableItems?: () => CustomItem[]
+  onAddChild: (newNames: string[]) => void
   onExpandToggle: () => void
   onDelete: () => void
   onChangeLabel: (label: string) => void
+  onResetPos: () => void
 }
 
-const CustomNode: React.FC<CustomNodeProps> = ({ data, id, onAddChild, onExpandToggle, onDelete, onChangeLabel }) => {
+const CustomNode: React.FC<CustomNodeProps> = ({
+  data,
+  id,
+  getSelectableItems,
+  onAddChild,
+  onExpandToggle,
+  onDelete,
+  onChangeLabel,
+  onResetPos,
+}) => {
   const nodes = useNodes()
   const currentNode = nodes.find(node => node.id === id)
   const isDragging = currentNode?.dragging || false
   const currentNodePostion = currentNode?.position || { x: 0, y: 0 }
 
   const [canEditLabel, setCanEditLabel] = useState(false)
-
   const inputLabel = useRef<HTMLInputElement>(null)
+
+  const { showConfirmModal, showNotification } = useNotification()
+
+  const options = useMemo(() => {
+    if (getSelectableItems) {
+      const opts = getSelectableItems()
+      console.log('getSelectableItems: ', opts)
+      return opts.map(item => ({
+        value: item.value,
+        label: item.label,
+      }))
+    }
+    return []
+  }, [getSelectableItems])
 
   const dbClickNodeHandler = () => {
     // inputLabel?.current?.select()
@@ -45,6 +76,32 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data, id, onAddChild, onExpandT
     setCanEditLabel(false)
 
     onChangeLabel(e.target.value)
+  }
+
+  const handleStartFetch = async () => {
+    const docTypeFormRef = React.createRef<FormInstance<any>>()
+    const values = await showConfirmModal<{ names: string[] }>({
+      title: 'Input File Name',
+      content: (
+        <Form ref={docTypeFormRef}>
+          <Form.Item name="names" rules={[{ required: true, message: 'Please input filername!' }]}>
+            <Select mode="multiple" options={options} />
+          </Form.Item>
+        </Form>
+      ),
+    })
+    if (!values || !values.names) return
+
+    console.log('values: ', values.names)
+
+    if (values.names.length) {
+      onAddChild(values.names)
+    }
+  }
+
+  const handleCopyeNodeId = async () => {
+    await copyText(id)
+    showNotification('success', 'Copied successfully', 'message')
   }
 
   return (
@@ -68,7 +125,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data, id, onAddChild, onExpandT
       <div style={{ visibility: 'hidden' }}>
         <Handle type="target" position={Position.Left} />
       </div>
-      <div className="node-content">
+      <div className="node-content" style={{ userSelect: 'none' }}>
         {/* <p>x: {currentNode?.position.x}</p> */}
         <div className="node-input-wrapper">
           <input
@@ -96,15 +153,19 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data, id, onAddChild, onExpandT
         <Handle type="source" position={Position.Right} />
       </div>
 
-      <div className={`context-menu-container ${isDragging ? 'hidden' : ''}`}>
+      <div className={`context-menu-container ${isDragging ? 'hidden' : ''}`} onDoubleClick={e => e.stopPropagation()}>
         <div className="context-menu">
           <div className="context-menu-list">
-            <button onClick={onAddChild}>
+            <button onClick={() => onAddChild(['child'])}>
               <PlusOutlined />
             </button>
             <button onClick={onDelete}>
               <MinusOutlined />
             </button>
+            {/* {options && <Select style={{ width: 120 }} options={options}></Select>} */}
+            <button onClick={handleStartFetch}>Fech Select</button>
+            <button onClick={onResetPos}>Reset Position</button>
+            <button onClick={handleCopyeNodeId}>Copy Node ID</button>
           </div>
         </div>
       </div>

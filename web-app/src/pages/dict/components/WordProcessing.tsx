@@ -1,87 +1,70 @@
-import React, { Key, useState } from 'react'
-import { Transfer, Button, Table, message } from 'antd'
-import { WordType } from '../Dict'
-import { TransferDirection } from 'antd/lib/transfer' // 只导入 TransferDirection
+import React, { useEffect, useMemo } from 'react'
+import { Checkbox, Flex, Space, Tag } from 'antd'
+// 只导入 TransferDirection
+import { CheckboxChangeEvent } from 'antd/es/checkbox'
 
 interface WordProcessingProps {
-  words?: WordType[]
-  onProcessedWords?: (words: WordType[]) => void
+  words?: string[]
+  onProcessedWords?: (words: string[]) => void
 }
 
 const WordProcessing: React.FC<WordProcessingProps> = ({ words, onProcessedWords }) => {
-  const [targetKeys, setTargetKeys] = useState<Key[]>([]) // 当前选中的词
-  const [isJsonMode, setIsJsonMode] = useState(false)
+  const [selectedTags, setSelectedTags] = React.useState<string[]>([])
 
-  const handleChange = (newTargetKeys: Key[], direction: TransferDirection, moveKeys: Key[]) => {
-    setTargetKeys(newTargetKeys)
-  }
+  const checekdState = useMemo(
+    () => ({
+      indeterminate: selectedTags.length > 0 && selectedTags.length !== words?.length,
+      checked: selectedTags.length === words?.length && words?.length !== 0,
+    }),
+    [selectedTags.length, words?.length],
+  )
 
-  const handleSave = () => {
+  useEffect(() => {
+    onProcessedWords?.(selectedTags)
+  }, [onProcessedWords, selectedTags])
+
+  useEffect(() => {
+    setSelectedTags([])
+  }, [words])
+
+  const handleAllCheckboxChange = (e: CheckboxChangeEvent) => {
     if (!words) return
-    // 获取当前选中的核心词和拓展词
-    const processedWords = words.filter(word => targetKeys.includes(word.name))
-    if (processedWords.length === 0) {
-      message.error('Please select some words')
-      return
+    if (e.target.checked) {
+      setSelectedTags(words)
+    } else {
+      setSelectedTags([])
     }
-    onProcessedWords?.(processedWords)
   }
 
-  const handleJsonModeToggle = () => {
-    setIsJsonMode(!isJsonMode)
+  const handleTagChange = (tag: string, checked: boolean) => {
+    const nextSelectedTags = checked ? [...selectedTags, tag] : selectedTags.filter(t => t !== tag)
+    console.log('You are interested in: ', nextSelectedTags)
+    setSelectedTags(nextSelectedTags)
   }
-
-  const renderJsonView = () => {
-    if (!words) return
-    const selectedWords = words.filter(word => targetKeys.includes(word.name))
-    return <pre>{JSON.stringify(selectedWords, null, 2)}</pre>
-  }
-
-  const renderTableView = () => {
-    if (!words) return
-    const selectedWords = words.filter(word => targetKeys.includes(word.name))
-    return (
-      <Table
-        rowKey="id"
-        dataSource={selectedWords}
-        columns={[
-          { title: 'ID', dataIndex: 'id' },
-          { title: 'Word', dataIndex: 'name' },
-          {
-            /* 这里使用name而不是word */
-          },
-        ]}
-        pagination={false}
-      />
-    )
-  }
-
-  const transferData =
-    words?.map(word => ({
-      key: word.name, // 使用name作为唯一key
-      title: word.name, // 显示word的name
-      description: word.meaning, // 显示word的meaning
-    })) || []
 
   return (
     <div>
-      <Transfer
-        dataSource={transferData}
-        targetKeys={targetKeys}
-        onChange={handleChange}
-        render={item => item.title} // 使用title作为显示内容
-        titles={['Available Words', 'Selected Words']}
-        oneWay
-      />
-      <Button onClick={handleSave} type="primary" style={{ marginTop: '16px' }}>
-        Save Words
-      </Button>
-
-      <Button onClick={handleJsonModeToggle} style={{ marginTop: '16px', marginLeft: '10px' }}>
-        Toggle JSON Mode
-      </Button>
-
-      <div style={{ marginTop: '16px' }}>{isJsonMode ? renderJsonView() : renderTableView()}</div>
+      <Space>
+        Selected Tag:
+        <Checkbox
+          disabled={!words}
+          checked={checekdState.checked}
+          indeterminate={checekdState.indeterminate}
+          onChange={handleAllCheckboxChange}
+        />
+      </Space>
+      <Flex gap="4px 0" wrap>
+        {words?.length &&
+          words.map(tag => (
+            <Tag.CheckableTag
+              key={tag}
+              checked={selectedTags.includes(tag)}
+              onChange={checked => handleTagChange(tag, checked)}
+            >
+              {tag}
+            </Tag.CheckableTag>
+          ))}
+      </Flex>
     </div>
   )
 }

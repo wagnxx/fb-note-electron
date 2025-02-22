@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
-import WordRootJsonMenu from './components/WordRootJsonMenu'
 import WordsDashboard from './components/WordsDashboard'
-import WordProcessing from './components/WordProcessing'
+import WordRootJsonMenu from './components/WordRootJsonMenu'
 
 export type WordType = {
   name: string
@@ -37,17 +36,10 @@ const Dict = () => {
 
   return (
     <div className="w-full flex bg-slate-100">
-      <div className=" flex flex-col  shadow-md bg-slate-50 " style={{ height: '100vh', overflow: 'auto' }}>
-        <WordRootJsonMenu onItemClick={handleFetchDictItem} />
+      <div style={{ position: 'fixed', zIndex: 10 }}>
+        <WordRootJsonMenu onItemClick={handleFetchDictItem} rootLabel="Choose WordRoot Json File" />
       </div>
-      {/* word list */}
-      <div className="flex-1 px-2">
-        {/* <Divider /> */}
-        <WordsDashboard rootItem={rootItem} />
-      </div>
-      <div className=" flex-1 px-2">
-        <WordProcessing words={rootItem?.group} />
-      </div>
+      {rootItem && <WordsDashboard rootItem={rootItem} />}
     </div>
   )
 }
