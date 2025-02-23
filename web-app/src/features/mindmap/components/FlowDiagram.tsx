@@ -234,12 +234,20 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
             },
           }
 
-          const updatedNodes = [
-            updatedParentNode,
+          // Fix bug: nodes were covered.
+          const rootNode = nds.find(n => n.data.isRoot)
+          const firstNode = updatedParentNode.data.isRoot ? updatedParentNode : rootNode
+          const previousNodes: ExtendedNode[] = [
+            firstNode,
+            updatedParentNode.data.isRoot ? null : updatedParentNode,
             ...newChildrenNodes,
+          ].filter(Boolean) as ExtendedNode[]
+
+          const updatedNodes = [
+            ...previousNodes,
             ...nds.filter(node => {
               if (node.id === updatedParentNode.id) return false
-              if (newChildrenNodes.some(nNode => node.id === nNode.id)) return false
+              if (previousNodes.some(nNode => node.id === nNode.id)) return false
               return true
             }),
           ]
