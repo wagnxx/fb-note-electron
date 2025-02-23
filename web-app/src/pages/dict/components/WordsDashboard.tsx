@@ -1,5 +1,5 @@
 import { Button, Input, Row, Space, Splitter } from 'antd'
-import React, { FC, useMemo, useRef, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { JsonItem } from '../Dict'
 import SelectableList from '@/components/list/SelectableList'
 import WordsDashboardHeader from './WordsDashboardHeader'
@@ -7,14 +7,15 @@ import WordProcessing from './WordProcessing'
 import { TabItem } from '@/pages/mindmap/components/MindMapCanvasContainer'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import FlowDiagram, { FlowDiagramRef } from '@/features/mindmap/components/FlowDiagram'
-import { createMindFile } from '@/service/mind'
+import { createMindFile, getMindFile } from '@/service/mind'
 import { useNotification } from '@/hooks/useNotification'
 
 type FlowData = TabItem
 
 const WordsDashboard: FC<{
   rootItem: JsonItem
-}> = ({ rootItem }) => {
+  fileOlder: number
+}> = ({ rootItem, fileOlder }) => {
   const [keywords, setKeywords] = useState('')
   const [selections, setSelections] = useState<string[]>([])
   const [pendingWords, setPendingWords] = useState<string[]>([])
@@ -26,9 +27,11 @@ const WordsDashboard: FC<{
   })
   const [selectedTag, setSelectedTag] = useState<string[]>([])
   const [tarNodeId, settarNodeId] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [isShowMeaning, setIsShowMeaning] = useState(true)
   const flowRef = useRef<FlowDiagramRef>(null)
 
-  const { handleRequestWithNotification } = useNotification()
+  const { handleRequestWithNotification, showNotification } = useNotification()
 
   const listData =
     useMemo(() => {
@@ -40,14 +43,43 @@ const WordsDashboard: FC<{
       }))
     }, [flowData.nodes, keywords, rootItem?.group]) || []
 
+  const handleTestGetFlowData = () => {
+    console.log('flowData: ', flowData)
+  }
+  const getFlowDataByName = useCallback(
+    async (filename: string) => {
+      setLoading(true)
+      const data = await getMindFile({ field: 'name', operator: '==', value: filename })
+      setLoading(false)
+      const defaultData = {
+        key: rootItem.name,
+        name: rootItem.name,
+        nodes: [],
+        edges: [],
+      }
+      if (data.length === 0) {
+        setFlowData(defaultData)
+        return
+      }
+      if (data.length > 1) {
+        showNotification('error', `There are multiple ${filename} files, please check them.`, 'message')
+        setFlowData(defaultData)
+        return
+      }
+      setFlowData(data[0].data[0])
+      console.log('getMindFile Data : ', data)
+    },
+    [rootItem.name, showNotification],
+  )
+
   const handleSaveAsNew = async (): Promise<boolean> => {
     const params = {
-      name: flowData.name,
+      name: rootItem.name,
       data: [flowData],
-      order: 1,
+      order: fileOlder,
     }
 
-    const rid = await handleRequestWithNotification(async () => createMindFile(params), {
+    await handleRequestWithNotification(async () => createMindFile(params), {
       successField: null,
       successMessage: 'Saved successfully',
     })
@@ -74,11 +106,16 @@ const WordsDashboard: FC<{
     flowRef.current?.handleAppendChildrenToParent(tarNodeId, selectedTag)
   }
 
+  useEffect(() => {
+    if (!rootItem.name) return
+    getFlowDataByName(rootItem.name)
+  }, [getFlowDataByName, rootItem.name])
+
   return (
     <ReactFlowProvider>
       <Splitter style={{ boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
         <Splitter.Panel
-          defaultSize="20%"
+          defaultSize="24%"
           min="10%"
           max="40%"
           style={{ padding: '12px', paddingTop: '40px', height: 'calc(100vh - 28px)', boxSizing: 'border-box' }}
@@ -99,7 +136,32 @@ const WordsDashboard: FC<{
             )}
           </div>
           <div style={{ height: 'calc(100vh - 200px)', overflow: 'auto' }}>
-            <SelectableList data={listData} onChange={handleListSelecte} multiple />
+            <SelectableList
+              data={listData}
+              headerExtra={
+                <Button onClick={() => setIsShowMeaning(!isShowMeaning)}>
+                  {' '}
+                  {isShowMeaning ? 'Hide Meaning' : 'Show Meaning'}
+                </Button>
+              }
+              renderItem={item =>
+                isShowMeaning ? (
+                  <div>
+                    <Space>
+                      <strong>{item.name}</strong>
+                      <span className=" text-gray-400">{item.meaning}</span>
+                    </Space>
+                    <p>
+                      【 <em className=" text-gray-400">{item.structurare}</em>】
+                    </p>
+                  </div>
+                ) : (
+                  <strong>{item.name}</strong>
+                )
+              }
+              onChange={handleListSelecte}
+              multiple
+            />
           </div>
         </Splitter.Panel>
         <Splitter.Panel style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 28px)' }}>
@@ -119,6 +181,9 @@ const WordsDashboard: FC<{
                 </Button>
                 <Button onClick={handleSaveAsNew} danger>
                   Save Cloud
+                </Button>
+                <Button onClick={handleTestGetFlowData} danger>
+                  Test Get Current Data
                 </Button>
               </Space>
               <Space>
@@ -153,8 +218,8 @@ const WordsDashboard: FC<{
                 showControls={false}
                 showMiniMap={false}
                 getSelectableItems={getSelectableForFlowItem}
-                onNodeListChange={listFn => setFlowData(pre => ({ ...pre, nodes: listFn(pre.nodes) }))}
-                onEdgeListChange={listFn => setFlowData(pre => ({ ...pre, edges: listFn(pre.edges) }))}
+                onNodeListChange={listFn => setFlowData(pre => ({ ...pre, nodes: [...listFn(pre.nodes)] }))}
+                onEdgeListChange={listFn => setFlowData(pre => ({ ...pre, edges: [...listFn(pre.edges)] }))}
               />
             </div>
           )}

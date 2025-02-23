@@ -1,6 +1,6 @@
-import { addDocToCol, deleteDocsByIds, getFieldValues, updateDocData } from '@/firebase/db'
+import { addDocToCol, deleteDocsByIds, getDocsByCondition, getFieldValues, updateDocData } from '@/firebase/db'
 import { auth } from '@/firebase/authService'
-import { FieldValue, serverTimestamp } from 'firebase/firestore'
+import { FieldValue, serverTimestamp, WhereFilterOp } from 'firebase/firestore'
 import { CloudMindFile } from '@/pages/mindmap/components/TabpanelCloud'
 
 const COL_MIND_FILES = 'mindFiles'
@@ -28,6 +28,13 @@ export const saveMindFile = (doc: Partial<MindFilesType>) => {
   return Promise.reject('logout')
 }
 
+export const getMindFile = async (condition: { field: keyof MindFilesType; operator: WhereFilterOp; value: any }) => {
+  if (!auth?.currentUser?.uid) {
+    return Promise.reject('logout')
+  }
+
+  return getDocsByCondition<MindFilesType>(COL_MIND_FILES, condition)
+}
 export const getAllMindFiles = async () => {
   if (!auth?.currentUser?.uid) {
     return Promise.reject('logout')

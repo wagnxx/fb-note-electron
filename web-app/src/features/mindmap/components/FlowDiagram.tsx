@@ -19,6 +19,7 @@ import { calculateMiddleValue } from '@/utils/utilsArray'
 import Toolbar from './Toolbar'
 import './FlowDiagram.css'
 import { useNotification } from '@/hooks/useNotification'
+import useFirstRender from '@/hooks/useFirstRender'
 
 export interface ExtendedNode extends Node<CustomNodeData> {
   isHidden?: boolean
@@ -81,8 +82,14 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
     const [edges, setEdges] = useState<Edge[]>(edgeList)
 
     const { showNotification } = useNotification()
+    const isFirstRender = useFirstRender()
 
     const rootId = compId
+
+    const updateInnerState = useCallback(() => {
+      setNodes(nodeList)
+      setEdges(edgeList)
+    }, [edgeList, nodeList])
 
     // Unify the method entry.
     const updateNodeList = useCallback(
@@ -711,11 +718,14 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
     )
 
     useEffect(() => {
-      console.log('Flow component Mounted', compId)
+      console.log('Flow component Mounted/Updated', compId)
+      if (!isFirstRender) {
+        updateInnerState()
+      }
       return () => {
         console.log('Fow component UnMounted', compId)
       }
-    }, [compId])
+    }, [compId, isFirstRender, updateInnerState])
 
     useImperativeHandle(
       ref,

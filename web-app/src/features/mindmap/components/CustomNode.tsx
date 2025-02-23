@@ -1,7 +1,8 @@
+import MultiSelectWithSelectAll from '@/components/select/MultiSelectWithSelectAll'
 import { useNotification } from '@/hooks/useNotification'
 import { copyText } from '@/utils/utilsClipboard'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
-import { Form, FormInstance, Select } from 'antd'
+import { Form, FormInstance } from 'antd'
 import React, { useMemo, useRef, useState } from 'react'
 import { Handle, NodeProps, Position, useNodes } from 'react-flow-renderer'
 
@@ -85,7 +86,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
       content: (
         <Form ref={docTypeFormRef}>
           <Form.Item name="names" rules={[{ required: true, message: 'Please input filername!' }]}>
-            <Select mode="multiple" options={options} />
+            <MultiSelectWithSelectAll options={options} />
           </Form.Item>
         </Form>
       ),

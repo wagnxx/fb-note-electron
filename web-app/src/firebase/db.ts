@@ -146,17 +146,17 @@ export const deleteDocsByIds = async (colName: string, docIds: string[]): Promis
   return false
 }
 
-export const getDocsByCondition = async (
+export const getDocsByCondition = async <T extends DocumentData = DocumentData>(
   colName: string,
   condition?: { field: string; operator: WhereFilterOp; value: any },
-): Promise<DocumentData[]> => {
+): Promise<T[]> => {
   try {
     const cond = condition ? [where(condition.field, condition.operator, condition.value)] : []
     const q = query(collection(db, colName), ...cond)
     const querySnapshot = await getDocs(q)
-    const docsData: DocumentData[] = []
+    const docsData: T[] = []
     querySnapshot.forEach(doc => {
-      docsData.push(doc.data())
+      docsData.push(doc.data() as T)
     })
     return docsData
   } catch (error: unknown) {

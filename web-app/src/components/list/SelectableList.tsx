@@ -14,6 +14,7 @@ type SelectableListProps<T extends BasicItem> = {
   checkboxPosition?: 'left' | 'right' // 选择框位置，默认右侧
   renderItem?: (item: T) => React.ReactNode // 渲染项的自定义方法
   defaultField?: keyof T // 默认展示字段，默认为name
+  headerExtra?: React.ReactNode
 }
 
 const SelectableList = <T extends BasicItem>({
@@ -23,6 +24,7 @@ const SelectableList = <T extends BasicItem>({
   checkboxPosition = 'right',
   renderItem,
   defaultField = 'name',
+  headerExtra = null,
 }: SelectableListProps<T>) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [selectAll, setSelectAll] = useState<boolean | 'indeterminate'>(false) // 全选状态
@@ -74,7 +76,7 @@ const SelectableList = <T extends BasicItem>({
         bordered
         header={
           multiple && (
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 16 }} className="flex justify-between items-center">
               <Checkbox
                 indeterminate={selectAll === 'indeterminate'}
                 checked={selectAll === true}
@@ -82,6 +84,8 @@ const SelectableList = <T extends BasicItem>({
               >
                 {selectAll === true ? '取消全选' : selectAll === 'indeterminate' ? '部分选中' : '全选'}
               </Checkbox>
+
+              {headerExtra}
             </div>
           )
         }

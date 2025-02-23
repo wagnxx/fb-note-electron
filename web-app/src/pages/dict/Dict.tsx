@@ -24,22 +24,35 @@ const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
 const Dict = () => {
   const [rootItem, setrootItem] = useState<JsonItem | null>(null)
+  const [fileOlder, setFileOlder] = useState(0)
 
-  const handleFetchDictItem = async ({ key }: { key: string }) => {
+  const handleFetchDictItem = async (opions: { key: string }) => {
+    const { key } = opions
+
     ipcRenderer.invoke(IPC_ACTIONS.READ_STREAM, encodeURIComponent(key)).then((res: any) => {
       const decoder = new TextDecoder('utf-8')
       const jsonString = decoder.decode(res)
       const jsonData = JSON.parse(jsonString)
       setrootItem(jsonData[0])
+
+      const reg = /\/(\d+)\..+$/
+      const match = key.match(reg)
+      if (match) {
+        console.log('match', match[1])
+        setFileOlder(Number(match[1]))
+      } else {
+        setFileOlder(0)
+        console.log('No match found')
+      }
     })
   }
 
   return (
     <div className="w-full flex bg-slate-100">
-      <div style={{ position: 'fixed', zIndex: 10 }}>
+      <div style={{ position: 'fixed', zIndex: 10, left: '12px' }}>
         <WordRootJsonMenu onItemClick={handleFetchDictItem} rootLabel="Choose WordRoot Json File" />
       </div>
-      {rootItem && <WordsDashboard rootItem={rootItem} />}
+      {rootItem && <WordsDashboard rootItem={rootItem} fileOlder={fileOlder} />}
     </div>
   )
 }
