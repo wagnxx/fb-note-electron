@@ -213,6 +213,9 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           const parentNode = nds[parentNodeIndex] // 获取最新的父节点
 
           const newChildren = [...(parentNode.children || [])]
+
+          if (newChildren.length === 0) return nds
+
           let newChildrenNodes = nds.filter(node => newChildren.includes(node.id))
           newChildrenNodes = updateChildrenPos(parentNode, newChildrenNodes, 50 / zoom)
 

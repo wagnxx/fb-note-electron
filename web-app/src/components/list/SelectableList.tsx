@@ -5,28 +5,31 @@ type BasicItem = {
   id: string
   name: string
   disabled?: boolean
+  checked: boolean
 }
 
 type SelectableListProps<T extends BasicItem> = {
   data: T[] // 泛型支持复杂类型
   multiple?: boolean // 控制是否多选
-  onChange: (selectedKeys: string[]) => void // 选择项变化回调
   checkboxPosition?: 'left' | 'right' // 选择框位置，默认右侧
-  renderItem?: (item: T) => React.ReactNode // 渲染项的自定义方法
   defaultField?: keyof T // 默认展示字段，默认为name
   headerExtra?: React.ReactNode
+  renderItem?: (item: T) => React.ReactNode // 渲染项的自定义方法
+  onChange?: (selectedItems: T[]) => void // 选择项变化回调
+  onUpdate?: (updateFn: (...args: any[]) => T[]) => void
 }
 
 const SelectableList = <T extends BasicItem>({
   data,
   multiple = false,
-  onChange,
   checkboxPosition = 'right',
-  renderItem,
   defaultField = 'name',
   headerExtra = null,
+  renderItem,
+  onChange,
+  onUpdate,
 }: SelectableListProps<T>) => {
-  const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [selectedItems, setSelectedItems] = useState<T[]>([])
   const [selectAll, setSelectAll] = useState<boolean | 'indeterminate'>(false) // 全选状态
 
   // 计算全选状态
@@ -45,28 +48,30 @@ const SelectableList = <T extends BasicItem>({
 
   // 单选模式，选中某一项时取消之前的选项
   const handleSingleSelect = (item: T) => {
-    const newSelected = [item.id] // 只保留当前项
+    const newSelected = [item] // 只保留当前项
     setSelectedItems(newSelected)
-    onChange(newSelected)
+    onChange?.(newSelected)
   }
 
   // 多选模式，添加或移除选中的项
   const handleMultiSelect = (item: T, checked: boolean) => {
-    const newSelected = checked ? [...selectedItems, item.id] : selectedItems.filter(i => i !== item.id)
+    const newSelected = checked ? [...selectedItems, item] : selectedItems.filter(i => i.id !== item.id)
     setSelectedItems(newSelected)
-    onChange(newSelected)
+    onChange?.(newSelected)
+    onUpdate?.(() => newSelected)
   }
 
   // 切换全选状态
   const toggleSelectAll = (e: any) => {
     const checked = e.target.checked
     if (checked) {
-      const allAvalibleIds = data.filter(item => !item.disabled).map(item => item.id) // 获取所有项的 id
-      setSelectedItems(allAvalibleIds) // 全选
-      onChange(allAvalibleIds)
+      const allAvalibleItems = data.filter(item => !item.disabled)
+      setSelectedItems(allAvalibleItems) // 全选
+      onChange?.(allAvalibleItems)
+      onUpdate?.(() => allAvalibleItems)
     } else {
       setSelectedItems([]) // 取消全选
-      onChange([])
+      onChange?.([])
     }
   }
 
@@ -99,11 +104,14 @@ const SelectableList = <T extends BasicItem>({
                   {multiple ? (
                     <Checkbox
                       disabled={item.disabled}
-                      checked={selectedItems.includes(item.id)}
+                      checked={selectedItems.some(sel => sel.id === item.id)}
                       onChange={e => handleMultiSelect(item, e.target.checked)}
                     />
                   ) : (
-                    <Radio checked={selectedItems.includes(item.id)} onChange={() => handleSingleSelect(item)} />
+                    <Radio
+                      checked={selectedItems.some(sel => sel.id === item.id)}
+                      onChange={() => handleSingleSelect(item)}
+                    />
                   )}
                 </Col>
               )}
@@ -117,11 +125,14 @@ const SelectableList = <T extends BasicItem>({
                   {multiple ? (
                     <Checkbox
                       disabled={item.disabled}
-                      checked={selectedItems.includes(item.id)}
+                      checked={selectedItems.some(sel => sel.id === item.id)}
                       onChange={e => handleMultiSelect(item, e.target.checked)}
                     />
                   ) : (
-                    <Radio checked={selectedItems.includes(item.id)} onChange={() => handleSingleSelect(item)} />
+                    <Radio
+                      checked={selectedItems.some(sel => sel.id === item.id)}
+                      onChange={() => handleSingleSelect(item)}
+                    />
                   )}
                 </Col>
               )}

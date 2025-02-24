@@ -1,47 +1,76 @@
-import { Button, Input, Row, Space, Splitter } from 'antd'
+import { Button, Dropdown, Input, Row, Space, Splitter } from 'antd'
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { JsonItem } from '../Dict'
+import { JsonItem, WordType } from '../Dict'
 import SelectableList from '@/components/list/SelectableList'
 import WordsDashboardHeader from './WordsDashboardHeader'
 import WordProcessing from './WordProcessing'
 import { TabItem } from '@/pages/mindmap/components/MindMapCanvasContainer'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import FlowDiagram, { FlowDiagramRef } from '@/features/mindmap/components/FlowDiagram'
-import { createMindFile, getMindFile } from '@/service/mind'
+import { createMindFile, getMindFile, saveMindFile } from '@/service/mind'
 import { useNotification } from '@/hooks/useNotification'
+import { DownOutlined } from '@ant-design/icons'
 
 type FlowData = TabItem
+type WordTypeWithCheck = WordType & {
+  checked: boolean
+}
+type SelectableWordType = WordTypeWithCheck & {
+  id: string
+  disabled: boolean
+}
+
+type BasicCloudFile = {
+  id?: string
+  name: string
+  // lastModified: number
+  // data: TabItem[]
+  order: number
+}
 
 const WordsDashboard: FC<{
   rootItem: JsonItem
   fileOlder: number
 }> = ({ rootItem, fileOlder }) => {
   const [keywords, setKeywords] = useState('')
-  const [selections, setSelections] = useState<string[]>([])
-  const [pendingWords, setPendingWords] = useState<string[]>([])
+  // const [selections, setSelections] = useState<SelectableWordType[]>([])
+  const [pendingWords, setPendingWords] = useState<SelectableWordType[]>([])
   const [flowData, setFlowData] = useState<FlowData>({
     key: rootItem.name,
     name: rootItem.name,
     nodes: [],
     edges: [],
   })
-  const [selectedTag, setSelectedTag] = useState<string[]>([])
+  const [selectedTag, setSelectedTag] = useState<SelectableWordType[]>([])
   const [tarNodeId, settarNodeId] = useState('')
   const [loading, setLoading] = useState(false)
   const [isShowMeaning, setIsShowMeaning] = useState(true)
+  const [dataSource, setDataSource] = useState<WordTypeWithCheck[]>(
+    rootItem.group.map(item => ({ ...item, checked: false })) || [],
+  )
+  const [fileInfo, setfileInfo] = useState<BasicCloudFile>({
+    id: '',
+    name: rootItem.name,
+    order: 0,
+  })
+
   const flowRef = useRef<FlowDiagramRef>(null)
 
-  const { handleRequestWithNotification, showNotification } = useNotification()
+  const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
 
-  const listData =
-    useMemo(() => {
-      const data = rootItem?.group?.filter(item => item.name.includes(keywords)) || []
-      return data.map(item => ({
-        ...item,
-        id: item.name,
-        disabled: flowData.nodes.some(n => n.data.label === item.name),
-      }))
-    }, [flowData.nodes, keywords, rootItem?.group]) || []
+  const listData: SelectableWordType[] = useMemo(() => {
+    const data = dataSource.filter(item => item.name.includes(keywords)) || []
+    return data.map(item => ({
+      ...item,
+      id: item.name,
+      disabled: flowData.nodes.some(n => n.data.label === item.name),
+      checked: item.checked,
+    }))
+  }, [dataSource, flowData.nodes, keywords])
+
+  const selections = useMemo(() => {
+    return listData.filter(item => item.checked)
+  }, [listData])
 
   const handleTestGetFlowData = () => {
     console.log('flowData: ', flowData)
@@ -59,20 +88,60 @@ const WordsDashboard: FC<{
       }
       if (data.length === 0) {
         setFlowData(defaultData)
+        setfileInfo(pre => ({
+          ...pre,
+          id: '',
+          order: 0,
+        }))
         return
       }
       if (data.length > 1) {
         showNotification('error', `There are multiple ${filename} files, please check them.`, 'message')
         setFlowData(defaultData)
+        setfileInfo(pre => ({
+          ...pre,
+          id: '',
+          order: 0,
+        }))
         return
       }
       setFlowData(data[0].data[0])
+      setfileInfo(pre => ({
+        ...pre,
+        id: data[0].id,
+        order: data[0].order,
+      }))
+
       console.log('getMindFile Data : ', data)
     },
     [rootItem.name, showNotification],
   )
 
+  const handleSyncNo = async () => {
+    if (!fileInfo.id) {
+      showNotification('error', 'The file is not exist', 'message')
+      return
+    }
+
+    const params = {
+      id: fileInfo.id,
+      order: fileOlder,
+    }
+
+    await handleRequestWithNotification(async () => saveMindFile(params), {
+      successField: null,
+      successMessage: 'Saved successfully',
+    })
+  }
+
   const handleSaveAsNew = async (): Promise<boolean> => {
+    if (!rootItem.name || !flowData.nodes.length || !flowData.edges.length) return false
+    const confirmed = await showConfirmationDialog({
+      content: 'Are you sure you want to save the FlowData to the cloud end',
+    })
+
+    if (!confirmed) return false
+
     const params = {
       name: rootItem.name,
       data: [flowData],
@@ -87,29 +156,108 @@ const WordsDashboard: FC<{
     return true
   }
 
-  const handleListSelecte = (selectedKeys: string[]) => {
-    setSelections(selectedKeys)
+  const handleUpdateDataSource = (selectedItemsFn: () => SelectableWordType[]) => {
+    console.log('selectedItems', selectedItemsFn())
+    const selectedItems = selectedItemsFn()
+    setDataSource(prevList =>
+      prevList.map(item => {
+        if (!item.name.includes(keywords)) return item
+
+        if (selectedItems.some(sel => sel.name === item.name && sel.disabled)) {
+          return item
+        }
+
+        if (selectedItems.some(sel => sel.name === item.name)) {
+          return {
+            ...item,
+            checked: true,
+          }
+        } else {
+          return {
+            ...item,
+            checked: false,
+          }
+        }
+      }),
+    )
   }
 
-  const getSelectableForFlowItem = () => selections.map(word => ({ label: word, value: word }))
+  // const handleListSelecte = (selectedItems: SelectableWordType[]) => {
+  //   setSelections(selectedItems)
+  // }
+
+  const getSelectableForFlowItem = () =>
+    selections.filter(word => !word.disabled).map(word => ({ label: word.name, value: word.name }))
 
   const handleCreateRootNode = () => {
     flowRef.current?.handleAddRootNode(rootItem.name)
   }
   const handleCreateFreeNode = () => {
-    flowRef.current?.handleCreateFreeNode(selectedTag)
+    flowRef.current?.handleCreateFreeNode(selectedTag.map(item => item.name))
   }
   const handleCleanCanvas = () => {
     flowRef.current?.handleCleanCanvas()
   }
   const handleAppendChildrenToParent = () => {
-    flowRef.current?.handleAppendChildrenToParent(tarNodeId, selectedTag)
+    flowRef.current?.handleAppendChildrenToParent(
+      tarNodeId,
+      selectedTag.map(item => item.name),
+    )
   }
 
   useEffect(() => {
     if (!rootItem.name) return
     getFlowDataByName(rootItem.name)
   }, [getFlowDataByName, rootItem.name])
+
+  const actionMenuItems = [
+    {
+      key: 1,
+      label: (
+        <Button onClick={handleCreateRootNode} type="text" size="small" style={{ textAlign: 'left', paddingLeft: 0 }}>
+          Create Root Node
+        </Button>
+      ),
+    },
+    {
+      key: 2,
+      label: (
+        <Button onClick={handleCreateFreeNode} type="text" size="small" style={{ textAlign: 'left', paddingLeft: 0 }}>
+          Create Free Node
+        </Button>
+      ),
+    },
+    {
+      key: 3,
+      label: (
+        <Button
+          onClick={handleCleanCanvas}
+          type="text"
+          size="small"
+          style={{ textAlign: 'left', paddingLeft: 0 }}
+          danger
+        >
+          Clean Canvas
+        </Button>
+      ),
+    },
+    {
+      key: 4,
+      label: (
+        <Button onClick={handleSaveAsNew} type="text" size="small" style={{ textAlign: 'left', paddingLeft: 0 }} danger>
+          Save Cloud
+        </Button>
+      ),
+    },
+    {
+      key: 5,
+      label: (
+        <Button onClick={handleSyncNo} type="text" size="small" style={{ textAlign: 'left', paddingLeft: 0 }} danger>
+          Sync order NO.
+        </Button>
+      ),
+    },
+  ]
 
   return (
     <ReactFlowProvider>
@@ -159,7 +307,8 @@ const WordsDashboard: FC<{
                   <strong>{item.name}</strong>
                 )
               }
-              onChange={handleListSelecte}
+              // onChange={handleListSelecte}
+              onUpdate={handleUpdateDataSource}
               multiple
             />
           </div>
@@ -172,19 +321,16 @@ const WordsDashboard: FC<{
             {/* <div>selectedTag: {selectedTag}</div> */}
             <div className="flex  justify-between items-center my-2">
               <Space>
-                <Button onClick={handleCreateRootNode} color="default">
-                  Create Root Node
-                </Button>
-                <Button onClick={handleCreateFreeNode}>Create Free Node</Button>
-                <Button onClick={handleCleanCanvas} danger>
-                  Clean Canvas
-                </Button>
-                <Button onClick={handleSaveAsNew} danger>
-                  Save Cloud
-                </Button>
-                <Button onClick={handleTestGetFlowData} danger>
-                  Test Get Current Data
-                </Button>
+                <Dropdown
+                  menu={{
+                    items: actionMenuItems,
+                  }}
+                >
+                  <Button icon={<DownOutlined />}>Canvas Action</Button>
+                </Dropdown>
+
+                <Input style={{ width: '150px' }} addonBefore={'Origin Order:'} value={fileOlder} />
+                <Input style={{ width: '100px' }} addonBefore={'order:'} value={fileInfo.order} />
               </Space>
               <Space>
                 <Input

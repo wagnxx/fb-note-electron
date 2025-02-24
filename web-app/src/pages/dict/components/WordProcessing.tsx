@@ -1,15 +1,22 @@
-import React, { useEffect, useMemo } from 'react'
-import { Checkbox, Flex, Space, Tag } from 'antd'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Checkbox, Flex, Space } from 'antd'
 // 只导入 TransferDirection
 import { CheckboxChangeEvent } from 'antd/es/checkbox'
+import DisabledCheckableTag from '@/components/select/DisabledCheckableTag'
 
-interface WordProcessingProps {
-  words?: string[]
-  onProcessedWords?: (words: string[]) => void
+type BasicItem = {
+  id: string
+  name: string
+  disabled?: boolean
+}
+type WordProcessingProps<T extends BasicItem> = {
+  words: T[]
+  onProcessedWords?: (words: T[]) => void
 }
 
-const WordProcessing: React.FC<WordProcessingProps> = ({ words, onProcessedWords }) => {
-  const [selectedTags, setSelectedTags] = React.useState<string[]>([])
+const WordProcessing = <T extends BasicItem>({ words, onProcessedWords }: WordProcessingProps<T>) => {
+  const [selectedTags, setSelectedTags] = React.useState<T[]>([])
+  const [tags, settags] = useState(words)
 
   const checekdState = useMemo(
     () => ({
@@ -36,11 +43,16 @@ const WordProcessing: React.FC<WordProcessingProps> = ({ words, onProcessedWords
     }
   }
 
-  const handleTagChange = (tag: string, checked: boolean) => {
-    const nextSelectedTags = checked ? [...selectedTags, tag] : selectedTags.filter(t => t !== tag)
+  const handleTagChange = (tag: T, checked: boolean) => {
+    const nextSelectedTags = checked ? [...selectedTags, tag] : selectedTags.filter(t => t.id !== tag.id)
     console.log('You are interested in: ', nextSelectedTags)
     setSelectedTags(nextSelectedTags)
   }
+
+  useEffect(() => {
+    console.log('wordTag mouted', words)
+    settags(words)
+  }, [words])
 
   return (
     <div>
@@ -54,15 +66,16 @@ const WordProcessing: React.FC<WordProcessingProps> = ({ words, onProcessedWords
         />
       </Space>
       <Flex gap="4px 0" wrap>
-        {words?.length &&
-          words.map(tag => (
-            <Tag.CheckableTag
-              key={tag}
-              checked={selectedTags.includes(tag)}
+        {tags.length &&
+          tags.map(tag => (
+            <DisabledCheckableTag
+              key={tag.id}
+              disabled={tag.disabled}
+              checked={selectedTags.some(sel => sel.id === tag.id)}
               onChange={checked => handleTagChange(tag, checked)}
             >
-              {tag}
-            </Tag.CheckableTag>
+              {tag.name}
+            </DisabledCheckableTag>
           ))}
       </Flex>
     </div>

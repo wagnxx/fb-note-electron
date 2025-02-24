@@ -1,6 +1,6 @@
 import { addDocToCol, deleteDocsByIds, getDocsByCondition, getFieldValues, updateDocData } from '@/firebase/db'
 import { auth } from '@/firebase/authService'
-import { FieldValue, serverTimestamp, WhereFilterOp } from 'firebase/firestore'
+import { FieldValue, orderBy, serverTimestamp, WhereFilterOp } from 'firebase/firestore'
 import { CloudMindFile } from '@/pages/mindmap/components/TabpanelCloud'
 
 const COL_MIND_FILES = 'mindFiles'
@@ -40,7 +40,7 @@ export const getAllMindFiles = async () => {
     return Promise.reject('logout')
   }
 
-  return getFieldValues<MindFilesType>(COL_MIND_FILES, 'all')
+  return getFieldValues<MindFilesType>(COL_MIND_FILES, 'all', [orderBy('order', 'asc')])
 }
 
 export const deleteMindFiles = (ids: string[]) => deleteDocsByIds(COL_MIND_FILES, ids)

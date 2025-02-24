@@ -146,7 +146,7 @@ export const deleteDocsByIds = async (colName: string, docIds: string[]): Promis
   return false
 }
 
-export const getDocsByCondition = async <T extends DocumentData = DocumentData>(
+export const getDocsByCondition = async <T extends DocumentData & { id?: string } = DocumentData>(
   colName: string,
   condition?: { field: string; operator: WhereFilterOp; value: any },
 ): Promise<T[]> => {
@@ -156,7 +156,9 @@ export const getDocsByCondition = async <T extends DocumentData = DocumentData>(
     const querySnapshot = await getDocs(q)
     const docsData: T[] = []
     querySnapshot.forEach(doc => {
-      docsData.push(doc.data() as T)
+      const itemData = doc.data() as T
+      itemData.id = doc.id
+      docsData.push(itemData)
     })
     return docsData
   } catch (error: unknown) {

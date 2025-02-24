@@ -97,7 +97,7 @@
   /* 使用 flex 布局 */
   flex-direction: column;
   /* 垂直排列 */
-  align-items: center;
+  align-items: stretch;
   /* 居中对齐 */
 }
 
