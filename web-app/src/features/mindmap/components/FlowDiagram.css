@@ -1,6 +1,7 @@
 .custom-node {
   position: relative;
-  width: 100px;
+  z-index: 10;
+  /* width: 100px; */
   padding: 10px;
   /* 节点内边距 */
   background: #f9f9f9;
@@ -9,20 +10,24 @@
   /* 节点圆角 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   /* 节点阴影 */
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .custom-node:hover {
   cursor: move;
 }
 
-.node-content {}
+.node-content {
+  /* display: flex;
+  flex-direction: row; */
+}
 
 .node-input-wrapper {}
 
 .node-content .node-input {
   display: block;
   width: 100%;
+  text-align: left;
   border: none;
   outline: none;
 }
@@ -145,3 +150,21 @@
   display: none;
   /* 用于隐藏菜单 */
 }
+
+.node-note{
+  /* position: absolute;
+  left: 0%;
+  top: 100%; */
+  /* display: flex; */
+  /* justify-content: flex-end;
+  align-items: center; */
+  /* width: 100%;
+  max-width: 400px;
+  min-width: 200px;
+  height: 200px; */
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 999999999999;
+  /* border: 1px solid #000 */
+}
+
+

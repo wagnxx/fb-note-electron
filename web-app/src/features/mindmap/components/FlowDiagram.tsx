@@ -53,7 +53,7 @@ export type FlowDiagramRef = {
 }
 
 const NODE_DISTANCE = 150
-const NODE_WIDTH = 100
+const NODE_WIDTH = 200
 const NODE_HEIGHT = 50
 
 const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
@@ -217,7 +217,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           if (newChildren.length === 0) return nds
 
           let newChildrenNodes = nds.filter(node => newChildren.includes(node.id))
-          newChildrenNodes = updateChildrenPos(parentNode, newChildrenNodes, 50 / zoom)
+          newChildrenNodes = updateChildrenPos(parentNode, newChildrenNodes, NODE_DISTANCE * zoom)
 
           const newChildrenNodesPosY = newChildrenNodes.map(item => item.position.y)
           const newChildrenNodesPosX = newChildrenNodes.map(item => item.position.x)
@@ -301,6 +301,21 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
       [updateNodeList],
     )
 
+    const changeNote = useCallback(
+      (nodeId: string, value: string) => {
+        const nodesFn = (nds: ExtendedNode[]) => {
+          return nds.map(node => {
+            if (node.id === nodeId) {
+              node.data.note = value
+            }
+            return node
+          })
+        }
+        updateNodeList(nodesFn)
+      },
+      [updateNodeList],
+    )
+
     const toggleExpand = useCallback(
       (id: string) => {
         const nodesFn = (nds: ExtendedNode[]) => {
@@ -310,18 +325,29 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           const updateNodes = new Set<string>()
 
           // 递归收集所有子节点
-          function collectionChildren(currentId: string, state: boolean) {
+          function collectionChildren(currentId: string, state: boolean, depth: number = 0) {
             const node = nds.find(n => n.id === currentId)
+
             if (node) {
               updateNodes.add(currentId)
+
               if (node.children) {
-                node.children.forEach(childId => collectionChildren(childId, state))
+                if (state) {
+                  // 如果state为true，继续递归所有子节点
+                  if (depth === 0) {
+                    node.children.forEach(childId => collectionChildren(childId, state, depth + 1))
+                  }
+                } else {
+                  // 如果state为false，只执行当前层的子节点
+
+                  node.children.forEach(childId => collectionChildren(childId, state, depth + 1))
+                }
               }
             }
           }
 
           const newExpandedState = !currentNode.data.isExpanded
-          collectionChildren(currentNode.id, newExpandedState)
+          collectionChildren(currentNode.id, newExpandedState, 0)
 
           return nds.map(n => {
             if (n.id === id) {
@@ -418,6 +444,8 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
               position: newNodePostion,
               isHidden: false,
               children: [],
+              width: NODE_WIDTH,
+              height: NODE_HEIGHT,
             }
           })
 
@@ -758,12 +786,13 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
             onAddChild={(newNames: string[]) => addChildNode(props.id, newNames, getZoom)}
             onExpandToggle={() => toggleExpand(props.id)}
             onDelete={() => deleteNode(props.id)}
-            onChangeLabel={(label: string) => changeLabel(props.id, label)}
+            onChangeLabel={(value: string) => changeLabel(props.id, value)}
+            onChangeNote={(value: string) => changeNote(props.id, value)}
             onResetPos={() => handleResetPos(props.id, getZoom)}
           />
         ), // 绑定 onAddChild
       }
-    }, [addChildNode, changeLabel, deleteNode, getSelectableItems, getZoom, handleResetPos, toggleExpand])
+    }, [addChildNode, changeLabel, changeNote, deleteNode, getSelectableItems, getZoom, handleResetPos, toggleExpand])
 
     return (
       <div style={{ position: 'relative', userSelect: 'none' }} className={className}>

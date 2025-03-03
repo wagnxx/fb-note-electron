@@ -1,8 +1,8 @@
 import MultiSelectWithSelectAll from '@/components/select/MultiSelectWithSelectAll'
 import { useNotification } from '@/hooks/useNotification'
 import { copyText } from '@/utils/utilsClipboard'
-import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
-import { Form, FormInstance } from 'antd'
+import { DownOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons'
+import { Button, Form, FormInstance } from 'antd'
 import React, { useMemo, useRef, useState } from 'react'
 import { Handle, NodeProps, Position, useNodes } from 'react-flow-renderer'
 
@@ -12,12 +12,9 @@ export type CustomItem = {
 }
 export interface CustomNodeData {
   label: string
+  note?: string
   isExpanded: boolean
   isRoot?: boolean
-  // onExpandToggle: () => void
-  // onAddChild: () => void
-  // onDelete: () => void
-  // onChangeLabel: (e: ChangeEvent<HTMLInputElement>) => void
   childCount?: number
   rectRange?: {
     left: number
@@ -33,6 +30,7 @@ export interface CustomNodeProps extends NodeProps<CustomNodeData> {
   onExpandToggle: () => void
   onDelete: () => void
   onChangeLabel: (label: string) => void
+  onChangeNote: (note: string) => void
   onResetPos: () => void
 }
 
@@ -45,7 +43,9 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   onDelete,
   onChangeLabel,
   onResetPos,
+  onChangeNote,
 }) => {
+  const [isNoteVisibility, setIsNoteVisibility] = useState(false)
   const nodes = useNodes()
   const currentNode = nodes.find(node => node.id === id)
   const isDragging = currentNode?.dragging || false
@@ -78,6 +78,9 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 
     onChangeLabel(e.target.value)
   }
+  const handleTextareBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    onChangeNote?.(e.target.value)
+  }
 
   const handleStartFetch = async () => {
     const docTypeFormRef = React.createRef<FormInstance<any>>()
@@ -102,7 +105,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 
   const handleCopyeNodeId = async () => {
     await copyText(id)
-    showNotification('success', 'Copied successfully', 'message')
+    showNotification('success', `Successfully copied Node【${data.label}】ID: ${id}`, 'notice')
   }
 
   return (
@@ -128,19 +131,39 @@ const CustomNode: React.FC<CustomNodeProps> = ({
       </div>
       <div className="node-content" style={{ userSelect: 'none' }}>
         {/* <p>x: {currentNode?.position.x}</p> */}
-        <div className="node-input-wrapper">
-          <input
-            ref={inputLabel}
-            readOnly={!canEditLabel}
-            onBlur={e => handleInputBlur(e)}
-            defaultValue={data.label}
-            // onChange={onChangeLabel}
-            className="node-input"
-            title={data.label}
+        <div className=" flex items-center gap-2">
+          <Button
+            size="small"
+            className={data.note ? ' ' : 'hidden'}
+            onClick={() => setIsNoteVisibility(!isNoteVisibility)}
+            icon={<DownOutlined size={12} style={{ fontSize: 8 }} />}
+            type="text"
+          ></Button>
+          <div className="node-input-wrapper">
+            <input
+              ref={inputLabel}
+              readOnly={!canEditLabel}
+              onBlur={e => handleInputBlur(e)}
+              defaultValue={data.label}
+              // onChange={onChangeLabel}
+              className="node-input"
+              title={data.label}
+            />
+          </div>
+        </div>
+        <div className={`node-note ${isNoteVisibility ? ' ' : 'hidden'}`}>
+          {/* <div className=" bg-gray-300  px-1 " style={{ fontSize: '8px' }}>
+              Note
+            </div> */}
+          <textarea
+            className=" w-full h-full px-1 outline-none bg-gray-100"
+            style={{ fontSize: '10px' }}
+            defaultValue={data.note}
+            onBlur={e => handleTextareBlur(e)}
           />
-          {/* <span>{data.label}</span> */}
         </div>
       </div>
+
       {(data?.childCount || 0) > 0 && (
         <div className={`node-switch-container ${data.isExpanded ? 'expand' : ''}`} onClick={onExpandToggle}>
           {data.isExpanded ? (
@@ -164,6 +187,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
               <MinusOutlined />
             </button>
             {/* {options && <Select style={{ width: 120 }} options={options}></Select>} */}
+            <button onClick={() => setIsNoteVisibility(true)}>Add Note</button>
             <button onClick={handleStartFetch}>Fech Select</button>
             <button onClick={onResetPos}>Reset Position</button>
             <button onClick={handleCopyeNodeId}>Copy Node ID</button>
