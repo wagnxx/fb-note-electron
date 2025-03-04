@@ -1,8 +1,20 @@
-import { Button, Col, Form, Input, Row, Space, Spin, Table } from 'antd'
-import React, { forwardRef, useImperativeHandle, useState } from 'react'
+import { Button, Col, Form, Input, Radio, Row, Space, Spin, Table } from 'antd'
+import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { ModalChildRef } from '@/components/modal/ModalForm'
 import { useNotification } from '@/hooks/useNotification'
 import Title from 'antd/es/typography/Title'
+import { FileSyncOutlined } from '@ant-design/icons'
+import SmartTextarea, { SmartTextareaRef } from '@/components/input/SmartTextarea'
+
+// 1️⃣ 先定义联合类型
+type SwitchModelType = 'Table' | 'Json' | 'Plain'
+
+// 2️⃣ 再定义 options，并确保 value 只能是 SwitchModelType
+const options: { label: string; value: SwitchModelType }[] = [
+  { label: 'Table', value: 'Table' },
+  { label: 'Json', value: 'Json' },
+  { label: 'Plain', value: 'Plain' },
+]
 
 type SubmitType = {
   root: string[]
@@ -13,12 +25,69 @@ const FormAddRoot = forwardRef<ModalChildRef, { onFinish: (values: any) => void;
   ({ onFinish, submitLoading }, ref) => {
     const [form] = Form.useForm()
     const [queue, setQueue] = useState<SubmitType[]>([])
+    const [swidtchModel, setSwidtchModel] = useState<SwitchModelType>('Table')
+    const [textareaRenderCount, settextareaRenderCount] = useState(0)
+
+    const jsonAreaRef = useRef<HTMLTextAreaElement>(null)
+    const plainAreaRef = useRef<SmartTextareaRef>(null)
 
     const { showNotification, showConfirmationDialog } = useNotification()
 
     useImperativeHandle(ref, () => ({
       resetFields: () => form.resetFields(),
     }))
+
+    const plainTextValue = useMemo(() => {
+      let str = ''
+      queue.forEach((item, index) => {
+        // 103. -bronch(i)(o)- 气管 \t6\n
+        const curStr =
+          index +
+          '. ' +
+          item.root.map(w => '-' + w + '-').join('=') +
+          ' ' +
+          item.meaning +
+          ' ' +
+          '\t' +
+          item.wordCount +
+          '\n'
+        str += curStr
+      })
+      return str
+    }, [queue])
+
+    const handleSyncJson = () => {
+      if (!jsonAreaRef.current) return
+      const textStr = jsonAreaRef.current.value
+
+      try {
+        const parsed = JSON.parse(textStr)
+        console.log('parsed value: ', parsed)
+        setQueue(parsed)
+      } catch (error) {
+        showNotification('error', 'parsed error:' + error, 'notification')
+        console.error('parsed err: ', error)
+      }
+    }
+
+    const handleSyncPlainText = (textStr: string) => {
+      try {
+        const regex = /^\d+\.\s+(-[\w()-]+(?:\s*=\s*-[\w()-]+)*)\s+(\S.*?)\t(\d+)$/gm
+
+        const matches = [...textStr.matchAll(regex)]
+        console.log('matches text: ', matches)
+
+        const result = matches.map(match => ({
+          root: match[1].split('=').map(s => s.trim().replace(/[-()]/g, '')), // 去掉 `-` 和 `()` 符号
+          meaning: match[2].trim(), // 提取中文意思
+          wordCount: parseInt(match[3], 10), // 提取数字
+        }))
+        setQueue(result)
+      } catch (error) {
+        showNotification('error', 'parsed error:' + error, 'notification')
+        console.error('parsed err: ', error)
+      }
+    }
 
     const addItemToQueue = async () => {
       const values = await form.validateFields()
@@ -35,6 +104,8 @@ const FormAddRoot = forwardRef<ModalChildRef, { onFinish: (values: any) => void;
         form.resetFields()
         return [...prevQueue, r]
       })
+
+      settextareaRenderCount(preCount => preCount + 1)
     }
 
     const onSubmitQueue = (q?: SubmitType[]) => {
@@ -108,26 +179,71 @@ const FormAddRoot = forwardRef<ModalChildRef, { onFinish: (values: any) => void;
           </Form>
 
           <div className="pl-2">
-            <Title level={3}>Pending submission queue</Title>
-            <Table
-              scroll={{ y: 300 }}
-              dataSource={queue}
-              columns={[
-                {
-                  title: 'Root',
-                  dataIndex: 'root',
-                  // render: (value, record) => record.root
-                },
-                { title: 'meaning', dataIndex: 'meaning' },
-                { title: 'wordCount', dataIndex: 'wordCount' },
-              ]}
-              rowKey={record => record.root.join('-')}
-              footer={() => (
-                <Button type="primary" onClick={() => onSubmitQueue()} disabled={queue.length === 0}>
-                  Submit Queue
-                </Button>
-              )}
-            />
+            <div className="flex items-center gap-3">
+              <Title level={4}>Pending submission queue Display Model</Title>
+              <Radio.Group
+                block
+                options={options}
+                defaultValue="Table"
+                optionType="button"
+                buttonStyle="solid"
+                onChange={e => setSwidtchModel(e.target.value)}
+              />
+            </div>
+            {swidtchModel === 'Table' && (
+              <Table
+                scroll={{ y: 300 }}
+                dataSource={queue}
+                columns={[
+                  {
+                    title: 'Root',
+                    dataIndex: 'root',
+                    render: (value, record) => <div>[{record.root.join(',')}]</div>,
+                  },
+                  { title: 'meaning', dataIndex: 'meaning' },
+                  { title: 'wordCount', dataIndex: 'wordCount' },
+                ]}
+                rowKey={record => record.root.join('-')}
+                footer={() => (
+                  <Button type="primary" onClick={() => onSubmitQueue()} disabled={queue.length === 0}>
+                    Submit Queue
+                  </Button>
+                )}
+              />
+            )}
+            {swidtchModel === 'Json' && (
+              <div style={{ height: '300px', position: 'relative' }}>
+                <textarea
+                  key={textareaRenderCount}
+                  ref={jsonAreaRef}
+                  style={{ height: '100%', width: '100%', border: '1px solid #ddd', padding: '8px' }}
+                  defaultValue={JSON.stringify(queue, null, 2)}
+                  onBlur={e => console.log(e.target.value)}
+                />
+                <Button
+                  shape="circle"
+                  type="primary"
+                  style={{ position: 'absolute', bottom: 0, right: 0 }}
+                  icon={<FileSyncOutlined />}
+                  onClick={handleSyncJson}
+                />
+              </div>
+            )}
+            {swidtchModel === 'Plain' && (
+              <div style={{ height: '300px', position: 'relative' }}>
+                <SmartTextarea
+                  ref={plainAreaRef}
+                  value={plainTextValue}
+                  placeholder='Entering something like "Index. -xxxx- meaning \tWordCount\n".'
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                  }}
+                  onBlur={text => console.log('Blurred:', text)}
+                  onSave={handleSyncPlainText}
+                />
+              </div>
+            )}
           </div>
         </div>
       </Spin>

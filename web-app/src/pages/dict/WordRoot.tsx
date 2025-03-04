@@ -5,13 +5,23 @@ import WordRootManage from './components/WordRootManage'
 import WordRootDocMenu from './components/WordRootDocMenu'
 import WordRootDoc from './components/WordRootDoc'
 
-const { Header, Content, Sider } = Layout
+const { Content, Sider } = Layout
 
 const RootStudio: React.FC = () => {
-  const [view, setView] = useState<'table' | string>('table')
+  const [view, setView] = useState<string>('table')
+  const [isTable, setIsTable] = useState(true)
   const [isSiderOpen, setIsSiderOpen] = useState(false)
 
-  const handleMenuClick = ({ key }: { key: string }) => setView(key as 'pdf' | 'table')
+  const handleMenuClick = ({ key }: { key: string }) => {
+    if (key.startsWith('table-')) {
+      setIsTable(true)
+      const matchedKey = key.match(/^table-(\d+)$/)
+      setView(matchedKey?.[1] ?? '')
+    } else {
+      setIsTable(false)
+      setView(key)
+    }
+  }
 
   return (
     <Layout style={{ height: '100%' }}>
@@ -50,7 +60,7 @@ const RootStudio: React.FC = () => {
       </Sider>
       <Layout>
         <Content style={{ background: '#eee' }}>
-          {view === 'table' ? <WordRootManage /> : <WordRootDoc path={view} />}
+          {isTable ? <WordRootManage pageIndex={view} key={view} /> : <WordRootDoc path={view} />}
         </Content>
       </Layout>
     </Layout>

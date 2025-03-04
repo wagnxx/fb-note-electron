@@ -10,6 +10,7 @@ import FlowDiagram, { FlowDiagramRef } from '@/features/mindmap/components/FlowD
 import { createMindFile, getMindFile, saveMindFile } from '@/service/mind'
 import { useNotification } from '@/hooks/useNotification'
 import { DownOutlined } from '@ant-design/icons'
+import { CloudMindFile } from '@/pages/mindmap/components/TabpanelCloud'
 
 type FlowData = TabItem
 type WordTypeWithCheck = WordType & {
@@ -142,13 +143,30 @@ const WordsDashboard: FC<{
 
     if (!confirmed) return false
 
-    const params = {
+    flowData.nodes = flowData.nodes.map(node => {
+      const matchedWord = rootItem.group.find(item => item.name === node.data.label)
+      if (matchedWord) {
+        node.data.note = matchedWord.meaning
+      }
+      return node
+    })
+
+    const params: Partial<CloudMindFile> = {
       name: rootItem.name,
       data: [flowData],
       order: fileOlder,
     }
 
-    await handleRequestWithNotification(async () => createMindFile(params), {
+    let submitFn: any
+
+    if (fileInfo.id) {
+      submitFn = saveMindFile
+      params.id = fileInfo.id
+    } else {
+      submitFn = createMindFile
+    }
+
+    await handleRequestWithNotification(async () => submitFn(params), {
       successField: null,
       successMessage: 'Saved successfully',
     })

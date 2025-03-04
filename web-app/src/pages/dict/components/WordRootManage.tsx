@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ChangeEvent, FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Table, Button, Popconfirm, Space, Input, Switch, Tooltip, Tag } from 'antd'
 import { ColumnType, TablePaginationConfig } from 'antd/es/table'
 import { batchUpdateWordRoot, deleteWordRoot, getWordRootRow, getWordRoots } from '@/service/dict'
@@ -64,17 +64,20 @@ const EditableTableCell: React.FC<any> = ({
   )
 }
 
-const WordRootManage = () => {
+const WordRootManage: FC<{
+  pageIndex: string | number
+}> = ({ pageIndex }) => {
   const [dataSource, setDataSource] = useState<TableRow[]>([])
   const [filteredData, setFilteredData] = useState<TableRow[]>([])
   const [count, setCount] = useState<number>(dataSource.length)
   const [editingKey, setEditingKey] = useState<number | null>(null)
+  const [isBatchEdittingKeys, setIsBatchEdittingKeys] = useState(false)
   const [searchText, setSearchText] = useState('')
   const editedKeys = useRef<Set<number>>(new Set())
   const collectionRowkeys = useRef<CollectonKeysType>(new Map())
 
   // 分页相关状态
-  const [currentPage, setCurrentPage] = useState(1) // 当前页
+  const [currentPage, setCurrentPage] = useState(Number(pageIndex)) // 当前页
   const [pageSize, setPageSize] = useState(50) // 每页条数
   const [pageTotal, setPageTotal] = useState(0) // 每页条数
   const [loading, setloading] = useState(true)
@@ -134,28 +137,67 @@ const WordRootManage = () => {
     setScreenModalVisible(true)
   }
 
+  const handleBatchEditKey = () => {
+    if (isBatchEdittingKeys) {
+      setIsBatchEdittingKeys(false)
+    } else {
+      setIsBatchEdittingKeys(true)
+    }
+  }
+
+  const handleKeyInputChange = (id: string, key: number, val: string) => {
+    if (!id) return
+
+    collectionRowkeys.current.set(key, {
+      newKey: Number(val),
+      key: key,
+      id: id,
+    })
+  }
+
   const editableColumns: (EditableColumnProps & { isBoolean?: boolean })[] = [
     {
-      title: 'Key',
       dataIndex: 'key',
       isBoolean: false,
       editable: false,
       fixed: true,
-      width: 40,
-      // render: (text, record) => text.toString(),
-      render: (text, record) => (
-        <SortableRow id={record.key} collectionRowkeys={collectionRowkeys}>
-          {collectionRowkeys.current.has(record.key) ? (
-            <div>
-              {collectionRowkeys.current.get(record.key)?.key}
-              <span>-</span>
-              {collectionRowkeys.current.get(record.key)?.newKey}
-            </div>
-          ) : (
-            text
-          )}
-        </SortableRow>
+      width: isBatchEdittingKeys ? 80 : 60,
+      // title: 'Key',
+      title: (
+        <Space>
+          Key
+          <Button
+            type="text"
+            icon={isBatchEdittingKeys ? <CheckOutlined /> : <EditOutlined />}
+            onClick={handleBatchEditKey}
+          />
+        </Space>
       ),
+      render: (text, record) =>
+        isBatchEdittingKeys ? (
+          <Space>
+            <span>{record.key}</span>
+            <Input
+              type="number"
+              onChange={e => handleKeyInputChange(record.id as string, record.key, e.target.value)}
+            />
+          </Space>
+        ) : (
+          record.key
+        ),
+      // render: (text, record) => (
+      //   <SortableRow id={record.key} collectionRowkeys={collectionRowkeys}>
+      //     {collectionRowkeys.current.has(record.key) ? (
+      //       <div>
+      //         {collectionRowkeys.current.get(record.key)?.key}
+      //         <span>-</span>
+      //         {collectionRowkeys.current.get(record.key)?.newKey}
+      //       </div>
+      //     ) : (
+      //       text
+      //     )}
+      //   </SortableRow>
+      // ),
     },
     {
       title: '词根',
@@ -490,6 +532,7 @@ const WordRootManage = () => {
 
     if (r) {
       collectionRowkeys.current.clear()
+      setIsBatchEdittingKeys(false)
       getTableData()
     }
   }

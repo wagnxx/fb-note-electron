@@ -1,7 +1,7 @@
 import DesktopOnly from '@/components/platform/DesktopOnly'
 import { FileSystemItem, getDirectoryStructure } from '@/utils/utilsIpc'
 import { TableOutlined } from '@ant-design/icons'
-import { Menu } from 'antd'
+import { Menu, MenuProps } from 'antd'
 import React, { FC, useEffect, useState } from 'react'
 
 // eslint-disable-next-line no-undef
@@ -9,18 +9,48 @@ const { REACT_APP_SOURCE_PATH } = process.env
 
 const DOC_DIR = REACT_APP_SOURCE_PATH + '/dict/docs/'
 
-interface MenuItem {
-  key: string
-  icon?: React.ReactNode
-  label: string
-  children?: MenuItem[]
-}
+type MenuItem = Required<MenuProps>['items'][number]
 
 type Props = {
   onItemClick: ({ key }: { key: string }) => void
 }
 
-const commonItems: MenuItem[] = [{ key: 'table', icon: <TableOutlined />, label: '词根管理' }]
+const commonItems: MenuItem[] = [
+  {
+    key: 'table',
+    icon: <TableOutlined />,
+    label: '词根管理',
+    children: [
+      {
+        key: 'table-g-1',
+        label: 'Part 1',
+        type: 'group',
+        children: [
+          { key: 'table-1', label: '1-50' },
+          { key: 'table-2', label: '50-100' },
+        ],
+      },
+      {
+        key: 'table-g-2',
+        label: 'Part 2',
+        type: 'group',
+        children: [
+          { key: 'table-3', label: '100-150' },
+          { key: 'table-4', label: '150-200' },
+        ],
+      },
+      {
+        key: 'table-g-3',
+        label: 'Part 3',
+        type: 'group',
+        children: [
+          { key: 'table-5', label: '200-250' },
+          { key: 'table-6', label: '250-300' },
+        ],
+      },
+    ],
+  },
+]
 
 const convertToMenuItems = (items: FileSystemItem[]): MenuItem[] => {
   return items.map(item => {
@@ -33,10 +63,7 @@ const convertToMenuItems = (items: FileSystemItem[]): MenuItem[] => {
   })
 }
 
-const MenuComp: FC<{ menus: MenuItem[] } & Pick<Props, 'onItemClick'>> = ({
-  menus,
-  onItemClick,
-}) => {
+const MenuComp: FC<{ menus: MenuItem[] } & Pick<Props, 'onItemClick'>> = ({ menus, onItemClick }) => {
   return <Menu mode="inline" defaultSelectedKeys={['table']} onClick={onItemClick} items={menus} />
 }
 
