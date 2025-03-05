@@ -70,9 +70,18 @@ const FormAddRoot = forwardRef<ModalChildRef, { onFinish: (values: any) => void;
       }
     }
 
+    const formatText = (input: string) => {
+      return input
+        .replace(/(\w+-)\s+=/g, '$1=') // 修正 `word- =` -> `word-=`
+        .replace(/=\s+(-\w+)/g, '=$1') // 修正 `= -word` -> `=-word` // 修正 `= -xxx`
+    }
+
     const handleSyncPlainText = (textStr: string) => {
+      const str = formatText(textStr)
+      console.log('format str : ', str)
       try {
-        const regex = /^\d+\.\s+(-[\w()-]+(?:\s*=\s*-[\w()-]+)*)\s+(\S.*?)\t(\d+)$/gm
+        // const regex = /^\d+\.\s+(-[\w()-]+(?:\s*=\s*-[\w()-]+)*)\s+(\S.*?)\t(\d+)$/gm
+        const regex = /^\d+\.\s+(-[\w()-]+(?:\s*=\s*-?[\w()-]+)*)\s+(\S.*?)[ \t]+(\d+)$/gm
 
         const matches = [...textStr.matchAll(regex)]
         console.log('matches text: ', matches)
