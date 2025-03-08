@@ -1,7 +1,7 @@
 import React, { FC } from 'react'
 import { formatDate } from '@/utils/utilsDate'
 import { CloseOutlined, CheckOutlined } from '@ant-design/icons'
-import { List, Popconfirm, Button } from 'antd'
+import { List, Popconfirm, Button, Badge } from 'antd'
 import { StoragedFile } from '../MindMap'
 
 const TabpanelList: FC<{
@@ -42,6 +42,7 @@ const TabpanelList: FC<{
           <List.Item.Meta
             title={
               <div
+                className="flex"
                 style={{ cursor: selectedFile?.name === item.name ? 'no-allowd' : 'pointer' }}
                 onClick={() => onClickItem(item)}
               >
@@ -53,6 +54,7 @@ const TabpanelList: FC<{
                 >
                   {item.name}
                 </Button>
+                <Badge count={item.order}></Badge>
               </div>
             }
             description={formatDate(new Date(item.lastModified))}

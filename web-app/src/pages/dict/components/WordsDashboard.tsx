@@ -135,7 +135,7 @@ const WordsDashboard: FC<{
     })
   }
 
-  const handleSaveAsNew = async (): Promise<boolean> => {
+  const handleSaveMindFile = async (): Promise<boolean> => {
     if (!rootItem.name || !flowData.nodes.length || !flowData.edges.length) return false
     const confirmed = await showConfirmationDialog({
       content: 'Are you sure you want to save the FlowData to the cloud end',
@@ -144,10 +144,21 @@ const WordsDashboard: FC<{
     if (!confirmed) return false
 
     flowData.nodes = flowData.nodes.map(node => {
+      if (node.data.isRoot && !node.data.note) {
+        node.data.note = `
+          【Siblings】 ${rootItem.siblings?.toLocaleString()}
+          【词源】 ${rootItem.from}
+          【引申】 ${rootItem.extension}
+        `
+        return node
+      }
+
       const matchedWord = rootItem.group.find(item => item.name === node.data.label)
       if (matchedWord) {
         node.data.note = matchedWord.meaning
+        return node
       }
+
       return node
     })
 
@@ -170,6 +181,8 @@ const WordsDashboard: FC<{
       successField: null,
       successMessage: 'Saved successfully',
     })
+
+    getFlowDataByName(rootItem.name)
 
     return true
   }
@@ -262,7 +275,13 @@ const WordsDashboard: FC<{
     {
       key: 4,
       label: (
-        <Button onClick={handleSaveAsNew} type="text" size="small" style={{ textAlign: 'left', paddingLeft: 0 }} danger>
+        <Button
+          onClick={handleSaveMindFile}
+          type="text"
+          size="small"
+          style={{ textAlign: 'left', paddingLeft: 0 }}
+          danger
+        >
           Save Cloud
         </Button>
       ),

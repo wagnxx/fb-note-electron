@@ -1,29 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import {
-  Button,
-  Input,
-  Slider,
-  List,
-  Row,
-  Col,
-  Space,
-  Typography,
-  Select,
-  Checkbox,
-  Tooltip,
-  Divider,
-} from 'antd'
+import { Button, Input, Slider, List, Row, Col, Space, Typography, Select, Checkbox, Tooltip, Divider } from 'antd'
 
 import { v4 as uuidv4 } from 'uuid'
 import './VideoDownloader.css'
 import { useNotification } from '@/hooks/useNotification'
 import useFirstRender from '@/hooks/useFirstRender'
-import {
-  ArrowLeftOutlined,
-  PauseCircleOutlined,
-  PlayCircleOutlined,
-  PlusOutlined,
-} from '@ant-design/icons'
+import { ArrowLeftOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { PlayItem } from './FileUpload'
 import { setPlaylist } from '@/features/video/videoPlayer'
@@ -47,7 +29,7 @@ interface DownloadItem {
   videoRemoteUrl?: string
 }
 
-const VideoDownloader: React.FC = () => {
+const VideoDownloader: React.FC<{ showTitle?: boolean }> = ({ showTitle = true }) => {
   const [videoUrl, setVideoUrl] = useState('')
   const [downloadDir, setDownloadDir] = useState('')
   const [downloadList, setDownloadList] = useState<DownloadItem[]>([])
@@ -56,8 +38,7 @@ const VideoDownloader: React.FC = () => {
 
   const dispatch = useDispatch()
 
-  const updatePlaylists = (action: PlayItem[] | ((data: PlayItem[]) => PlayItem[])) =>
-    dispatch(setPlaylist(action))
+  const updatePlaylists = (action: PlayItem[] | ((data: PlayItem[]) => PlayItem[])) => dispatch(setPlaylist(action))
 
   const playlist = useSelector(selectPlaylist)
   const isInPlaylist = (itemId: string) => {
@@ -102,9 +83,7 @@ const VideoDownloader: React.FC = () => {
     }
 
     setDirHistoryList(prevList => {
-      const curDirHistoryList = prevList.includes(downloadDir)
-        ? prevList
-        : [...prevList, downloadDir]
+      const curDirHistoryList = prevList.includes(downloadDir) ? prevList : [...prevList, downloadDir]
       return curDirHistoryList
     })
 
@@ -216,10 +195,7 @@ const VideoDownloader: React.FC = () => {
 
   const addToPlayList = (item: DownloadItem) => {
     // console.log('item', item)
-    updatePlaylists(prevList => [
-      ...prevList,
-      { url: item.path, name: item.name, played: false, id: item.id },
-    ])
+    updatePlaylists(prevList => [...prevList, { url: item.path, name: item.name, played: false, id: item.id }])
   }
 
   const deleteDownload = (videoId: string) => {
@@ -355,10 +331,12 @@ const VideoDownloader: React.FC = () => {
       footerHeight={30}
       header={
         <div className=" p-5">
-          <TitleBar
-            title={<Title>Video Downloader</Title>}
-            leftIcon={actionFrom === 'button' ? <ArrowLeftOutlined onClick={handleBack} /> : null}
-          />
+          {showTitle && (
+            <TitleBar
+              title={<Title>Video Downloader</Title>}
+              leftIcon={actionFrom === 'button' ? <ArrowLeftOutlined onClick={handleBack} /> : null}
+            />
+          )}
           <Row gutter={16}>
             <Col span={24}>
               <Input
@@ -398,9 +376,7 @@ const VideoDownloader: React.FC = () => {
                   onClick={handleDownload}
                   disabled={!downloadDir || downloadList.some(item => item.isDownloading)}
                 >
-                  {downloadList.some(item => item.isDownloading)
-                    ? 'Downloading...'
-                    : 'Start Download'}
+                  {downloadList.some(item => item.isDownloading) ? 'Downloading...' : 'Start Download'}
                 </Button>
                 <Button onClick={handleSetAsCompleted} disabled={selections.length === 0}>
                   set completed
@@ -431,12 +407,7 @@ const VideoDownloader: React.FC = () => {
                   description={`Progress: ${item.progress}`}
                 />
                 {item.isDownloading && (
-                  <Slider
-                    className="list-item-slider"
-                    value={parseFloat(item.progress)}
-                    max={100}
-                    disabled
-                  />
+                  <Slider className="list-item-slider" value={parseFloat(item.progress)} max={100} disabled />
                 )}
               </Col>
 
@@ -450,11 +421,7 @@ const VideoDownloader: React.FC = () => {
                   >
                     Add to Playlist
                   </Button>
-                  <Button
-                    onClick={() => handleResetPath(item)}
-                    disabled={item.isDownloading}
-                    size="small"
-                  >
+                  <Button onClick={() => handleResetPath(item)} disabled={item.isDownloading} size="small">
                     Reset Path
                   </Button>
                   {item.progress !== '100%' && item.progress !== 'Error' && (

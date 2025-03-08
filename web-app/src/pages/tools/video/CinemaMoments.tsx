@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Layout, Collapse, CollapseProps, Button } from 'antd'
-import { CaretRightOutlined, CloudDownloadOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
+import { Layout, Collapse, CollapseProps, Button, Drawer } from 'antd'
+import { ArrowDownOutlined, CaretRightOutlined, CloudDownloadOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
 import VideoPlayer from './components/VideoPLayer'
 import VideoList from './components/Playlist'
 import FileUpload, { PlayItem } from './components/FileUpload'
@@ -8,12 +8,10 @@ import FloatButton from './components/FloatButton'
 import useFirstRender from '@/hooks/useFirstRender'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
-import {
-  setCurrentVideoId as updateCurrentVideoId,
-  setPlaylist as updatePlayList,
-} from '@/features/video/videoPlayer'
+import { setCurrentVideoId as updateCurrentVideoId, setPlaylist as updatePlayList } from '@/features/video/videoPlayer'
 import { selectCurrentVideo } from '@/features/video/selectors'
 import { useNavigate } from 'react-router-dom'
+import VideoDownloader from './components/VideoDownloader'
 
 const { Sider, Content } = Layout
 
@@ -22,13 +20,13 @@ const CinemaMoments: React.FC = () => {
   const currentVideo = useSelector(selectCurrentVideo)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [collapsed, setCollapsed] = useState(false)
+  const [drawOpend, setDrawOpend] = useState(false)
   const isFirstRender = useFirstRender()
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const setPlaylist = (action: PlayItem[] | ((data: PlayItem[]) => PlayItem[])) =>
-    dispatch(updatePlayList(action))
+  const setPlaylist = (action: PlayItem[] | ((data: PlayItem[]) => PlayItem[])) => dispatch(updatePlayList(action))
   const setCurrentVideoId = (id: string | null) => dispatch(updateCurrentVideoId(id))
 
   // 保存播放列表到本地存储
@@ -71,7 +69,8 @@ const CinemaMoments: React.FC = () => {
             <FileUpload fileInputRef={fileInputRef} setPlaylist={setPlaylist} />
             <Button
               icon={<CloudDownloadOutlined />}
-              onClick={() => navigate('/tool/video/videoDownloader?from=button')}
+              // onClick={() => navigate('/tool/video/videoDownloader?from=button')}
+              onClick={() => setDrawOpend(true)}
             />
           </div>
           {!collapsed && (
@@ -89,37 +88,47 @@ const CinemaMoments: React.FC = () => {
   ]
 
   return (
-    <Layout style={{ minHeight: 'calc(100vh - 29px)' }}>
-      <Sider
-        width={240}
-        collapsedWidth={0}
-        theme="light"
-        collapsible
-        trigger={null}
-        collapsed={collapsed}
-        style={{ padding: 0 }}
+    <>
+      <Drawer
+        open={drawOpend}
+        onClose={() => setDrawOpend(false)}
+        placement="bottom"
+        height={'90%'}
+        title={'Video Downloader'}
+        closeIcon={<ArrowDownOutlined />}
       >
-        <Collapse
-          bordered={false}
-          defaultActiveKey={['1']}
-          expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
-          items={collapseItems}
+        <VideoDownloader showTitle={false} />
+      </Drawer>
+      <Layout style={{ minHeight: 'calc(100vh - 29px)' }}>
+        <Sider
+          width={240}
+          collapsedWidth={0}
+          theme="light"
+          collapsible
+          trigger={null}
+          collapsed={collapsed}
+          style={{ padding: 0 }}
+        >
+          <Collapse
+            bordered={false}
+            defaultActiveKey={['1']}
+            expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+            items={collapseItems}
+          />
+        </Sider>
+
+        <FloatButton
+          label={<MenuUnfoldOutlined />}
+          direction="vertical" // 设置为水平方向拖拽
+          edgeDistance={10} // 设置距离容器边缘的最小距离
+          onClick={() => setCollapsed(!collapsed)}
         />
-      </Sider>
 
-      <FloatButton
-        label={<MenuUnfoldOutlined />}
-        direction="vertical" // 设置为水平方向拖拽
-        edgeDistance={10} // 设置距离容器边缘的最小距离
-        onClick={() => setCollapsed(!collapsed)}
-      />
-
-      <Content className="box-border   " style={{ height: 'calc(100vh - 30px)' }}>
-        {currentVideo && (
-          <VideoPlayer video={currentVideo} setPlaylist={setPlaylist} onError={handleError} />
-        )}
-      </Content>
-    </Layout>
+        <Content className="box-border   " style={{ height: 'calc(100vh - 30px)' }}>
+          {currentVideo && <VideoPlayer video={currentVideo} setPlaylist={setPlaylist} onError={handleError} />}
+        </Content>
+      </Layout>
+    </>
   )
 }
 
