@@ -64,7 +64,7 @@ const CinemaMoments: React.FC = () => {
       key: '1',
       label: 'Play List',
       children: (
-        <>
+        <div>
           <div className={`w-full flex justify-start gap-2 ${collapsed ? 'flex-col' : 'flex-row'}`}>
             <FileUpload fileInputRef={fileInputRef} setPlaylist={setPlaylist} />
             <Button
@@ -82,7 +82,7 @@ const CinemaMoments: React.FC = () => {
               currentVideo={currentVideo}
             />
           )}
-        </>
+        </div>
       ),
     },
   ]
@@ -107,7 +107,7 @@ const CinemaMoments: React.FC = () => {
           collapsible
           trigger={null}
           collapsed={collapsed}
-          style={{ padding: 0 }}
+          style={{ padding: 0, height: 'calc(100vh - 29px)', overflowY: 'auto' }}
         >
           <Collapse
             bordered={false}
@@ -125,7 +125,9 @@ const CinemaMoments: React.FC = () => {
         />
 
         <Content className="box-border   " style={{ height: 'calc(100vh - 30px)' }}>
-          {currentVideo && <VideoPlayer video={currentVideo} setPlaylist={setPlaylist} onError={handleError} />}
+          {currentVideo && (
+            <VideoPlayer key={currentVideo.id} video={currentVideo} setPlaylist={setPlaylist} onError={handleError} />
+          )}
         </Content>
       </Layout>
     </>
