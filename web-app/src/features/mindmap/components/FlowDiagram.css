@@ -1,28 +1,18 @@
 .custom-node {
   position: relative;
-  z-index: 10;
-  /* width: 100px; */
   padding: 10px;
-  /* 节点内边距 */
-  background: #f9f9f9;
-  /* 节点背景颜色 */
   border-radius: 8px;
-  /* 节点圆角 */
+  background: #f9f9f9;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  /* 节点阴影 */
   font-size: 12px;
+  z-index: 10;
 }
 
 .custom-node:hover {
   cursor: move;
 }
 
-.node-content {
-  /* display: flex;
-  flex-direction: row; */
-}
 
-.node-input-wrapper {}
 
 .node-content .node-input {
   display: block;

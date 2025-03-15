@@ -9,6 +9,7 @@ import ReactFlow, {
   BackgroundVariant,
   useReactFlow,
   Background,
+  ConnectionLineType,
 } from 'react-flow-renderer'
 // 引入 uuid 库
 import { v4 as uuidv4 } from 'uuid'
@@ -52,9 +53,26 @@ export type FlowDiagramRef = {
   handleAppendChildrenToParent: (id: string, names: string[]) => void
 }
 
-const NODE_DISTANCE = 150
+// default config
 const NODE_WIDTH = 200
 const NODE_HEIGHT = 50
+const NODE_DISTANCE = {
+  horizontal: 20,
+  vertical: 50,
+}
+
+const nodeOrigin: [number, number] = [0.5, 1]
+const connectionLineStyle = { stroke: '#F6AD55', strokeWidth: 2 }
+const defaultEdgeOptions = {
+  style: connectionLineStyle,
+  // type: 'mindmap', animated: true
+  type: 'bezier',
+  // animated: true,
+  // markerEnd: {
+  //   type: MarkerType.Arrow,
+  //   color: 'green',
+  // },
+}
 
 const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
   (
@@ -217,7 +235,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           if (newChildren.length === 0) return nds
 
           let newChildrenNodes = nds.filter(node => newChildren.includes(node.id))
-          newChildrenNodes = updateChildrenPos(parentNode, newChildrenNodes, NODE_DISTANCE * zoom)
+          newChildrenNodes = updateChildrenPos(parentNode, newChildrenNodes, NODE_DISTANCE.vertical)
 
           const newChildrenNodesPosY = newChildrenNodes.map(item => item.position.y)
           const newChildrenNodesPosX = newChildrenNodes.map(item => item.position.x)
@@ -429,8 +447,9 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
 
           // 批量添加子节点，计算每个子节点的位置
           const newNodes = newNodeIds.map((newNodeId, index) => {
+            const pW = NODE_WIDTH
             const newNodePostion = {
-              x: parentNode.position.x + NODE_DISTANCE,
+              x: parentNode.position.x + pW + NODE_DISTANCE.horizontal,
               y: nicePostionY + index * (NODE_HEIGHT + 10), // 每个新节点间隔10单位
             }
 
@@ -546,14 +565,15 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           if (parentNode) {
             console.log('has parrent ', parentNode)
             console.log('current node', node)
-            const standardX = parentNode.position.x + NODE_DISTANCE
-            const minX = standardX - NODE_DISTANCE / 2
-            const maxX = standardX + NODE_DISTANCE
+            const pW = NODE_WIDTH
+            const standardX = parentNode.position.x + (pW + NODE_DISTANCE.horizontal)
+            const minX = parentNode.position.x - NODE_DISTANCE.horizontal / 4
+            const maxX = standardX + NODE_DISTANCE.horizontal / 4
 
             const runAwayNodes = new Set<string>()
             let siblingsNodesIds = new Set<string>(parentNode.children)
 
-            if (newPosition.x < minX || newPosition.x <= maxX) {
+            if (newPosition.x > minX && newPosition.x <= maxX) {
               currentNodePostionOffsets.x = newPosition.x - standardX
               newPosition.x = standardX
             } else if (newPosition.x > maxX) {
@@ -615,10 +635,11 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
        * 
        */
           const newParentNode = nds.find(n => {
+            const pW = NODE_WIDTH
             const minX = n.position.x
-            const maxX = minX + 100
-            const minY = n.position.y - 50
-            const maxY = n.position.y + 50
+            const maxX = minX + pW
+            const minY = n.position.y - NODE_HEIGHT / 2
+            const maxY = n.position.y + NODE_HEIGHT / 2
 
             return (
               n.id !== node.id &&
@@ -656,9 +677,9 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
               return eds // Prevent adding duplicate edges
             }
             updateEdgeList(edsFn)
-
+            const pW = NODE_WIDTH
             const curNodeFixedPosition = {
-              x: newParentNode.position.x + NODE_DISTANCE,
+              x: newParentNode.position.x + pW + NODE_DISTANCE.horizontal,
               y: newParentNode.position.y,
             }
             const offsetX = curNodeFixedPosition.x - newPosition.x
@@ -796,7 +817,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
 
     return (
       <div style={{ position: 'relative', userSelect: 'none' }} className={className}>
-        {showTollbar && <Toolbar onAddNode={handleAddRootNode} />}
+        {showTollbar && <Toolbar onAddNode={() => handleAddRootNode()} />}
         <ReactFlow
           nodes={nodes.filter(n => !n.isHidden)}
           edges={edges}
@@ -804,6 +825,10 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           nodeTypes={nodeTypes}
           onNodeDragStop={onNodeDragStop}
           onNodeDrag={onNodeDrag}
+          defaultPosition={nodeOrigin}
+          defaultEdgeOptions={defaultEdgeOptions}
+          connectionLineStyle={connectionLineStyle}
+          connectionLineType={ConnectionLineType.SimpleBezier}
           fitView
         >
           {' '}

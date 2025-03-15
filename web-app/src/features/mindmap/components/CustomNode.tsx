@@ -46,6 +46,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   onChangeNote,
 }) => {
   const [isNoteVisibility, setIsNoteVisibility] = useState(false)
+  const [width, setWidth] = useState(200)
+  const [isResizing, setIsResizing] = useState(false)
   const nodes = useNodes()
   const currentNode = nodes.find(node => node.id === id)
   const isDragging = currentNode?.dragging || false
@@ -109,7 +111,19 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   }
 
   return (
-    <div className="custom-node" onDoubleClickCapture={dbClickNodeHandler}>
+    <div
+      className="custom-node"
+      style={{
+        width: `${width}px`,
+        userSelect: 'none',
+        border: '1px solid #aaa',
+      }}
+    >
+      <div style={{ visibility: 'hidden' }}>
+        <Handle type="target" position={Position.Left} />
+        <Handle type="source" position={Position.Right} />
+      </div>
+
       {data.isRoot && data.isExpanded && (
         <div
           style={{
@@ -126,9 +140,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
           }}
         ></div>
       )}
-      <div style={{ visibility: 'hidden' }}>
-        <Handle type="target" position={Position.Left} />
-      </div>
+
       <div className="node-content" style={{ userSelect: 'none' }}>
         {/* <p>x: {currentNode?.position.x}</p> */}
         <div className=" flex items-center gap-2">
@@ -173,9 +185,6 @@ const CustomNode: React.FC<CustomNodeProps> = ({
           )}
         </div>
       )}
-      <div style={{ visibility: 'hidden' }}>
-        <Handle type="source" position={Position.Right} />
-      </div>
 
       <div className={`context-menu-container ${isDragging ? 'hidden' : ''}`} onDoubleClick={e => e.stopPropagation()}>
         <div className="context-menu">
@@ -194,6 +203,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({
           </div>
         </div>
       </div>
+
+      {/* <NodeResizer minWidth={100} minHeight={30} /> */}
     </div>
   )
 }

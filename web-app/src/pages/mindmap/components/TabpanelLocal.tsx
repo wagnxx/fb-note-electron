@@ -30,7 +30,7 @@ const TabpanelLocal = forwardRef<TabpanelRef, Props>(({ getCanvasData, resetCanv
   }, [fileList, isFirstRender])
   useEffect(() => {
     const dataStr = localStorage.getItem(FILELIST_STORAGE_KEY)
-    const data = JSON.parse(dataStr!)
+    const data = JSON.parse(dataStr!) || []
     setFileList(data)
   }, [])
 
