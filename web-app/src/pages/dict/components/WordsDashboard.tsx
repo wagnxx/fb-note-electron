@@ -5,7 +5,7 @@ import SelectableList from '@/components/list/SelectableList'
 import WordsDashboardHeader from './WordsDashboardHeader'
 import WordProcessing from './WordProcessing'
 import { TabItem } from '@/pages/mindmap/components/MindMapCanvasContainer'
-import { ReactFlowProvider } from 'react-flow-renderer'
+import { ReactFlowProvider } from '@xyflow/react'
 import FlowDiagram, { FlowDiagramRef } from '@/features/mindmap/components/FlowDiagram'
 import { createMindFile, getMindFile, saveMindFile } from '@/service/mind'
 import { useNotification } from '@/hooks/useNotification'
@@ -401,8 +401,8 @@ const WordsDashboard: FC<{
                 showControls={false}
                 showMiniMap={false}
                 getSelectableItems={getSelectableForFlowItem}
-                onNodeListChange={listFn => setFlowData(pre => ({ ...pre, nodes: [...listFn(pre.nodes)] }))}
-                onEdgeListChange={listFn => setFlowData(pre => ({ ...pre, edges: [...listFn(pre.edges)] }))}
+                onNodeListChange={listFn => setFlowData(pre => ({ ...pre, nodes: listFn(pre.nodes) }))}
+                onEdgeListChange={listFn => setFlowData(pre => ({ ...pre, edges: listFn(pre.edges) }))}
               />
             </div>
           )}

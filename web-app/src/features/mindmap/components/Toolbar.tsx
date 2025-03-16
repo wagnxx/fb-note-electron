@@ -3,7 +3,9 @@ import React from 'react'
 import { Button, Space } from 'antd'
 
 interface ToolbarProps {
-  onAddNode?: () => void
+  onCreateRootNode?: () => void
+  onAppendNode?: () => void
+  onCreateNode?: () => void
   onDelete?: () => void
   onUndo?: () => void
   onRedo?: () => void
@@ -11,7 +13,26 @@ interface ToolbarProps {
   onOpen?: () => void
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ onAddNode, onDelete, onUndo, onRedo, onSave, onOpen }) => {
+const Toolbar: React.FC<ToolbarProps> = ({
+  onCreateRootNode,
+  onAppendNode,
+  onCreateNode,
+  onDelete,
+  onUndo,
+  onRedo,
+  onSave,
+  onOpen,
+}) => {
+  const btns = [
+    { label: '添加子节点', handler: onAppendNode },
+    { label: '创建节点', handler: onCreateNode },
+    { label: '创建根节点', handler: onCreateRootNode },
+    { label: '删除节点', handler: onDelete },
+    { label: ' 撤销', handler: onUndo },
+    { label: ' 重做', handler: onRedo },
+    { label: '保存', handler: onSave },
+    { label: ' 打开文件', handler: onOpen },
+  ]
   return (
     <div
       style={{
@@ -25,24 +46,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ onAddNode, onDelete, onUndo, onRedo, 
       }}
     >
       <Space>
-        <Button type="primary" onClick={onAddNode}>
-          添加节点
-        </Button>
-        <Button onClick={onDelete} disabled={!onDelete}>
-          删除节点
-        </Button>
-        <Button onClick={onUndo} disabled={!onUndo}>
-          撤销
-        </Button>
-        <Button onClick={onRedo} disabled={!onRedo}>
-          重做
-        </Button>
-        <Button type="default" onClick={onSave} disabled={!onSave}>
-          保存
-        </Button>
-        <Button type="default" onClick={onOpen} disabled={!onOpen}>
-          打开文件
-        </Button>
+        {btns.map((btn, index) => (
+          <Button key={index} size="small" type="primary" disabled={!btn.handler} onClick={btn.handler}>
+            {btn.label}
+          </Button>
+        ))}
       </Space>
     </div>
   )

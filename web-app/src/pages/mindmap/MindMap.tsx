@@ -1,7 +1,7 @@
 // src/pages/MindMapPage.tsx
 import React, { useRef } from 'react'
 import { ExtendedNode } from '@/features/mindmap/components/FlowDiagram'
-import { Edge, ReactFlowProvider } from 'react-flow-renderer'
+import { Edge, ReactFlowProvider } from '@xyflow/react'
 import { Button, Splitter } from 'antd'
 import SidebarDir from './components/SidebarDir'
 import SideDrawer from './components/SideDrawer'

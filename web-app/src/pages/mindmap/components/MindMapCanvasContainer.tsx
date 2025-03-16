@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Tabs, Input } from 'antd'
-import FlowDiagram, { ExtendedNode } from '@/features/mindmap/components/FlowDiagram'
-import { Edge } from 'react-flow-renderer'
+import FlowDiagram, { ExtendedNode } from '@/features/mindmap/components/Flow'
+import { Edge } from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
 import './MindMapCanvasContainer.css'
 import { Action } from '@/utils/utilsAction'
@@ -19,7 +19,8 @@ const initialItems: TabItem[] = []
 
 const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
   const [activeKey, setActiveKey] = useState<string>()
-  const [items, setItems] = useState(initialItems)
+  const [itemsInit, setItemsInit] = useState(initialItems)
+  const [itemsSubmit, setItemsSubmit] = useState(initialItems)
   const [editKey, setEditKey] = useState<string | null>(null)
   const [newLabel, setNewLabel] = useState<string>('')
 
@@ -28,11 +29,11 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
   useImperativeHandle(ref, () => {
     return {
       getData() {
-        return items
+        return itemsSubmit
       },
       resetItems,
     }
-  }, [items])
+  }, [itemsSubmit])
 
   const resetItems = (data: TabItem[]) => {
     const action = Action.getInstance()
@@ -44,7 +45,8 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
       })
       .sleep(100)
       .then(() => {
-        setItems(data)
+        setItemsInit(() => data)
+        setItemsSubmit(() => data)
         setActiveKey(data[0]?.key) // Allowing data length to be 0
         newTabIndex.current = data.length
       })
@@ -55,29 +57,30 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
   }
 
   const add = () => {
-    const tabName = `tab${newTabIndex.current++}`
     const tabKey = uuidv4()
-    const newPanes = [...items]
-    newPanes.push({
-      // key: newActiveKey,
+    const newPane = {
       key: tabKey,
-      name: tabName,
+      name: `tab${newTabIndex.current++}`,
       nodes: [],
       edges: [],
-    })
-    setItems(newPanes)
+    }
+
+    setItemsInit(prePanes => [...prePanes, newPane])
+    setItemsSubmit(prePanes => [...prePanes, newPane])
+
     setActiveKey(tabKey)
   }
 
   const remove = (targetKey: TargetKey) => {
     let newActiveKey = activeKey
     let lastIndex = -1
-    items.forEach((item, i) => {
+    itemsInit.forEach((item, i) => {
       if (item.key === targetKey) {
         lastIndex = i - 1
       }
     })
-    const newPanes = items.filter(item => item.key !== targetKey)
+    const filterFactory = (item: TabItem) => item.key !== targetKey
+    const newPanes = itemsInit.filter(filterFactory)
     if (newPanes.length && newActiveKey === targetKey) {
       if (lastIndex >= 0) {
         newActiveKey = newPanes[lastIndex].key
@@ -85,12 +88,14 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
         newActiveKey = newPanes[0].key
       }
     }
-    setItems(newPanes)
+    setItemsInit(() => newPanes)
+    setItemsSubmit(prePanes => prePanes.filter(filterFactory))
     setActiveKey(newActiveKey)
   }
 
   const handleRenameTab = (key: string, newName: string) => {
-    setItems(prevItems => prevItems.map(item => (item.key === key ? { ...item, name: newName } : item)))
+    setItemsInit(prevItems => prevItems.map(item => (item.key === key ? { ...item, name: newName } : item)))
+    setItemsSubmit(prevItems => prevItems.map(item => (item.key === key ? { ...item, name: newName } : item)))
     setEditKey(null)
     setNewLabel('')
   }
@@ -106,15 +111,15 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
   const handleDoubleClick = useCallback(
     (key: string) => {
       setEditKey(key)
-      setNewLabel(items.find(tab => tab.key === key)?.name || '')
+      setNewLabel(itemsInit.find(tab => tab.key === key)?.name || '')
     },
-    [items],
+    [itemsInit],
   )
 
   const updateEdges = useCallback(
     (key: string, fn: (data: Edge[]) => Edge[]) => {
       if (!key || key !== activeKey) return
-      setItems(prevItems => prevItems.map(item => (item.key === key ? { ...item, edges: fn(item.edges) } : item)))
+      setItemsSubmit(prevItems => prevItems.map(item => (item.key === key ? { ...item, edges: fn(item.edges) } : item)))
     },
     [activeKey],
   )
@@ -122,13 +127,13 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
   const updateNodes = useCallback(
     (key: string, fn: (data: ExtendedNode[]) => ExtendedNode[]) => {
       if (!key || key !== activeKey) return
-      setItems(prevItems => prevItems.map(item => (item.key === key ? { ...item, nodes: fn(item.nodes) } : item)))
+      setItemsSubmit(prevItems => prevItems.map(item => (item.key === key ? { ...item, nodes: fn(item.nodes) } : item)))
     },
     [activeKey],
   )
 
   const memoItems = useMemo(() => {
-    return items.map(tab => ({
+    return itemsInit.map(tab => ({
       key: tab.key,
       label:
         editKey === tab.key ? (
@@ -146,15 +151,15 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
         <FlowDiagram
           bgColor="#aaa"
           className="flex-1 h-full w-full"
-          nodeList={tab.nodes}
-          edgeList={tab.edges}
+          initNodeList={tab.nodes}
+          initEdgeList={tab.edges}
           compId={tab.key}
           onNodeListChange={list => updateNodes(tab.key, list)}
           onEdgeListChange={list => updateEdges(tab.key, list)}
         />
       ),
     }))
-  }, [activeKey, editKey, handleDoubleClick, items, newLabel, updateEdges, updateNodes])
+  }, [activeKey, editKey, handleDoubleClick, itemsInit, newLabel, updateEdges, updateNodes])
 
   // if (items.length === 0) {
   //   return (

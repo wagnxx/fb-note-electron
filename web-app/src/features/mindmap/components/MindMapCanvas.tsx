@@ -64,9 +64,7 @@ const MindMapCanvas: React.FC = () => {
     if (selectedNodeId) {
       setHistory([...history, { nodes, edges }])
       setNodes(nds => nds.filter(node => node.id !== selectedNodeId))
-      setEdges(eds =>
-        eds.filter(edge => edge.source !== selectedNodeId && edge.target !== selectedNodeId),
-      )
+      setEdges(eds => eds.filter(edge => edge.source !== selectedNodeId && edge.target !== selectedNodeId))
       setSelectedNodeId(null)
     }
   }
@@ -147,20 +145,14 @@ const MindMapCanvas: React.FC = () => {
   return (
     <>
       <Toolbar
-        onAddNode={onAddNode}
+        onCreateRootNode={onAddNode}
         onDelete={onDeleteNode}
         onUndo={onUndo}
         onRedo={onRedo}
         onSave={saveToFile}
         onOpen={() => document.getElementById('file-input')?.click()} // 点击打开文件
       />
-      <input
-        type="file"
-        accept=".json"
-        onChange={loadFromFile}
-        style={{ display: 'none' }}
-        id="file-input"
-      />
+      <input type="file" accept=".json" onChange={loadFromFile} style={{ display: 'none' }} id="file-input" />
       <ReactFlow
         nodes={nodes}
         edges={edges}
