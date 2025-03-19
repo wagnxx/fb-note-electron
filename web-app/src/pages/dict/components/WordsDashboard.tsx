@@ -5,12 +5,13 @@ import SelectableList from '@/components/list/SelectableList'
 import WordsDashboardHeader from './WordsDashboardHeader'
 import WordProcessing from './WordProcessing'
 import { TabItem } from '@/pages/mindmap/components/MindMapCanvasContainer'
-import { ReactFlowProvider } from '@xyflow/react'
-import FlowDiagram, { FlowDiagramRef } from '@/features/mindmap/components/FlowDiagram'
+import { Edge, ReactFlowProvider } from '@xyflow/react'
+import FlowDiagram, { ExtendedNode, FlowDiagramRef } from '@/features/mindmap/components/flows/Flow'
 import { createMindFile, getMindFile, saveMindFile } from '@/service/mind'
 import { useNotification } from '@/hooks/useNotification'
 import { DownOutlined } from '@ant-design/icons'
 import { CloudMindFile } from '@/pages/mindmap/components/TabpanelCloud'
+import { useAuth } from '@/context/AuthContext'
 
 type FlowData = TabItem
 type WordTypeWithCheck = WordType & {
@@ -36,6 +37,12 @@ const WordsDashboard: FC<{
   const [keywords, setKeywords] = useState('')
   // const [selections, setSelections] = useState<SelectableWordType[]>([])
   const [pendingWords, setPendingWords] = useState<SelectableWordType[]>([])
+  const [initialFlowData, setInitialFlowData] = useState<FlowData>({
+    key: rootItem.name,
+    name: rootItem.name,
+    nodes: [],
+    edges: [],
+  })
   const [flowData, setFlowData] = useState<FlowData>({
     key: rootItem.name,
     name: rootItem.name,
@@ -57,6 +64,8 @@ const WordsDashboard: FC<{
 
   const flowRef = useRef<FlowDiagramRef>(null)
 
+  const { isAuthenticated } = useAuth()
+
   const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
 
   const listData: SelectableWordType[] = useMemo(() => {
@@ -73,9 +82,6 @@ const WordsDashboard: FC<{
     return listData.filter(item => item.checked)
   }, [listData])
 
-  const handleTestGetFlowData = () => {
-    console.log('flowData: ', flowData)
-  }
   const getFlowDataByName = useCallback(
     async (filename: string) => {
       setLoading(true)
@@ -88,7 +94,7 @@ const WordsDashboard: FC<{
         edges: [],
       }
       if (data.length === 0) {
-        setFlowData(defaultData)
+        setInitialFlowData(defaultData)
         setfileInfo(pre => ({
           ...pre,
           id: '',
@@ -98,7 +104,7 @@ const WordsDashboard: FC<{
       }
       if (data.length > 1) {
         showNotification('error', `There are multiple ${filename} files, please check them.`, 'message')
-        setFlowData(defaultData)
+        setInitialFlowData(defaultData)
         setfileInfo(pre => ({
           ...pre,
           id: '',
@@ -106,7 +112,8 @@ const WordsDashboard: FC<{
         }))
         return
       }
-      setFlowData(data[0].data[0])
+      setInitialFlowData(data[0].data[0])
+
       setfileInfo(pre => ({
         ...pre,
         id: data[0].id,
@@ -217,8 +224,10 @@ const WordsDashboard: FC<{
   //   setSelections(selectedItems)
   // }
 
-  const getSelectableForFlowItem = () =>
-    selections.filter(word => !word.disabled).map(word => ({ label: word.name, value: word.name }))
+  const getSelectableForFlowItem = useCallback(
+    () => pendingWords.filter(word => !word.disabled).map(word => ({ label: word.name, value: word.name })),
+    [pendingWords],
+  )
 
   const handleCreateRootNode = () => {
     flowRef.current?.handleAddRootNode(rootItem.name)
@@ -236,10 +245,23 @@ const WordsDashboard: FC<{
     )
   }
 
+  // onNodeListChange={listFn => setFlowData(pre => ({ ...pre, nodes: listFn(pre.nodes) }))}
+  // onEdgeListChange={listFn => setFlowData(pre => ({ ...pre, edges: listFn(pre.edges) }))}
+
+  // 修正后的函数（修复拼写错误并强化类型安全
+
+  const updateNodes = useCallback((fn: (data: ExtendedNode[]) => ExtendedNode[]) => {
+    setFlowData(pre => ({ ...pre, nodes: fn(pre.nodes) }))
+  }, [])
+
+  const updateEdges = useCallback((fn: (data: Edge[]) => Edge[]) => {
+    setFlowData(pre => ({ ...pre, edges: fn(pre.edges) }))
+  }, [])
+
   useEffect(() => {
-    if (!rootItem.name) return
+    if (!rootItem.name || !isAuthenticated) return
     getFlowDataByName(rootItem.name)
-  }, [getFlowDataByName, rootItem.name])
+  }, [getFlowDataByName, isAuthenticated, rootItem.name])
 
   const actionMenuItems = [
     {
@@ -388,21 +410,21 @@ const WordsDashboard: FC<{
               </Space>
             </div>
           </div>
-          {flowData.key && (
+          {initialFlowData.key && !loading && (
             <div className=" flex-1 flex ">
               <FlowDiagram
                 ref={flowRef}
                 bgColor="rgb(100 116 139)"
                 className="flex-1  w-full"
-                nodeList={flowData.nodes}
-                edgeList={flowData.edges}
-                compId={flowData.key}
+                initNodeList={initialFlowData.nodes}
+                initEdgeList={initialFlowData.edges}
+                compId={initialFlowData.key}
                 showTollbar={false}
                 showControls={false}
                 showMiniMap={false}
                 getSelectableItems={getSelectableForFlowItem}
-                onNodeListChange={listFn => setFlowData(pre => ({ ...pre, nodes: listFn(pre.nodes) }))}
-                onEdgeListChange={listFn => setFlowData(pre => ({ ...pre, edges: listFn(pre.edges) }))}
+                onNodeListChange={updateNodes}
+                onEdgeListChange={updateEdges}
               />
             </div>
           )}

@@ -50,7 +50,6 @@ const WordProcessing = <T extends BasicItem>({ words, onProcessedWords }: WordPr
   }
 
   useEffect(() => {
-    console.log('wordTag mouted', words)
     settags(words)
   }, [words])
 

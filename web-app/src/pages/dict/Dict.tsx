@@ -38,7 +38,6 @@ const Dict = () => {
       const reg = /\/(\d+)\..+$/
       const match = key.match(reg)
       if (match) {
-        console.log('match', match[1])
         setFileOlder(Number(match[1]))
       } else {
         setFileOlder(0)
@@ -52,7 +51,7 @@ const Dict = () => {
       <div style={{ position: 'fixed', zIndex: 10, left: '12px' }}>
         <WordRootJsonMenu onItemClick={handleFetchDictItem} rootLabel="Choose WordRoot Json File" />
       </div>
-      {rootItem && <WordsDashboard rootItem={rootItem} fileOlder={fileOlder} />}
+      {rootItem && <WordsDashboard key={rootItem.name} rootItem={rootItem} fileOlder={fileOlder} />}
     </div>
   )
 }

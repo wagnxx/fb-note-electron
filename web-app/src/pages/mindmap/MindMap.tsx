@@ -1,6 +1,6 @@
 // src/pages/MindMapPage.tsx
 import React, { useRef } from 'react'
-import { ExtendedNode } from '@/features/mindmap/components/FlowDiagram'
+import { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
 import { Edge, ReactFlowProvider } from '@xyflow/react'
 import { Button, Splitter } from 'antd'
 import SidebarDir from './components/SidebarDir'

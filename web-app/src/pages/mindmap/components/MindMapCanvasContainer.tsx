@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Tabs, Input } from 'antd'
-import FlowDiagram, { ExtendedNode } from '@/features/mindmap/components/Flow'
+import FlowDiagram, { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
 import { Edge } from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
 import './MindMapCanvasContainer.css'

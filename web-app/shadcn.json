@@ -1,0 +1,10 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": false,
+  "tailwind": true,
+  "aliases": {
+    "components": "@/shared/ui",
+    "utils": "@/lib/utils"
+  }
+}

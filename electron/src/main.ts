@@ -19,16 +19,19 @@ function createWindow() {
     titleBarStyle: 'hidden',
     webPreferences: {
       preload: preloadPath,
-      nodeIntegration: true,
       contextIsolation: true,
+      nodeIntegration: true,
+      // sandbox: false, 
       // webSecurity: false,
       disableBlinkFeatures: 'Autofill',
-      allowRunningInsecureContent: true,
+      // allowRunningInsecureContent: true,
       devTools: true,
     },
   });
 
   win.webContents.openDevTools();
+
+ 
 
 
   if (isDev && process.env.ELECTRON_START_URL) {

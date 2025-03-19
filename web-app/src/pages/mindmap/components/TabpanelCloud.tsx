@@ -71,7 +71,7 @@ const TabpanelCloud = forwardRef<TabpanelRef, Props>(({ getCanvasData, resetCanv
         id: file.id,
         name: file.name,
         data,
-        order: fileList.length,
+        // order: fileList.length,
       }
       const r = await handleRequestWithNotification(async () => saveMindFile(params), {
         successField: null,

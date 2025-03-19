@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useMemo, forwardRef, useImperativeHandle } from 'react'
+import React, { useCallback, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react'
 import {
   ReactFlow,
   addEdge,
@@ -10,15 +10,17 @@ import {
   BackgroundVariant,
   useReactFlow,
   Background,
+  useNodesState,
+  useEdgesState,
 } from '@xyflow/react'
 // 引入 uuid 库
 import { v4 as uuidv4 } from 'uuid'
 import { noop } from '@/utils/utilsMisc'
 
-import CustomNode, { CustomItem, CustomNodeData } from './ExNode'
+import CustomNode, { CustomItem, CustomNodeData } from '../nodes/ExNode'
 import { calculateMiddleValue } from '@/utils/utilsArray'
-import Toolbar from './Toolbar'
-import './FlowDiagram.css'
+import Toolbar from '../tools/Toolbar'
+
 import { useNotification } from '@/hooks/useNotification'
 import useFirstRender from '@/hooks/useFirstRender'
 
@@ -59,7 +61,7 @@ export type FlowDiagramRef = {
 const NODE_WIDTH = 100
 const NODE_HEIGHT = 40
 const NODE_DISTANCE = {
-  horizontal: 20,
+  horizontal: 50,
   vertical: 50,
 }
 
@@ -98,8 +100,11 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
     ref,
   ) => {
     const { getZoom } = useReactFlow()
-    const [nodes, setNodes] = useState<ExtendedNode[]>(initNodeList)
-    const [edges, setEdges] = useState<Edge[]>(initEdgeList)
+    // const [nodes, setNodes] = useState<ExtendedNode[]>(initNodeList)
+    // const [edges, setEdges] = useState<Edge[]>(initEdgeList)
+
+    const [nodes, setNodes, onNodesChange] = useNodesState(initNodeList)
+    const [edges, setEdges, onEdgesChange] = useEdgesState(initEdgeList)
 
     const { showNotification } = useNotification()
     const isFirstRender = useFirstRender()
@@ -109,7 +114,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
     const updateInnerState = useCallback(() => {
       setNodes(initNodeList)
       setEdges(initEdgeList)
-    }, [initEdgeList, initNodeList])
+    }, [initEdgeList, initNodeList, setEdges, setNodes])
 
     // Unify the method entry.
     const updateNodeList = useCallback(
@@ -128,12 +133,31 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
       [onEdgeListChange, setEdges],
     )
 
+    useEffect(() => {
+      if (isFirstRender) return
+      onNodeListChange(() => nodes) // 传递最新的 `nodes` 到父组件
+    }, [isFirstRender, nodes, onNodeListChange])
+    useEffect(() => {
+      if (isFirstRender) return
+      onEdgeListChange(() => edges) // 传递最新的 `nodes` 到父组件
+    }, [edges, isFirstRender, onEdgeListChange])
+
+    // const handleNodesChange = (changes: NodeChange[]) => {
+    //   setNodes(prevNodes => {
+    //     const updatedNodes: ExtendedNode[] = applyNodeChanges(changes, prevNodes) as ExtendedNode[] // 确保返回正确类型
+    //     // onNodesUpdate(updatedNodes)
+    //     // onNodeListChange(() => updatedNodes)
+    //     return updatedNodes
+    //   })
+    // }
+
     const handleAddRootNode = useCallback(
       (rootName = 'root') => {
         if (nodes.length > 0) {
           showNotification('error', 'It is used to create root nodes.', 'message')
           return
         }
+
         // It  won't be used for now. It's only used for the root node.
         const DEFAULT_NODES = [
           {
@@ -156,6 +180,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
             children: [],
             width: NODE_WIDTH,
             height: NODE_HEIGHT,
+            resizable: true,
           },
         ]
         const nodesFn = (nds: ExtendedNode[]) => DEFAULT_NODES
@@ -198,26 +223,37 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
       updateNodeList(nodesFn)
     }, [updateNodeList])
 
-    const updateChildrenPos = (parentNode: ExtendedNode, children: ExtendedNode[], spacing: number = 100) => {
-      // 获取父节点的位置和数量
+    const updateChildrenPos = (parentNode: ExtendedNode, children: ExtendedNode[]) => {
       const parentY = parentNode.position.y
+      const parentX = parentNode.position.x
+      const pW = parentNode.width || parentNode.measured?.width || NODE_WIDTH
+      const pH = parentNode.height || parentNode.measured?.height || NODE_HEIGHT
       const totalChildren = children.length
 
-      if (totalChildren === 0) return children // 如果没有子节点，直接返回原子节点数组
+      if (totalChildren === 0) return children // 没有子节点直接返回
 
-      // 计算起始位置，确保父节点位于中间
-      const startY = parentY - ((totalChildren - 1) * spacing) / 2
+      // 计算子节点总高度（所有子节点的高度之和 + 每个间隔的高度）
+      const totalChildrenHeight =
+        children.reduce((sum, child) => sum + (child.height || NODE_HEIGHT), 0) +
+        (totalChildren - 1) * NODE_DISTANCE.vertical
 
-      // 更新每个子节点的位置
-      const updatedChildren = children.map((child, index) => {
-        const newY = startY + index * spacing // 计算每个子节点的 Y 轴位置
-        return {
+      // 计算起始 Y 坐标，确保父节点居中
+      let currentY = parentY + pH / 2 - totalChildrenHeight / 2
+      const standardX = parentX + pW + NODE_DISTANCE.horizontal
+
+      // 逐个放置子节点
+      const updatedChildren = children.map(child => {
+        const childHeight = child.height || NODE_HEIGHT
+        const newChild = {
           ...child,
           position: {
             ...child.position,
-            y: newY, // 更新 Y 轴位置，保持 X 轴不变
+            x: standardX,
+            y: currentY + childHeight / 2, // 让子节点的中心对齐计算出的 `currentY`
           },
         }
+        currentY += childHeight + NODE_DISTANCE.vertical // 更新 `currentY`
+        return newChild
       })
 
       return updatedChildren
@@ -238,7 +274,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           if (newChildren.length === 0) return nds
 
           let newChildrenNodes = nds.filter(node => newChildren.includes(node.id))
-          newChildrenNodes = updateChildrenPos(parentNode, newChildrenNodes, NODE_DISTANCE.vertical)
+          newChildrenNodes = updateChildrenPos(parentNode, newChildrenNodes)
 
           const newChildrenNodesPosY = newChildrenNodes.map(item => item.position.y)
           const newChildrenNodesPosX = newChildrenNodes.map(item => item.position.x)
@@ -426,7 +462,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
     )
 
     const changeRect = useCallback(
-      (id: string, { width }: { width: number }) => {
+      (id: string, { width, height }: { width: number; height: number }) => {
         const nodesFn = (nds: ExtendedNode[]) => {
           return nds.map(n => {
             if (n.id === id) {
@@ -436,6 +472,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
                   ...n.data,
                 },
                 width,
+                height,
               }
             }
             return n
@@ -471,7 +508,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
 
           // 批量添加子节点，计算每个子节点的位置
           const newNodes = newNodeIds.map((newNodeId, index) => {
-            const pW = NODE_WIDTH
+            const pW = parentNode.width || NODE_WIDTH
             const newNodePostion = {
               x: parentNode.position.x + pW + NODE_DISTANCE.horizontal,
               y: nicePostionY + index * (NODE_HEIGHT + 10), // 每个新节点间隔10单位
@@ -515,6 +552,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
             data: {
               ...parentNode.data,
               rectRange,
+              childCount: newChildren.length,
             },
             children: newChildren,
           }
@@ -587,7 +625,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
            * 父节点存在，处理组内节点拖拽情况
            */
           if (parentNode) {
-            const pW = NODE_WIDTH
+            const pW = parentNode.width || NODE_WIDTH
             const standardX = parentNode.position.x + (pW + NODE_DISTANCE.horizontal)
             const minX = parentNode.position.x - NODE_DISTANCE.horizontal / 4
             const maxX = standardX + NODE_DISTANCE.horizontal / 4
@@ -792,13 +830,10 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
     )
 
     useEffect(() => {
-      console.log('Flow component Mounted/Updated', compId)
       if (!isFirstRender) {
         updateInnerState()
       }
-      return () => {
-        console.log('Fow component UnMounted', compId)
-      }
+      return () => {}
     }, [compId, isFirstRender, updateInnerState])
 
     useImperativeHandle(
@@ -821,7 +856,9 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
             onAddChild={(newNames: string[]) => addChildNode(props.id, newNames, getZoom)}
             onExpandToggle={() => toggleExpand(props.id)}
             onDelete={() => deleteNode(props.id)}
-            onChangeRect={({ width }: { width: number }) => changeRect(props.id, { width })}
+            onChangeRect={({ width, height }: { width: number; height: number }) =>
+              changeRect(props.id, { width, height })
+            }
             onChangeLabel={(value: string) => changeLabel(props.id, value)}
             onChangeNote={(value: string) => changeNote(props.id, value)}
             onResetPos={() => handleResetPos(props.id, getZoom)}
@@ -852,8 +889,11 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           edges={edges}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
-          onNodeDragStop={onNodeDragStop}
-          onNodeDrag={onNodeDrag}
+          // onNodesChange={onNodesChange}
+          // onEdgesChange={onEdgesChange}
+          // onNodeDragStop={onNodeDragStop}
+          // onNodeDrag={onNodeDrag}
+          onNodesChange={onNodesChange}
           // defaultEdgeOptions={defaultEdgeOptions}
           // connectionLineStyle={connectionLineStyle}
           // connectionLineType={ConnectionLineType.SimpleBezier}
@@ -864,7 +904,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
             <Background variant={bgVType} color={bgColor} size={bgSize / getZoom()} gap={bgGap / getZoom()} />
           )}
           {showMiniMap && <MiniMap />}
-          {showControls && <Controls showZoom={true} orientation="horizontal" aria-label="wxx" />}
+          {showControls && <Controls showZoom={true} orientation="horizontal" aria-label="wxx" />}、
         </ReactFlow>
       </div>
     )
