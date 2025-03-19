@@ -1,11 +1,11 @@
-import { DownOutlined, LeftOutlined } from '@ant-design/icons'
+import { DownOutlined } from '@ant-design/icons'
 import { Button, Dropdown, Form, FormInstance, Input, MenuProps, Tabs, TabsProps } from 'antd'
 import React, { FC, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import TabpanelLocal from './TabpanelLocal'
 import { TabItem } from './MindMapCanvasContainer'
 import TabpanelCloud from './TabpanelCloud'
 import { useNotification } from '@/hooks/useNotification'
+import { Save } from 'lucide-react'
 
 type StorageType = 'local' | 'cloud'
 
@@ -33,8 +33,6 @@ const SidebarDir: FC<{
   const cloudRef = useRef<TabpanelRef>(null)
 
   const { showConfirmModal } = useNotification()
-
-  const navigate = useNavigate()
 
   const onChange = (key: StorageType) => {
     setActiveTabsKey(key)
@@ -151,10 +149,9 @@ const SidebarDir: FC<{
   return (
     <div className="p-2">
       <div className="flex flex-row justify-between items-center">
-        <Button icon={<LeftOutlined />} type="text" onClick={() => navigate(-1)}></Button>
         <Dropdown menu={{ items: memuItems }} trigger={['click']}>
-          <Button loading={isSaving} icon={<DownOutlined />} iconPosition="end">
-            Save
+          <Button type="text" color="primary" loading={isSaving} icon={<DownOutlined />} iconPosition="end">
+            save <Save size={18} />
           </Button>
         </Dropdown>
       </div>

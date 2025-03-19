@@ -7,7 +7,7 @@ const MindMapNav: React.FC = () => {
   const navigate = useNavigate()
   return (
     <div style={{ height: 'calc(100vh - 60px)' }}>
-      <Button onClick={() => navigate('/tool/mindmap')}>Go MindMap Page</Button>
+      <Button onClick={() => navigate('/tool/mindmap/cloud')}>Go MindMap Page</Button>
     </div>
   )
 }
