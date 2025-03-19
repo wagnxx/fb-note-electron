@@ -1,5 +1,5 @@
 import { Button, Dropdown, Input, Row, Space, Splitter } from 'antd'
-import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { JsonItem, WordType } from '../Dict'
 import SelectableList from '@/components/list/SelectableList'
 import WordsDashboardHeader from './WordsDashboardHeader'
@@ -12,6 +12,7 @@ import { useNotification } from '@/hooks/useNotification'
 import { DownOutlined } from '@ant-design/icons'
 import { CloudMindFile } from '@/pages/mindmap/components/TabpanelCloud'
 import { useAuth } from '@/context/AuthContext'
+import WordRootJsonMenu from './WordRootJsonMenu'
 
 type FlowData = TabItem
 type WordTypeWithCheck = WordType & {
@@ -30,35 +31,25 @@ type BasicCloudFile = {
   order: number
 }
 
-const WordsDashboard: FC<{
-  rootItem: JsonItem
-  fileOlder: number
-}> = ({ rootItem, fileOlder }) => {
+const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
+
+const WordsDashboard = () => {
+  const [rootItem, setrootItem] = useState<JsonItem | null>(null)
+  const [fileOlder, setFileOlder] = useState(0)
+
   const [keywords, setKeywords] = useState('')
   // const [selections, setSelections] = useState<SelectableWordType[]>([])
   const [pendingWords, setPendingWords] = useState<SelectableWordType[]>([])
-  const [initialFlowData, setInitialFlowData] = useState<FlowData>({
-    key: rootItem.name,
-    name: rootItem.name,
-    nodes: [],
-    edges: [],
-  })
-  const [flowData, setFlowData] = useState<FlowData>({
-    key: rootItem.name,
-    name: rootItem.name,
-    nodes: [],
-    edges: [],
-  })
+  const [initialFlowData, setInitialFlowData] = useState<FlowData | null>(null)
+  const [flowData, setFlowData] = useState<FlowData | null>(null)
   const [selectedTag, setSelectedTag] = useState<SelectableWordType[]>([])
   const [tarNodeId, settarNodeId] = useState('')
   const [loading, setLoading] = useState(false)
   const [isShowMeaning, setIsShowMeaning] = useState(true)
-  const [dataSource, setDataSource] = useState<WordTypeWithCheck[]>(
-    rootItem.group.map(item => ({ ...item, checked: false })) || [],
-  )
+  const [dataSource, setDataSource] = useState<WordTypeWithCheck[]>([])
   const [fileInfo, setfileInfo] = useState<BasicCloudFile>({
     id: '',
-    name: rootItem.name,
+    name: '',
     order: 0,
   })
 
@@ -68,15 +59,41 @@ const WordsDashboard: FC<{
 
   const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
 
+  const handleFetchDictItem = async (opions: { key: string }) => {
+    try {
+      const { key } = opions
+      ipcRenderer.invoke(IPC_ACTIONS.READ_STREAM, encodeURIComponent(key)).then((res: any) => {
+        const decoder = new TextDecoder('utf-8')
+        const jsonString = decoder.decode(res)
+        const jsonData = JSON.parse(jsonString)
+        const tabItemsData = jsonData[0]
+        setrootItem(tabItemsData)
+        setDataSource(tabItemsData.group.map((item: WordTypeWithCheck) => ({ ...item, checked: false })) || [])
+        setfileInfo(pre => ({ ...pre, name: tabItemsData.name }))
+
+        const reg = /\/(\d+)\..+$/
+        const match = key.match(reg)
+        if (match) {
+          setFileOlder(Number(match[1]))
+        } else {
+          setFileOlder(0)
+          console.log('No match found')
+        }
+      })
+    } catch (error) {
+      console.log('invoke handleFetchDictItem error: ', error)
+    }
+  }
+
   const listData: SelectableWordType[] = useMemo(() => {
     const data = dataSource.filter(item => item.name.includes(keywords)) || []
     return data.map(item => ({
       ...item,
       id: item.name,
-      disabled: flowData.nodes.some(n => n.data.label === item.name),
+      disabled: (flowData?.nodes || []).some(n => n.data.label === item.name),
       checked: item.checked,
     }))
-  }, [dataSource, flowData.nodes, keywords])
+  }, [dataSource, flowData, keywords])
 
   const selections = useMemo(() => {
     return listData.filter(item => item.checked)
@@ -84,6 +101,8 @@ const WordsDashboard: FC<{
 
   const getFlowDataByName = useCallback(
     async (filename: string) => {
+      if (!rootItem?.name) return
+
       setLoading(true)
       const data = await getMindFile({ field: 'name', operator: '==', value: filename })
       setLoading(false)
@@ -95,6 +114,7 @@ const WordsDashboard: FC<{
       }
       if (data.length === 0) {
         setInitialFlowData(defaultData)
+        setFlowData(defaultData)
         setfileInfo(pre => ({
           ...pre,
           id: '',
@@ -105,6 +125,7 @@ const WordsDashboard: FC<{
       if (data.length > 1) {
         showNotification('error', `There are multiple ${filename} files, please check them.`, 'message')
         setInitialFlowData(defaultData)
+        setFlowData(defaultData)
         setfileInfo(pre => ({
           ...pre,
           id: '',
@@ -113,6 +134,7 @@ const WordsDashboard: FC<{
         return
       }
       setInitialFlowData(data[0].data[0])
+      setFlowData(data[0].data[0])
 
       setfileInfo(pre => ({
         ...pre,
@@ -122,7 +144,7 @@ const WordsDashboard: FC<{
 
       console.log('getMindFile Data : ', data)
     },
-    [rootItem.name, showNotification],
+    [rootItem, showNotification],
   )
 
   const handleSyncNo = async () => {
@@ -143,7 +165,7 @@ const WordsDashboard: FC<{
   }
 
   const handleSaveMindFile = async (): Promise<boolean> => {
-    if (!rootItem.name || !flowData.nodes.length || !flowData.edges.length) return false
+    if (!rootItem?.name || !flowData?.nodes.length || !flowData.edges.length) return false
     const confirmed = await showConfirmationDialog({
       content: 'Are you sure you want to save the FlowData to the cloud end',
     })
@@ -220,16 +242,16 @@ const WordsDashboard: FC<{
     )
   }
 
-  // const handleListSelecte = (selectedItems: SelectableWordType[]) => {
-  //   setSelections(selectedItems)
-  // }
-
   const getSelectableForFlowItem = useCallback(
     () => pendingWords.filter(word => !word.disabled).map(word => ({ label: word.name, value: word.name })),
     [pendingWords],
   )
 
   const handleCreateRootNode = () => {
+    if (!rootItem?.name) {
+      showNotification('error', '"rootItem.name does not exist, please check it."', 'message')
+      return
+    }
     flowRef.current?.handleAddRootNode(rootItem.name)
   }
   const handleCreateFreeNode = () => {
@@ -245,23 +267,45 @@ const WordsDashboard: FC<{
     )
   }
 
-  // onNodeListChange={listFn => setFlowData(pre => ({ ...pre, nodes: listFn(pre.nodes) }))}
-  // onEdgeListChange={listFn => setFlowData(pre => ({ ...pre, edges: listFn(pre.edges) }))}
+  const updateNodes = useCallback(
+    (fn: (data: ExtendedNode[]) => ExtendedNode[]) => {
+      if (!initialFlowData?.name) return
 
-  // 修正后的函数（修复拼写错误并强化类型安全
+      setFlowData(pre => {
+        if (!pre) {
+          throw new Error('flowData is null, cannot update nodes.')
+        }
 
-  const updateNodes = useCallback((fn: (data: ExtendedNode[]) => ExtendedNode[]) => {
-    setFlowData(pre => ({ ...pre, nodes: fn(pre.nodes) }))
-  }, [])
+        return {
+          ...pre,
+          nodes: fn(pre.nodes),
+        }
+      })
+    },
+    [initialFlowData?.name],
+  )
 
-  const updateEdges = useCallback((fn: (data: Edge[]) => Edge[]) => {
-    setFlowData(pre => ({ ...pre, edges: fn(pre.edges) }))
-  }, [])
+  const updateEdges = useCallback(
+    (fn: (data: Edge[]) => Edge[]) => {
+      if (!initialFlowData?.name) return
+      setFlowData(pre => {
+        if (!pre) {
+          throw new Error('flowData is null, cannot update nodes.')
+        }
+
+        return {
+          ...pre,
+          edges: fn(pre.edges),
+        }
+      })
+    },
+    [initialFlowData?.name],
+  )
 
   useEffect(() => {
-    if (!rootItem.name || !isAuthenticated) return
+    if (!rootItem?.name || !isAuthenticated) return
     getFlowDataByName(rootItem.name)
-  }, [getFlowDataByName, isAuthenticated, rootItem.name])
+  }, [getFlowDataByName, isAuthenticated, rootItem])
 
   const actionMenuItems = [
     {
@@ -325,10 +369,13 @@ const WordsDashboard: FC<{
           defaultSize="24%"
           min="10%"
           max="40%"
-          style={{ padding: '12px', paddingTop: '40px', height: 'calc(100vh - 28px)', boxSizing: 'border-box' }}
+          style={{ padding: '12px', height: 'calc(100vh - 28px)', boxSizing: 'border-box' }}
         >
-          <div className="flex flex-col " style={{ height: '200px' }}>
-            <div className="flex-1" style={{ overflow: 'auto' }}>
+          <div className="flex flex-col relative " style={{ height: '250px' }}>
+            <div className=" absolute z-50" style={{ height: '50px', top: 0 }}>
+              <WordRootJsonMenu onItemClick={handleFetchDictItem} rootLabel="Choose WordRoot Json File" />
+            </div>
+            <div className="flex-1 " style={{ overflow: 'auto', paddingTop: '50px' }}>
               <WordsDashboardHeader rootItem={rootItem} />
             </div>
             {rootItem && (
@@ -410,7 +457,7 @@ const WordsDashboard: FC<{
               </Space>
             </div>
           </div>
-          {initialFlowData.key && !loading && (
+          {initialFlowData?.key && !loading && (
             <div className=" flex-1 flex ">
               <FlowDiagram
                 ref={flowRef}
