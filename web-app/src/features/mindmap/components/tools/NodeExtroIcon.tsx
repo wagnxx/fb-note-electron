@@ -1,6 +1,6 @@
 import React, { FC, HTMLAttributes } from 'react'
 
-type PositionType = 'left' | 'right' | 'top' | 'bottom'
+type PositionType = 'left' | 'right' | 'top' | 'bottom' | 'top-right'
 type NodeExtroIconProps = {
   position?: PositionType
 } & HTMLAttributes<HTMLDivElement> // 继承 div 的原生属性
@@ -26,6 +26,11 @@ const NodeExtroIcon: FC<NodeExtroIconProps> = ({ position = 'right', children, .
       left: '50%',
       bottom: '50%',
       transform: ' translateX(-50%)',
+    },
+    'top-right': {
+      right: '0%',
+      top: '0%',
+      transform: 'translate(50%, -50%)',
     },
   }
   return (

@@ -71,7 +71,7 @@ const MindMapPage: React.FC = () => {
           <SidebarDir getCanvasData={getCanvasData} resetCanvasData={resetCanvasData} />
         </Splitter.Panel>
         <Splitter.Panel>
-          <div className="p-1  h-full">
+          <div className="  px-1 pt-1  h-full">
             <div className="flex  h-full bg-white">
               <MindMapCanvasContainer ref={mindRef} />
             </div>

@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react'
+import React, { useCallback, useEffect, useMemo, forwardRef, useImperativeHandle, useState } from 'react'
 import {
   ReactFlow,
   addEdge,
   MiniMap,
-  Controls,
   Node,
   Edge,
   Connection,
@@ -12,6 +11,7 @@ import {
   Background,
   useNodesState,
   useEdgesState,
+  OnSelectionChangeParams,
 } from '@xyflow/react'
 // 引入 uuid 库
 import { v4 as uuidv4 } from 'uuid'
@@ -23,6 +23,8 @@ import Toolbar from '../tools/Toolbar'
 
 import { useNotification } from '@/hooks/useNotification'
 import useFirstRender from '@/hooks/useFirstRender'
+import { ZoomSlider } from '@/components/lib/components/zoom-slider'
+import '@xyflow/react/dist/style.css' // 关键修复点
 
 export interface ExtendedNode extends Node<CustomNodeData> {
   isHidden?: boolean
@@ -62,7 +64,7 @@ const NODE_WIDTH = 100
 const NODE_HEIGHT = 40
 const NODE_DISTANCE = {
   horizontal: 50,
-  vertical: 50,
+  vertical: 20,
 }
 
 const nodeOrigin: [number, number] = [0.5, 1]
@@ -105,6 +107,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
 
     const [nodes, setNodes, onNodesChange] = useNodesState(initNodeList)
     const [edges, setEdges, onEdgesChange] = useEdgesState(initEdgeList)
+    const [selectedNodes, setSelectedNodes] = useState<ExtendedNode[]>([])
 
     const { showNotification } = useNotification()
     const isFirstRender = useFirstRender()
@@ -433,7 +436,14 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
       (id: string) => {
         const nodesFn = (nds: ExtendedNode[]) => {
           const parentNode = nds.find(n => n.children?.includes(id))
-          if (!parentNode) return nds // 如果没有找到父节点，直接返回
+          if (!parentNode) {
+            const currentNode = nds.find(item => item.id === id)
+            if (currentNode?.data.isRoot) {
+              showNotification('error', 'The root node cannot be removed.', 'message')
+              return nds
+            }
+            return nds.filter(nd => nd.id !== id)
+          }
 
           const updateParentNode: ExtendedNode = {
             ...parentNode,
@@ -603,6 +613,16 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
       },
       [updateEdgeList],
     )
+    const isColliding = (pos: { x: number; y: number }, target: ExtendedNode) => {
+      return !(
+        (
+          pos.x + 100 < target.position.x || // 右侧未接触
+          pos.x > target.position.x + (target.width || 100) || // 左侧未接触
+          pos.y + 50 < target.position.y || // 下侧未接触
+          pos.y > target.position.y + (target.height || 50)
+        ) // 上侧未接触
+      )
+    }
     const onNodeDragStop = useCallback(
       (event: React.MouseEvent, node: ExtendedNode) => {
         const zoom = getZoom()
@@ -610,6 +630,19 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
         const nodesFn = (nds: ExtendedNode[]) => {
           const currentNode = nds.find(n => n.id === node.id)
           if (!currentNode) return nds
+
+          // if (selectedNodes.length) {
+          //   const panrentNode = nds.find(target => {
+          //     if (selectedNodes.some(n => n.id === target.id)) return false // 排除自己
+          //     return isColliding(node.position, target)
+          //   })
+
+          //   if (panrentNode) {
+          //     console.log(`框选的节点拖拽到了 ${panrentNode.id}`)
+          //     // handleDropOnTarget(targetNode, selectedNodes)
+          //   }
+          //   return nds
+          // }
 
           const newPosition = {
             x: node.position.x,
@@ -688,10 +721,11 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
             })
           }
           /**
-       * 
-      // 游离节点的操作，寻找是否有匹配的父节点
-       * 
-       */
+           *
+           * 游离节点的操作，寻找是否有匹配的父节点
+           * 此处考虑选择多个节点操作
+           *
+           */
           const newParentNode = nds.find(n => {
             const pW = NODE_WIDTH
             const minX = n.position.x
@@ -709,7 +743,8 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           })
 
           if (newParentNode) {
-            const newChildren = [...(newParentNode.children || []), node.id]
+            const movedIds = selectedNodes.length > 1 ? selectedNodes.map(item => item.id) : [node.id]
+            const newChildren = [...(newParentNode.children || []), ...movedIds]
 
             const updatedNodes = nds.map(n =>
               n.id === newParentNode.id
@@ -721,18 +756,25 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
                 : n,
             )
 
-            const newEdge: Edge = {
-              id: `${newParentNode.id}-${node.id}`, // Create a unique edge ID
+            // const newEdge: Edge = {
+            //   id: `${newParentNode.id}-${node.id}`, // Create a unique edge ID
+            //   source: newParentNode.id,
+            //   target: node.id,
+            // }
+            const newEdgs: Edge[] = movedIds.map(mId => ({
+              id: `${newParentNode.id}-${mId}`, // Create a unique edge ID
               source: newParentNode.id,
-              target: node.id,
-            }
+              target: mId,
+            }))
 
             // Check if the edge already exists before adding
             const edsFn = (eds: Edge[]) => {
-              if (!eds.some(edge => edge.id === newEdge.id)) {
-                return [...eds, newEdge]
-              }
-              return eds // Prevent adding duplicate edges
+              const filterdEdgs = newEdgs.filter(item => !eds.some(old => old.id === item.id))
+              // if (!eds.some(edge => edge.id === newEdge.id)) {
+              //   return [...eds, ...newEdgs]
+              // }
+              // return eds // Prevent adding duplicate edges
+              return [...eds, ...filterdEdgs]
             }
             updateEdgeList(edsFn)
             const pW = NODE_WIDTH
@@ -742,7 +784,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
             }
             const offsetX = curNodeFixedPosition.x - newPosition.x
             return updatedNodes.map(n => {
-              if (n.id === node.id) {
+              if (movedIds.some(mId => mId === n.id)) {
                 return {
                   ...n,
                   position: curNodeFixedPosition,
@@ -782,7 +824,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
         }
         updateNodeList(nodesFn)
       },
-      [getGroupNodeIds, getZoom, updateEdgeList, updateNodeList],
+      [getGroupNodeIds, getZoom, selectedNodes, updateEdgeList, updateNodeList],
     )
 
     const onNodeDrag = useCallback(
@@ -828,6 +870,10 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
       },
       [getGroupNodeIds, getZoom, updateNodeList],
     )
+
+    const handleSelectionChange = (selection: OnSelectionChangeParams<ExtendedNode, Edge>) => {
+      setSelectedNodes(selection.nodes)
+    }
 
     useEffect(() => {
       if (!isFirstRender) {
@@ -891,20 +937,26 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
           nodeTypes={nodeTypes}
           // onNodesChange={onNodesChange}
           // onEdgesChange={onEdgesChange}
-          // onNodeDragStop={onNodeDragStop}
-          // onNodeDrag={onNodeDrag}
+          onNodeDragStop={onNodeDragStop}
+          onNodeDrag={onNodeDrag}
           onNodesChange={onNodesChange}
           // defaultEdgeOptions={defaultEdgeOptions}
           // connectionLineStyle={connectionLineStyle}
           // connectionLineType={ConnectionLineType.SimpleBezier}
           fitView
+          proOptions={{
+            hideAttribution: true,
+          }}
+          // selectionMode="partial" // 允许部分框选
+          selectionOnDrag
+          multiSelectionKeyCode="Shift" // 允许 Shift + 点击多选
+          onSelectionChange={handleSelectionChange}
         >
-          {' '}
           {showBackground && (
             <Background variant={bgVType} color={bgColor} size={bgSize / getZoom()} gap={bgGap / getZoom()} />
           )}
           {showMiniMap && <MiniMap />}
-          {showControls && <Controls showZoom={true} orientation="horizontal" aria-label="wxx" />}、
+          {showControls && <ZoomSlider position="top-left" />}、
         </ReactFlow>
       </div>
     )

@@ -154,6 +154,7 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
           initNodeList={tab.nodes}
           initEdgeList={tab.edges}
           compId={tab.key}
+          showMiniMap={false}
           onNodeListChange={list => updateNodes(tab.key, list)}
           onEdgeListChange={list => updateEdges(tab.key, list)}
         />

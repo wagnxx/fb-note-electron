@@ -1,12 +1,12 @@
 import MultiSelectWithSelectAll from '@/components/select/MultiSelectWithSelectAll'
 import { useNotification } from '@/hooks/useNotification'
 import { copyText } from '@/utils/utilsClipboard'
-import { Badge, Form, FormInstance, Menu, MenuProps, Popover } from 'antd'
+import { Badge, Form, FormInstance, Menu, MenuProps, Popover, Space } from 'antd'
 import React, { useMemo, useRef, useState } from 'react'
 import { Handle, Node, NodeProps, NodeResizeControl, Position, ResizeParams } from '@xyflow/react'
 import { NodeHeader, NodeHeaderTitle, NodeHeaderActions } from '@/components/lib/components/node-header'
 import { BaseNode } from '@/components/lib/components/base-node'
-import { EllipsisOutlined, MinusCircleFilled } from '@ant-design/icons'
+import { EllipsisOutlined, MinusCircleFilled, PlusCircleTwoTone } from '@ant-design/icons'
 import { ResizeIcon } from '../tools/ResizeIcon'
 import NodeExtroIcon from '../tools/NodeExtroIcon'
 
@@ -125,11 +125,6 @@ const CustomNode: React.FC<CustomNodeProps> = ({
       // icon: <AppstoreOutlined />,
       children: [
         {
-          label: 'Note',
-          key: 'Note',
-          onClick: () => setIsNoteVisibility(!isNoteVisibility),
-        },
-        {
           label: 'Node',
           key: 'Node',
           onClick: () => onAddChild(['child']),
@@ -138,6 +133,11 @@ const CustomNode: React.FC<CustomNodeProps> = ({
           label: 'Fetch Select',
           key: 'Fetch Select',
           onClick: handleStartFetch,
+        },
+        {
+          label: 'Note Description',
+          key: 'Note',
+          onClick: () => setIsNoteVisibility(!isNoteVisibility),
         },
       ],
     },
@@ -196,6 +196,13 @@ const CustomNode: React.FC<CustomNodeProps> = ({
           )}
         </NodeExtroIcon>
       )}
+
+      <NodeExtroIcon position="top-right" className=" group">
+        <Space direction="vertical" className="hidden group-hover:block">
+          <PlusCircleTwoTone onClick={() => onAddChild(['child'])} />
+          <MinusCircleFilled onClick={onDelete} />
+        </Space>
+      </NodeExtroIcon>
 
       <div
         className={` border-t ${isNoteVisibility ? ' ' : 'hidden'}`}

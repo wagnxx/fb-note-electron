@@ -24,9 +24,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onOpen,
 }) => {
   const btns = [
-    { label: '添加子节点', handler: onAppendNode },
-    { label: '创建节点', handler: onCreateNode },
-    { label: '创建根节点', handler: onCreateRootNode },
+    { label: 'Append Node', handler: onAppendNode },
+    { label: 'Create Node', handler: onCreateNode },
+    { label: 'Create Root', handler: onCreateRootNode },
     { label: '删除节点', handler: onDelete },
     { label: ' 撤销', handler: onUndo },
     { label: ' 重做', handler: onRedo },
@@ -38,19 +38,23 @@ const Toolbar: React.FC<ToolbarProps> = ({
       style={{
         marginBottom: '10px',
         padding: '10px',
-        backgroundColor: '#f0f0f0',
-        borderRadius: '5px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-        position: 'fixed',
+        backgroundColor: 'rgb(238 242 255 / var(--tw-bg-opacity))',
+        borderRadius: '6px',
+        // boxShadow: '1px 1px 4px rgba(0, 0, 0, 0.4)',
+        position: 'absolute',
+        right: '12px',
+        top: '16px',
         zIndex: '99',
       }}
     >
       <Space>
-        {btns.map((btn, index) => (
-          <Button key={index} size="small" type="primary" disabled={!btn.handler} onClick={btn.handler}>
-            {btn.label}
-          </Button>
-        ))}
+        {btns
+          .filter(item => item.handler)
+          .map((btn, index) => (
+            <Button key={index} size="small" type="text" disabled={!btn.handler} onClick={btn.handler}>
+              {btn.label}
+            </Button>
+          ))}
       </Space>
     </div>
   )
