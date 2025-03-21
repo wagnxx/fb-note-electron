@@ -27,7 +27,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
     { label: 'Append Node', handler: onAppendNode },
     { label: 'Create Node', handler: onCreateNode },
     { label: 'Create Root', handler: onCreateRootNode },
-    { label: '删除节点', handler: onDelete },
+    { label: 'Delete', handler: onDelete },
     { label: ' 撤销', handler: onUndo },
     { label: ' 重做', handler: onRedo },
     { label: '保存', handler: onSave },

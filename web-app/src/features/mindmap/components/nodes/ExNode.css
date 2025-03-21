@@ -1,0 +1,3 @@
+.not-allow-drag {
+  pointer-events: none; /* 禁止拖拽 */
+}

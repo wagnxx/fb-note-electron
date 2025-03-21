@@ -2,14 +2,14 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 
 export const BaseNode = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & { selected?: boolean }>(
-  ({ className, selected, ...props }, ref) => (
+  ({ className, selected, draggable, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        'relative rounded-md border bg-card p-2 text-card-foreground',
+        'rounded-md border bg-card p-2 text-card-foreground',
         className,
-        selected ? 'border-muted-foreground shadow-lg' : '',
-        'hover:ring-1',
+        selected && draggable ? 'border-muted-foreground shadow-lg' : '',
+        draggable ? 'hover:ring-1' : 'cursor-not-allowed nodrap',
       )}
       tabIndex={0}
       {...props}

@@ -2,13 +2,16 @@ import MultiSelectWithSelectAll from '@/components/select/MultiSelectWithSelectA
 import { useNotification } from '@/hooks/useNotification'
 import { copyText } from '@/utils/utilsClipboard'
 import { Badge, Form, FormInstance, Menu, MenuProps, Popover, Space } from 'antd'
-import React, { useMemo, useRef, useState } from 'react'
-import { Handle, Node, NodeProps, NodeResizeControl, Position, ResizeParams } from '@xyflow/react'
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
+import { Handle, Node, NodeProps, NodeResizeControl, Position, ResizeParams, useReactFlow } from '@xyflow/react'
 import { NodeHeader, NodeHeaderTitle, NodeHeaderActions } from '@/components/lib/components/node-header'
 import { BaseNode } from '@/components/lib/components/base-node'
 import { EllipsisOutlined, MinusCircleFilled, PlusCircleTwoTone } from '@ant-design/icons'
-import { ResizeIcon } from '../tools/ResizeIcon'
 import NodeExtroIcon from '../tools/NodeExtroIcon'
+import { ResizeIcon } from '../tools/ResizeIcon'
+import { NotebookText } from 'lucide-react'
+import './ExNode.css'
+import { cn } from '@/lib/utils'
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -20,16 +23,9 @@ export interface CustomNodeData extends Record<string, unknown> {
   label: string
   note?: string
   isExpanded: boolean
-  isRoot?: boolean
   childCount?: number
-
-  // gorup rect range
-  rectRange?: {
-    left: number
-    right: number
-    top: number
-    bottom: number
-  }
+  outWidth?: number
+  outHeight?: number
 }
 // 方法类型
 export interface CustomNodeProps extends NodeProps<Node<CustomNodeData, string>> {
@@ -39,39 +35,76 @@ export interface CustomNodeProps extends NodeProps<Node<CustomNodeData, string>>
   maxHeight?: number
   getSelectableItems?: () => CustomItem[]
   onAddChild: (newNames: string[]) => void
-  onExpandToggle: () => void
+  onExpandToggle: (val?: boolean) => void
   onDelete: () => void
   onChangeLabel: (label: string) => void
   onChangeNote: (note: string) => void
   onResetPos: () => void
   onChangeRect?: ({ width, height }: ResizeParams) => void
+  onFixedRect?: () => void
+  onFixedPostion?: (fixed: boolean) => void
 }
 
-const CustomNode: React.FC<CustomNodeProps> = ({
-  data,
-  id,
-  selected,
-  width: pWidth,
-  height: pHeight,
-  minWidth = 80,
-  maxWidth = 300,
-  minHeight = 50,
-  maxHeight = 200,
-  onChangeRect,
-  getSelectableItems,
-  onAddChild,
-  onExpandToggle,
-  onDelete,
-  onChangeLabel,
-  onResetPos,
-  onChangeNote,
-}) => {
-  const [isNoteVisibility, setIsNoteVisibility] = useState(false)
+const CustomNode: React.FC<CustomNodeProps> = props => {
+  const {
+    data,
+    id,
+    selected,
+    draggable,
+    width: pWidth,
+    height: pHeight,
+    minWidth = 80,
+    maxWidth = 300,
+    minHeight = 50,
+    maxHeight = 200,
+    onChangeRect,
+    onFixedRect,
+    onFixedPostion,
+    getSelectableItems,
+    onAddChild,
+    onExpandToggle,
+    onDelete,
+    onChangeLabel,
+    onResetPos,
+    onChangeNote,
+    ...rest
+  } = props
+
+  const [isNoteVisibility, setIsNoteVisibility] = useState(true)
   const [canEditLabel, setCanEditLabel] = useState(false)
   const inputLabel = useRef<HTMLInputElement>(null)
   const docTypeFormRef = useRef<FormInstance>(null)
+  const baseNodeRef = useRef<HTMLDivElement>(null)
 
   const { showConfirmModal, showNotification } = useNotification()
+
+  const { getZoom } = useReactFlow()
+
+  const updateNodeRect = useCallback(
+    (show: boolean) => {
+      const rect = baseNodeRef.current?.getBoundingClientRect()
+      const zoom = getZoom()
+      if (show && data.outWidth && data.outHeight) {
+        console.log('data width height out: ', { outerWidth: data.outWidth, outerHeight: data.outHeight })
+        onChangeRect?.({ width: data.outWidth, height: data.outHeight, x: 0, y: 0 })
+        return
+      }
+      if (!show && rect && rect.width && rect.height) {
+        console.log('chagne rect : ', rect)
+        onChangeRect?.({ width: rect.width / zoom, height: 50, x: rect.x, y: rect.y })
+      }
+    },
+    [data.outHeight, data.outWidth, getZoom, onChangeRect],
+  )
+
+  const toggleNoteVisibility = () => {
+    setIsNoteVisibility(pre => {
+      const result = !pre
+      requestAnimationFrame(() => updateNodeRect(result))
+
+      return result
+    })
+  }
 
   const options = useMemo(() => {
     if (getSelectableItems) {
@@ -152,6 +185,23 @@ const CustomNode: React.FC<CustomNodeProps> = ({
       disabled: true,
     },
     {
+      label: 'Fixed',
+      key: 'Fixed',
+      type: 'submenu',
+      children: [
+        {
+          label: 'Fixed Rect',
+          key: 'FixedRect',
+          onClick: onFixedRect,
+        },
+        {
+          label: 'Fixed Postion',
+          key: 'FixedPostion',
+          onClick: () => onFixedPostion?.(!draggable),
+        },
+      ],
+    },
+    {
       label: 'Copy Node ID',
       key: 'Copy_Node_ID',
       onClick: handleCopyNodeId,
@@ -163,8 +213,17 @@ const CustomNode: React.FC<CustomNodeProps> = ({
     },
   ]
 
+  const computedHeight = !isNoteVisibility ? 'auto' : `${pHeight}px`
+
   return (
-    <BaseNode selected={selected}>
+    <BaseNode
+      ref={baseNodeRef}
+      className={cn('relative flex flex-col nowheel')}
+      style={{ width: `${pWidth}px`, height: computedHeight }}
+      selected={selected}
+      draggable={draggable}
+      onPointerDown={e => e.stopPropagation()}
+    >
       <NodeHeader className="  ">
         <NodeHeaderTitle className=" flex-1">
           <input
@@ -177,6 +236,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
             defaultValue={data.label}
             // onChange={onChangeLabel}
             title={data.label}
+            placeholder="Node Name"
           />
         </NodeHeaderTitle>
         <NodeHeaderActions>
@@ -188,7 +248,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 
       {/* expanded/collapsed icon */}
       {(data?.childCount || 0) > 0 && (
-        <NodeExtroIcon className=" group" onClick={onExpandToggle}>
+        <NodeExtroIcon className=" group" onClick={() => onExpandToggle()}>
           {data.isExpanded ? (
             <MinusCircleFilled className="hidden group-hover:block" />
           ) : (
@@ -198,18 +258,20 @@ const CustomNode: React.FC<CustomNodeProps> = ({
       )}
 
       <NodeExtroIcon position="top-right" className=" group">
-        <Space direction="vertical" className="hidden group-hover:block">
+        <Space direction="vertical" className="hidden group-hover:block bg-white">
           <PlusCircleTwoTone onClick={() => onAddChild(['child'])} />
           <MinusCircleFilled onClick={onDelete} />
+          <NotebookText size={16} onClick={toggleNoteVisibility} />
         </Space>
       </NodeExtroIcon>
 
       <div
-        className={` border-t ${isNoteVisibility ? ' ' : 'hidden'}`}
-        style={{ minHeight: '50px', maxHeight: '200px' }}
+        className={`flex-1  flex border-t ${isNoteVisibility ? ' ' : 'hidden'}`}
+        style={{ overflow: 'auto' }}
+        onWheel={e => e.stopPropagation()}
       >
         <textarea
-          className=" w-full  outline-none bg-white resize-none"
+          className="w-full h-full outline-none  bg-gray-50 resize-none overflow-auto "
           style={{ fontSize: '10px' }}
           defaultValue={data.note}
           placeholder="Add Note"
@@ -217,7 +279,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
         />
       </div>
 
-      <div style={{ visibility: 'hidden' }}>
+      <div className="flex1" style={{ visibility: 'hidden' }}>
         <Handle type="target" position={Position.Left} />
         <Handle type="source" position={Position.Right} />
       </div>
@@ -230,10 +292,10 @@ const CustomNode: React.FC<CustomNodeProps> = ({
         maxWidth={maxWidth}
         maxHeight={maxHeight}
       >
-        {selected && <ResizeIcon />}
+        {selected && isNoteVisibility && <ResizeIcon />}
       </NodeResizeControl>
     </BaseNode>
   )
 }
 
-export default CustomNode
+export default memo(CustomNode)
