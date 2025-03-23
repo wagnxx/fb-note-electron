@@ -1,7 +1,7 @@
 // src/pages/MindMapPage.tsx
 import React, { useMemo, useRef, useState } from 'react'
 import { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
-import { Edge, ReactFlowProvider } from '@xyflow/react'
+import { Edge } from '@xyflow/react'
 import { Button, Splitter } from 'antd'
 import SidebarDir from './components/SidebarDir'
 import SideDrawer from './components/SideDrawer'
@@ -50,7 +50,7 @@ const MindMapPage: React.FC = () => {
   }
 
   return (
-    <ReactFlowProvider>
+    <>
       <Splitter style={{ height: 'calc(100vh - 30px)', boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)' }} onResize={() => {}}>
         <Splitter.Panel defaultSize={'40'} min={'40'} max={'40'} resizable={false}>
           <div className=" h-full flex  flex-col justify-between items-center">
@@ -80,7 +80,7 @@ const MindMapPage: React.FC = () => {
       </Splitter>
 
       <SideDrawer open={isDrawerVisible} onClose={() => setvIsDrawerVisible(false)} />
-    </ReactFlowProvider>
+    </>
   )
 }
 

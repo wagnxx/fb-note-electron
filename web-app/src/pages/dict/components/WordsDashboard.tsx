@@ -6,7 +6,8 @@ import WordsDashboardHeader from './WordsDashboardHeader'
 import WordProcessing from './WordProcessing'
 import { TabItem } from '@/pages/mindmap/components/MindMapCanvasContainer'
 import { Edge, ReactFlowProvider } from '@xyflow/react'
-import FlowDiagram, { ExtendedNode, FlowDiagramRef } from '@/features/mindmap/components/flows/Flow'
+import { ExtendedNode, FlowDiagramRef } from '@/features/mindmap/components/flows/Flow'
+import FlowWrapper from '@/features/mindmap/components/flows/FlowWrapper'
 import { createMindFile, getMindFile, saveMindFile } from '@/service/mind'
 import { useNotification } from '@/hooks/useNotification'
 import { DownOutlined } from '@ant-design/icons'
@@ -459,7 +460,7 @@ const WordsDashboard = () => {
           </div>
           {initialFlowData?.key && !loading && (
             <div className=" flex-1 flex ">
-              <FlowDiagram
+              <FlowWrapper
                 ref={flowRef}
                 bgColor="rgb(100 116 139)"
                 className="flex-1  w-full"

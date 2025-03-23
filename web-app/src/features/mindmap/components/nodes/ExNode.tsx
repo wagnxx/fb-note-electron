@@ -33,6 +33,7 @@ export interface CustomNodeProps extends NodeProps<Node<CustomNodeData, string>>
   maxWidth?: number
   minHeight?: number
   maxHeight?: number
+  readonly?: boolean
   getSelectableItems?: () => CustomItem[]
   onAddChild: (newNames: string[]) => void
   onExpandToggle: (val?: boolean) => void
@@ -51,11 +52,12 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
     id,
     selected,
     draggable,
+    readonly = false,
     width: pWidth,
     height: pHeight,
-    minWidth = 80,
-    maxWidth = 300,
+    minWidth = 100,
     minHeight = 50,
+    maxWidth = 300,
     maxHeight = 200,
     onChangeRect,
     onFixedRect,
@@ -184,6 +186,12 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
       key: 'Duplicate',
       disabled: true,
     },
+
+    {
+      label: 'Copy Node ID',
+      key: 'Copy_Node_ID',
+      onClick: handleCopyNodeId,
+    },
     {
       label: 'Fixed',
       key: 'Fixed',
@@ -199,17 +207,74 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
           key: 'FixedPostion',
           onClick: () => onFixedPostion?.(!draggable),
         },
+        {
+          label: "Fixed children's Rect",
+          key: 'FixedChildrenRect',
+          disabled: true,
+        },
+        {
+          label: "Fixed children's Postion",
+          key: 'FixedChildrenPostion',
+          disabled: true,
+        },
+        {
+          label: "Fixed deep children's Rect",
+          key: 'FixedDeepChildrenRect',
+          disabled: true,
+        },
+        {
+          label: "Fixed deep children's Postion",
+          key: 'FixedDeepChildrenPostion',
+          disabled: true,
+        },
       ],
     },
     {
-      label: 'Copy Node ID',
-      key: 'Copy_Node_ID',
-      onClick: handleCopyNodeId,
-    },
-    {
-      label: 'Reset Position',
-      key: 'Reset_Position',
-      onClick: onResetPos,
+      label: 'Reset',
+      key: 'Reset',
+      type: 'submenu',
+      children: [
+        {
+          label: 'Reset Children Postion',
+          key: 'Reset_Children_Postion',
+          onClick: onResetPos,
+        },
+        {
+          label: "Reset deep children's position",
+          key: 'Reset_deep_Children_Postion',
+          disabled: true,
+        },
+        {
+          label: 'Reset standard size',
+          key: 'Reset_standard_size',
+          disabled: true,
+        },
+        {
+          label: "Reset children's standard size",
+          key: 'Reset_children_standard_size',
+          disabled: true,
+        },
+        {
+          label: 'Reset standard width',
+          key: 'Reset_standard_width',
+          disabled: true,
+        },
+        {
+          label: 'Reset standard height',
+          key: 'Reset_standard_height',
+          disabled: true,
+        },
+        {
+          label: "Reset children's standard width",
+          key: 'Reset_children_standard_width',
+          disabled: true,
+        },
+        {
+          label: "Reset children's standard height",
+          key: 'Reset_children_standard_height',
+          disabled: true,
+        },
+      ],
     },
   ]
 
@@ -240,9 +305,11 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
           />
         </NodeHeaderTitle>
         <NodeHeaderActions>
-          <Popover content={<Menu mode="vertical" items={items} />}>
-            <EllipsisOutlined />
-          </Popover>
+          {!readonly && (
+            <Popover content={<Menu mode="vertical" items={items} />}>
+              <EllipsisOutlined />
+            </Popover>
+          )}
         </NodeHeaderActions>
       </NodeHeader>
 
@@ -271,9 +338,10 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
         onWheel={e => e.stopPropagation()}
       >
         <textarea
-          className="w-full h-full outline-none  bg-gray-50 resize-none overflow-auto "
+          className="w-full h-full outline-none  bg-slate-100 resize-none overflow-auto "
           style={{ fontSize: '10px' }}
           defaultValue={data.note}
+          readOnly={readonly}
           placeholder="Add Note"
           onBlur={e => handleTextareBlur(e)}
         />
@@ -292,7 +360,7 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
         maxWidth={maxWidth}
         maxHeight={maxHeight}
       >
-        {selected && isNoteVisibility && <ResizeIcon />}
+        {selected && <ResizeIcon />}
       </NodeResizeControl>
     </BaseNode>
   )

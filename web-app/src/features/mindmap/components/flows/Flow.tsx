@@ -34,7 +34,7 @@ export interface ExtendedNode extends Node<CustomNodeData> {
   children?: string[]
 }
 
-type Props = {
+export type FlowProps = {
   bgVType?: BackgroundVariant
   bgColor?: string
   bgGap?: number
@@ -50,6 +50,7 @@ type Props = {
   showMiniMap?: boolean
   showControls?: boolean
   showBackground?: boolean
+  readonly?: boolean
   onNodeListChange?: (fn: (data: ExtendedNode[]) => ExtendedNode[]) => void
   onEdgeListChange?: (fn: (data: Edge[]) => Edge[]) => void
   getSelectableItems?: () => CustomItem[] // 从父组件获取选择项的函数
@@ -64,26 +65,26 @@ export type FlowDiagramRef = {
 
 // default config
 const NODE_WIDTH = 140
-const NODE_HEIGHT = 60
+const NODE_HEIGHT = 80
 const NODE_DISTANCE = {
   horizontal: 50,
   vertical: 20,
 }
 
 const nodeOrigin: [number, number] = [0.5, 1]
-const connectionLineStyle = { stroke: '#F6AD55', strokeWidth: 2 }
+const connectionLineStyle = { stroke: '#F6AD55', strokeWidth: 3 }
 const defaultEdgeOptions = {
   style: connectionLineStyle,
   // type: 'mindmap', animated: true
-  type: 'bezier',
+  type: 'default',
   // animated: true,
   // markerEnd: {
-  //   type: MarkerType.Arrow,
+  //   type: MarkerType.ArrowClosed,
   //   color: 'green',
   // },
 }
 
-const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
+const Flow = forwardRef<FlowDiagramRef, FlowProps>(
   (
     {
       bgVType = BackgroundVariant.Dots,
@@ -98,6 +99,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
       showMiniMap = true,
       showControls = true,
       showBackground = true,
+      readonly = false,
       onNodeListChange = noop,
       onEdgeListChange = noop,
       getSelectableItems,
@@ -707,6 +709,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
     }
 
     useRegisterKeypressCtrol({
+      readonly,
       cmdAndCPressedFn,
       cmdAndVPressedFn,
       metaDeletePresseFn: batchDelete,
@@ -745,6 +748,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
         customNode: (props: any) => (
           <CustomNode
             {...props}
+            readonly={readonly}
             getSelectableItems={getSelectableItems}
             onAddChild={(newNames: string[]) => addChildNode(props.id, newNames, getZoom)}
             onExpandToggle={(val?: boolean) => toggleExpand(props.id, val)}
@@ -772,6 +776,7 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
       handleFixedPostion,
       handleFixedRect,
       handleResetPos,
+      readonly,
       toggleExpand,
     ])
 
@@ -817,4 +822,4 @@ const FlowDiagram = forwardRef<FlowDiagramRef, Props>(
   },
 )
 
-export default FlowDiagram
+export default Flow

@@ -1,6 +1,7 @@
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Tabs, Input } from 'antd'
-import FlowDiagram, { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
+import { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
+import FlowWrapper from '@/features/mindmap/components/flows/FlowWrapper'
 import { Edge } from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
 import './MindMapCanvasContainer.css'
@@ -148,7 +149,7 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
           <span onDoubleClick={() => handleDoubleClick(tab.key)}>{tab.name}</span>
         ),
       children: activeKey === tab.key && (
-        <FlowDiagram
+        <FlowWrapper
           bgColor="#aaa"
           className="flex-1 h-full w-full"
           initNodeList={tab.nodes}

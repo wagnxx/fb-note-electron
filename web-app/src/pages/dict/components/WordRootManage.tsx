@@ -17,6 +17,10 @@ import FormAddRoot from './FormAddRoot'
 import ScreenDocScanner from './ScreenDocScanner'
 import { shuffleColors } from '@/utils/utilsColor'
 import { FilterValue, SorterResult } from 'antd/es/table/interface'
+import { CloudMindFile } from '@/pages/mindmap/components/TabpanelCloud'
+import { getAllMindFiles } from '@/service/mind'
+import { Workflow } from 'lucide-react'
+import WordFlow from './WordFlow'
 
 // 词根类型定义
 export type WordRootType = {
@@ -29,7 +33,11 @@ export type WordRootType = {
   inJson: boolean
   isLinked: boolean
 }
-type TableRow = WordRootType & { isScreenDocUploaded?: boolean; screenDoc?: ScreenshotDocType[] }
+type TableRow = WordRootType & {
+  isScreenDocUploaded?: boolean
+  screenDoc?: ScreenshotDocType[]
+  flowDoc?: CloudMindFile
+}
 // 自定义可编辑列
 interface EditableColumnProps extends ColumnType<TableRow> {
   editable?: boolean
@@ -84,7 +92,9 @@ const WordRootManage: FC<{
 
   const [addRootModalVisible, setAddRootModalVisible] = useState(false)
   const [screenModalVisible, setScreenModalVisible] = useState(false)
+  const [flowModalVisible, setFlowModalVisible] = useState(false)
   const [currentScreenDoc, setCurrentScreenDoc] = useState<ScreenshotDocType | null>(null)
+  const [currentFlowDoc, setCurrentFlowDoc] = useState<CloudMindFile | null>(null)
 
   const { isAuthenticated } = useAuth()
 
@@ -135,6 +145,11 @@ const WordRootManage: FC<{
     if (!doc) return
     setCurrentScreenDoc(doc)
     setScreenModalVisible(true)
+  }
+  const handleScanFlowDoc = (doc?: CloudMindFile) => {
+    if (!doc) return
+    setCurrentFlowDoc(doc)
+    setFlowModalVisible(true)
   }
 
   const handleBatchEditKey = () => {
@@ -258,7 +273,7 @@ const WordRootManage: FC<{
       onFilter: (value, record) => (record.inJson || false) === value,
     },
     {
-      title: '文档&json是否已关联',
+      title: 'FLow&json是否已关联',
       dataIndex: 'isLinked',
       isBoolean: true,
       editable: true,
@@ -325,6 +340,27 @@ const WordRootManage: FC<{
       editable: false,
       width: 50,
       render: () => '-',
+    },
+    {
+      title: 'Flow',
+      dataIndex: 'flowDoc',
+      isBoolean: false,
+      editable: false,
+      width: 50,
+      render: (text, record) => {
+        return (
+          <div>
+            <Button
+              type="text"
+              size="small"
+              icon={<Workflow size={16} />}
+              style={{ color: record.flowDoc ? '#1890ff' : '' }}
+              disabled={!record.flowDoc}
+              onClick={() => handleScanFlowDoc(record.flowDoc)}
+            ></Button>
+          </div>
+        )
+      },
     },
     {
       title: '操作',
@@ -409,15 +445,22 @@ const WordRootManage: FC<{
         lastVisibleDocData: dataSource[dataSource.length - 1],
       }),
       getAllScreenshotDoc(),
+      getAllMindFiles(),
     ])
-      .then(([roots, screen]) => {
+      .then(([roots, screen, minds]) => {
         if (roots.data) {
           const data: TableRow[] = roots.data.map(item => {
             const combined = { ...item } as TableRow
+            // compose Screen doc
             const tarDocs = screen.filter(doc => hasCommonElements(item.root, doc.keyTerms || [], 2))
             if (tarDocs.length) {
               combined.isScreenDocUploaded = true
               combined.screenDoc = tarDocs.sort((a, b) => (a.order || 0) - (b.order || 0))
+            }
+            // compose flow
+            const tarMind = minds.find(mind => item.root.includes(mind.name))
+            if (tarMind) {
+              combined.flowDoc = tarMind
             }
             return combined
           })
@@ -730,6 +773,15 @@ const WordRootManage: FC<{
         onSubmit={val => console.log('submit ', val)}
         onClose={() => setScreenModalVisible(false)}
         Child={ScreenDocScanner}
+      />
+      <ModalForm
+        visible={flowModalVisible}
+        data={currentFlowDoc}
+        width={1000}
+        height={800}
+        onSubmit={val => console.log('submit ', val)}
+        onClose={() => setFlowModalVisible(false)}
+        Child={WordFlow}
       />
     </>
   )
