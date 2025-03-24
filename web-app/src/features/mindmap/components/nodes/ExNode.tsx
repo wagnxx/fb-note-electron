@@ -12,6 +12,7 @@ import { ResizeIcon } from '../tools/ResizeIcon'
 import { NotebookText } from 'lucide-react'
 import './ExNode.css'
 import { cn } from '@/lib/utils'
+import useFirstRender from '@/hooks/useFirstRender'
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -81,6 +82,7 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
   const { showConfirmModal, showNotification } = useNotification()
 
   const { getZoom } = useReactFlow()
+  const isFirstRender = useFirstRender()
 
   const updateNodeRect = useCallback(
     (show: boolean) => {
@@ -91,12 +93,12 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
         onChangeRect?.({ width: data.outWidth, height: data.outHeight, x: 0, y: 0 })
         return
       }
-      if (!show && rect && rect.width && rect.height) {
+      if (!isFirstRender && !show && rect && rect.width && rect.height) {
         console.log('chagne rect : ', rect)
         onChangeRect?.({ width: rect.width / zoom, height: 50, x: rect.x, y: rect.y })
       }
     },
-    [data.outHeight, data.outWidth, getZoom, onChangeRect],
+    [data.outHeight, data.outWidth, getZoom, isFirstRender, onChangeRect],
   )
 
   const toggleNoteVisibility = () => {
@@ -163,6 +165,11 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
           label: 'Node',
           key: 'Node',
           onClick: () => onAddChild(['child']),
+        },
+        {
+          label: 'Group node',
+          key: 'groupNode',
+          disabled: true,
         },
         {
           label: 'Fetch Select',

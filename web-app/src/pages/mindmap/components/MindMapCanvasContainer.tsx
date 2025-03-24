@@ -6,6 +6,8 @@ import { Edge } from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
 import './MindMapCanvasContainer.css'
 import { Action } from '@/utils/utilsAction'
+import { useSelector } from 'react-redux'
+import { selectGlobalSettings } from '@/features/mindmap/selectors'
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string
 
@@ -16,9 +18,13 @@ export type TabItem = {
   edges: Edge[] // 添加边数据
 }
 
+type Prop = {
+  setSelectedNode: React.Dispatch<React.SetStateAction<ExtendedNode | null>>
+}
+
 const initialItems: TabItem[] = []
 
-const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
+const MindMapCanvasContainer = forwardRef<MindMapRef, Prop>(({ setSelectedNode }, ref) => {
   const [activeKey, setActiveKey] = useState<string>()
   const [itemsInit, setItemsInit] = useState(initialItems)
   const [itemsSubmit, setItemsSubmit] = useState(initialItems)
@@ -26,6 +32,19 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
   const [newLabel, setNewLabel] = useState<string>('')
 
   const newTabIndex = useRef(0)
+
+  const globalSettings = useSelector(selectGlobalSettings)
+
+  const flowGlobalproperties = useMemo(() => {
+    const booleaned = globalSettings.filter(item => item.type === 'boolean')
+    return booleaned.reduce(
+      (pre, cur) => {
+        pre[cur.key] = cur.value as boolean
+        return pre
+      },
+      {} as Record<string, boolean>,
+    )
+  }, [globalSettings])
 
   useImperativeHandle(ref, () => {
     return {
@@ -155,31 +174,24 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
           initNodeList={tab.nodes}
           initEdgeList={tab.edges}
           compId={tab.key}
-          showMiniMap={false}
+          {...flowGlobalproperties}
+          onClickNode={setSelectedNode}
           onNodeListChange={list => updateNodes(tab.key, list)}
           onEdgeListChange={list => updateEdges(tab.key, list)}
         />
       ),
     }))
-  }, [activeKey, editKey, handleDoubleClick, itemsInit, newLabel, updateEdges, updateNodes])
-
-  // if (items.length === 0) {
-  //   return (
-  //     <div
-  //       style={{
-  //         width: '100%',
-  //         flex: 1,
-  //         display: 'flex',
-  //         justifyContent: 'center',
-  //         flexDirection: 'column',
-  //         // padding: '20px',
-  //         // textAlign: 'center',
-  //       }}
-  //     >
-  //       <Empty description="No selected" />
-  //     </div>
-  //   )
-  // }
+  }, [
+    activeKey,
+    editKey,
+    flowGlobalproperties,
+    handleDoubleClick,
+    itemsInit,
+    newLabel,
+    setSelectedNode,
+    updateEdges,
+    updateNodes,
+  ])
 
   return (
     <Tabs

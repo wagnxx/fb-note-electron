@@ -1,5 +1,5 @@
 // src/pages/MindMapPage.tsx
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
 import { Edge } from '@xyflow/react'
 import { Button, Splitter } from 'antd'
@@ -9,6 +9,7 @@ import MindMapCanvasContainer, { MindMapRef, TabItem } from './components/MindMa
 import { LeftOutlined, SettingFilled } from '@ant-design/icons'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import useFirstRender from '@/hooks/useFirstRender'
 
 export type SheetTag = {
   name: string
@@ -27,9 +28,11 @@ export type StoragedFile = {
 
 const MindMapPage: React.FC = () => {
   const [isSiderOpend, setIsSiderOpend] = useState(true)
-  // const [siderWidth, setSiderWidth] = useState(240)
   const [isDrawerVisible, setvIsDrawerVisible] = React.useState<boolean>(false)
+  const [selectedNode, setSelectedNode] = useState<ExtendedNode | null>(null)
+
   const mindRef = useRef<MindMapRef>(null)
+  const isFirstRender = useFirstRender()
 
   const navigate = useNavigate()
 
@@ -48,6 +51,11 @@ const MindMapPage: React.FC = () => {
   const handleToggleSiderOpen = () => {
     setIsSiderOpend(pre => !pre)
   }
+
+  useEffect(() => {
+    if (isFirstRender) return
+    setvIsDrawerVisible(!!selectedNode)
+  }, [isFirstRender, selectedNode])
 
   return (
     <>
@@ -73,13 +81,18 @@ const MindMapPage: React.FC = () => {
         <Splitter.Panel>
           <div className="  px-1 pt-1  h-full">
             <div className="flex  h-full bg-white">
-              <MindMapCanvasContainer ref={mindRef} />
+              <MindMapCanvasContainer ref={mindRef} setSelectedNode={setSelectedNode} />
             </div>
           </div>
         </Splitter.Panel>
       </Splitter>
 
-      <SideDrawer open={isDrawerVisible} onClose={() => setvIsDrawerVisible(false)} />
+      <SideDrawer
+        open={isDrawerVisible}
+        onClose={() => setvIsDrawerVisible(false)}
+        selectedNode={selectedNode}
+        setSelectedNode={setSelectedNode}
+      />
     </>
   )
 }

@@ -54,6 +54,7 @@ export type FlowProps = {
   onNodeListChange?: (fn: (data: ExtendedNode[]) => ExtendedNode[]) => void
   onEdgeListChange?: (fn: (data: Edge[]) => Edge[]) => void
   getSelectableItems?: () => CustomItem[] // 从父组件获取选择项的函数
+  onClickNode?: (data: ExtendedNode | null) => void
 }
 
 export type FlowDiagramRef = {
@@ -71,17 +72,11 @@ const NODE_DISTANCE = {
   vertical: 20,
 }
 
-const nodeOrigin: [number, number] = [0.5, 1]
 const connectionLineStyle = { stroke: '#F6AD55', strokeWidth: 3 }
 const defaultEdgeOptions = {
   style: connectionLineStyle,
-  // type: 'mindmap', animated: true
+  // animated: true
   type: 'default',
-  // animated: true,
-  // markerEnd: {
-  //   type: MarkerType.ArrowClosed,
-  //   color: 'green',
-  // },
 }
 
 const Flow = forwardRef<FlowDiagramRef, FlowProps>(
@@ -102,6 +97,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       readonly = false,
       onNodeListChange = noop,
       onEdgeListChange = noop,
+      onClickNode = noop,
       getSelectableItems,
     },
     ref,
@@ -810,6 +806,8 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
           selectionOnDrag
           multiSelectionKeyCode="Shift" // 允许 Shift + 点击多选
           onSelectionChange={handleSelectionChange}
+          onNodeClick={(e, node) => onClickNode(node)}
+          onPaneClick={() => onClickNode(null)}
         >
           {showBackground && (
             <Background variant={bgVType} color={bgColor} size={bgSize / getZoom()} gap={bgGap / getZoom()} />
