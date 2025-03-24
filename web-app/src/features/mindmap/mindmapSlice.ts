@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { ExtendedNode } from './components/flows/Flow'
+import { TopicTheme } from '@/pages/mindmap/components/SideDrawer'
 
 // 定义支持的属性类型
 type PropertyType = 'string' | 'number' | 'boolean' | 'object' | 'array'
@@ -30,14 +31,51 @@ const GLOBAL_PROPERTIES: StrictGlobalProperties = [
 
 // **Redux State**
 interface MindmapState {
+  currentNoteTheme: TopicTheme | null
   globalSettings: StrictGlobalProperties
-  selectedNode: ExtendedNode | null
+  currentNode: ExtendedNode | null
+  currentNodeId: string | null
+  topicThemes: TopicTheme[]
 }
-
+export const DefaultTopic: TopicTheme = {
+  key: 'defaul',
+  name: 'default',
+  label: 'Default',
+  style: { background: '#fff', color: '#000000' },
+}
 // **初始 State**
 const initialState: MindmapState = {
   globalSettings: GLOBAL_PROPERTIES,
-  selectedNode: null,
+  currentNode: null,
+  currentNodeId: null,
+  currentNoteTheme: DefaultTopic,
+  topicThemes: [
+    {
+      key: 1,
+      name: 'veryImportant',
+      label: 'Very Important',
+      style: { background: '#6A1F87', color: '#FFFFFF' },
+    },
+    {
+      key: 2,
+      name: 'important',
+      label: 'Important',
+      style: { background: '#861F56', color: '#FFFFFF' },
+    },
+    {
+      key: 3,
+      name: 'crossout',
+      label: 'Cross out',
+      style: { background: '#FFFFFF', color: '#000000', textDecorationLine: 'line-through' },
+    },
+    {
+      key: 4,
+      name: 'default',
+      label: 'Default',
+      style: { background: '#FFC947', color: '#000000' },
+    },
+    DefaultTopic,
+  ],
 }
 
 // **定义 Action 类型**
@@ -68,11 +106,17 @@ const mindmapSlice = createSlice({
       }
     },
     setSelectedNode: (state, action: PayloadAction<ExtendedNode | null>) => {
-      state.selectedNode = action.payload
+      state.currentNode = action.payload
+    },
+    setSelectedNodeId: (state, action: PayloadAction<string | null>) => {
+      state.currentNodeId = action.payload
+    },
+    setSelectedNoteTheme: (state, action: PayloadAction<TopicTheme>) => {
+      state.currentNoteTheme = action.payload
     },
   },
 })
 
 // **导出 Redux actions 和 reducer**
-export const { updateGlobalSettings, setSelectedNode } = mindmapSlice.actions
+export const { updateGlobalSettings, setSelectedNode, setSelectedNoteTheme, setSelectedNodeId } = mindmapSlice.actions
 export default mindmapSlice.reducer

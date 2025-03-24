@@ -6,8 +6,10 @@ import { Edge } from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
 import './MindMapCanvasContainer.css'
 import { Action } from '@/utils/utilsAction'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectGlobalSettings } from '@/features/mindmap/selectors'
+import { RootState } from '@/store/store'
+import { DefaultTopic, setSelectedNodeId, setSelectedNoteTheme } from '@/features/mindmap/mindmapSlice'
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string
 
@@ -18,13 +20,9 @@ export type TabItem = {
   edges: Edge[] // 添加边数据
 }
 
-type Prop = {
-  setSelectedNode: React.Dispatch<React.SetStateAction<ExtendedNode | null>>
-}
-
 const initialItems: TabItem[] = []
 
-const MindMapCanvasContainer = forwardRef<MindMapRef, Prop>(({ setSelectedNode }, ref) => {
+const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
   const [activeKey, setActiveKey] = useState<string>()
   const [itemsInit, setItemsInit] = useState(initialItems)
   const [itemsSubmit, setItemsSubmit] = useState(initialItems)
@@ -32,7 +30,9 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, Prop>(({ setSelectedNode }
   const [newLabel, setNewLabel] = useState<string>('')
 
   const newTabIndex = useRef(0)
+  const currentNoteTheme = useSelector((state: RootState) => state.mindmap.currentNoteTheme)
 
+  const dispatch = useDispatch()
   const globalSettings = useSelector(selectGlobalSettings)
 
   const flowGlobalproperties = useMemo(() => {
@@ -55,6 +55,19 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, Prop>(({ setSelectedNode }
     }
   }, [itemsSubmit])
 
+  const handleClickNode = useCallback(
+    (val: ExtendedNode | null) => {
+      if (!val) {
+        dispatch(setSelectedNodeId(null))
+        // dispatch(setSelectedNoteTheme(DefaultTopic))
+      } else {
+        dispatch(setSelectedNodeId(val.id))
+      }
+      dispatch(setSelectedNoteTheme(val?.data.topicTheme || DefaultTopic))
+    },
+    [dispatch],
+  )
+
   const resetItems = (data: TabItem[]) => {
     const action = Action.getInstance()
 
@@ -74,6 +87,7 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, Prop>(({ setSelectedNode }
 
   const onChange = (newActiveKey: string) => {
     setActiveKey(newActiveKey)
+    handleClickNode(null)
   }
 
   const add = () => {
@@ -174,8 +188,9 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, Prop>(({ setSelectedNode }
           initNodeList={tab.nodes}
           initEdgeList={tab.edges}
           compId={tab.key}
+          topicTheme={currentNoteTheme}
           {...flowGlobalproperties}
-          onClickNode={setSelectedNode}
+          onClickNode={(val: ExtendedNode | null) => handleClickNode(val)}
           onNodeListChange={list => updateNodes(tab.key, list)}
           onEdgeListChange={list => updateEdges(tab.key, list)}
         />
@@ -185,10 +200,11 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, Prop>(({ setSelectedNode }
     activeKey,
     editKey,
     flowGlobalproperties,
+    handleClickNode,
     handleDoubleClick,
     itemsInit,
     newLabel,
-    setSelectedNode,
+    currentNoteTheme,
     updateEdges,
     updateNodes,
   ])

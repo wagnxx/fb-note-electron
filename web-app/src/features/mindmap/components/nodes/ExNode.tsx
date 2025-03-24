@@ -13,6 +13,9 @@ import { NotebookText } from 'lucide-react'
 import './ExNode.css'
 import { cn } from '@/lib/utils'
 import useFirstRender from '@/hooks/useFirstRender'
+import { TopicTheme } from '@/pages/mindmap/components/SideDrawer'
+import { DefaultTopic } from '../../mindmapSlice'
+import { darkenColor } from '@/utils/utilsColor'
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -27,6 +30,7 @@ export interface CustomNodeData extends Record<string, unknown> {
   childCount?: number
   outWidth?: number
   outHeight?: number
+  topicTheme?: TopicTheme
 }
 // 方法类型
 export interface CustomNodeProps extends NodeProps<Node<CustomNodeData, string>> {
@@ -72,6 +76,8 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
     onChangeNote,
     ...rest
   } = props
+
+  const topicTheme = data.topicTheme || DefaultTopic
 
   const [isNoteVisibility, setIsNoteVisibility] = useState(true)
   const [canEditLabel, setCanEditLabel] = useState(false)
@@ -291,7 +297,7 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
     <BaseNode
       ref={baseNodeRef}
       className={cn('relative flex flex-col nowheel')}
-      style={{ width: `${pWidth}px`, height: computedHeight }}
+      style={{ width: `${pWidth}px`, height: computedHeight, ...topicTheme.style }}
       selected={selected}
       draggable={draggable}
       onPointerDown={e => e.stopPropagation()}
@@ -300,11 +306,16 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
         <NodeHeaderTitle className=" flex-1">
           <input
             className=" border-none  outline-0"
-            style={{ width: '100%' }}
+            style={{
+              width: '100%',
+              background: darkenColor(topicTheme.style.background as string, 5),
+              color: darkenColor(topicTheme.style.color as string, 5),
+            }}
             onDoubleClickCapture={handleDoubleClick}
             ref={inputLabel}
             readOnly={!canEditLabel}
             onBlur={e => handleInputBlur(e)}
+            onClickCapture={e => e.stopPropagation()}
             defaultValue={data.label}
             // onChange={onChangeLabel}
             title={data.label}
@@ -346,11 +357,16 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
       >
         <textarea
           className="w-full h-full outline-none  bg-slate-100 resize-none overflow-auto "
-          style={{ fontSize: '10px' }}
+          style={{
+            fontSize: '10px',
+            background: darkenColor(topicTheme.style.background as string, 3),
+            color: darkenColor(topicTheme.style.color as string, 5),
+          }}
           defaultValue={data.note}
           readOnly={readonly}
           placeholder="Add Note"
           onBlur={e => handleTextareBlur(e)}
+          onClickCapture={e => e.stopPropagation()}
         />
       </div>
 
@@ -361,13 +377,14 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
 
       <NodeResizeControl
         style={{ background: 'transparent', border: 'none' }}
+        position={'bottom-right'}
         nodeId={id}
         minWidth={minWidth}
         minHeight={minHeight}
         maxWidth={maxWidth}
         maxHeight={maxHeight}
       >
-        {selected && <ResizeIcon />}
+        <ResizeIcon />
       </NodeResizeControl>
     </BaseNode>
   )

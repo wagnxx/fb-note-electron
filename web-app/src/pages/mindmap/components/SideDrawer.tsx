@@ -1,6 +1,6 @@
-import { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
-import { updateGlobalSettings } from '@/features/mindmap/mindmapSlice'
+import { setSelectedNoteTheme, updateGlobalSettings } from '@/features/mindmap/mindmapSlice'
 import { selectGlobalSettings } from '@/features/mindmap/selectors'
+import { RootState } from '@/store/store'
 import { CaretRightOutlined, DownOutlined } from '@ant-design/icons'
 import {
   Button,
@@ -20,38 +20,23 @@ import Title from 'antd/es/typography/Title'
 import React, { FC, useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
+export type TopicTheme = {
+  key: string | number
+  name: string
+  label: string
+  style: React.CSSProperties
+}
+
 const SideDrawer: FC<{
   open: boolean
   onClose: () => void
-  selectedNode: ExtendedNode | null
-  setSelectedNode: React.Dispatch<React.SetStateAction<ExtendedNode | null>>
-}> = ({ open, onClose, selectedNode, setSelectedNode }) => {
+}> = ({ open, onClose }) => {
   const [loading, setloading] = useState(false)
-  const [topicTheme, settopicTheme] = useState<{ key: string | number; name: string; style: React.CSSProperties }[]>([
-    {
-      key: 1,
-      name: 'Very Important',
-      style: { background: '#6A1F87', color: '#FFFFFF' },
-    },
-    {
-      key: 2,
-      name: 'Important',
-      style: { background: '#861F56', color: '#FFFFFF' },
-    },
-    {
-      key: 3,
-      name: 'Cross out',
-      style: { background: '#FFFFFF', color: '#000000', textDecorationLine: 'line-through' },
-    },
-    {
-      key: 4,
-      name: 'Default',
-      style: { background: '#FFC947', color: '#000000' },
-    },
-  ])
-  const [selectedTheme, setSelectedTheme] = useState(topicTheme[0])
 
   const globalSettings = useSelector(selectGlobalSettings)
+  const currentNoteTheme = useSelector((state: RootState) => state.mindmap.currentNoteTheme)
+  const currentNode = useSelector((state: RootState) => state.mindmap.currentNode)
+  const topicThemes = useSelector((state: RootState) => state.mindmap.topicThemes)
 
   const dispatch = useDispatch()
 
@@ -73,12 +58,12 @@ const SideDrawer: FC<{
     }
   }, [token])
 
-  const dropDownItems: MenuProps['items'] = topicTheme.map(item => ({
+  const dropDownItems: MenuProps['items'] = topicThemes.map(item => ({
     key: item.key,
     label: (
       <div style={{ padding: '8px 10px', width: '100%', boxSizing: 'border-box' }}>
-        <Button style={item.style} block onClick={() => setSelectedTheme(item)}>
-          {item.name}
+        <Button style={item.style} block onClick={() => dispatch(setSelectedNoteTheme(item))}>
+          {item.label}
         </Button>
       </div>
     ),
@@ -171,8 +156,14 @@ const SideDrawer: FC<{
       },
     ]
 
-    return selectedNode ? [...selectedNodeProps, ...globalProps] : [...globalProps]
-  }, [globalSettings, handleGlobalPropChagne, panelStyle, selectedNode])
+    return currentNode ? [...selectedNodeProps, ...globalProps] : [...globalProps]
+  }, [globalSettings, handleGlobalPropChagne, panelStyle, currentNode])
+
+  // useEffect(() => {
+  //   if (currentNode) {
+  //     dispatch(setSelectedNoteTheme(currentNode.data.topicTheme || DefaultTopic))
+  //   }
+  // }, [dispatch, currentNode])
 
   return (
     <Drawer
@@ -196,11 +187,11 @@ const SideDrawer: FC<{
       <Title level={4} style={{ padding: '8px 12px' }}>
         This feature is under development.
       </Title>
-      {selectedNode && (
+      {currentNoteTheme && (
         <Dropdown menu={{ items: dropDownItems }}>
           <Flex style={{ padding: '8px 24px', boxSizing: 'border-box' }} gap={16}>
-            <Button block style={selectedTheme.style}>
-              {selectedTheme.name}{' '}
+            <Button block style={currentNoteTheme.style}>
+              {currentNoteTheme.name}
             </Button>
             <DownOutlined />
           </Flex>

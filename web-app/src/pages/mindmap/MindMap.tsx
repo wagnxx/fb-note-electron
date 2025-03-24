@@ -10,6 +10,8 @@ import { LeftOutlined, SettingFilled } from '@ant-design/icons'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import useFirstRender from '@/hooks/useFirstRender'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
 export type SheetTag = {
   name: string
@@ -29,10 +31,10 @@ export type StoragedFile = {
 const MindMapPage: React.FC = () => {
   const [isSiderOpend, setIsSiderOpend] = useState(true)
   const [isDrawerVisible, setvIsDrawerVisible] = React.useState<boolean>(false)
-  const [selectedNode, setSelectedNode] = useState<ExtendedNode | null>(null)
 
   const mindRef = useRef<MindMapRef>(null)
   const isFirstRender = useFirstRender()
+  const currentNodeId = useSelector((state: RootState) => state.mindmap.currentNodeId)
 
   const navigate = useNavigate()
 
@@ -54,8 +56,8 @@ const MindMapPage: React.FC = () => {
 
   useEffect(() => {
     if (isFirstRender) return
-    setvIsDrawerVisible(!!selectedNode)
-  }, [isFirstRender, selectedNode])
+    setvIsDrawerVisible(!!currentNodeId)
+  }, [isFirstRender, currentNodeId])
 
   return (
     <>
@@ -81,18 +83,13 @@ const MindMapPage: React.FC = () => {
         <Splitter.Panel>
           <div className="  px-1 pt-1  h-full">
             <div className="flex  h-full bg-white">
-              <MindMapCanvasContainer ref={mindRef} setSelectedNode={setSelectedNode} />
+              <MindMapCanvasContainer ref={mindRef} />
             </div>
           </div>
         </Splitter.Panel>
       </Splitter>
 
-      <SideDrawer
-        open={isDrawerVisible}
-        onClose={() => setvIsDrawerVisible(false)}
-        selectedNode={selectedNode}
-        setSelectedNode={setSelectedNode}
-      />
+      <SideDrawer open={isDrawerVisible} onClose={() => setvIsDrawerVisible(false)} />
     </>
   )
 }

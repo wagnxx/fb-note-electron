@@ -14,7 +14,7 @@ import mindmapSlice from '@/features/mindmap/mindmapSlice'
 const persistConfig = {
   key: 'root', // 设定持久化的 key
   storage, // 使用 storage（localStorage 或 AsyncStorage）
-  whitelist: ['settings', 'user', 'language', 'videoPlayer', 'mindmap'], // 指定需要持久化的 slice，'settings' 和 'user' 将被存储
+  whitelist: ['settings', 'user', 'language', 'videoPlayer'], // 指定需要持久化的 slice，'settings' 和 'user' 将被存储
 }
 
 // 创建持久化的 rootReducer

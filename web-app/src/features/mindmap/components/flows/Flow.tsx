@@ -12,6 +12,7 @@ import {
   useNodesState,
   useEdgesState,
   OnSelectionChangeParams,
+  NodeReplaceChange,
 } from '@xyflow/react'
 // 引入 uuid 库
 import { v4 as uuidv4 } from 'uuid'
@@ -27,6 +28,7 @@ import { ZoomSlider } from '@/components/lib/components/zoom-slider'
 import '@xyflow/react/dist/style.css' // 关键修复点
 import useRegisterKeypressCtrol from '../../hooks/useRegisterKeypressCtrol'
 import useNodeOperaton from '../../hooks/useNodeOperaton'
+import { TopicTheme } from '@/pages/mindmap/components/SideDrawer'
 
 export interface ExtendedNode extends Node<CustomNodeData> {
   isRoot?: boolean
@@ -51,6 +53,7 @@ export type FlowProps = {
   showControls?: boolean
   showBackground?: boolean
   readonly?: boolean
+  topicTheme?: TopicTheme | null
   onNodeListChange?: (fn: (data: ExtendedNode[]) => ExtendedNode[]) => void
   onEdgeListChange?: (fn: (data: Edge[]) => Edge[]) => void
   getSelectableItems?: () => CustomItem[] // 从父组件获取选择项的函数
@@ -62,6 +65,7 @@ export type FlowDiagramRef = {
   handleCreateFreeNode: (rootName?: string[]) => void
   handleCleanCanvas: () => void
   handleAppendChildrenToParent: (id: string, names: string[]) => void
+  // handleSetCurrentNodeTheme: (theme: TopicTheme) => void
 }
 
 // default config
@@ -95,6 +99,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       showControls = true,
       showBackground = true,
       readonly = false,
+      topicTheme = null,
       onNodeListChange = noop,
       onEdgeListChange = noop,
       onClickNode = noop,
@@ -107,6 +112,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
     const [edges, setEdges, onEdgesChange] = useEdgesState(initEdgeList)
     const [selectedNodes, setSelectedNodes] = useState<ExtendedNode[]>([])
     const selectedNodeIds = useRef<Set<string>>(new Set())
+    const [selectedNode, setselectedNode] = useState<ExtendedNode | null>(null)
 
     const { showNotification } = useNotification()
     const isFirstRender = useFirstRender()
@@ -152,6 +158,27 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
         setEdges(fn)
       },
       [onEdgeListChange, setEdges],
+    )
+
+    const setNodeItemTheme = useCallback(
+      (theme: TopicTheme) => {
+        if (!selectedNode) return
+
+        const change: NodeReplaceChange<ExtendedNode> = {
+          id: selectedNode.id,
+          type: 'replace',
+          item: {
+            ...selectedNode,
+            data: {
+              ...selectedNode.data,
+              topicTheme: theme,
+            },
+          },
+        }
+
+        handleNodesChange([change])
+      },
+      [handleNodesChange, selectedNode],
     )
 
     const changeRect = useCallback(
@@ -688,6 +715,16 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       setSelectedNodes(selection.nodes)
     }
 
+    const handleClickNode = (e: React.MouseEvent | null, node: ExtendedNode | null) => {
+      if (e) {
+        const isResizeControl = (e.target as HTMLElement).closest('.react-flow__resize-control')
+        if (isResizeControl) return
+      }
+
+      setselectedNode(node)
+      onClickNode(node)
+    }
+
     function cmdAndCPressedFn() {
       if (selectedNodes.length) {
         selectedNodeIds.current = new Set(selectedNodes.map(item => item.id))
@@ -710,6 +747,12 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       cmdAndVPressedFn,
       metaDeletePresseFn: batchDelete,
     })
+
+    useEffect(() => {
+      if (topicTheme && selectedNode) {
+        setNodeItemTheme(topicTheme)
+      }
+    }, [selectedNode, setNodeItemTheme, topicTheme])
 
     // notify parent component updated action
     useEffect(() => {
@@ -735,6 +778,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
         handleCreateFreeNode,
         handleCleanCanvas,
         handleAppendChildrenToParent: (id: string, newNames: string[]) => addChildNode(id, newNames, getZoom),
+        // handleSetCurrentNodeTheme: setNodeItemTheme,
       }),
       [addChildNode, getZoom, handleAddRootNode, handleCleanCanvas, handleCreateFreeNode],
     )
@@ -806,8 +850,8 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
           selectionOnDrag
           multiSelectionKeyCode="Shift" // 允许 Shift + 点击多选
           onSelectionChange={handleSelectionChange}
-          onNodeClick={(e, node) => onClickNode(node)}
-          onPaneClick={() => onClickNode(null)}
+          onNodeClick={(e, node) => handleClickNode(e, node)}
+          onPaneClick={() => handleClickNode(null, null)}
         >
           {showBackground && (
             <Background variant={bgVType} color={bgColor} size={bgSize / getZoom()} gap={bgGap / getZoom()} />
