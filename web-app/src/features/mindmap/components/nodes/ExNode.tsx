@@ -79,6 +79,18 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
 
   const topicTheme = data.topicTheme || DefaultTopic
 
+  const mainStyle = topicTheme.style
+  const secondlyStyle = {
+    ...mainStyle,
+    backgroundColor: darkenColor(mainStyle.backgroundColor || (mainStyle.background as string), 5),
+    color: darkenColor(topicTheme.style.color as string, 5),
+  }
+  const thirdlyStyle = {
+    ...mainStyle,
+    backgroundColor: darkenColor(mainStyle.backgroundColor || (mainStyle.background as string), 3),
+    color: darkenColor(topicTheme.style.color as string, 3),
+  }
+
   const [isNoteVisibility, setIsNoteVisibility] = useState(true)
   const [canEditLabel, setCanEditLabel] = useState(false)
   const inputLabel = useRef<HTMLInputElement>(null)
@@ -297,7 +309,7 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
     <BaseNode
       ref={baseNodeRef}
       className={cn('relative flex flex-col nowheel')}
-      style={{ width: `${pWidth}px`, height: computedHeight, ...topicTheme.style }}
+      style={{ width: `${pWidth}px`, height: computedHeight, ...mainStyle }}
       selected={selected}
       draggable={draggable}
       onPointerDown={e => e.stopPropagation()}
@@ -308,8 +320,8 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
             className=" border-none  outline-0"
             style={{
               width: '100%',
-              background: darkenColor(topicTheme.style.background as string, 5),
-              color: darkenColor(topicTheme.style.color as string, 5),
+              backgroundColor: secondlyStyle.backgroundColor,
+              color: secondlyStyle.color,
             }}
             onDoubleClickCapture={handleDoubleClick}
             ref={inputLabel}
@@ -365,8 +377,8 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
           className="w-full h-full outline-none  bg-slate-100 resize-none overflow-auto "
           style={{
             fontSize: '10px',
-            background: darkenColor(topicTheme.style.background as string, 3),
-            color: darkenColor(topicTheme.style.color as string, 5),
+            background: thirdlyStyle.backgroundColor,
+            color: thirdlyStyle.color,
           }}
           defaultValue={data.note}
           readOnly={readonly}

@@ -42,7 +42,7 @@ export const DefaultTopic: TopicTheme = {
   key: 'defaul',
   name: 'default',
   label: 'Default',
-  style: { background: '#fff', color: '#000000' },
+  style: { backgroundColor: '#fff', color: '#000000' },
 }
 // **初始 State**
 const initialState: MindmapState = {
