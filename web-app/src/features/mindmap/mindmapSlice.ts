@@ -1,3 +1,4 @@
+import React from 'react'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { ExtendedNode } from './components/flows/Flow'
 import { TopicTheme } from '@/pages/mindmap/components/SideDrawer'
@@ -114,9 +115,25 @@ const mindmapSlice = createSlice({
     setSelectedNoteTheme: (state, action: PayloadAction<TopicTheme>) => {
       state.currentNoteTheme = action.payload
     },
+    updateSelectedNoteTheme: (state, action: PayloadAction<React.CSSProperties>) => {
+      if (!state.currentNoteTheme) return
+      state.currentNoteTheme = {
+        ...state.currentNoteTheme,
+        style: {
+          ...state.currentNoteTheme?.style,
+          ...action.payload,
+        },
+      }
+    },
   },
 })
 
 // **导出 Redux actions 和 reducer**
-export const { updateGlobalSettings, setSelectedNode, setSelectedNoteTheme, setSelectedNodeId } = mindmapSlice.actions
+export const {
+  updateGlobalSettings,
+  setSelectedNode,
+  setSelectedNoteTheme,
+  setSelectedNodeId,
+  updateSelectedNoteTheme,
+} = mindmapSlice.actions
 export default mindmapSlice.reducer

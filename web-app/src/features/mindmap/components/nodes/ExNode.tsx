@@ -333,7 +333,13 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
 
       {/* expanded/collapsed icon */}
       {(data?.childCount || 0) > 0 && (
-        <NodeExtroIcon className=" group" onClick={() => onExpandToggle()}>
+        <NodeExtroIcon
+          className="group"
+          onClickCapture={e => {
+            e.stopPropagation()
+            onExpandToggle()
+          }}
+        >
           {data.isExpanded ? (
             <MinusCircleFilled className="hidden group-hover:block" />
           ) : (

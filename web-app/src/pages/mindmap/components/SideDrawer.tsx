@@ -1,4 +1,5 @@
-import { setSelectedNoteTheme, updateGlobalSettings } from '@/features/mindmap/mindmapSlice'
+import ColorGridPicker from '@/components/select/ColorGridPicker'
+import { setSelectedNoteTheme, updateGlobalSettings, updateSelectedNoteTheme } from '@/features/mindmap/mindmapSlice'
 import { selectGlobalSettings } from '@/features/mindmap/selectors'
 import { RootState } from '@/store/store'
 import { CaretRightOutlined, DownOutlined } from '@ant-design/icons'
@@ -27,6 +28,40 @@ export type TopicTheme = {
   style: React.CSSProperties
 }
 
+const borderOptions = [
+  { label: 'Default', value: 'solid' },
+  { label: 'Dashed', value: 'dashed' },
+  { label: 'Dotted', value: 'dotted' },
+  { label: 'Double', value: 'double' },
+  { label: 'None', value: 'none' },
+]
+const borderWidthOptions = [
+  { label: 'Extra Thin', value: '1px' },
+  { label: 'Thin', value: '2px' },
+  { label: 'Medium', value: '3px' },
+  { label: 'Bold', value: '4px' },
+  { label: 'Extra Bold', value: '5px' },
+]
+const textWeightOptions = [
+  { label: 'Regular', value: '400' },
+  { label: 'Light', value: '300' },
+  { label: 'Medium', value: '500' },
+  { label: 'Bold', value: '600' },
+]
+const textSizeOptions = [
+  { label: '8', value: '8' },
+  { label: '10', value: '10' },
+  { label: '12', value: '12' },
+  { label: '14', value: '14' },
+  { label: '18', value: '18' },
+  { label: '24', value: '24' },
+  { label: '36', value: '36' },
+  { label: '48', value: '48' },
+  { label: '60', value: '60' },
+  { label: '8', value: '88' },
+  { label: '8', value: '88' },
+]
+
 const SideDrawer: FC<{
   open: boolean
   onClose: () => void
@@ -35,7 +70,7 @@ const SideDrawer: FC<{
 
   const globalSettings = useSelector(selectGlobalSettings)
   const currentNoteTheme = useSelector((state: RootState) => state.mindmap.currentNoteTheme)
-  const currentNode = useSelector((state: RootState) => state.mindmap.currentNode)
+  const currentNodeId = useSelector((state: RootState) => state.mindmap.currentNodeId)
   const topicThemes = useSelector((state: RootState) => state.mindmap.topicThemes)
 
   const dispatch = useDispatch()
@@ -45,6 +80,13 @@ const SideDrawer: FC<{
   const handleGlobalPropChagne = useCallback(
     (key: string, val: boolean) => {
       dispatch(updateGlobalSettings({ type: 'change', payload: [{ value: val, key }] }))
+    },
+    [dispatch],
+  )
+
+  const handleUpdateCurrentTheme = useCallback(
+    (style: React.CSSProperties) => {
+      dispatch(updateSelectedNoteTheme(style))
     },
     [dispatch],
   )
@@ -79,25 +121,41 @@ const SideDrawer: FC<{
             <Flex justify="space-between" align="center">
               <strong>Fill</strong>
               <Space>
-                <Select style={{ width: '100px' }} />
-                <Select style={{ width: '100px' }} />
+                {/* <Select style={{ width: '100px' }} />
+                <Select style={{ width: '100px' }} /> */}
+                <ColorGridPicker
+                  style={{ width: '100px' }}
+                  onChaneg={val => handleUpdateCurrentTheme({ background: val })}
+                />
               </Space>
             </Flex>
             <Flex justify="space-between" align="center">
               <strong>Border</strong>
               <Space>
-                <Select style={{ width: '100px' }} />
-                <Select style={{ width: '100px' }} />
+                <Select
+                  style={{ width: '100px' }}
+                  options={borderOptions}
+                  onChange={val => handleUpdateCurrentTheme({ borderStyle: val })}
+                />
+                <ColorGridPicker
+                  style={{ width: '100px' }}
+                  onChaneg={val => handleUpdateCurrentTheme({ borderColor: val })}
+                />
               </Space>
             </Flex>
             <div>
-              <Select className=" w-full" />
+              <Select
+                className=" w-full"
+                defaultValue={'1px'}
+                options={borderWidthOptions}
+                onChange={val => handleUpdateCurrentTheme({ borderWidth: val })}
+              />
             </div>
             <Flex justify="space-between" align="center">
               <strong>Length</strong>
               <Space>
-                <Select style={{ width: '100px' }} />
-                <Input style={{ width: '100px' }} />
+                <Select style={{ width: '100px' }} disabled />
+                <Input style={{ width: '100px' }} disabled />
               </Space>
             </Flex>
           </Space>
@@ -110,20 +168,20 @@ const SideDrawer: FC<{
         children: (
           <Space direction="vertical" className=" w-full">
             <Flex justify="space-between" align="center" gap={20}>
-              <Select style={{ flex: 2 }} />
-              <Select style={{ flex: 1 }} />
+              <strong>Color</strong>
+              <ColorGridPicker style={{ width: '100px' }} onChaneg={val => handleUpdateCurrentTheme({ color: val })} />
             </Flex>
             <Flex justify="space-between" align="center" gap={20}>
-              <Select style={{ flex: 2 }} />
-              <Select style={{ flex: 1 }} />
-            </Flex>
-            <Flex justify="space-between" align="center">
-              <Button.Group className=" w-full">
-                <Button>Left</Button>
-                <Button>Middle</Button>
-                <Button>Right</Button>
-                <Button>Right</Button>
-              </Button.Group>
+              <Select
+                style={{ flex: 2 }}
+                options={textWeightOptions}
+                onChange={val => handleUpdateCurrentTheme({ fontWeight: val })}
+              />
+              <Select
+                style={{ flex: 1 }}
+                options={textSizeOptions}
+                onChange={val => handleUpdateCurrentTheme({ fontSize: val })}
+              />
             </Flex>
           </Space>
         ),
@@ -156,8 +214,8 @@ const SideDrawer: FC<{
       },
     ]
 
-    return currentNode ? [...selectedNodeProps, ...globalProps] : [...globalProps]
-  }, [globalSettings, handleGlobalPropChagne, panelStyle, currentNode])
+    return currentNodeId ? [...selectedNodeProps, ...globalProps] : [...globalProps]
+  }, [panelStyle, globalSettings, currentNodeId, handleUpdateCurrentTheme, handleGlobalPropChagne])
 
   // useEffect(() => {
   //   if (currentNode) {
@@ -188,7 +246,7 @@ const SideDrawer: FC<{
         This feature is under development.
       </Title>
       {currentNoteTheme && (
-        <Dropdown menu={{ items: dropDownItems }}>
+        <Dropdown menu={{ items: dropDownItems }} trigger={['click']}>
           <Flex style={{ padding: '8px 24px', boxSizing: 'border-box' }} gap={16}>
             <Button block style={currentNoteTheme.style}>
               {currentNoteTheme.name}
