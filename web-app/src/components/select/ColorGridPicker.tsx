@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Popover, Button } from 'antd'
 
 const presetColors = [
@@ -9,17 +9,27 @@ const presetColors = [
   ['#D46B08', '#CF1322', '#237804', '#003A8C', '#061178', '#1D39C4', '#5C0011', '#A8071A', '#7D3C98'],
 ]
 
-const ColorPopover: React.FC<{
-  onChaneg?: (color: string) => void
+interface ColorPopoverProps {
+  value?: string
+  onChange?: (color: string) => void
   style?: React.CSSProperties
   className?: string
-}> = ({ onChaneg, style = {}, className = '' }) => {
-  const [selectedColor, setSelectedColor] = useState<string>('#FFFFFF')
+}
+
+const ColorPopover: React.FC<ColorPopoverProps> = ({ value, onChange, style = {}, className = '' }) => {
+  const [selectedColor, setSelectedColor] = useState<string>(value || '#FFFFFF')
   const [open, setOpen] = useState(false)
+
+  // 确保 value 变化时，组件同步更新
+  useEffect(() => {
+    if (value !== selectedColor) {
+      setSelectedColor(value || '#FFFFFF')
+    }
+  }, [value])
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color)
-    onChaneg?.(color)
+    onChange?.(color)
     setOpen(false) // 选中后关闭 Popover
   }
 
@@ -58,11 +68,10 @@ const ColorPopover: React.FC<{
         className={className}
         style={{
           background: selectedColor,
-          // color: '#fff',
-          // border: '1px solid #ddd',
+          border: '1px solid #ddd',
           ...style,
         }}
-      ></Button>
+      />
     </Popover>
   )
 }

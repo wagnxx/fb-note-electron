@@ -121,11 +121,10 @@ const SideDrawer: FC<{
             <Flex justify="space-between" align="center">
               <strong>Fill</strong>
               <Space>
-                {/* <Select style={{ width: '100px' }} />
-                <Select style={{ width: '100px' }} /> */}
                 <ColorGridPicker
                   style={{ width: '100px' }}
-                  onChaneg={val => handleUpdateCurrentTheme({ background: val })}
+                  value={currentNoteTheme?.style.backgroundColor || (currentNoteTheme?.style.background as string)}
+                  onChange={val => handleUpdateCurrentTheme({ backgroundColor: val })}
                 />
               </Space>
             </Flex>
@@ -135,11 +134,13 @@ const SideDrawer: FC<{
                 <Select
                   style={{ width: '100px' }}
                   options={borderOptions}
+                  value={currentNoteTheme?.style.borderStyle}
                   onChange={val => handleUpdateCurrentTheme({ borderStyle: val })}
                 />
                 <ColorGridPicker
                   style={{ width: '100px' }}
-                  onChaneg={val => handleUpdateCurrentTheme({ borderColor: val })}
+                  value={currentNoteTheme?.style.borderColor}
+                  onChange={val => handleUpdateCurrentTheme({ borderColor: val })}
                 />
               </Space>
             </Flex>
@@ -148,6 +149,7 @@ const SideDrawer: FC<{
                 className=" w-full"
                 defaultValue={'1px'}
                 options={borderWidthOptions}
+                value={currentNoteTheme?.style.borderWidth}
                 onChange={val => handleUpdateCurrentTheme({ borderWidth: val })}
               />
             </div>
@@ -169,16 +171,22 @@ const SideDrawer: FC<{
           <Space direction="vertical" className=" w-full">
             <Flex justify="space-between" align="center" gap={20}>
               <strong>Color</strong>
-              <ColorGridPicker style={{ width: '100px' }} onChaneg={val => handleUpdateCurrentTheme({ color: val })} />
+              <ColorGridPicker
+                style={{ width: '100px' }}
+                value={currentNoteTheme?.style.color}
+                onChange={val => handleUpdateCurrentTheme({ color: val })}
+              />
             </Flex>
             <Flex justify="space-between" align="center" gap={20}>
               <Select
                 style={{ flex: 2 }}
                 options={textWeightOptions}
+                value={currentNoteTheme?.style.fontWeight}
                 onChange={val => handleUpdateCurrentTheme({ fontWeight: val })}
               />
               <Select
                 style={{ flex: 1 }}
+                value={currentNoteTheme?.style.fontSize}
                 options={textSizeOptions}
                 onChange={val => handleUpdateCurrentTheme({ fontSize: val })}
               />
@@ -215,7 +223,7 @@ const SideDrawer: FC<{
     ]
 
     return currentNodeId ? [...selectedNodeProps, ...globalProps] : [...globalProps]
-  }, [panelStyle, globalSettings, currentNodeId, handleUpdateCurrentTheme, handleGlobalPropChagne])
+  }, [currentNoteTheme, panelStyle, globalSettings, currentNodeId, handleUpdateCurrentTheme, handleGlobalPropChagne])
 
   // useEffect(() => {
   //   if (currentNode) {
