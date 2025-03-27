@@ -12,7 +12,6 @@ import {
   useNodesState,
   useEdgesState,
   OnSelectionChangeParams,
-  NodeReplaceChange,
 } from '@xyflow/react'
 // 引入 uuid 库
 import { v4 as uuidv4 } from 'uuid'
@@ -60,9 +59,15 @@ export type FlowProps = {
   onClickNode?: (data: ExtendedNode | null) => void
 }
 
+export type CreateGroupNode = {
+  name: string
+  children?: CreateGroupNode[]
+}
+
 export type FlowDiagramRef = {
   handleAddRootNode: (rootName?: string) => void
   handleCreateFreeNode: (rootName?: string[]) => void
+  handleCreateGroupNodes: (groups: CreateGroupNode[]) => void
   handleCleanCanvas: () => void
   handleAppendChildrenToParent: (id: string, names: string[]) => void
   // handleSetCurrentNodeTheme: (theme: TopicTheme) => void
@@ -70,7 +75,7 @@ export type FlowDiagramRef = {
 
 // default config
 const NODE_WIDTH = 140
-const NODE_HEIGHT = 80
+const NODE_HEIGHT = 65
 const NODE_DISTANCE = {
   horizontal: 50,
   vertical: 20,
@@ -109,7 +114,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
   ) => {
     const { getZoom } = useReactFlow()
     const [nodes, setNodes, handleNodesChange] = useNodesState(initNodeList)
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initEdgeList)
+    const [edges, setEdges, handleEdgesChange] = useEdgesState(initEdgeList)
     const [selectedNodes, setSelectedNodes] = useState<ExtendedNode[]>([])
     const selectedNodeIds = useRef<Set<string>>(new Set())
     const [selectedNode, setselectedNode] = useState<ExtendedNode | null>(null)
@@ -125,15 +130,19 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       creaateGroupIds,
       updateChildrenPos,
       getGroupNodeIds,
-      grtResetPosFn,
+      updateNodeData,
+      updateNodeProps,
+      createGroupChanges,
     } = useNodeOperaton({
       nodes,
+      edges,
       setNodes,
       setEdges,
       selectedNodes,
       initialNodeSize: { width: NODE_WIDTH, height: NODE_HEIGHT },
       nodeDistance: NODE_DISTANCE,
       handleNodesChange,
+      handleEdgesChange,
     })
 
     const rootId = compId
@@ -163,130 +172,42 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
     const setNodeItemTheme = useCallback(
       (theme: TopicTheme) => {
         if (!selectedNode) return
-
-        const change: NodeReplaceChange<ExtendedNode> = {
-          id: selectedNode.id,
-          type: 'replace',
-          item: {
-            ...selectedNode,
-            data: {
-              ...selectedNode.data,
-              topicTheme: theme,
-            },
-          },
-        }
-
-        handleNodesChange([change])
+        updateNodeData(selectedNode.id, { topicTheme: theme })
       },
-      [handleNodesChange, selectedNode],
-    )
-
-    const changeRect = useCallback(
-      (id: string, { width, height }: { width: number; height: number }) => {
-        const nodesFn = (nds: ExtendedNode[]) => {
-          return nds.map(n => {
-            if (n.id === id) {
-              return {
-                ...n,
-                data: {
-                  ...n.data,
-                },
-                measured: {
-                  width,
-                  height,
-                },
-                width,
-                height,
-              }
-            }
-            return n
-          })
-        }
-        updateNodeList(nodesFn)
-      },
-      [updateNodeList],
+      [selectedNode],
     )
 
     const addChildNode = useCallback(
-      (parentId: string, newNames: string[], getZoomFunc: () => number) => {
+      (parentId: string, newNames: string[]) => {
         const newNodeIds = creaateGroupIds(parentId, newNames.length) // 创建多个新节点的ID
-        const zoom = getZoomFunc()
 
-        const nodesFn: (nds: ExtendedNode[]) => ExtendedNode[] = (nds: ExtendedNode[]) => {
-          const parentNodeIndex = nds.findIndex(n => n.id === parentId)
-          if (parentNodeIndex === -1) return nds // 确保找到父节点
+        const parentNode = nodes.find(n => n.id === parentId)
 
-          const parentNode = nds[parentNodeIndex] // 获取父节点
-          const siblingsNodes = nds.filter(node => parentNode.children?.includes(node.id))
-          const siblingsPositionY = [...new Set(siblingsNodes.map(item => item.position.y))] // 去重
-          const nicePostionY = calculateMiddleValue(siblingsPositionY, parentNode.position.y, 50 / zoom)
+        if (!parentNode) return
+        const siblingsNodes = nodes.filter(node => parentNode.children?.includes(node.id))
+        const siblingsPositionY = [...new Set(siblingsNodes.map(item => item.position.y))] // 去重
+        const nicePostionY = calculateMiddleValue(siblingsPositionY, parentNode.position.y, 50)
 
-          // 批量添加子节点，计算每个子节点的位置
-          const newNodes = newNodeIds.map((newNodeId, index) => {
-            const pW = parentNode.width || NODE_WIDTH
-            const newNodePostion = {
-              x: parentNode.position.x + pW + NODE_DISTANCE.horizontal,
-              y: nicePostionY + index * (NODE_HEIGHT + 10), // 每个新节点间隔10单位
-            }
-
-            return {
-              id: newNodeId,
-              type: 'customNode',
-              data: {
-                label: newNames[index], // 使用传入的名称来作为子节点的 label
-                isExpanded: true,
-              },
-              position: newNodePostion,
-              isHidden: false,
-              children: [],
-              width: NODE_WIDTH,
-              height: NODE_HEIGHT,
-            }
+        const childrenNodes = newNodeIds.map((childId, index) => {
+          const pW = parentNode.width || NODE_WIDTH
+          const newNodePostion = {
+            x: parentNode.position.x + pW + NODE_DISTANCE.horizontal,
+            y: nicePostionY + index * (NODE_HEIGHT + 30), // 每个新节点间隔10单位
+          }
+          return crreateNewNode({
+            id: childId,
+            isRoot: false,
+            label: newNames[index],
+            position: newNodePostion,
           })
-
-          // 更新父节点的子节点列表
-          const newChildren = [...(parentNode.children || []), ...newNodeIds]
-          const newChildrenNodes = nds
-            .filter(node => newChildren.includes(node.id))
-            .concat(parentNode)
-            .concat(newNodes)
-
-          // 更新 rectRange：新的边界是所有子节点的位置的最小/最大值
-          const newChildrenNodesPosY = newChildrenNodes.map(item => item.position.y)
-          const newChildrenNodesPosX = newChildrenNodes.map(item => item.position.x)
-
-          const rectRange = {
-            bottom: Math.max.apply(null, newChildrenNodesPosY) + NODE_HEIGHT,
-            top: Math.min.apply(null, newChildrenNodesPosY),
-            left: Math.min.apply(null, newChildrenNodesPosX),
-            right: Math.max.apply(null, newChildrenNodesPosX) + NODE_WIDTH,
-          }
-
-          const updatedParentNode = {
-            ...parentNode,
-            data: {
-              ...parentNode.data,
-              rectRange,
-              childCount: newChildren.length,
-            },
-            children: newChildren,
-          }
-
-          // 更新节点列表
-          const updatedNodes = [
-            ...nds.slice(0, parentNodeIndex),
-            updatedParentNode,
-            ...newNodes,
-            ...nds.slice(parentNodeIndex + 1),
-          ]
-
-          return updatedNodes
-        }
-
-        updateNodeList(nodesFn)
+        })
+        const nodechanges: {
+          item: ExtendedNode
+          type: 'add'
+        }[] = childrenNodes.map(item => ({ item, type: 'add' }))
 
         // 更新边：每个新节点都需要与父节点建立边
-        const newEdges = newNodeIds.map((newNodeId, index) => {
+        const newEdges = newNodeIds.map(newNodeId => {
           return {
             id: `${parentId}-${newNodeId}`,
             source: parentId,
@@ -294,20 +215,24 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
           }
         })
 
-        const edgesFn = (eds: Edge[]) => {
-          // 确保没有重复的边
-          const allEdges = [...eds]
-          newEdges.forEach(edge => {
-            if (!eds.some(existingEdge => existingEdge.id === edge.id)) {
-              allEdges.push(edge)
-            }
-          })
-          return allEdges
-        }
-
-        updateEdgeList(edgesFn)
+        handleNodesChange([
+          {
+            item: {
+              ...parentNode,
+              data: {
+                ...parentNode.data,
+                childCount: [...(parentNode.children || []), ...newNodeIds].length,
+              },
+              children: [...(parentNode.children || []), ...newNodeIds],
+            },
+            type: 'replace',
+            id: parentNode.id,
+          },
+          ...nodechanges,
+        ])
+        handleEdgesChange(newEdges.map(item => ({ item, type: 'add' })))
       },
-      [updateEdgeList, updateNodeList],
+      [creaateGroupIds, nodes, handleNodesChange, handleEdgesChange, crreateNewNode],
     )
 
     const handleAddRootNode = useCallback(
@@ -341,42 +266,42 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       [crreateNewNode, handleNodesChange],
     )
 
+    // only supporting  depth 2
+    const handleCreateGroupNodes = useCallback(
+      (groups: CreateGroupNode[]) => {
+        const changes = groups.map(createGroupChanges)
+        const changesNodes = changes.reduce<
+          {
+            item: ExtendedNode
+            type: 'add'
+          }[]
+        >((pre, cur) => {
+          return pre.concat(cur.nodes)
+        }, [])
+        const changesEdges = changes.reduce<
+          {
+            item: Edge
+            type: 'add'
+          }[]
+        >((pre, cur) => {
+          return pre.concat(cur.edges)
+        }, [])
+        handleNodesChange(changesNodes)
+        handleEdgesChange(changesEdges)
+      },
+      [createGroupChanges, handleEdgesChange, handleNodesChange],
+    )
+
     const handleResetPos = useCallback(
-      (parentId: string, getZoomFunc: () => number) => {
-        const nodesFn: (nds: ExtendedNode[]) => ExtendedNode[] = grtResetPosFn(parentId)
-        updateNodeList(nodesFn)
-      },
-      [grtResetPosFn, updateNodeList],
-    )
+      (parentId: string) => {
+        const parentNode = nodes.find(n => n.id === parentId)
+        if (!parentNode?.children?.length) return
 
-    const changeLabel = useCallback(
-      (nodeId: string, value: string) => {
-        const nodesFn = (nds: ExtendedNode[]) => {
-          return nds.map(node => {
-            if (node.id === nodeId) {
-              node.data.label = value
-            }
-            return node
-          })
-        }
-        updateNodeList(nodesFn)
+        let newChildrenNodes = nodes.filter(node => (parentNode.children ?? []).includes(node.id))
+        newChildrenNodes = updateChildrenPos(parentNode, newChildrenNodes)
+        handleNodesChange(newChildrenNodes.map(item => ({ item, id: item.id, type: 'replace' })))
       },
-      [updateNodeList],
-    )
-
-    const changeNote = useCallback(
-      (nodeId: string, value: string) => {
-        const nodesFn = (nds: ExtendedNode[]) => {
-          return nds.map(node => {
-            if (node.id === nodeId) {
-              node.data.note = value
-            }
-            return node
-          })
-        }
-        updateNodeList(nodesFn)
-      },
-      [updateNodeList],
+      [handleNodesChange, nodes, updateChildrenPos],
     )
 
     const toggleExpand = useCallback(
@@ -436,45 +361,6 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
     )
 
     const handleCleanCanvas = useCallback(() => updateNodeList(() => []), [updateNodeList])
-
-    const handleFixedRect = useCallback(
-      (id: string) => {
-        const nodesFn = (nds: ExtendedNode[]) => {
-          return nds.map(n => {
-            if (n.id === id) {
-              return {
-                ...n,
-                data: {
-                  ...n.data,
-                  outWidth: n.measured?.width || n.width,
-                  outHeight: n.measured?.height || n.height,
-                },
-              }
-            }
-            return n
-          })
-        }
-        updateNodeList(nodesFn)
-      },
-      [updateNodeList],
-    )
-    const handleFixedPostion = useCallback(
-      (id: string, val: boolean) => {
-        const nodesFn = (nds: ExtendedNode[]) => {
-          return nds.map(n => {
-            if (n.id === id) {
-              return {
-                ...n,
-                draggable: val,
-              }
-            }
-            return n
-          })
-        }
-        updateNodeList(nodesFn)
-      },
-      [updateNodeList],
-    )
 
     const onConnect = useCallback(
       (params: Connection) => {
@@ -777,10 +663,11 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
         handleAddRootNode,
         handleCreateFreeNode,
         handleCleanCanvas,
-        handleAppendChildrenToParent: (id: string, newNames: string[]) => addChildNode(id, newNames, getZoom),
+        handleAppendChildrenToParent: (id: string, newNames: string[]) => addChildNode(id, newNames),
+        handleCreateGroupNodes,
         // handleSetCurrentNodeTheme: setNodeItemTheme,
       }),
-      [addChildNode, getZoom, handleAddRootNode, handleCleanCanvas, handleCreateFreeNode],
+      [addChildNode, handleAddRootNode, handleCleanCanvas, handleCreateFreeNode, handleCreateGroupNodes],
     )
 
     const nodeTypes = useMemo(() => {
@@ -790,34 +677,25 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
             {...props}
             readonly={readonly}
             getSelectableItems={getSelectableItems}
-            onAddChild={(newNames: string[]) => addChildNode(props.id, newNames, getZoom)}
+            onAddChild={(newNames: string[]) => addChildNode(props.id, newNames)}
             onExpandToggle={(val?: boolean) => toggleExpand(props.id, val)}
             onDelete={() => deleteNode([props.id])}
-            onChangeRect={({ width, height }: { width: number; height: number }) =>
-              changeRect(props.id, { width, height })
-            }
-            onFixedRect={() => handleFixedRect(props.id)}
-            onFixedPostion={(fixed: boolean) => handleFixedPostion(props.id, fixed)}
-            onChangeLabel={(value: string) => changeLabel(props.id, value)}
-            onChangeNote={(value: string) => changeNote(props.id, value)}
-            onResetPos={() => handleResetPos(props.id, getZoom)}
+            updateNodeData={data => updateNodeData(props.id, data)}
+            updateNodeProps={data => updateNodeProps(props.id, data)}
+            onResetPos={() => handleResetPos(props.id)}
           />
-        ), // 绑定 onAddChild
+        ),
         // customNode: ResizableNode,
       }
     }, [
       addChildNode,
-      changeLabel,
-      changeNote,
-      changeRect,
       deleteNode,
       getSelectableItems,
-      getZoom,
-      handleFixedPostion,
-      handleFixedRect,
       handleResetPos,
       readonly,
       toggleExpand,
+      updateNodeData,
+      updateNodeProps,
     ])
 
     return (
@@ -832,10 +710,8 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
         <ReactFlow
           nodes={nodes.filter(n => !n.isHidden)}
           edges={edges}
-          onConnect={onConnect}
           nodeTypes={nodeTypes}
-          // onNodesChange={onNodesChange}
-          // onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
           onNodeDragStop={onNodeDragStop}
           onNodeDrag={onNodeDrag}
           onNodesChange={handleNodesChange}

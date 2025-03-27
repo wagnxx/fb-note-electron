@@ -1,4 +1,4 @@
-import { Button, Dropdown, Input, Row, Space, Splitter } from 'antd'
+import { Button, Dropdown, Input, Row, Space, Splitter, Tabs, TabsProps } from 'antd'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { JsonItem, WordType } from '../Dict'
 import SelectableList from '@/components/list/SelectableList'
@@ -14,12 +14,13 @@ import { DownOutlined } from '@ant-design/icons'
 import { CloudMindFile } from '@/pages/mindmap/components/TabpanelCloud'
 import { useAuth } from '@/context/AuthContext'
 import WordRootJsonMenu from './WordRootJsonMenu'
+import TreeList, { TreeListRef } from './TreeList'
 
 type FlowData = TabItem
 type WordTypeWithCheck = WordType & {
   checked: boolean
 }
-type SelectableWordType = WordTypeWithCheck & {
+export type SelectableWordType = WordTypeWithCheck & {
   id: string
   disabled: boolean
 }
@@ -34,12 +35,16 @@ type BasicCloudFile = {
 
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
+enum SelectionTabsKey {
+  list = '1',
+  tree = '2',
+}
+
 const WordsDashboard = () => {
   const [rootItem, setrootItem] = useState<JsonItem | null>(null)
   const [fileOlder, setFileOlder] = useState(0)
 
   const [keywords, setKeywords] = useState('')
-  // const [selections, setSelections] = useState<SelectableWordType[]>([])
   const [pendingWords, setPendingWords] = useState<SelectableWordType[]>([])
   const [initialFlowData, setInitialFlowData] = useState<FlowData | null>(null)
   const [flowData, setFlowData] = useState<FlowData | null>(null)
@@ -54,7 +59,9 @@ const WordsDashboard = () => {
     order: 0,
   })
 
+  const [activeTabsKey, setActiveTabsKey] = useState<SelectionTabsKey>(SelectionTabsKey.list)
   const flowRef = useRef<FlowDiagramRef>(null)
+  const treeRef = useRef<TreeListRef>(null)
 
   const { isAuthenticated } = useAuth()
 
@@ -268,6 +275,14 @@ const WordsDashboard = () => {
     )
   }
 
+  const handleSetTags = () => setPendingWords(selections)
+
+  const handleCreateGroupNodes = () => {
+    const groups = treeRef.current?.getCheckedNodes()
+    console.log('treeRef nodes: ', groups)
+    flowRef.current?.handleCreateGroupNodes(groups?.nest || [])
+  }
+
   const updateNodes = useCallback(
     (fn: (data: ExtendedNode[]) => ExtendedNode[]) => {
       if (!initialFlowData?.name) return
@@ -363,11 +378,72 @@ const WordsDashboard = () => {
     },
   ]
 
+  const selectItems: TabsProps['items'] = [
+    {
+      key: SelectionTabsKey.list,
+      label: 'Flat List',
+      children: (
+        <>
+          {rootItem && (
+            <Row className=" my-3">
+              <Space>
+                <Input placeholder="enter keywords" value={keywords} onChange={e => setKeywords(e.target.value)} />
+                <Button onClick={handleSetTags}>
+                  {selections.length === 0 ? 'Reset Pendings' : 'Set As Pendings'}
+                </Button>
+              </Space>
+            </Row>
+          )}
+          <SelectableList
+            data={listData}
+            headerExtra={
+              <Button onClick={() => setIsShowMeaning(!isShowMeaning)}>
+                {' '}
+                {isShowMeaning ? 'Hide Meaning' : 'Show Meaning'}
+              </Button>
+            }
+            renderItem={item =>
+              isShowMeaning ? (
+                <div>
+                  <Space>
+                    <strong>{item.name}</strong>
+                    <span className=" text-gray-400">{item.meaning}</span>
+                  </Space>
+                  <p>
+                    【 <em className=" text-gray-400">{item.structurare}</em>】
+                  </p>
+                </div>
+              ) : (
+                <strong>{item.name}</strong>
+              )
+            }
+            // onChange={handleListSelecte}
+            onUpdate={handleUpdateDataSource}
+            multiple
+          />
+        </>
+      ),
+    },
+    {
+      key: SelectionTabsKey.tree,
+      label: 'Tree List',
+      children: (
+        <>
+          <Space>
+            <h3>Tree header</h3>
+            <Button onClick={handleCreateGroupNodes}>Create Group Nodes</Button>
+          </Space>
+          <TreeList data={listData} ref={treeRef} />
+        </>
+      ),
+    },
+  ]
+
   return (
     <ReactFlowProvider>
       <Splitter style={{ boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
         <Splitter.Panel
-          defaultSize="24%"
+          defaultSize="30%"
           min="10%"
           max="40%"
           style={{ padding: '12px', height: 'calc(100vh - 28px)', boxSizing: 'border-box' }}
@@ -379,45 +455,14 @@ const WordsDashboard = () => {
             <div className="flex-1 " style={{ overflow: 'auto', paddingTop: '50px' }}>
               <WordsDashboardHeader rootItem={rootItem} />
             </div>
-            {rootItem && (
-              <Row className=" my-3">
-                <Space>
-                  <Input placeholder="enter keywords" value={keywords} onChange={e => setKeywords(e.target.value)} />
-                  <Button onClick={() => setPendingWords(selections)}>
-                    {selections.length === 0 ? 'Reset Pendings' : 'Set As Pendings'}
-                  </Button>
-                </Space>
-              </Row>
-            )}
           </div>
-          <div style={{ height: 'calc(100vh - 200px)', overflow: 'auto' }}>
-            <SelectableList
-              data={listData}
-              headerExtra={
-                <Button onClick={() => setIsShowMeaning(!isShowMeaning)}>
-                  {' '}
-                  {isShowMeaning ? 'Hide Meaning' : 'Show Meaning'}
-                </Button>
-              }
-              renderItem={item =>
-                isShowMeaning ? (
-                  <div>
-                    <Space>
-                      <strong>{item.name}</strong>
-                      <span className=" text-gray-400">{item.meaning}</span>
-                    </Space>
-                    <p>
-                      【 <em className=" text-gray-400">{item.structurare}</em>】
-                    </p>
-                  </div>
-                ) : (
-                  <strong>{item.name}</strong>
-                )
-              }
-              // onChange={handleListSelecte}
-              onUpdate={handleUpdateDataSource}
-              multiple
-            />
+          <div>
+            <Tabs
+              style={{ height: 'calc(100vh - 200px)', overflow: 'auto' }}
+              items={selectItems}
+              activeKey={activeTabsKey}
+              onChange={val => setActiveTabsKey(val as unknown as SelectionTabsKey)}
+            ></Tabs>
           </div>
         </Splitter.Panel>
         <Splitter.Panel style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 28px)' }}>
@@ -470,6 +515,7 @@ const WordsDashboard = () => {
                 showTollbar={false}
                 showControls={false}
                 showMiniMap={false}
+                showBackground={false}
                 getSelectableItems={getSelectableForFlowItem}
                 onNodeListChange={updateNodes}
                 onEdgeListChange={updateEdges}

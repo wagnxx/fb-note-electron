@@ -1,69 +1,79 @@
 import React, { useCallback } from 'react'
-import { ExtendedNode } from '../components/flows/Flow'
-import { Edge, OnNodesChange } from '@xyflow/react'
+import { CreateGroupNode, ExtendedNode } from '../components/flows/Flow'
+import { applyNodeChanges, Edge, OnEdgesChange, OnNodesChange } from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
+import { CustomNodeData } from '../components/nodes/ExNode'
 
 type Props = {
   nodes: ExtendedNode[]
+  edges: Edge[]
   setNodes: React.Dispatch<React.SetStateAction<ExtendedNode[]>>
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>
   initialNodeSize: { width: number; height: number }
   nodeDistance: { vertical: number; horizontal: number }
   selectedNodes: ExtendedNode[]
   handleNodesChange: OnNodesChange<ExtendedNode>
+  handleEdgesChange: OnEdgesChange<Edge>
 }
 
 const useNodeOperaton = ({
   nodes,
+  edges,
   setNodes,
   setEdges,
   initialNodeSize,
   selectedNodes,
   nodeDistance,
   handleNodesChange,
+  handleEdgesChange,
 }: Props) => {
-  const crreateNewNode = ({
-    id,
-    type = 'customNode',
-    isRoot = false,
-    label = '',
-    position = { x: 250, y: 5 },
-    width = initialNodeSize.width,
-    height = initialNodeSize.height,
-    draggable = true,
-  }: {
-    id: string
-    type?: string
-    label?: string
-    isRoot?: boolean
-    width?: number
-    height?: number
-    position?: { x: number; y: number }
-    resizable?: boolean
-    draggable?: boolean
-  }): ExtendedNode => {
-    // outWidth
-    return {
+  const crreateNewNode = useCallback(
+    ({
       id,
-      type,
-      isRoot,
-      data: {
-        label: label,
-        isExpanded: true,
-      },
-      position,
-      isHidden: false,
-      children: [],
-      width,
-      height,
-      draggable,
-    }
-  }
+      type = 'customNode',
+      isRoot = false,
+      label = '',
+      position = { x: 250, y: 5 },
+      width = initialNodeSize.width,
+      height = initialNodeSize.height,
+      draggable = true,
+    }: {
+      id: string
+      type?: string
+      label?: string
+      isRoot?: boolean
+      width?: number
+      height?: number
+      position?: { x: number; y: number }
+      resizable?: boolean
+      draggable?: boolean
+    }): ExtendedNode => {
+      // outWidth
+      return {
+        id,
+        type,
+        isRoot,
+        data: {
+          label: label,
+          isExpanded: true,
+        },
+        position,
+        isHidden: false,
+        children: [],
+        width,
+        height,
+        draggable,
+      }
+    },
+    [initialNodeSize.height, initialNodeSize.width],
+  )
   const deleteNode = useCallback(
     (ids: string[]) => {
       handleNodesChange(ids.map(id => ({ id, type: 'remove' })))
+      const updateEdges = ids.map(id => edges.filter(edge => edge.source === id)).flat()
+      handleEdgesChange(updateEdges.map(edg => ({ id: edg.id, type: 'remove' })))
     },
-    [handleNodesChange],
+    [edges, handleEdgesChange, handleNodesChange],
   )
   const batchDelete = useCallback(() => {
     if (selectedNodes.length) {
@@ -182,60 +192,102 @@ const useNodeOperaton = ({
     [nodes],
   )
 
-  const grtResetPosFn = (id: string) => {
-    const nodesFn: (nds: ExtendedNode[]) => ExtendedNode[] = (nds: ExtendedNode[]) => {
-      const parentNodeIndex = nds.findIndex(n => n.id === id)
-      if (parentNodeIndex === -1) return nds // 确保找到父节点
-
-      const parentNode = nds[parentNodeIndex] // 获取最新的父节点
-
-      const newChildren = [...(parentNode.children || [])]
-
-      if (newChildren.length === 0) return nds
-
-      let newChildrenNodes = nds.filter(node => newChildren.includes(node.id))
-      newChildrenNodes = updateChildrenPos(parentNode, newChildrenNodes)
-
-      const newChildrenNodesPosY = newChildrenNodes.map(item => item.position.y)
-      const newChildrenNodesPosX = newChildrenNodes.map(item => item.position.x)
-
-      const rectRange = {
-        bottom: Math.max.apply(newChildrenNodesPosY, newChildrenNodesPosY) + initialNodeSize.height,
-        top: Math.min.apply(newChildrenNodesPosY, newChildrenNodesPosY),
-        left: Math.min.apply(newChildrenNodesPosX, newChildrenNodesPosX),
-        right: Math.max.apply(newChildrenNodesPosX, newChildrenNodesPosX) + initialNodeSize.width,
-      }
-
-      const updatedParentNode = {
-        ...parentNode,
-        data: {
-          ...parentNode.data,
-          rectRange,
+  const updateNodeData = useCallback(
+    (id: string, data: Partial<CustomNodeData>) => {
+      const node = nodes.find(item => item.id === id)
+      if (!node) return
+      const changes: { type: 'replace'; id: string; item: ExtendedNode }[] = [
+        {
+          id,
+          item: { ...node, data: { ...node.data, ...data } },
+          type: 'replace',
         },
+      ]
+      setNodes(oldNodes => applyNodeChanges(changes, oldNodes))
+    },
+    [nodes, setNodes],
+  )
+  const updateNodeProps = useCallback(
+    (id: string, attrs: Partial<ExtendedNode>) => {
+      const node = nodes.find(item => item.id === id)
+      if (!node) return
+      const changes: { type: 'replace'; id: string; item: ExtendedNode }[] = [
+        {
+          id,
+          item: { ...node, ...attrs },
+          type: 'replace',
+        },
+      ]
+      handleNodesChange(changes)
+    },
+    [handleNodesChange, nodes],
+  )
+
+  const createGroupChanges = useCallback(
+    (group: CreateGroupNode, groupIndex: number) => {
+      let parent = crreateNewNode({
+        id: group.name,
+        isRoot: false,
+        label: group.name,
+        position: { x: 500, y: 899 + 50 + 50 * groupIndex },
+      })
+      const childrenIds: string[] = []
+      let chidrenNodes = [] as ExtendedNode[]
+      if (group.children?.length) {
+        chidrenNodes = group.children.map((child, index) => {
+          const nodeId = parent.id + '_' + child.name
+          childrenIds.push(nodeId)
+          const childNode = crreateNewNode({
+            id: nodeId,
+            isRoot: false,
+            label: child.name,
+            position: {
+              x: 500 + 100 + 100,
+              y: 899 + 50 * (index + groupIndex),
+            },
+          })
+
+          return childNode
+        })
       }
 
-      // Fix bug: nodes were covered.
-      const rootNode = nds.find(n => n.isRoot)
-      const firstNode = updatedParentNode.isRoot ? updatedParentNode : rootNode
-      const previousNodes: ExtendedNode[] = [
-        firstNode,
-        updatedParentNode.isRoot ? null : updatedParentNode,
-        ...newChildrenNodes,
-      ].filter(Boolean) as ExtendedNode[]
+      parent = {
+        ...parent,
+        data: {
+          ...parent.data,
+          childCount: childrenIds.length,
+        },
+        children: childrenIds,
+      }
 
-      const updatedNodes = [
-        ...previousNodes,
-        ...nds.filter(node => {
-          if (node.id === updatedParentNode.id) return false
-          if (previousNodes.some(nNode => node.id === nNode.id)) return false
-          return true
-        }),
-      ]
+      const nodes = [parent, ...chidrenNodes]
 
-      return updatedNodes
-    }
-    return nodesFn
-  }
+      let changesNodes: { item: ExtendedNode; type: 'add' }[] = []
+      if (nodes.length === 1) {
+        changesNodes = [{ type: 'add', item: nodes[0] }]
+      }
+
+      let changesEdges: { item: Edge; type: 'add' }[] = []
+      if (nodes.length > 1) {
+        changesNodes = nodes.map(item => ({ item, type: 'add' }))
+
+        const newEdges = childrenIds.map(childId => {
+          return {
+            id: `${parent.id}-${childId}`,
+            source: parent.id,
+            target: childId,
+          }
+        })
+        changesEdges = newEdges.map(item => ({ item, type: 'add' }))
+      }
+
+      return {
+        nodes: changesNodes,
+        edges: changesEdges,
+      }
+    },
+    [crreateNewNode],
+  )
 
   return {
     crreateNewNode,
@@ -245,7 +297,9 @@ const useNodeOperaton = ({
     creaateGroupIds,
     updateChildrenPos,
     getGroupNodeIds,
-    grtResetPosFn,
+    updateNodeData,
+    updateNodeProps,
+    createGroupChanges,
   }
 }
 

@@ -6,7 +6,7 @@ import { Button, Splitter } from 'antd'
 import SidebarDir from './components/SidebarDir'
 import SideDrawer from './components/SideDrawer'
 import MindMapCanvasContainer, { MindMapRef, TabItem } from './components/MindMapCanvasContainer'
-import { LeftOutlined, SettingFilled } from '@ant-design/icons'
+import { LeftOutlined, SettingFilled, SettingTwoTone } from '@ant-design/icons'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import useFirstRender from '@/hooks/useFirstRender'
@@ -31,6 +31,7 @@ export type StoragedFile = {
 const MindMapPage: React.FC = () => {
   const [isSiderOpend, setIsSiderOpend] = useState(true)
   const [isDrawerVisible, setvIsDrawerVisible] = React.useState<boolean>(false)
+  const [isDrawerOpend, setIsDrawerOpend] = React.useState<boolean>(false)
 
   const mindRef = useRef<MindMapRef>(null)
   const isFirstRender = useFirstRender()
@@ -56,25 +57,27 @@ const MindMapPage: React.FC = () => {
 
   useEffect(() => {
     if (isFirstRender) return
-    setvIsDrawerVisible(!!currentNodeId)
-  }, [isFirstRender, currentNodeId])
+    setIsDrawerOpend(!!currentNodeId && isDrawerVisible)
+  }, [isFirstRender, currentNodeId, isDrawerVisible])
 
   return (
     <>
       <Splitter style={{ height: 'calc(100vh - 30px)', boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)' }} onResize={() => {}}>
         <Splitter.Panel defaultSize={'40'} min={'40'} max={'40'} resizable={false}>
-          <div className=" h-full flex  flex-col justify-between items-center">
-            <div className="sider-tool_top">
-              <Button icon={<LeftOutlined />} type="text" onClick={() => navigate(-1)} aria-label="back"></Button>
-            </div>
-            <div className="sider-tool_bottom flex flex-col items-center">
-              <Button
-                icon={isSiderOpend ? <PanelLeftClose /> : <PanelLeftOpen />}
-                type="text"
-                onClick={handleToggleSiderOpen}
-              />
-              <Button icon={<SettingFilled />} type="text" onClick={() => setvIsDrawerVisible(true)} />
-            </div>
+          <div className=" h-full flex  flex-col  items-center">
+            <Button icon={<LeftOutlined />} type="text" onClick={() => navigate(-1)} aria-label="back"></Button>
+            <Button
+              icon={isSiderOpend ? <PanelLeftClose /> : <PanelLeftOpen />}
+              type="text"
+              onClick={handleToggleSiderOpen}
+              style={{ marginBlockEnd: 'auto' }}
+            />
+
+            <Button
+              icon={isDrawerVisible ? <SettingTwoTone /> : <SettingFilled />}
+              type="text"
+              onClick={() => setvIsDrawerVisible(pre => !pre)}
+            />
           </div>
         </Splitter.Panel>
         <Splitter.Panel size={siderWidth} min={0} max={600}>
@@ -89,7 +92,7 @@ const MindMapPage: React.FC = () => {
         </Splitter.Panel>
       </Splitter>
 
-      <SideDrawer open={isDrawerVisible} onClose={() => setvIsDrawerVisible(false)} />
+      <SideDrawer open={isDrawerOpend} onClose={() => setIsDrawerOpend(false)} />
     </>
   )
 }
