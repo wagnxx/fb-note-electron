@@ -11,6 +11,7 @@ interface ToolbarProps {
   onRedo?: () => void
   onSave?: () => void
   onOpen?: () => void
+  onLogNodes?: () => void
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -22,12 +23,14 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onRedo,
   onSave,
   onOpen,
+  onLogNodes,
 }) => {
   const btns = [
     { label: 'Append Node', handler: onAppendNode },
     { label: 'Create Node', handler: onCreateNode },
     { label: 'Create Root', handler: onCreateRootNode },
     { label: 'Delete', handler: onDelete },
+    { label: 'Log Nodes', handler: onLogNodes },
     { label: ' 撤销', handler: onUndo },
     { label: ' 重做', handler: onRedo },
     { label: '保存', handler: onSave },

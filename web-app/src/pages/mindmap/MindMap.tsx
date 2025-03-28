@@ -1,32 +1,16 @@
 // src/pages/MindMapPage.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
-import { Edge } from '@xyflow/react'
 import { Button, Splitter } from 'antd'
 import SidebarDir from './components/SidebarDir'
 import SideDrawer from './components/SideDrawer'
-import MindMapCanvasContainer, { MindMapRef, TabItem } from './components/MindMapCanvasContainer'
+import MindMapCanvasContainer, { MindMapRef } from './components/MindMapCanvasContainer'
 import { LeftOutlined, SettingFilled, SettingTwoTone } from '@ant-design/icons'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import useFirstRender from '@/hooks/useFirstRender'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
-
-export type SheetTag = {
-  name: string
-  selected?: boolean
-  nodes: ExtendedNode[]
-  edges: Edge[]
-}
-export type StoragedFile = {
-  name: string
-  path?: string
-  id?: string
-  lastModified: number
-  data?: TabItem[]
-  order?: number
-}
+import { TabItem } from '@/features/mindmap/types'
 
 const MindMapPage: React.FC = () => {
   const [isSiderOpend, setIsSiderOpend] = useState(true)

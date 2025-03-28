@@ -2,7 +2,7 @@ import React, { FC } from 'react'
 import { formatDate } from '@/utils/utilsDate'
 import { CloseOutlined, CheckOutlined } from '@ant-design/icons'
 import { List, Popconfirm, Button, Badge } from 'antd'
-import { StoragedFile } from '../MindMap'
+import { StoragedFile } from '@/features/mindmap/types'
 
 const TabpanelList: FC<{
   fileList: StoragedFile[]

@@ -1,8 +1,8 @@
 import MultiSelectWithSelectAll from '@/components/select/MultiSelectWithSelectAll'
 import { useNotification } from '@/hooks/useNotification'
 import { copyText } from '@/utils/utilsClipboard'
-import { Badge, Form, FormInstance, Menu, MenuProps, Popover, Space, Switch } from 'antd'
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { Badge, Button, Form, FormInstance, Menu, MenuProps, Popconfirm, Popover, Space, Switch, Tooltip } from 'antd'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Handle, Node, NodeProps, NodeResizeControl, Position, useReactFlow } from '@xyflow/react'
 import { NodeHeader, NodeHeaderTitle, NodeHeaderActions } from '@/components/lib/components/node-header'
 import { BaseNode } from '@/components/lib/components/base-node'
@@ -13,27 +13,13 @@ import { NotebookText } from 'lucide-react'
 import './ExNode.css'
 import { cn } from '@/lib/utils'
 import useFirstRender from '@/hooks/useFirstRender'
-import { TopicTheme } from '@/pages/mindmap/components/SideDrawer'
 import { DefaultTopic } from '../../mindmapSlice'
 import { darkenColor } from '@/utils/utilsColor'
-import { ExtendedNode } from '../flows/Flow'
+import { noop } from '@/utils/utilsMisc'
+import { CustomItem, CustomNodeData, ExtendedNode } from '../../types'
 
 type MenuItem = Required<MenuProps>['items'][number]
 
-export type CustomItem = {
-  label: string
-  value: string
-}
-export interface CustomNodeData extends Record<string, unknown> {
-  label: string
-  note?: string
-  isExpanded: boolean
-  isNoteVisibility?: boolean
-  childCount?: number
-  outWidth?: number
-  outHeight?: number
-  topicTheme?: TopicTheme
-}
 // 方法类型
 export interface CustomNodeProps extends NodeProps<Node<CustomNodeData, string>> {
   minWidth?: number
@@ -50,7 +36,7 @@ export interface CustomNodeProps extends NodeProps<Node<CustomNodeData, string>>
   onExpandToggle: (val?: boolean) => void
   onDelete: () => void
   onResetPos: () => void
-
+  onFixedHierarchy: (deep?: boolean) => void
   updateNodeData: (data: Partial<CustomNodeData>) => void
   updateNodeProps: (data: Partial<ExtendedNode>) => void
 }
@@ -71,7 +57,7 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
     measured,
     updateNodeData,
     updateNodeProps,
-
+    onFixedHierarchy = noop,
     getSelectableItems,
     onAddChild,
     onExpandToggle,
@@ -274,6 +260,31 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
           key: 'FixedDeepChildrenPostion',
           disabled: true,
         },
+        {
+          label: (
+            <Tooltip title="The operation is mainly to address the floating state of the child element, forcing it to be fixed within the current parent element.">
+              <Popconfirm
+                title="Hierarchy"
+                description="Would you like to fix the hierarchy at all levels (deep fix)?c"
+                showCancel={true}
+                okText="Yes. deep fix"
+                cancelText="No. shallow fix"
+                onConfirm={e => {
+                  e?.stopPropagation()
+                  onFixedHierarchy(true)
+                }}
+                onCancel={e => {
+                  e?.stopPropagation()
+                  onFixedHierarchy(false)
+                }}
+              >
+                <Button onClick={e => e.stopPropagation()}>Fixed Hierarchy</Button>
+                {/* <span onClick={() => onFixedHierarchy(true)}> Fixed Hierarchy</span> */}
+              </Popconfirm>
+            </Tooltip>
+          ),
+          key: 'fixedHierarchy',
+        },
       ],
     },
     {
@@ -447,4 +458,5 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
   )
 }
 
-export default memo(CustomNode)
+// export default memo(CustomNode)
+export default CustomNode

@@ -4,9 +4,8 @@ import { JsonItem, WordType } from '../Dict'
 import SelectableList from '@/components/list/SelectableList'
 import WordsDashboardHeader from './WordsDashboardHeader'
 import WordProcessing from './WordProcessing'
-import { TabItem } from '@/pages/mindmap/components/MindMapCanvasContainer'
 import { Edge, ReactFlowProvider } from '@xyflow/react'
-import { ExtendedNode, FlowDiagramRef } from '@/features/mindmap/components/flows/Flow'
+import { FlowDiagramRef } from '@/features/mindmap/components/flows/Flow'
 import FlowWrapper from '@/features/mindmap/components/flows/FlowWrapper'
 import { createMindFile, getMindFile, saveMindFile } from '@/service/mind'
 import { useNotification } from '@/hooks/useNotification'
@@ -15,6 +14,7 @@ import { CloudMindFile } from '@/pages/mindmap/components/TabpanelCloud'
 import { useAuth } from '@/context/AuthContext'
 import WordRootJsonMenu from './WordRootJsonMenu'
 import TreeList, { TreeListRef } from './TreeList'
+import { ExtendedNode, TabItem } from '@/features/mindmap/types'
 
 type FlowData = TabItem
 type WordTypeWithCheck = WordType & {

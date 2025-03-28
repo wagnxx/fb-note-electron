@@ -1,6 +1,5 @@
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Tabs, Input } from 'antd'
-import { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
 import FlowWrapper from '@/features/mindmap/components/flows/FlowWrapper'
 import { Edge } from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
@@ -10,15 +9,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectGlobalSettings } from '@/features/mindmap/selectors'
 import { RootState } from '@/store/store'
 import { DefaultTopic, setSelectedNodeId, setSelectedNoteTheme } from '@/features/mindmap/mindmapSlice'
+import { ExtendedNode, TabItem } from '@/features/mindmap/types'
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string
-
-export type TabItem = {
-  key: string
-  name: string
-  nodes: ExtendedNode[] // 添加节点数据
-  edges: Edge[] // 添加边数据
-}
 
 const initialItems: TabItem[] = []
 

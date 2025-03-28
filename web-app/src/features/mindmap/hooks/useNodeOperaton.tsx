@@ -1,8 +1,7 @@
 import React, { useCallback } from 'react'
-import { CreateGroupNode, ExtendedNode } from '../components/flows/Flow'
 import { applyNodeChanges, Edge, OnEdgesChange, OnNodesChange } from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
-import { CustomNodeData } from '../components/nodes/ExNode'
+import { CreateGroupNode, CustomNodeData, ExtendedNode } from '../types'
 
 type Props = {
   nodes: ExtendedNode[]
@@ -33,6 +32,7 @@ const useNodeOperaton = ({
       type = 'customNode',
       isRoot = false,
       label = '',
+      parentId,
       position = { x: 250, y: 5 },
       width = initialNodeSize.width,
       height = initialNodeSize.height,
@@ -42,6 +42,7 @@ const useNodeOperaton = ({
       type?: string
       label?: string
       isRoot?: boolean
+      parentId?: string
       width?: number
       height?: number
       position?: { x: number; y: number }
@@ -53,6 +54,7 @@ const useNodeOperaton = ({
         id,
         type,
         isRoot,
+        parentId,
         data: {
           label: label,
           isExpanded: true,
@@ -67,6 +69,23 @@ const useNodeOperaton = ({
     },
     [initialNodeSize.height, initialNodeSize.width],
   )
+
+  function createEdge(sourceId: string, targetId: string): Edge {
+    return { id: `${sourceId}-${targetId}`, source: sourceId, target: targetId }
+  }
+
+  function isInside(position: { x: number; y: number }, parent: ExtendedNode): boolean {
+    return (
+      position.x >= parent.position.x &&
+      position.x <= parent.position.x + (parent.width || 0) &&
+      position.y >= parent.position.y &&
+      position.y <= parent.position.y + (parent.height || 0)
+    )
+  }
+  function alignToParent(x: number, parentNode: ExtendedNode): number {
+    return parentNode.position.x + 10
+  }
+
   const deleteNode = useCallback(
     (ids: string[]) => {
       handleNodesChange(ids.map(id => ({ id, type: 'remove' })))
@@ -133,10 +152,9 @@ const useNodeOperaton = ({
   }
 
   const updateChildrenPos = (parentNode: ExtendedNode, children: ExtendedNode[]) => {
-    const parentY = parentNode.position.y
-    const parentX = parentNode.position.x
     const pW = parentNode.measured?.width || parentNode.width || initialNodeSize.width
     const pH = parentNode.measured?.height || parentNode.height || initialNodeSize.height
+
     const totalChildren = children.length
 
     if (totalChildren === 0) return children // 没有子节点直接返回
@@ -146,22 +164,28 @@ const useNodeOperaton = ({
       children.reduce((sum, child) => sum + (child.height || initialNodeSize.height), 0) +
       (totalChildren - 1) * nodeDistance.vertical
 
-    // 计算起始 Y 坐标，确保父节点居中
-    let currentY = parentY + pH / 2 - totalChildrenHeight / 2
-    const standardX = parentX + pW + nodeDistance.horizontal
+    let currentY = pH / 2 - totalChildrenHeight / 2
 
     // 逐个放置子节点
-    const updatedChildren = children.map(child => {
+    const updatedChildren = children.map((child, index) => {
+      const relativeX = child.parentId === parentNode.id ? 0 : parentNode.position.x
+      const relativeY = child.parentId === parentNode.id ? 0 : parentNode.position.y
+      // 计算起始 Y 坐标，确保父节点居中
+
+      const standardX = relativeX + pW + nodeDistance.horizontal
+
       const childHeight = child.height || initialNodeSize.height
       const newChild = {
         ...child,
         position: {
           ...child.position,
           x: standardX,
-          y: currentY + childHeight / 2, // 让子节点的中心对齐计算出的 `currentY`
+          y: currentY + relativeY, // 让子节点的中心对齐计算出的 `currentY`
         },
       }
       currentY += childHeight + nodeDistance.vertical // 更新 `currentY`
+
+      console.log('index-currentY', `${index}-${currentY}`)
       return newChild
     })
 
@@ -223,6 +247,15 @@ const useNodeOperaton = ({
     [handleNodesChange, nodes],
   )
 
+  const batchUpdateNodeProps = useCallback(
+    (updateNodes: ExtendedNode[]) => {
+      if (!updateNodes.length) return
+
+      handleNodesChange(updateNodes.map(item => ({ id: item.id, item: { ...item }, type: 'replace' })))
+    },
+    [handleNodesChange],
+  )
+
   const createGroupChanges = useCallback(
     (group: CreateGroupNode, groupIndex: number) => {
       let parent = crreateNewNode({
@@ -241,6 +274,7 @@ const useNodeOperaton = ({
             id: nodeId,
             isRoot: false,
             label: child.name,
+            parentId: parent.id,
             position: {
               x: 500 + 100 + 100,
               y: 899 + 50 * (index + groupIndex),
@@ -289,8 +323,71 @@ const useNodeOperaton = ({
     [crreateNewNode],
   )
 
+  const filterTopLevelNodes = useCallback((nds: ExtendedNode[]): ExtendedNode[] => {
+    const nodeMap = new Map(nds.map(node => [node.id, node]))
+
+    return nds.filter(node => {
+      // 没有 parentId，表示是游离节点，直接保留
+      if (!node.parentId) return true
+
+      // 如果 parentId 不在 selectedNodes 内，则保留
+      return !nodeMap.has(node.parentId)
+    })
+  }, [])
+
+  const getGlobalPosition = useCallback((node: ExtendedNode, nodes: ExtendedNode[]): { x: number; y: number } => {
+    let pos = { x: node.position.x, y: node.position.y }
+
+    let parent = nodes.find(n => n.id === node.parentId)
+    while (parent) {
+      pos.x += parent.position.x
+      pos.y += parent.position.y
+      parent = nodes.find(n => n.id === parent?.parentId) // 递归寻找更高层的 parent
+    }
+
+    return pos
+  }, [])
+
+  const fixedHierarchy = useCallback((id: string, deep: boolean, nds: ExtendedNode[]): ExtendedNode[] => {
+    const nodeMap = new Map(nds.map(node => [node.id, node]))
+    const updatedNodes = new Set<string>() // 用来追踪哪些节点发生了变化
+
+    const fixNodeHierarchy = (nodeId: string) => {
+      const parentNode = nodeMap.get(nodeId)
+      if (!parentNode) return
+
+      parentNode.children?.forEach(childId => {
+        const childNode = nodeMap.get(childId)
+        if (childNode) {
+          const previousParentId = childNode.parentId
+
+          // 强制固定父子关系
+          childNode.parentId = parentNode.id
+
+          // 如果父ID有变化，则记录该子节点已更新
+          if (childNode.parentId !== previousParentId) {
+            updatedNodes.add(childNode.id)
+          }
+
+          if (deep) {
+            fixNodeHierarchy(childId) // 深度递归
+          }
+        }
+      })
+    }
+
+    // 修改完后返回更新后的节点
+    fixNodeHierarchy(id)
+
+    // 只返回被修改过的节点
+    return nds.filter(node => updatedNodes.has(node.id))
+  }, [])
+
   return {
     crreateNewNode,
+    createEdge,
+    isInside,
+    alignToParent,
     deleteNode,
     batchDelete,
     copyNode,
@@ -300,6 +397,10 @@ const useNodeOperaton = ({
     updateNodeData,
     updateNodeProps,
     createGroupChanges,
+    batchUpdateNodeProps,
+    filterTopLevelNodes,
+    getGlobalPosition,
+    fixedHierarchy,
   }
 }
 

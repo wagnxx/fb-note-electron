@@ -1,14 +1,13 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react'
 import { TabpanelRef } from './SidebarDir'
-import { TabItem } from './MindMapCanvasContainer'
 import { useNotification } from '@/hooks/useNotification'
 import TabpanelList from './TabpanelList'
 import { createMindFile, deleteMindFiles, getAllMindFiles, saveMindFile } from '@/service/mind'
 import { useAuth } from '@/context/AuthContext'
-import { StoragedFile } from '../MindMap'
 import { Button, Spin } from 'antd'
 import { Timestamp } from 'firebase/firestore'
 import { CloudDownloadOutlined } from '@ant-design/icons'
+import { TabItem, StoragedFile } from '@/features/mindmap/types'
 
 export type CloudMindFile = {
   id?: string

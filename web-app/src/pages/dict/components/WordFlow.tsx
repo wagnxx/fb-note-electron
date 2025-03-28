@@ -1,6 +1,6 @@
 import { ModalChildProps, ModalChildRef } from '@/components/modal/ModalForm'
-import { ExtendedNode } from '@/features/mindmap/components/flows/Flow'
 import FlowWrapper from '@/features/mindmap/components/flows/FlowWrapper'
+import { ExtendedNode } from '@/features/mindmap/types'
 import { CloudMindFile } from '@/pages/mindmap/components/TabpanelCloud'
 import { Tabs, TabsProps } from 'antd'
 import React, { forwardRef } from 'react'

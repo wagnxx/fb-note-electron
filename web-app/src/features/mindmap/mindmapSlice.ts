@@ -1,7 +1,6 @@
 import React from 'react'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ExtendedNode } from './components/flows/Flow'
-import { TopicTheme } from '@/pages/mindmap/components/SideDrawer'
+import { ExtendedNode, TopicTheme } from './types'
 
 // 定义支持的属性类型
 type PropertyType = 'string' | 'number' | 'boolean' | 'object' | 'array'

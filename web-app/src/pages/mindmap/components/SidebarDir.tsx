@@ -2,10 +2,10 @@ import { DownOutlined } from '@ant-design/icons'
 import { Button, Dropdown, Form, FormInstance, Input, MenuProps, Tabs, TabsProps } from 'antd'
 import React, { FC, useRef, useState } from 'react'
 import TabpanelLocal from './TabpanelLocal'
-import { TabItem } from './MindMapCanvasContainer'
 import TabpanelCloud from './TabpanelCloud'
 import { useNotification } from '@/hooks/useNotification'
 import { Save } from 'lucide-react'
+import { TabItem } from '@/features/mindmap/types'
 
 type StorageType = 'local' | 'cloud'
 

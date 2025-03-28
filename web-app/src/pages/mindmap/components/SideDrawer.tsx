@@ -21,13 +21,6 @@ import Title from 'antd/es/typography/Title'
 import React, { FC, useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
-export type TopicTheme = {
-  key: string | number
-  name: string
-  label: string
-  style: React.CSSProperties
-}
-
 const borderOptions = [
   { label: 'Default', value: 'solid' },
   { label: 'Dashed', value: 'dashed' },

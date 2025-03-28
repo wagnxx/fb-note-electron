@@ -1,12 +1,13 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react'
-import { StoragedFile } from '../MindMap'
+
 import { useNotification } from '@/hooks/useNotification'
 import { delJsonFile, getJsonFromDocFile, saveJsonToDocFile } from '@/utils/utilsIpc'
 import useFirstRender from '@/hooks/useFirstRender'
-import { TabItem } from './MindMapCanvasContainer'
+
 import { TabpanelRef } from './SidebarDir'
 import TabpanelList from './TabpanelList'
 import { Spin } from 'antd'
+import { StoragedFile, TabItem } from '@/features/mindmap/types'
 
 const FILELIST_STORAGE_KEY = 'MaindMap_paeg_file_list_key'
 
