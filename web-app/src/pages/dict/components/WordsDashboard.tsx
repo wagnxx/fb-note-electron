@@ -121,8 +121,8 @@ const WordsDashboard = () => {
         edges: [],
       }
       if (data.length === 0) {
-        setInitialFlowData(defaultData)
-        setFlowData(defaultData)
+        setInitialFlowData(() => defaultData)
+        setFlowData(() => defaultData)
         setfileInfo(pre => ({
           ...pre,
           id: '',
@@ -132,8 +132,8 @@ const WordsDashboard = () => {
       }
       if (data.length > 1) {
         showNotification('error', `There are multiple ${filename} files, please check them.`, 'message')
-        setInitialFlowData(defaultData)
-        setFlowData(defaultData)
+        setInitialFlowData(() => defaultData)
+        setFlowData(() => defaultData)
         setfileInfo(pre => ({
           ...pre,
           id: '',
@@ -199,9 +199,11 @@ const WordsDashboard = () => {
       return node
     })
 
+    const flowDataSubmit = JSON.parse(JSON.stringify(flowData))
+
     const params: Partial<CloudMindFile> = {
       name: rootItem.name,
-      data: [flowData],
+      data: [flowDataSubmit],
       order: fileOlder,
     }
 

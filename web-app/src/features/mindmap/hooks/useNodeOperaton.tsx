@@ -185,7 +185,6 @@ const useNodeOperaton = ({
       }
       currentY += childHeight + nodeDistance.vertical // 更新 `currentY`
 
-      console.log('index-currentY', `${index}-${currentY}`)
       return newChild
     })
 

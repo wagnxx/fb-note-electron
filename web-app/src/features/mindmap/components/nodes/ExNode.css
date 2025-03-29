@@ -1,3 +1,11 @@
 .not-allow-drag {
   pointer-events: none; /* 禁止拖拽 */
 }
+.react-flow__node.highlight {
+  background-color: #918fbe;
+  color: white;
+}
+ 
+.intersection-flow .react-flow__handle {
+  display: none;
+}
