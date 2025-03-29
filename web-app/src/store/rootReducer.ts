@@ -6,9 +6,9 @@ import userReducer from '@/features/user/userSlice'
 import authReducer from '@/features/auth/authSlice'
 import settingsReducer from '@/features/settings/settingsSlice'
 import langReducer from '@/features/language/languageSlice'
-import videoPlayerSlice from '@/features/video/videoPlayer'
-import mindmapSlice from '@/features/mindmap/mindmapSlice'
-// import mindMapReducer from './mindMapSlice'
+import videoPlayerReducer from '@/features/video/videoPlayer'
+import mindmapConfigReducer from '@/features/mindmap//slices/configSlice'
+import mindmapFlowwReducer from '@/features/mindmap//slices/flowSlice'
 
 // 配置持久化设置
 const persistConfig = {
@@ -23,8 +23,9 @@ const rootReducer = combineReducers({
   auth: authReducer,
   settings: settingsReducer,
   language: langReducer,
-  videoPlayer: videoPlayerSlice,
-  mindmap: mindmapSlice,
+  videoPlayer: videoPlayerReducer,
+  mindmapConfig: mindmapConfigReducer,
+  mindmapFlow: mindmapFlowwReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

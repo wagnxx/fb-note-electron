@@ -13,10 +13,10 @@ import { NotebookText } from 'lucide-react'
 import './ExNode.css'
 import { cn } from '@/lib/utils'
 import useFirstRender from '@/hooks/useFirstRender'
-import { DefaultTopic } from '../../mindmapSlice'
 import { darkenColor } from '@/utils/utilsColor'
 import { noop } from '@/utils/utilsMisc'
 import { CustomItem, CustomNodeData, ExtendedNode } from '../../types'
+import { DefaultTopic } from '../../slices/configSlice'
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -435,6 +435,7 @@ const CustomNode: React.FC<CustomNodeProps> = props => {
           onChange={e => setNote(e.target.value)}
           onBlur={e => handleTextareBlur(e)}
           onClickCapture={e => e.stopPropagation()}
+          onKeyDown={e => e.stopPropagation()}
         />
       </div>
 

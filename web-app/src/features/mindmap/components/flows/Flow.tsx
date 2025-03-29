@@ -347,6 +347,14 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
 
         const nodeMap = new Map(nodes.map(n => [n.id, n]))
 
+        const historyIntersectionNodes = nodes.filter(node => node.className?.includes('highlight'))
+        const historyIntersectionNodesChanges: NodeChange<ExtendedNode>[] = historyIntersectionNodes.map(item => ({
+          id: item.id,
+          type: 'replace',
+          item: { ...item, className: '' },
+        }))
+        nodeChanges.push(...historyIntersectionNodesChanges)
+
         // 处理组内节点拖拽
         let parentNode = nodeMap.get(node.parentId ?? '')
         if (parentNode) {
@@ -699,6 +707,8 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
           defaultEdgeOptions={defaultEdgeOptions}
           zoomOnScroll={true}
           nodeDragThreshold={10}
+          minZoom={0.2}
+          maxZoom={5}
           proOptions={{
             hideAttribution: true,
           }}

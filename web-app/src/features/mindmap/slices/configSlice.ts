@@ -1,6 +1,6 @@
 import React from 'react'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ExtendedNode, TopicTheme } from './types'
+import { ExtendedNode, TopicTheme } from '../types'
 
 // 定义支持的属性类型
 type PropertyType = 'string' | 'number' | 'boolean' | 'object' | 'array'
@@ -30,7 +30,7 @@ const GLOBAL_PROPERTIES: StrictGlobalProperties = [
 ] satisfies StrictGlobalProperties
 
 // **Redux State**
-interface MindmapState {
+interface MindmapConfigState {
   currentNoteTheme: TopicTheme | null
   globalSettings: StrictGlobalProperties
   currentNode: ExtendedNode | null
@@ -44,7 +44,7 @@ export const DefaultTopic: TopicTheme = {
   style: { backgroundColor: '#fff', color: '#000000' },
 }
 // **初始 State**
-const initialState: MindmapState = {
+const initialState: MindmapConfigState = {
   globalSettings: GLOBAL_PROPERTIES,
   currentNode: null,
   currentNodeId: null,
@@ -85,8 +85,8 @@ type GlobalSettingsAction =
   | { type: 'change'; payload: Partial<GlobalProperty<PropertyType>>[] } // 👈 `change` 只允许部分字段
 
 // **创建 Redux Slice**
-const mindmapSlice = createSlice({
-  name: 'mindmap',
+const configSlice = createSlice({
+  name: 'mindmapConfig',
   initialState,
   reducers: {
     updateGlobalSettings: (state, action: PayloadAction<GlobalSettingsAction>) => {
@@ -134,5 +134,5 @@ export const {
   setSelectedNoteTheme,
   setSelectedNodeId,
   updateSelectedNoteTheme,
-} = mindmapSlice.actions
-export default mindmapSlice.reducer
+} = configSlice.actions
+export default configSlice.reducer

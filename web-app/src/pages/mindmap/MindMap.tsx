@@ -19,7 +19,7 @@ const MindMapPage: React.FC = () => {
 
   const mindRef = useRef<MindMapRef>(null)
   const isFirstRender = useFirstRender()
-  const currentNodeId = useSelector((state: RootState) => state.mindmap.currentNodeId)
+  const currentNodeId = useSelector((state: RootState) => state.mindmapConfig.currentNodeId)
 
   const navigate = useNavigate()
 

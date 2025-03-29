@@ -1,6 +1,9 @@
 import ColorGridPicker from '@/components/select/ColorGridPicker'
-import { setSelectedNoteTheme, updateGlobalSettings, updateSelectedNoteTheme } from '@/features/mindmap/mindmapSlice'
-import { selectGlobalSettings } from '@/features/mindmap/selectors'
+import {
+  setSelectedNoteTheme,
+  updateGlobalSettings,
+  updateSelectedNoteTheme,
+} from '@/features/mindmap/slices/configSlice'
 import { RootState } from '@/store/store'
 import { CaretRightOutlined, DownOutlined } from '@ant-design/icons'
 import {
@@ -61,10 +64,9 @@ const SideDrawer: FC<{
 }> = ({ open, onClose }) => {
   const [loading, setloading] = useState(false)
 
-  const globalSettings = useSelector(selectGlobalSettings)
-  const currentNoteTheme = useSelector((state: RootState) => state.mindmap.currentNoteTheme)
-  const currentNodeId = useSelector((state: RootState) => state.mindmap.currentNodeId)
-  const topicThemes = useSelector((state: RootState) => state.mindmap.topicThemes)
+  const { currentNoteTheme, currentNodeId, topicThemes, globalSettings } = useSelector(
+    (state: RootState) => state.mindmapConfig,
+  )
 
   const dispatch = useDispatch()
 

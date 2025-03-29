@@ -406,7 +406,7 @@ const WordsDashboard = () => {
             }
             renderItem={item =>
               isShowMeaning ? (
-                <div>
+                <div style={{ fontSize: '12px' }}>
                   <Space>
                     <strong>{item.name}</strong>
                     <span className=" text-gray-400">{item.meaning}</span>
