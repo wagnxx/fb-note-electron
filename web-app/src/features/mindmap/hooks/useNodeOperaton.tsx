@@ -1,31 +1,20 @@
-import React, { useCallback } from 'react'
-import { applyNodeChanges, Edge, OnEdgesChange, OnNodesChange } from '@xyflow/react'
+import { useCallback } from 'react'
+import { applyNodeChanges, Edge, useEdgesState, useNodesState } from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateGroupNode, CustomNodeData, ExtendedNode } from '../types'
+import { CreateGroupNode, CustomNodeData, ExtendedEdge, ExtendedNode } from '../types'
 
 type Props = {
-  nodes: ExtendedNode[]
-  edges: Edge[]
-  setNodes: React.Dispatch<React.SetStateAction<ExtendedNode[]>>
-  setEdges: React.Dispatch<React.SetStateAction<Edge[]>>
+  initNodeList: ExtendedNode[]
+  initEdgeList: ExtendedEdge[]
   initialNodeSize: { width: number; height: number }
   nodeDistance: { vertical: number; horizontal: number }
   selectedNodes: ExtendedNode[]
-  handleNodesChange: OnNodesChange<ExtendedNode>
-  handleEdgesChange: OnEdgesChange<Edge>
 }
 
-const useNodeOperaton = ({
-  nodes,
-  edges,
-  setNodes,
-  setEdges,
-  initialNodeSize,
-  selectedNodes,
-  nodeDistance,
-  handleNodesChange,
-  handleEdgesChange,
-}: Props) => {
+const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selectedNodes, nodeDistance }: Props) => {
+  const [nodes, setNodes, handleNodesChange] = useNodesState(initNodeList)
+  const [edges, setEdges, handleEdgesChange] = useEdgesState(initEdgeList)
+
   const crreateNewNode = useCallback(
     ({
       id,
@@ -383,6 +372,12 @@ const useNodeOperaton = ({
   }, [])
 
   return {
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    handleNodesChange,
+    handleEdgesChange,
     crreateNewNode,
     createEdge,
     isInside,

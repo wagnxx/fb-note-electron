@@ -6,6 +6,7 @@ export interface ExtendedNode extends Node<CustomNodeData> {
   isHidden?: boolean
   children?: string[]
 }
+export type ExtendedEdge = Edge
 
 export type CustomItem = {
   label: string
@@ -21,14 +22,14 @@ export type TabItem = {
   key: string
   name: string
   nodes: ExtendedNode[] // 添加节点数据
-  edges: Edge[] // 添加边数据
+  edges: ExtendedEdge[] // 添加边数据
 }
 
 export type SheetTag = {
   name: string
   selected?: boolean
   nodes: ExtendedNode[]
-  edges: Edge[]
+  edges: ExtendedEdge[]
 }
 export type StoragedFile = {
   name: string

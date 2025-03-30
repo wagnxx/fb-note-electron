@@ -6,8 +6,6 @@ import {
   BackgroundVariant,
   useReactFlow,
   Background,
-  useNodesState,
-  useEdgesState,
   EdgeAddChange,
   NodeChange,
   EdgeChange,
@@ -18,7 +16,6 @@ import {
 import { v4 as uuidv4 } from 'uuid'
 import { noop } from '@/utils/utilsMisc'
 
-import CustomNode from '../nodes/ExNode'
 import { calculateMiddleValue } from '@/utils/utilsArray'
 import Toolbar from '../tools/Toolbar'
 
@@ -29,6 +26,7 @@ import '@xyflow/react/dist/style.css' // 关键修复点
 import useRegisterKeypressCtrol from '../../hooks/useRegisterKeypressCtrol'
 import useNodeOperaton from '../../hooks/useNodeOperaton'
 import { CreateGroupNode, CustomItem, CustomNodeData, ExtendedNode, TopicTheme } from '../../types'
+import ExNode from '../nodes/ExNode'
 
 export type FlowProps = {
   bgVType?: BackgroundVariant
@@ -103,8 +101,8 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
     ref,
   ) => {
     const { getZoom } = useReactFlow()
-    const [nodes, setNodes, handleNodesChange] = useNodesState(initNodeList)
-    const [edges, setEdges, handleEdgesChange] = useEdgesState(initEdgeList)
+    // const [nodes, setNodes, handleNodesChange] = useNodesState(initNodeList)
+    // const [edges, setEdges, handleEdgesChange] = useEdgesState(initEdgeList)
     const [selectedNodes, setSelectedNodes] = useState<ExtendedNode[]>([])
     const selectedNodeIds = useRef<Set<string>>(new Set())
     const [selectedNode, setselectedNode] = useState<ExtendedNode | null>(null)
@@ -114,33 +112,31 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
     const { getIntersectingNodes } = useReactFlow<ExtendedNode>()
 
     const {
+      nodes,
+      edges,
+      setNodes,
+      setEdges,
+      handleNodesChange,
+      handleEdgesChange,
       crreateNewNode,
-      createEdge,
-      isInside,
-      alignToParent,
-      deleteNode,
       batchDelete,
       copyNode,
       creaateGroupIds,
       updateChildrenPos,
-      getGroupNodeIds,
       updateNodeData,
       updateNodeProps,
+      deleteNode,
       createGroupChanges,
       batchUpdateNodeProps,
       filterTopLevelNodes,
       getGlobalPosition,
       fixedHierarchy,
     } = useNodeOperaton({
-      nodes,
-      edges,
-      setNodes,
-      setEdges,
+      initNodeList,
+      initEdgeList,
       selectedNodes,
       initialNodeSize: { width: NODE_WIDTH, height: NODE_HEIGHT },
       nodeDistance: NODE_DISTANCE,
-      handleNodesChange,
-      handleEdgesChange,
     })
 
     const rootId = compId
@@ -664,7 +660,8 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       })
 
       return {
-        customNode: (props: any) => <CustomNode {...handleCustomNodeProps(props)} />,
+        customNode: (props: any) => <ExNode {...handleCustomNodeProps(props)} />,
+        // customNode: BasicNode,
       }
     }, [
       HandleFixedHierarchy,
