@@ -8,7 +8,7 @@ import { Action } from '@/utils/utilsAction'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectGlobalSettings } from '@/features/mindmap/selectors'
 import { RootState } from '@/store/store'
-import { DefaultTopic, setSelectedNodeId, setSelectedNoteTheme } from '@/features/mindmap/slices/configSlice'
+import { DefaultTopic, setSelectedNodeId, setSelectedNoteTheme } from '@/features/mindmap/slices/flowSlice'
 import { ExtendedNode, TabItem } from '@/features/mindmap/types'
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string
@@ -23,7 +23,7 @@ const MindMapCanvasContainer = forwardRef<MindMapRef, any>((_, ref) => {
   const [newLabel, setNewLabel] = useState<string>('')
 
   const newTabIndex = useRef(0)
-  const currentNoteTheme = useSelector((state: RootState) => state.mindmapConfig.currentNoteTheme)
+  const currentNoteTheme = useSelector((state: RootState) => state.mindmapFlow.currentNoteTheme)
 
   const dispatch = useDispatch()
   const globalSettings = useSelector(selectGlobalSettings)

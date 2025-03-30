@@ -709,7 +709,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
           proOptions={{
             hideAttribution: true,
           }}
-          fitView
+          fitView={false}
         >
           {showBackground && (
             <Background variant={bgVType} color={bgColor} size={bgSize / getZoom()} gap={bgGap / getZoom()} />

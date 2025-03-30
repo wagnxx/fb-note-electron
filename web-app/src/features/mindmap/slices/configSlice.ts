@@ -1,6 +1,4 @@
-import React from 'react'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ExtendedNode, TopicTheme } from '../types'
 
 // 定义支持的属性类型
 type PropertyType = 'string' | 'number' | 'boolean' | 'object' | 'array'
@@ -31,51 +29,14 @@ const GLOBAL_PROPERTIES: StrictGlobalProperties = [
 
 // **Redux State**
 interface MindmapConfigState {
-  currentNoteTheme: TopicTheme | null
   globalSettings: StrictGlobalProperties
-  currentNode: ExtendedNode | null
-  currentNodeId: string | null
-  topicThemes: TopicTheme[]
+  isSiderOpend: boolean
 }
-export const DefaultTopic: TopicTheme = {
-  key: 'defaul',
-  name: 'default',
-  label: 'Default',
-  style: { backgroundColor: '#fff', color: '#000000' },
-}
+
 // **初始 State**
 const initialState: MindmapConfigState = {
   globalSettings: GLOBAL_PROPERTIES,
-  currentNode: null,
-  currentNodeId: null,
-  currentNoteTheme: DefaultTopic,
-  topicThemes: [
-    {
-      key: 1,
-      name: 'veryImportant',
-      label: 'Very Important',
-      style: { background: '#6A1F87', color: '#FFFFFF' },
-    },
-    {
-      key: 2,
-      name: 'important',
-      label: 'Important',
-      style: { background: '#861F56', color: '#FFFFFF' },
-    },
-    {
-      key: 3,
-      name: 'crossout',
-      label: 'Cross out',
-      style: { background: '#FFFFFF', color: '#000000', textDecorationLine: 'line-through' },
-    },
-    {
-      key: 4,
-      name: 'default',
-      label: 'Default',
-      style: { background: '#FFC947', color: '#000000' },
-    },
-    DefaultTopic,
-  ],
+  isSiderOpend: true,
 }
 
 // **定义 Action 类型**
@@ -105,34 +66,12 @@ const configSlice = createSlice({
           break
       }
     },
-    setSelectedNode: (state, action: PayloadAction<ExtendedNode | null>) => {
-      state.currentNode = action.payload
-    },
-    setSelectedNodeId: (state, action: PayloadAction<string | null>) => {
-      state.currentNodeId = action.payload
-    },
-    setSelectedNoteTheme: (state, action: PayloadAction<TopicTheme>) => {
-      state.currentNoteTheme = action.payload
-    },
-    updateSelectedNoteTheme: (state, action: PayloadAction<React.CSSProperties>) => {
-      if (!state.currentNoteTheme) return
-      state.currentNoteTheme = {
-        ...state.currentNoteTheme,
-        style: {
-          ...state.currentNoteTheme?.style,
-          ...action.payload,
-        },
-      }
+    toggleIsSiderOpend: state => {
+      state.isSiderOpend = !state.isSiderOpend
     },
   },
 })
 
 // **导出 Redux actions 和 reducer**
-export const {
-  updateGlobalSettings,
-  setSelectedNode,
-  setSelectedNoteTheme,
-  setSelectedNodeId,
-  updateSelectedNoteTheme,
-} = configSlice.actions
+export const { updateGlobalSettings, toggleIsSiderOpend } = configSlice.actions
 export default configSlice.reducer

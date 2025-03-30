@@ -1,6 +1,7 @@
+import React from 'react'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { applyNodeChanges, applyEdgeChanges, NodeChange, EdgeChange } from '@xyflow/react'
-import { ExtendedEdge, ExtendedNode } from '../types'
+import { ExtendedEdge, ExtendedNode, TopicTheme } from '../types'
 
 interface HistoryRecord {
   snapshot: { nodes: ExtendedNode[]; edges: ExtendedEdge[] }
@@ -12,7 +13,47 @@ interface FlowState {
   history: HistoryRecord[]
   current: number
   initData: { nodes: ExtendedNode[]; edges: ExtendedEdge[] } | null
+
+  // setings
+  currentNoteTheme: TopicTheme | null
+  currentNodeId: string | null
+  topicThemes: TopicTheme[]
 }
+
+export const DefaultTopic: TopicTheme = {
+  key: 'defaul',
+  name: 'default',
+  label: 'Default',
+  style: { backgroundColor: '#fff', color: '#000000' },
+}
+
+const topicThemes = [
+  {
+    key: 1,
+    name: 'veryImportant',
+    label: 'Very Important',
+    style: { background: '#6A1F87', color: '#FFFFFF' },
+  },
+  {
+    key: 2,
+    name: 'important',
+    label: 'Important',
+    style: { background: '#861F56', color: '#FFFFFF' },
+  },
+  {
+    key: 3,
+    name: 'crossout',
+    label: 'Cross out',
+    style: { background: '#FFFFFF', color: '#000000', textDecorationLine: 'line-through' },
+  },
+  {
+    key: 4,
+    name: 'default',
+    label: 'Default',
+    style: { background: '#FFC947', color: '#000000' },
+  },
+  DefaultTopic,
+]
 
 const initialState: FlowState = {
   nodes: [],
@@ -20,6 +61,11 @@ const initialState: FlowState = {
   history: [],
   current: -1,
   initData: null,
+  // settings
+
+  currentNodeId: null,
+  currentNoteTheme: DefaultTopic,
+  topicThemes,
 }
 
 const flowSlice = createSlice({
@@ -123,8 +169,34 @@ const flowSlice = createSlice({
         state.edges = edges
       }
     },
+    setSelectedNodeId: (state, action: PayloadAction<string | null>) => {
+      state.currentNodeId = action.payload
+    },
+    setSelectedNoteTheme: (state, action: PayloadAction<TopicTheme>) => {
+      state.currentNoteTheme = action.payload
+    },
+    updateSelectedNoteTheme: (state, action: PayloadAction<React.CSSProperties>) => {
+      if (!state.currentNoteTheme) return
+      state.currentNoteTheme = {
+        ...state.currentNoteTheme,
+        style: {
+          ...state.currentNoteTheme?.style,
+          ...action.payload,
+        },
+      }
+    },
   },
 })
 
-export const { initialize, saveHistory, saveFlowState, clearFlowData, undo, redo } = flowSlice.actions
+export const {
+  initialize,
+  saveHistory,
+  saveFlowState,
+  clearFlowData,
+  undo,
+  redo,
+  setSelectedNoteTheme,
+  setSelectedNodeId,
+  updateSelectedNoteTheme,
+} = flowSlice.actions
 export default flowSlice.reducer

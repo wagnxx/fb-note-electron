@@ -1,5 +1,5 @@
 // src/pages/MindMapPage.tsx
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { Button, Splitter } from 'antd'
 import SidebarDir from './components/SidebarDir'
 import SideDrawer from './components/SideDrawer'
@@ -8,18 +8,20 @@ import { LeftOutlined, SettingFilled, SettingTwoTone } from '@ant-design/icons'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import useFirstRender from '@/hooks/useFirstRender'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { TabItem } from '@/features/mindmap/types'
+import { toggleIsSiderOpend } from '@/features/mindmap/slices/configSlice'
 
 const MindMapPage: React.FC = () => {
-  const [isSiderOpend, setIsSiderOpend] = useState(true)
   const [isDrawerVisible, setvIsDrawerVisible] = React.useState<boolean>(false)
   const [isDrawerOpend, setIsDrawerOpend] = React.useState<boolean>(false)
 
   const mindRef = useRef<MindMapRef>(null)
   const isFirstRender = useFirstRender()
-  const currentNodeId = useSelector((state: RootState) => state.mindmapConfig.currentNodeId)
+  const currentNodeId = useSelector((state: RootState) => state.mindmapFlow.currentNodeId)
+  const isSiderOpend = useSelector((state: RootState) => state.mindmapConfig.isSiderOpend)
+  const dispatch = useDispatch()
 
   const navigate = useNavigate()
 
@@ -36,7 +38,7 @@ const MindMapPage: React.FC = () => {
     mindRef.current?.resetItems(data)
   }
   const handleToggleSiderOpen = () => {
-    setIsSiderOpend(pre => !pre)
+    dispatch(toggleIsSiderOpend())
   }
 
   useEffect(() => {

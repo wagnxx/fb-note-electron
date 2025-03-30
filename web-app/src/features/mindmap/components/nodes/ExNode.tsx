@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import { darkenColor } from '@/utils/utilsColor'
 import { noop } from '@/utils/utilsMisc'
 import { CustomItem, CustomNodeData, ExtendedNode } from '../../types'
-import { DefaultTopic } from '../../slices/configSlice'
+import { DefaultTopic } from '../../slices/flowSlice'
 import ActionMenu from './ActionMenu'
 
 type MenuItem = Required<MenuProps>['items'][number]
