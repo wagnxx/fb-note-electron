@@ -1,6 +1,7 @@
 // src/features/mindmap/components/Toolbar.tsx
 import React from 'react'
-import { Button, Space } from 'antd'
+import { Button, Dropdown, Space } from 'antd'
+import { EllipsisOutlined } from '@ant-design/icons'
 
 interface ToolbarProps {
   onCreateRootNode?: () => void
@@ -36,6 +37,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
     { label: '保存', handler: onSave },
     { label: ' 打开文件', handler: onOpen },
   ]
+  const validBtns = btns.filter(item => item.handler)
   return (
     <div
       style={{
@@ -51,13 +53,28 @@ const Toolbar: React.FC<ToolbarProps> = ({
       }}
     >
       <Space>
-        {btns
+        {validBtns
+          .slice(0, 1)
           .filter(item => item.handler)
           .map((btn, index) => (
             <Button key={index} size="small" type="text" disabled={!btn.handler} onClick={btn.handler}>
               {btn.label}
             </Button>
           ))}
+        <Dropdown
+          menu={{
+            items: validBtns.slice(1).map((btn, index) => ({
+              key: index,
+              label: (
+                <Button key={index} size="small" type="text" disabled={!btn.handler} onClick={btn.handler}>
+                  {btn.label}
+                </Button>
+              ),
+            })),
+          }}
+        >
+          <Button type="text" icon={<EllipsisOutlined />}></Button>
+        </Dropdown>
       </Space>
     </div>
   )

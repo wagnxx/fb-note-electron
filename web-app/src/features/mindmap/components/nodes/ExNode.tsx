@@ -1,5 +1,5 @@
 import { Badge, MenuProps, Popover, Space } from 'antd'
-import React, { memo, useCallback, useRef, useState } from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Handle, Node, NodeProps, NodeResizeControl, Position } from '@xyflow/react'
 import { NodeHeader, NodeHeaderActions, NodeHeaderTitle } from '@/components/lib/components/node-header'
 import { BaseNode } from '@/components/lib/components/base-node'
@@ -83,6 +83,13 @@ const ExNode: React.FC<CustomNodeProps> = props => {
   const inputLabel = useRef<HTMLInputElement>(null)
   const baseNodeRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    setlabel(data.label)
+  }, [data.label])
+  useEffect(() => {
+    setNote(data.note)
+  }, [data.note])
+
   const toggleNoteVisibility = useCallback(() => {
     updateNodeData({ isNoteVisibility: !data.isNoteVisibility })
   }, [data.isNoteVisibility, updateNodeData])
@@ -104,7 +111,7 @@ const ExNode: React.FC<CustomNodeProps> = props => {
   return (
     <BaseNode
       ref={baseNodeRef}
-      className={cn('relative flex flex-col nowheel')}
+      className={cn('relative flex flex-col ')}
       style={{ width: `${pWidth}px`, height: computedHeight, ...mainStyle }}
       selected={selected}
       draggable={draggable}
@@ -185,7 +192,7 @@ const ExNode: React.FC<CustomNodeProps> = props => {
       </NodeExtroIcon>
 
       <div
-        className={`flex-1  flex border-t ${data.isNoteVisibility ? ' ' : 'hidden'}`}
+        className={`flex-1  flex border-t nowheel ${data.isNoteVisibility ? ' ' : 'hidden'}`}
         style={{ overflow: 'auto' }}
         onWheel={e => e.stopPropagation()}
       >

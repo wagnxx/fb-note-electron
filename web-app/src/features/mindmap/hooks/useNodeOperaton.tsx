@@ -1,7 +1,21 @@
-import { useCallback } from 'react'
-import { applyNodeChanges, Edge, useEdgesState, useNodesState } from '@xyflow/react'
+import React, { useCallback } from 'react'
+import {
+  applyNodeChanges,
+  Edge,
+  EdgeChange,
+  NodeChange,
+  useEdgesState,
+  useNodesState,
+  useReactFlow,
+} from '@xyflow/react'
 import { v4 as uuidv4 } from 'uuid'
 import { CreateGroupNode, CustomNodeData, ExtendedEdge, ExtendedNode } from '../types'
+import { calculateMiddleValue } from '@/utils/utilsArray'
+
+type FlowStateReducerParams = {
+  nodeReducer?: (currentNodes: ExtendedNode[]) => ExtendedNode[]
+  edgeReducer?: (currentNodes: ExtendedEdge[]) => ExtendedEdge[]
+}
 
 type Props = {
   initNodeList: ExtendedNode[]
@@ -11,9 +25,42 @@ type Props = {
   selectedNodes: ExtendedNode[]
 }
 
+const NODE_WIDTH = 140
+const NODE_HEIGHT = 65
+const NODE_DISTANCE = {
+  horizontal: 50,
+  vertical: 20,
+}
+
 const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selectedNodes, nodeDistance }: Props) => {
-  const [nodes, setNodes, handleNodesChange] = useNodesState(initNodeList)
-  const [edges, setEdges, handleEdgesChange] = useEdgesState(initEdgeList)
+  const [nodes, setNodes, onNodesChange] = useNodesState(initNodeList)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initEdgeList)
+
+  const { getIntersectingNodes } = useReactFlow<ExtendedNode>()
+
+  const handleFlowStateChange = useCallback(
+    (
+      nodeChanges: NodeChange<ExtendedNode>[],
+      edgeChanges: EdgeChange<ExtendedEdge>[],
+      { nodeReducer, edgeReducer }: FlowStateReducerParams = {},
+    ) => {
+      // combine todo
+      if (nodeReducer) {
+        const data = nodeReducer(nodes)
+        setNodes(data)
+      } else {
+        onNodesChange(nodeChanges)
+      }
+
+      if (edgeReducer) {
+        const data = edgeReducer(edges)
+        setEdges(data)
+      } else {
+        onEdgesChange(edgeChanges)
+      }
+    },
+    [edges, nodes, onEdgesChange, onNodesChange, setEdges, setNodes],
+  )
 
   const crreateNewNode = useCallback(
     ({
@@ -77,11 +124,13 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
 
   const deleteNode = useCallback(
     (ids: string[]) => {
-      handleNodesChange(ids.map(id => ({ id, type: 'remove' })))
       const updateEdges = ids.map(id => edges.filter(edge => edge.source === id)).flat()
-      handleEdgesChange(updateEdges.map(edg => ({ id: edg.id, type: 'remove' })))
+      handleFlowStateChange(
+        ids.map(id => ({ id, type: 'remove' })),
+        updateEdges.map(edg => ({ id: edg.id, type: 'remove' })),
+      )
     },
-    [edges, handleEdgesChange, handleNodesChange],
+    [edges, handleFlowStateChange],
   )
   const batchDelete = useCallback(() => {
     if (selectedNodes.length) {
@@ -131,14 +180,14 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
     [setEdges, setNodes],
   )
 
-  const creaateGroupIds = (pid: string, childLen: number): string[] => {
+  const creaateGroupIds = useCallback((pid: string, childLen: number): string[] => {
     const groupIds: string[] = []
     for (let i = 0; i < childLen; i++) {
       const newNodeId = `${pid}_${uuidv4()}` // 生成每个子节点的ID
       groupIds.push(newNodeId)
     }
     return groupIds
-  }
+  }, [])
 
   const updateChildrenPos = (parentNode: ExtendedNode, children: ExtendedNode[]) => {
     const pW = parentNode.measured?.width || parentNode.width || initialNodeSize.width
@@ -230,18 +279,80 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
           type: 'replace',
         },
       ]
-      handleNodesChange(changes)
+      handleFlowStateChange(changes, [])
     },
-    [handleNodesChange, nodes],
+    [handleFlowStateChange, nodes],
+  )
+
+  const addChildNode = useCallback(
+    (parentId: string, newNames: string[]) => {
+      const newNodeIds = creaateGroupIds(parentId, newNames.length) // 创建多个新节点的ID
+
+      const parentNode = nodes.find(n => n.id === parentId)
+
+      if (!parentNode) return
+      const siblingsNodes = nodes.filter(node => parentNode.children?.includes(node.id))
+      const siblingsPositionY = [...new Set(siblingsNodes.map(item => item.position.y))] // 去重
+      // TODO: compute Reasonable number
+      const nicePostionY = calculateMiddleValue(siblingsPositionY, parentNode.position.y, NODE_DISTANCE.vertical)
+
+      const childrenNodes = newNodeIds.map((childId, index) => {
+        const pW = parentNode.width || NODE_WIDTH
+        const newNodePostion = {
+          x: pW + NODE_DISTANCE.horizontal,
+          y: nicePostionY + (index + siblingsNodes.length - 1) * (NODE_HEIGHT + NODE_DISTANCE.vertical), // 每个新节点间隔10单位
+        }
+        return crreateNewNode({
+          id: childId,
+          isRoot: false,
+          label: newNames[index],
+          parentId,
+          position: newNodePostion,
+        })
+      })
+      const nodechanges: NodeChange<ExtendedNode>[] = childrenNodes.map(item => ({ item, type: 'add' }))
+
+      // 更新边：每个新节点都需要与父节点建立边
+      const newEdges = newNodeIds.map(newNodeId => {
+        return {
+          id: `${parentId}-${newNodeId}`,
+          source: parentId,
+          target: newNodeId,
+        }
+      })
+
+      handleFlowStateChange(
+        [
+          {
+            item: {
+              ...parentNode,
+              data: {
+                ...parentNode.data,
+                childCount: [...(parentNode.children || []), ...newNodeIds].length,
+              },
+              children: [...(parentNode.children || []), ...newNodeIds],
+            },
+            type: 'replace',
+            id: parentNode.id,
+          },
+          ...nodechanges,
+        ],
+        newEdges.map(item => ({ item, type: 'add' })),
+      )
+    },
+    [creaateGroupIds, nodes, handleFlowStateChange, crreateNewNode],
   )
 
   const batchUpdateNodeProps = useCallback(
     (updateNodes: ExtendedNode[]) => {
       if (!updateNodes.length) return
 
-      handleNodesChange(updateNodes.map(item => ({ id: item.id, item: { ...item }, type: 'replace' })))
+      handleFlowStateChange(
+        updateNodes.map(item => ({ id: item.id, item: { ...item }, type: 'replace' })),
+        [],
+      )
     },
-    [handleNodesChange],
+    [handleFlowStateChange],
   )
 
   const createGroupChanges = useCallback(
@@ -371,15 +482,297 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
     return nds.filter(node => updatedNodes.has(node.id))
   }, [])
 
+  const toggleExpand = useCallback(
+    (id: string, val?: boolean) => {
+      // 递归收集所有子节点
+      const updateNodes = new Set<ExtendedNode>()
+      function collectionChildren(currentId: string, state: boolean, depth: number = 0) {
+        const node = nodes.find(n => n.id === currentId)
+
+        if (node) {
+          updateNodes.add(node)
+
+          if (node.children) {
+            if (state) {
+              // 如果state为true，继续递归所有子节点
+              if (depth === 0) {
+                node.children.forEach(childId => collectionChildren(childId, state, depth + 1))
+              }
+            } else {
+              // 如果state为false，只执行当前层的子节点
+
+              node.children.forEach(childId => collectionChildren(childId, state, depth + 1))
+            }
+          }
+        }
+      }
+
+      const currentNode = nodes.find(n => n.id === id)
+      if (!currentNode) return nodes
+
+      const newExpandedState = val ?? !currentNode.data.isExpanded
+      collectionChildren(currentNode.id, newExpandedState, 0)
+      updateNodes.delete(currentNode)
+      const updatedNodes: ExtendedNode[] = [...updateNodes].map(item => ({
+        ...item,
+        data: { ...item.data, isExpanded: !newExpandedState },
+        isHidden: !newExpandedState,
+      }))
+
+      const nodeChanges: NodeChange<ExtendedNode>[] = [
+        {
+          id: currentNode.id,
+          type: 'replace',
+          item: {
+            ...currentNode,
+            data: { ...currentNode.data, isExpanded: newExpandedState },
+          },
+        },
+        ...updatedNodes.map(item => ({ id: item.id, item, type: 'replace' }) as NodeChange<ExtendedNode>),
+      ]
+
+      handleFlowStateChange(nodeChanges, [])
+    },
+    [handleFlowStateChange, nodes],
+  )
+
+  const onNodeDragStop = useCallback(
+    (event: React.MouseEvent, node: ExtendedNode) => {
+      const nodeChanges: NodeChange<ExtendedNode>[] = []
+      const edgeChanges: EdgeChange[] = []
+
+      const newPosition = { x: node.position.x, y: node.position.y }
+
+      const nodeMap = new Map(nodes.map(n => [n.id, n]))
+
+      const historyIntersectionNodes = nodes.filter(node => node.className?.includes('highlight'))
+      const historyIntersectionNodesChanges: NodeChange<ExtendedNode>[] = historyIntersectionNodes.map(item => ({
+        id: item.id,
+        type: 'replace',
+        item: { ...item, className: '' },
+      }))
+      nodeChanges.push(...historyIntersectionNodesChanges)
+
+      // 处理组内节点拖拽
+      let parentNode = nodeMap.get(node.parentId ?? '')
+      if (parentNode) {
+        const pW = parentNode?.measured?.width || parentNode.width || NODE_WIDTH
+        const standardX = 0 + (pW + NODE_DISTANCE.horizontal)
+        const minX = 0 - NODE_DISTANCE.horizontal / 4
+        const maxX = standardX + NODE_DISTANCE.horizontal / 4
+
+        let siblingsNodesIds = new Set<string>(parentNode.children)
+        if (newPosition.x > maxX || newPosition.x < minX) {
+          // 解绑节点
+          siblingsNodesIds.delete(node.id)
+          edgeChanges.push({ id: `${parentNode.id}-${node.id}`, type: 'remove' }) // ✅ 修复
+          nodeChanges.push({
+            id: node.id,
+            type: 'replace',
+            item: {
+              ...node,
+              parentId: void 0,
+              position: {
+                x: getGlobalPosition(parentNode, nodes).x + node.position.x,
+                y: getGlobalPosition(parentNode, nodes).y + node.position.y,
+              },
+            },
+          })
+        } else {
+          nodeChanges.push({
+            id: node.id,
+            type: 'position',
+            position: {
+              ...newPosition,
+              x: standardX,
+            },
+          })
+        }
+
+        const parentNodeChange: NodeChange<ExtendedNode> = {
+          id: parentNode.id,
+          type: 'replace',
+          item: {
+            ...parentNode,
+            children: [...siblingsNodesIds],
+            data: {
+              ...parentNode.data,
+              childCount: siblingsNodesIds.size,
+            },
+          },
+        }
+
+        nodeChanges.push(parentNodeChange)
+
+        handleFlowStateChange(nodeChanges, edgeChanges)
+        return
+      }
+
+      // 处理游离节点拖拽
+
+      const intersectionNodes = getIntersectingNodes(node)
+
+      const hasEnterTarget =
+        intersectionNodes.length === 1 && !selectedNodes.some(sel => sel.id === intersectionNodes[0].id)
+
+      if (!hasEnterTarget) {
+        // nodeChanges.push({
+        //   id: node.id,
+        //   type: 'position',
+        //   position: newPosition,
+        // })
+        return
+      }
+
+      const newParentNode = intersectionNodes[0]
+
+      const filterdSelectedNodes = filterTopLevelNodes(selectedNodes)
+
+      const movedIds = filterdSelectedNodes.length > 1 ? filterdSelectedNodes.map(item => item.id) : [node.id]
+      const newChildren = [...(newParentNode.children || []), ...movedIds]
+
+      const floatingNodes = nodes.filter(n => movedIds.includes(n.id)).map(n => ({ ...n, parentId: newParentNode.id }))
+
+      movedIds.forEach(movedId => {
+        edgeChanges.push({
+          item: {
+            id: `${newParentNode.id}-${movedId}`,
+            source: newParentNode.id,
+            target: movedId,
+          },
+          type: 'add',
+        })
+      })
+
+      const pW = newParentNode.measured?.width || newParentNode.width || NODE_WIDTH
+      const curNodeFixedPosition = {
+        x: 0 + pW + NODE_DISTANCE.horizontal,
+        y: 0,
+      }
+
+      const floatingNodesChanges: NodeChange<ExtendedNode>[] = floatingNodes.map((n, deep) => ({
+        id: n.id,
+        type: 'replace',
+        item: {
+          ...n,
+          position: {
+            ...curNodeFixedPosition,
+            y: curNodeFixedPosition.y + (n.measured?.height || n.height || NODE_HEIGHT + NODE_DISTANCE.vertical) * deep,
+          },
+        },
+      }))
+      const parentNodesChange: NodeChange<ExtendedNode> = {
+        id: newParentNode.id,
+        type: 'replace',
+        item: {
+          ...newParentNode,
+          children: newChildren,
+          data: { ...newParentNode.data, childCount: newChildren.length },
+          className: '',
+        },
+      }
+      nodeChanges.push(...floatingNodesChanges, parentNodesChange)
+
+      const newNodes = applyNodeChanges(nodeChanges, nodes)
+      // setNodes(prevNodes => {
+      //   if (!newNodes) return prevNodes
+      //   const updatedNodes = newNodes
+
+      //   // 🟢 找到父节点和游离节点的索引
+      //   const parentIndex = updatedNodes.findIndex(n => n.id === newParentNode.id)
+      //   const floatingIndexes = floatingNodes
+      //     .map(n => updatedNodes.findIndex(p => p.id === n.id))
+      //     .filter(index => index !== -1) // 过滤找不到的项
+      //   const minFloatingIndex = Math.min(...floatingIndexes)
+
+      //   // 🛠️ 处理节点顺序
+      //   if (
+      //     parentIndex !== minFloatingIndex &&
+      //     parentIndex !== -1 &&
+      //     minFloatingIndex !== -1 &&
+      //     parentIndex > minFloatingIndex
+      //   ) {
+      //     const reorderedNodes = [...updatedNodes]
+      //     ;[reorderedNodes[parentIndex], reorderedNodes[minFloatingIndex]] = [
+      //       reorderedNodes[minFloatingIndex],
+      //       reorderedNodes[parentIndex],
+      //     ]
+      //     return reorderedNodes
+      //   }
+
+      //   return updatedNodes
+      // })
+
+      const nodeReducer = (prevNodes: ExtendedNode[]) => {
+        if (!newNodes) return prevNodes
+        const updatedNodes = newNodes
+
+        // 🟢 找到父节点和游离节点的索引
+        const parentIndex = updatedNodes.findIndex(n => n.id === newParentNode.id)
+        const floatingIndexes = floatingNodes
+          .map(n => updatedNodes.findIndex(p => p.id === n.id))
+          .filter(index => index !== -1) // 过滤找不到的项
+        const minFloatingIndex = Math.min(...floatingIndexes)
+
+        // 🛠️ 处理节点顺序
+        if (
+          parentIndex !== minFloatingIndex &&
+          parentIndex !== -1 &&
+          minFloatingIndex !== -1 &&
+          parentIndex > minFloatingIndex
+        ) {
+          const reorderedNodes = [...updatedNodes]
+          ;[reorderedNodes[parentIndex], reorderedNodes[minFloatingIndex]] = [
+            reorderedNodes[minFloatingIndex],
+            reorderedNodes[parentIndex],
+          ]
+          return reorderedNodes
+        }
+
+        return updatedNodes
+      }
+
+      handleFlowStateChange([], edgeChanges, { nodeReducer })
+    },
+    [nodes, getIntersectingNodes, selectedNodes, filterTopLevelNodes, handleFlowStateChange, getGlobalPosition],
+  )
+
+  const onNodeDrag = useCallback(
+    (_: React.MouseEvent, node: ExtendedNode) => {
+      const intersectionNodes = getIntersectingNodes(node)
+      const historyIntersectionNodes = nodes.filter(node => node.className?.includes('highlight'))
+      const intersectionNodesChanges: NodeChange<ExtendedNode>[] = intersectionNodes.map(item => ({
+        id: item.id,
+        type: 'replace',
+        item: { ...item, className: 'highlight' },
+      }))
+      const historyIntersectionNodesChanges: NodeChange<ExtendedNode>[] = historyIntersectionNodes.map(item => ({
+        id: item.id,
+        type: 'replace',
+        item: { ...item, className: '' },
+      }))
+
+      handleFlowStateChange([...historyIntersectionNodesChanges, ...intersectionNodesChanges], [])
+    },
+    [getIntersectingNodes, handleFlowStateChange, nodes],
+  )
+
+  const onError = (code: string, message: string) => {
+    const whiteList = ['002']
+    if (!whiteList.includes(code)) {
+      console.log(`Flow Error, Code[${code}], message: [${message}]`)
+    }
+  }
+
   return {
     nodes,
     edges,
     setNodes,
     setEdges,
-    handleNodesChange,
-    handleEdgesChange,
+    handleFlowStateChange,
     crreateNewNode,
     createEdge,
+    addChildNode,
     isInside,
     alignToParent,
     deleteNode,
@@ -395,6 +788,10 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
     filterTopLevelNodes,
     getGlobalPosition,
     fixedHierarchy,
+    toggleExpand,
+    onNodeDragStop,
+    onNodeDrag,
+    onError,
   }
 }
 
