@@ -5,20 +5,20 @@ type Props = {
   readonly?: boolean
   cmdAndCPressedFn: () => void
   cmdAndVPressedFn: () => void
-  metaDeletePresseFn: () => void
+  // metaDeletePresseFn: () => void
 }
 
 const useRegisterKeypressCtrol = ({
   readonly = false,
   cmdAndCPressedFn,
   cmdAndVPressedFn,
-  metaDeletePresseFn,
+  // metaDeletePresseFn,
 }: Props) => {
   const lastPasteTime = useRef<number>(0)
 
   const cmdAndCPressed = useKeyPress(['Meta+c', 'Strg+c'])
   const cmdAndVPressed = useKeyPress(['Meta+v', 'Strg+v'])
-  const metaDeletePressed = useKeyPress(['Meta+Backspace', 'Strg+Backspace'])
+  // const metaDeletePressed = useKeyPress(['Meta+Backspace', 'Strg+Backspace'])
 
   // keybaord action
   useEffect(() => {
@@ -44,11 +44,11 @@ const useRegisterKeypressCtrol = ({
     }
   }, [cmdAndVPressed, cmdAndVPressedFn, readonly])
 
-  useEffect(() => {
-    if (!readonly && metaDeletePressed) {
-      metaDeletePresseFn()
-    }
-  }, [metaDeletePresseFn, metaDeletePressed, readonly])
+  // useEffect(() => {
+  //   if (!readonly && metaDeletePressed) {
+  //     metaDeletePresseFn()
+  //   }
+  // }, [metaDeletePresseFn, metaDeletePressed, readonly])
   return []
 }
 

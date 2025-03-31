@@ -266,7 +266,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       readonly,
       cmdAndCPressedFn,
       cmdAndVPressedFn,
-      metaDeletePresseFn: batchDelete,
+      // metaDeletePresseFn: batchDelete,
     })
 
     useEffect(() => {
