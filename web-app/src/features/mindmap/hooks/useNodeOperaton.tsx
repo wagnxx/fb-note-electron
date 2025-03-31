@@ -18,6 +18,7 @@ type FlowStateReducerParams = {
 }
 
 type Props = {
+  readonly?: boolean
   initNodeList: ExtendedNode[]
   initEdgeList: ExtendedEdge[]
   initialNodeSize: { width: number; height: number }
@@ -25,14 +26,14 @@ type Props = {
   selectedNodes: ExtendedNode[]
 }
 
-const NODE_WIDTH = 140
-const NODE_HEIGHT = 65
-const NODE_DISTANCE = {
-  horizontal: 50,
-  vertical: 20,
-}
-
-const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selectedNodes, nodeDistance }: Props) => {
+const useNodeOperaton = ({
+  readonly,
+  initNodeList,
+  initEdgeList,
+  initialNodeSize,
+  selectedNodes,
+  nodeDistance,
+}: Props) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initNodeList)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initEdgeList)
 
@@ -199,7 +200,7 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
 
     // 计算子节点总高度（所有子节点的高度之和 + 每个间隔的高度）
     const totalChildrenHeight =
-      children.reduce((sum, child) => sum + (child.height || initialNodeSize.height), 0) +
+      children.reduce((sum, child) => sum + (child.height || initialNodeSize.height) + nodeDistance.vertical, 0) +
       (totalChildren - 1) * nodeDistance.vertical
 
     let currentY = pH / 2 - totalChildrenHeight / 2
@@ -212,7 +213,7 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
 
       const standardX = relativeX + pW + nodeDistance.horizontal
 
-      const childHeight = child.height || initialNodeSize.height
+      const childHeight = child.measured?.height || child.height || initialNodeSize.height
       const newChild = {
         ...child,
         position: {
@@ -294,13 +295,13 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
       const siblingsNodes = nodes.filter(node => parentNode.children?.includes(node.id))
       const siblingsPositionY = [...new Set(siblingsNodes.map(item => item.position.y))] // 去重
       // TODO: compute Reasonable number
-      const nicePostionY = calculateMiddleValue(siblingsPositionY, parentNode.position.y, NODE_DISTANCE.vertical)
+      const nicePostionY = calculateMiddleValue(siblingsPositionY, parentNode.position.y, nodeDistance.vertical)
 
       const childrenNodes = newNodeIds.map((childId, index) => {
-        const pW = parentNode.width || NODE_WIDTH
+        const pW = parentNode.width || initialNodeSize.width
         const newNodePostion = {
-          x: pW + NODE_DISTANCE.horizontal,
-          y: nicePostionY + (index + siblingsNodes.length - 1) * (NODE_HEIGHT + NODE_DISTANCE.vertical), // 每个新节点间隔10单位
+          x: pW + nodeDistance.horizontal,
+          y: nicePostionY + (index + siblingsNodes.length - 1) * (initialNodeSize.height + nodeDistance.vertical), // 每个新节点间隔10单位
         }
         return crreateNewNode({
           id: childId,
@@ -538,6 +539,9 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
 
   const onNodeDragStop = useCallback(
     (event: React.MouseEvent, node: ExtendedNode) => {
+      if (readonly) {
+        return
+      }
       const nodeChanges: NodeChange<ExtendedNode>[] = []
       const edgeChanges: EdgeChange[] = []
 
@@ -556,10 +560,10 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
       // 处理组内节点拖拽
       let parentNode = nodeMap.get(node.parentId ?? '')
       if (parentNode) {
-        const pW = parentNode?.measured?.width || parentNode.width || NODE_WIDTH
-        const standardX = 0 + (pW + NODE_DISTANCE.horizontal)
-        const minX = 0 - NODE_DISTANCE.horizontal / 4
-        const maxX = standardX + NODE_DISTANCE.horizontal / 4
+        const pW = parentNode?.measured?.width || parentNode.width || initialNodeSize.width
+        const standardX = 0 + (pW + nodeDistance.horizontal)
+        const minX = 0 - nodeDistance.horizontal / 4
+        const maxX = standardX + nodeDistance.horizontal / 4
 
         let siblingsNodesIds = new Set<string>(parentNode.children)
         if (newPosition.x > maxX || newPosition.x < minX) {
@@ -644,9 +648,9 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
         })
       })
 
-      const pW = newParentNode.measured?.width || newParentNode.width || NODE_WIDTH
+      const pW = newParentNode.measured?.width || newParentNode.width || initialNodeSize.width
       const curNodeFixedPosition = {
-        x: 0 + pW + NODE_DISTANCE.horizontal,
+        x: 0 + pW + nodeDistance.horizontal,
         y: 0,
       }
 
@@ -657,7 +661,9 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
           ...n,
           position: {
             ...curNodeFixedPosition,
-            y: curNodeFixedPosition.y + (n.measured?.height || n.height || NODE_HEIGHT + NODE_DISTANCE.vertical) * deep,
+            y:
+              curNodeFixedPosition.y +
+              (n.measured?.height || n.height || initialNodeSize.height + nodeDistance.vertical) * deep,
           },
         },
       }))
@@ -734,7 +740,19 @@ const useNodeOperaton = ({ initNodeList, initEdgeList, initialNodeSize, selected
 
       handleFlowStateChange([], edgeChanges, { nodeReducer })
     },
-    [nodes, getIntersectingNodes, selectedNodes, filterTopLevelNodes, handleFlowStateChange, getGlobalPosition],
+    [
+      readonly,
+      nodes,
+      getIntersectingNodes,
+      selectedNodes,
+      filterTopLevelNodes,
+      initialNodeSize.width,
+      initialNodeSize.height,
+      nodeDistance.horizontal,
+      nodeDistance.vertical,
+      handleFlowStateChange,
+      getGlobalPosition,
+    ],
   )
 
   const onNodeDrag = useCallback(

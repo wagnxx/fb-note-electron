@@ -113,6 +113,7 @@ const ExNode: React.FC<CustomNodeProps> = props => {
       ref={baseNodeRef}
       className={cn('relative flex flex-col ')}
       style={{ width: `${pWidth}px`, height: computedHeight, ...mainStyle }}
+      title={data.label + ' \n' + data.note}
       selected={selected}
       draggable={draggable}
       onPointerDown={e => e.stopPropagation()}
@@ -133,7 +134,6 @@ const ExNode: React.FC<CustomNodeProps> = props => {
             onClickCapture={e => e.stopPropagation()}
             value={label}
             onChange={e => setlabel(e.target.value)}
-            title={data.label}
             placeholder="Node Name"
           />
         </NodeHeaderTitle>

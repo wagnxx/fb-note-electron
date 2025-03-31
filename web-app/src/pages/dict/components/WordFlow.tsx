@@ -141,7 +141,7 @@ const WordFlow = forwardRef<ModalChildRef, ModalChildProps<CloudMindFile>>(
         ),
       },
     ]
-    return <Tabs defaultActiveKey="1" items={items} style={{ height: '800px' }} />
+    return <Tabs defaultActiveKey="1" items={items} style={{ height: '100%' }} />
   },
 )
 

@@ -23,6 +23,7 @@ import '@xyflow/react/dist/style.css' // 关键修复点
 import useRegisterKeypressCtrol from '../../hooks/useRegisterKeypressCtrol'
 import useNodeOperaton from '../../hooks/useNodeOperaton'
 import { CreateGroupNode, CustomItem, CustomNodeData, ExtendedNode, TopicTheme } from '../../types'
+import LiteNode from '../nodes/LiteNode'
 import ExNode from '../nodes/ExNode'
 
 export type FlowProps = {
@@ -104,6 +105,8 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
 
     const { showNotification } = useNotification()
     const isFirstRender = useFirstRender()
+    const keyPressTargetRef = useRef<HTMLDivElement>(null)
+    const showAllNoteRef = useRef<boolean>(false)
 
     const {
       nodes,
@@ -127,6 +130,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       onNodeDrag,
       onError,
     } = useNodeOperaton({
+      readonly,
       initNodeList,
       initEdgeList,
       selectedNodes,
@@ -261,12 +265,24 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
     const handleLogNodes = () => {
       console.log('handleLogNodes: ', nodes)
     }
+    const handleToggleNoteVisibility = () => {
+      showAllNoteRef.current = !showAllNoteRef.current
+      handleFlowStateChange(
+        nodes.map(item => ({
+          id: item.id,
+          type: 'replace',
+          item: { ...item, data: { ...item.data, isNoteVisibility: showAllNoteRef.current } },
+        })),
+        [],
+      )
+    }
 
     useRegisterKeypressCtrol({
       readonly,
       cmdAndCPressedFn,
       cmdAndVPressedFn,
       // metaDeletePresseFn: batchDelete,
+      targetRef: keyPressTargetRef,
     })
 
     useEffect(() => {
@@ -277,13 +293,13 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
 
     // notify parent component updated action
     useEffect(() => {
-      if (isFirstRender) return
+      if (isFirstRender || readonly) return
       onNodeListChange(() => nodes) // 传递最新的 `nodes` 到父组件
-    }, [isFirstRender, nodes, onNodeListChange])
+    }, [isFirstRender, nodes, onNodeListChange, readonly])
     useEffect(() => {
-      if (isFirstRender) return
+      if (isFirstRender || readonly) return
       onEdgeListChange(() => edges) // 传递最新的 `nodes` 到父组件
-    }, [edges, isFirstRender, onEdgeListChange])
+    }, [edges, isFirstRender, onEdgeListChange, readonly])
 
     useEffect(() => {
       if (!isFirstRender) {
@@ -320,8 +336,9 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       })
 
       return {
-        customNode: (props: any) => <ExNode {...handleCustomNodeProps(props)} />,
-        // customNode: BasicNode,
+        // customNode: (props: any) => <ExNode {...handleCustomNodeProps(props)} />,
+        customNode: (props: any) =>
+          readonly ? <LiteNode {...handleCustomNodeProps(props)} /> : <ExNode {...handleCustomNodeProps(props)} />,
       }
     }, [
       HandleFixedHierarchy,
@@ -336,13 +353,14 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
     ])
 
     return (
-      <div style={{ position: 'relative', userSelect: 'none' }} className={className}>
+      <div style={{ position: 'relative', userSelect: 'none' }} className={className} ref={keyPressTargetRef}>
         {showTollbar && (
           <Toolbar
             onCreateRootNode={() => handleAddRootNode()}
             onCreateNode={() => handleCreateFreeNode()}
             onDelete={batchDelete}
             onLogNodes={handleLogNodes}
+            onToggleNote={handleToggleNoteVisibility}
           />
         )}
         <ReactFlow

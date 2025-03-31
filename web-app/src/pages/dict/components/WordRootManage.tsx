@@ -777,8 +777,11 @@ const WordRootManage: FC<{
       <ModalForm
         visible={flowModalVisible}
         data={currentFlowDoc}
-        width={1000}
-        height={800}
+        width={'100vw'}
+        style={{ top: 0, left: 0, margin: 0, height: '100vh' }} // 设置顶部和左侧位置为0
+        styles={{
+          body: { height: '100vh', padding: 0 },
+        }}
         onSubmit={val => console.log('submit ', val)}
         onClose={() => setFlowModalVisible(false)}
         Child={WordFlow}

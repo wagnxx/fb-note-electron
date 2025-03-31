@@ -17,7 +17,12 @@ const BasicNode: React.FC<CustomNodeProps> = props => {
     <BaseNode>
       <NodeHeader className="  ">
         <NodeHeaderTitle className=" flex-1">
-          <span>{data.label}</span>
+          <p>
+            <span>{data.label}</span>
+          </p>
+          <p>
+            <span>{data.note}</span>
+          </p>
         </NodeHeaderTitle>
 
         <NodeHeaderActions>
