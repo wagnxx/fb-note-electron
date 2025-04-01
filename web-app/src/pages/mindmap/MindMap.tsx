@@ -1,6 +1,6 @@
 // src/pages/MindMapPage.tsx
 import React, { useEffect, useMemo, useRef } from 'react'
-import { Button, Splitter } from 'antd'
+import { Button, Dropdown, MenuProps, Splitter, Tooltip } from 'antd'
 import SidebarDir from './components/SidebarDir'
 import SideDrawer from './components/SideDrawer'
 import MindMapCanvasContainer, { MindMapRef } from './components/MindMapCanvasContainer'
@@ -14,7 +14,7 @@ import { TabItem } from '@/features/mindmap/types'
 import { toggleIsSiderOpend } from '@/features/mindmap/slices/configSlice'
 
 const MindMapPage: React.FC = () => {
-  const [isDrawerVisible, setvIsDrawerVisible] = React.useState<boolean>(false)
+  const [isDrawerSmartVisible, setvIsDrawerSmartVisible] = React.useState<boolean>(false)
   const [isDrawerOpend, setIsDrawerOpend] = React.useState<boolean>(false)
 
   const mindRef = useRef<MindMapRef>(null)
@@ -43,8 +43,25 @@ const MindMapPage: React.FC = () => {
 
   useEffect(() => {
     if (isFirstRender) return
-    setIsDrawerOpend(!!currentNodeId && isDrawerVisible)
-  }, [isFirstRender, currentNodeId, isDrawerVisible])
+    setIsDrawerOpend(!!currentNodeId && isDrawerSmartVisible)
+  }, [isFirstRender, currentNodeId, isDrawerSmartVisible])
+
+  const settingsMenu: MenuProps['items'] = [
+    {
+      key: 1,
+      label: <Tooltip title="Click to open the settings sidebar immediately.">Toggle Settings Sidebar</Tooltip>,
+      onClick: () => setIsDrawerOpend(prev => !prev),
+    },
+    {
+      key: 2,
+      label: (
+        <Tooltip title="The sidebar will open automatically when an element is selected.">
+          Enable Smart Settings Sidebar
+        </Tooltip>
+      ),
+      onClick: () => setvIsDrawerSmartVisible(prev => !prev),
+    },
+  ]
 
   return (
     <>
@@ -58,12 +75,9 @@ const MindMapPage: React.FC = () => {
               onClick={handleToggleSiderOpen}
               style={{ marginBlockEnd: 'auto' }}
             />
-
-            <Button
-              icon={isDrawerVisible ? <SettingTwoTone /> : <SettingFilled />}
-              type="text"
-              onClick={() => setvIsDrawerVisible(pre => !pre)}
-            />
+            <Dropdown menu={{ items: settingsMenu }} trigger={['click', 'contextMenu']}>
+              <Button icon={isDrawerSmartVisible ? <SettingTwoTone /> : <SettingFilled />} type="text" />
+            </Dropdown>
           </div>
         </Splitter.Panel>
         <Splitter.Panel size={siderWidth} min={0} max={600}>
