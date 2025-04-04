@@ -22,7 +22,9 @@ const useRegisterKeypressCtrol = ({
   const cmdAndCPressed = useKeyPress(['Meta+c', 'Strg+c'], {
     target: targetRef.current ?? undefined,
   })
-  const cmdAndVPressed = useKeyPress(['Meta+v', 'Strg+v'])
+  const cmdAndVPressed = useKeyPress(['Meta+v', 'Strg+v'], {
+    target: targetRef.current ?? undefined,
+  })
   // const metaDeletePressed = useKeyPress(['Meta+Backspace', 'Strg+Backspace'])
 
   // keybaord action

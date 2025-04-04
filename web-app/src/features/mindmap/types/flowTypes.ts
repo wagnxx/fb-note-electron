@@ -5,6 +5,7 @@ export interface ExtendedNode extends Node<CustomNodeData> {
   isRoot?: boolean
   isHidden?: boolean
   children?: string[]
+  index?: number // created order
 }
 export type ExtendedEdge = Edge
 

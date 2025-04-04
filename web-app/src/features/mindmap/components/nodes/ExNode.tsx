@@ -60,6 +60,7 @@ const ExNode: React.FC<CustomNodeProps> = props => {
     onExpandToggle,
     onDelete,
     onResetPos,
+
     ...rest
   } = props
 

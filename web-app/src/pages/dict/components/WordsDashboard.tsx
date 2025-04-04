@@ -514,7 +514,7 @@ const WordsDashboard = () => {
                 initNodeList={initialFlowData.nodes}
                 initEdgeList={initialFlowData.edges}
                 compId={initialFlowData.key}
-                showTollbar={false}
+                showTollbar={true}
                 showControls={false}
                 showMiniMap={false}
                 showBackground={false}

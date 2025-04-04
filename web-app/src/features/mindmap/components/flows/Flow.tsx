@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, forwardRef, useImperativeHandle, useState, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, forwardRef, useImperativeHandle, useState, useRef, FC } from 'react'
 import {
   ReactFlow,
   MiniMap,
@@ -25,6 +25,17 @@ import useNodeOperaton from '../../hooks/useNodeOperaton'
 import { CreateGroupNode, CustomItem, CustomNodeData, ExtendedNode, TopicTheme } from '../../types'
 import LiteNode from '../nodes/LiteNode'
 import ExNode from '../nodes/ExNode'
+import { topoSortNodes } from '@/utils/utilsGraph'
+import ExGroupNode from '../nodes/ExGroupNode'
+import {
+  defaultEdgeOptions,
+  FREE_NODE_PREFIX,
+  NODE_DISTANCE,
+  NODE_HEIGHT,
+  NODE_TYPES,
+  NODE_WIDTH,
+  NodeType,
+} from '../../constants'
 
 export type FlowProps = {
   bgVType?: BackgroundVariant
@@ -59,21 +70,6 @@ export type FlowDiagramRef = {
   // handleSetCurrentNodeTheme: (theme: TopicTheme) => void
 }
 
-// default config
-const NODE_WIDTH = 140
-const NODE_HEIGHT = 65
-const NODE_DISTANCE = {
-  horizontal: 50,
-  vertical: 20,
-}
-
-const connectionLineStyle = { stroke: '#F6AD55', strokeWidth: 3 }
-const defaultEdgeOptions = {
-  style: connectionLineStyle,
-  // animated: true
-  type: 'default',
-}
-
 const Flow = forwardRef<FlowDiagramRef, FlowProps>(
   (
     {
@@ -100,7 +96,6 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
   ) => {
     const { getZoom } = useReactFlow()
     const [selectedNodes, setSelectedNodes] = useState<ExtendedNode[]>([])
-    const selectedNodeIds = useRef<Set<string>>(new Set())
     const [selectedNode, setselectedNode] = useState<ExtendedNode | null>(null)
 
     const { showNotification } = useNotification()
@@ -114,7 +109,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       setNodes,
       setEdges,
       handleFlowStateChange,
-      crreateNewNode,
+      createNewNode,
       batchDelete,
       copyNode,
       addChildNode,
@@ -128,7 +123,11 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       fixedHierarchy,
       onNodeDragStop,
       onNodeDrag,
+      onGroupSelections,
       onError,
+      alignNodesLinear,
+      alignNodesVertical,
+      alignNodesGrid,
     } = useNodeOperaton({
       readonly,
       initNodeList,
@@ -161,27 +160,32 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
         }
 
         // It  won't be used for now. It's only used for the root node.
-        const DEFAULT_NODES = [crreateNewNode({ id: rootId, label: rootName, isRoot: true })]
+        const DEFAULT_NODES = [createNewNode({ id: rootId, label: rootName, isRoot: true })]
         const changes: { item: ExtendedNode; type: 'add' }[] = DEFAULT_NODES.map(item => ({ item, type: 'add' }))
         handleFlowStateChange(changes, [])
       },
-      [crreateNewNode, handleFlowStateChange, nodes.length, rootId, showNotification],
+      [createNewNode, handleFlowStateChange, nodes.length, rootId, showNotification],
     )
     const handleCreateFreeNode = useCallback(
       (freeNames = ['free node']) => {
         // It  won't be used for now. It's only used for the root node.
-        const DEFAULT_NODES = freeNames.map((newName, index) =>
-          crreateNewNode({
-            id: 'free_' + uuidv4(),
-            isRoot: false,
+        const DEFAULT_NODES = freeNames.map((newName, index) => {
+          const col = Math.floor(index / 33) // ✅ 计算列索引
+          const row = index % 33 // ✅ 计算行索引
+
+          return createNewNode({
+            id: FREE_NODE_PREFIX + uuidv4(),
             label: newName,
-            position: { x: 600, y: 250 + NODE_HEIGHT * index },
-          }),
-        )
+            position: {
+              x: 600 + col * (NODE_WIDTH + NODE_DISTANCE.horizontal), // ✅ 每列递增
+              y: 250 + row * NODE_HEIGHT, // ✅ 每行递增
+            },
+          })
+        })
         const changes: { item: ExtendedNode; type: 'add' }[] = DEFAULT_NODES.map(item => ({ item, type: 'add' }))
         handleFlowStateChange(changes, [])
       },
-      [crreateNewNode, handleFlowStateChange],
+      [createNewNode, handleFlowStateChange],
     )
 
     // only supporting  depth 2
@@ -234,17 +238,13 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       onClickNode(node)
     }
 
-    function cmdAndCPressedFn() {
-      if (selectedNodes.length) {
-        selectedNodeIds.current = new Set(selectedNodes.map(item => item.id))
-      }
-    }
+    function cmdAndCPressedFn() {}
 
     function cmdAndVPressedFn() {
-      if (selectedNodeIds.current.size > 0) {
+      if (selectedNodes.length > 0) {
         console.log('start copy')
-        copyNode([...selectedNodeIds.current])
-        selectedNodeIds.current = new Set()
+        const ids = selectedNodes.map(item => item.id)
+        copyNode(ids)
       } else {
         showNotification('error', 'Copied stack is empty', 'message')
       }
@@ -321,7 +321,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       [addChildNode, handleAddRootNode, handleCleanCanvas, handleCreateFreeNode, handleCreateGroupNodes],
     )
 
-    const nodeTypes = useMemo(() => {
+    const nodeTypes: Record<NodeType, FC<any>> = useMemo(() => {
       const handleCustomNodeProps = (props: any) => ({
         ...props,
         readonly,
@@ -336,9 +336,11 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       })
 
       return {
-        // customNode: (props: any) => <ExNode {...handleCustomNodeProps(props)} />,
-        customNode: (props: any) =>
+        [NODE_TYPES.CUSTOM]: (props: any) =>
           readonly ? <LiteNode {...handleCustomNodeProps(props)} /> : <ExNode {...handleCustomNodeProps(props)} />,
+        [NODE_TYPES.GROUP]: (props: any) => (
+          <ExGroupNode style={{ pointerEvents: 'all' }} {...handleCustomNodeProps(props)} />
+        ),
       }
     }, [
       HandleFixedHierarchy,
@@ -352,6 +354,24 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       updateNodeProps,
     ])
 
+    const sortedNodes = useMemo(() => topoSortNodes(nodes.filter(n => !n.isHidden)), [nodes])
+
+    const handleArrange = (type: 'line' | 'vertical' | 'grid') => {
+      switch (type) {
+        case 'line':
+          alignNodesLinear()
+          break
+        case 'vertical':
+          alignNodesVertical()
+          break
+        case 'grid':
+          alignNodesGrid()
+          break
+        default:
+          break
+      }
+    }
+
     return (
       <div style={{ position: 'relative', userSelect: 'none' }} className={className} ref={keyPressTargetRef}>
         {showTollbar && (
@@ -361,10 +381,12 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
             onDelete={batchDelete}
             onLogNodes={handleLogNodes}
             onToggleNote={handleToggleNoteVisibility}
+            onArrange={type => handleArrange(type)}
+            onGroupSelections={onGroupSelections}
           />
         )}
         <ReactFlow
-          nodes={nodes.filter(n => !n.isHidden)}
+          nodes={sortedNodes}
           edges={edges}
           nodeTypes={nodeTypes}
           onNodesChange={val => handleFlowStateChange(val, [])}
@@ -376,6 +398,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
           onNodeClick={(e, node) => handleClickNode(e, node)}
           onPaneClick={() => handleClickNode(null, null)}
           onError={onError}
+          onlyRenderVisibleElements={true}
           selectionMode={SelectionMode.Full} // 允许部分框选
           selectionOnDrag
           multiSelectionKeyCode="Shift" // 允许 Shift + 点击多选

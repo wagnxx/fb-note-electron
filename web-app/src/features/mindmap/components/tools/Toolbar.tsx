@@ -1,7 +1,8 @@
 // src/features/mindmap/components/Toolbar.tsx
 import React from 'react'
-import { Button, Dropdown, Space } from 'antd'
-import { EllipsisOutlined } from '@ant-design/icons'
+import { Button, Dropdown, MenuProps, Space } from 'antd'
+import { DownOutlined } from '@ant-design/icons'
+import { MenuItemType } from 'antd/es/menu/interface'
 
 interface ToolbarProps {
   onCreateRootNode?: () => void
@@ -14,6 +15,8 @@ interface ToolbarProps {
   onOpen?: () => void
   onLogNodes?: () => void
   onToggleNote?: () => void
+  onArrange?: (type: 'line' | 'vertical' | 'grid') => void
+  onGroupSelections?: () => void
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -27,20 +30,48 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onOpen,
   onLogNodes,
   onToggleNote,
+  onArrange,
+  onGroupSelections,
 }) => {
-  const btns = [
-    { label: 'Append Node', handler: onAppendNode },
-    { label: 'Create Node', handler: onCreateNode },
-    { label: 'Create Root', handler: onCreateRootNode },
-    { label: 'Delete', handler: onDelete },
-    { label: 'Toggle Note', handler: onToggleNote },
-    { label: 'Log Nodes', handler: onLogNodes },
-    { label: ' 撤销', handler: onUndo },
-    { label: ' 重做', handler: onRedo },
-    { label: '保存', handler: onSave },
-    { label: ' 打开文件', handler: onOpen },
+  const btns: MenuProps['items'] = [
+    { key: '1', label: 'Append Node', onClick: onAppendNode },
+    { key: '2', label: 'Group Selections', onClick: onGroupSelections },
+    { key: '3', label: 'Create Node', onClick: onCreateNode },
+    { key: '4', label: 'Create Root', onClick: onCreateRootNode },
+    { key: '5', label: 'Delete', onClick: onDelete },
+    { key: '6', label: 'Toggle Note', onClick: onToggleNote },
+    { key: '7', label: 'Log Nodes', onClick: onLogNodes },
+    {
+      key: 'Ar',
+      label: 'Arrange',
+      type: 'submenu',
+      children: [
+        {
+          key: 'ar-line',
+          label: 'Arrange Line',
+          onClick: () => onArrange?.('line'),
+        },
+        {
+          key: 'ar-vertical',
+          label: 'Arrange Vertical',
+          onClick: () => onArrange?.('vertical'),
+        },
+        {
+          key: 'ar-grid',
+          label: 'Arrange Grid',
+          onClick: () => onArrange?.('grid'),
+        },
+      ],
+    },
+    { key: ' 撤', label: ' 撤销', onClick: onUndo },
+    { key: ' 重', label: ' 重做', onClick: onRedo },
+    { key: '保存', label: '保存', onClick: onSave },
+    { key: ' 打', label: ' 打开文件', onClick: onOpen },
   ]
-  const validBtns = btns.filter(item => item.handler)
+  const validBtns = btns
+    .filter(Boolean)
+    .filter((item): item is MenuItemType => 'onClick' in item! || item!.type === 'submenu')
+
   return (
     <div
       style={{
@@ -56,27 +87,22 @@ const Toolbar: React.FC<ToolbarProps> = ({
       }}
     >
       <Space>
-        {validBtns
+        {/* {validBtns
           .slice(0, 1)
-          .filter(item => item.handler)
+          .filter(item => item.onClick)
           .map((btn, index) => (
-            <Button key={index} size="small" type="text" disabled={!btn.handler} onClick={btn.handler}>
+            <Button key={index} size="small" type="text" disabled={!btn.onClick} onClick={btn.onClick}>
               {btn.label}
             </Button>
-          ))}
+          ))} */}
         <Dropdown
           menu={{
-            items: validBtns.slice(1).map((btn, index) => ({
-              key: index,
-              label: (
-                <Button key={index} size="small" type="text" disabled={!btn.handler} onClick={btn.handler}>
-                  {btn.label}
-                </Button>
-              ),
-            })),
+            items: validBtns.slice(0),
           }}
         >
-          <Button type="text" icon={<EllipsisOutlined />}></Button>
+          <Button type="text" icon={<DownOutlined />} iconPosition="end">
+            Operation Action
+          </Button>
         </Dropdown>
       </Space>
     </div>
