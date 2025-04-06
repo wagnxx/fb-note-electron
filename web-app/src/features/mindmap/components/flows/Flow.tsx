@@ -262,9 +262,6 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       [batchUpdateNodeProps, fixedHierarchy, nodes],
     )
 
-    const handleLogNodes = () => {
-      console.log('handleLogNodes: ', nodes)
-    }
     const handleToggleNoteVisibility = () => {
       showAllNoteRef.current = !showAllNoteRef.current
       handleFlowStateChange(
@@ -355,6 +352,10 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
     ])
 
     const sortedNodes = useMemo(() => topoSortNodes(nodes.filter(n => !n.isHidden)), [nodes])
+
+    const handleLogNodes = () => {
+      console.log('handleLogNodes: ', sortedNodes)
+    }
 
     const handleArrange = (type: 'line' | 'vertical' | 'grid') => {
       switch (type) {

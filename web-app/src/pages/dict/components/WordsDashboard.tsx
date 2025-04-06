@@ -181,7 +181,7 @@ const WordsDashboard = () => {
     if (!confirmed) return false
 
     flowData.nodes = flowData.nodes.map(node => {
-      if (node.data.isRoot && !node.data.note) {
+      if (node.isRoot && !node.data.note) {
         node.data.note = `
           【Siblings】 ${rootItem.siblings?.toLocaleString()}
           【词源】 ${rootItem.from}
