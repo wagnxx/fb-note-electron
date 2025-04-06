@@ -46,6 +46,8 @@ const useNodeOperaton = ({
   const [nodes, setNodes, onNodesChange] = useNodesState(initNodeList)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initEdgeList)
 
+  const { getZoom } = useReactFlow()
+
   const { applyWorkerNodeChanges, applyWorkerEdgeChanges } = useApplyNodeChange({ setNodes, setEdges })
 
   const { getIntersectingNodes } = useReactFlow<ExtendedNode>()
@@ -936,7 +938,7 @@ const useNodeOperaton = ({
   )
 
   const onNodeDrag = useCallback(
-    (_: React.MouseEvent, node: ExtendedNode) => {
+    (event: React.MouseEvent, node: ExtendedNode) => {
       const groupsNodes = nodes.filter(item => item.type === NODE_TYPES.GROUP)
       const groupMap = new Map(groupsNodes.map(n => [n.id, n]))
       if (groupMap.get(node.parentId || '')) {
@@ -951,7 +953,10 @@ const useNodeOperaton = ({
         .map(item => ({
           id: item.id,
           type: 'replace',
-          item: { ...item, className: 'highlight' },
+          item: {
+            ...item,
+            className: 'highlight',
+          },
         }))
       const historyIntersectionNodesChanges: NodeChange<ExtendedNode>[] = historyIntersectionNodes.map(item => ({
         id: item.id,
@@ -959,11 +964,24 @@ const useNodeOperaton = ({
         item: { ...item, className: '' },
       }))
 
+      const draggedNodeChange: NodeChange<ExtendedNode> = {
+        id: node.id,
+        type: 'position',
+        position: {
+          x: node.position.x + event.movementX / getZoom(),
+          y: node.position.y + event.movementY / getZoom(),
+        },
+      }
+
       // handleFlowStateChange([...historyIntersectionNodesChanges, ...intersectionNodesChanges], [])
-      const newNodes = applyNodeChanges([...historyIntersectionNodesChanges, ...intersectionNodesChanges], nodes)
+      const newNodes = applyNodeChanges(
+        [draggedNodeChange, ...historyIntersectionNodesChanges, ...intersectionNodesChanges],
+        nodes,
+      )
+
       setNodes(newNodes)
     },
-    [getIntersectingNodes, nodes, selectedNodes, setNodes],
+    [getIntersectingNodes, getZoom, nodes, selectedNodes, setNodes],
   )
 
   const onError = (code: string, message: string) => {

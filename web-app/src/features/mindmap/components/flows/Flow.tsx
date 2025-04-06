@@ -404,10 +404,10 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
           multiSelectionKeyCode="Shift" // 允许 Shift + 点击多选
           defaultEdgeOptions={defaultEdgeOptions}
           panOnScroll
-          panOnScrollSpeed={0.5} // 控制滚动速度
+          // panOnScrollSpeed={0.5} // 控制滚动速度
           panOnScrollMode={PanOnScrollMode.Free} // 允许自由滚动（水平 & 垂直）
           zoomOnScroll={true}
-          nodeDragThreshold={10}
+          nodeDragThreshold={1}
           minZoom={0.2}
           maxZoom={5}
           proOptions={{

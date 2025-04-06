@@ -2,7 +2,6 @@ import React, { memo, useRef, useState } from 'react'
 import { Handle, NodeResizeControl, Position, useReactFlow } from '@xyflow/react'
 import './ExNode.css'
 import { CustomNodeProps } from './ExNode'
-import { ResizeIcon } from '../tools/ResizeIcon'
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons'
 import { darkenColor } from '@/utils/utilsColor'
 import { DefaultTopic } from '../../slices/flowSlice'
@@ -10,6 +9,7 @@ import { BaseNode } from '@/components/lib/components/base-node'
 import { FileLock2 } from 'lucide-react'
 import { Button, Space } from 'antd'
 import { cn } from '@/lib/utils'
+import { ResizeIcon } from '../tools/ResizeIcon'
 
 const ExGroupNode: React.FC<CustomNodeProps> = props => {
   const {
@@ -57,49 +57,87 @@ const ExGroupNode: React.FC<CustomNodeProps> = props => {
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" style={mainStyle}>
       <div
-        className={cn(
-          'flex justify-between  items-center p-0  absolute border',
-          !data.isExpanded ? ' border-red-600 top-5' : 'bg-slate-200 top-0',
-        )}
-        style={{ transform: 'translateY(-100%)', width: 250 / getZoom() }}
+        style={{
+          position: 'absolute',
+          width: '250px',
+          height: '100px',
+          // top: 0,
+          left: 0,
+          pointerEvents: 'auto',
+          transform: `translateY(-100%) scale(${1 / getZoom()})`,
+          transformOrigin: 'bottom left',
+          background: 'yellow',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+        }}
+        className={cn(!data.isExpanded ? ' border-red-600 top-5' : 'bg-slate-200 top-0')}
       >
-        <div className="flex-1">
-          <input
-            className=" border-none  outline-0"
-            style={{
-              width: '100%',
-              backgroundColor: secondlyStyle.backgroundColor,
-              color: secondlyStyle.color,
-              fontSize: 20 / getZoom(),
-            }}
-            onDoubleClickCapture={handleDoubleClick}
-            ref={inputLabel}
-            readOnly={!canEditLabel}
-            onBlur={e => handleInputBlur(e)}
-            onClickCapture={e => e.stopPropagation()}
-            value={label}
-            onChange={e => setlabel(e.target.value)}
-            placeholder="Node Name"
-          />
-        </div>
+        {/* <div
+          style={{
+            width: '450px',
+            height: '80px',
+            flex: 1,
+          }}
+        > */}
+        <div
+          className={cn(
+            ' flex justify-between  items-center p-2   bg-white border  rounded-md',
+            // !data.isExpanded ? ' border-red-600 top-5' : 'bg-slate-200 top-0',
+          )}
+          style={{
+            width: '250px',
+            height: '100px',
+            flex: 1,
+          }}
+          // style={{ transform: 'translateY(-100%)', width: `${450}px`, height: `${80}px` }}
+          // style={{
+          //   transform: `scale(${1 / getZoom()}),translateY(-100%)`,
+          //   transformOrigin: 'top left',
+          //   width: `${450}px`,
+          //   height: `${80}px`,
+          // }}
+        >
+          <div className="flex-1">
+            <input
+              className=" border-none  outline-0"
+              style={{
+                width: '100%',
+                backgroundColor: secondlyStyle.backgroundColor,
+                color: secondlyStyle.color,
+                fontSize: 20,
+              }}
+              onDoubleClickCapture={handleDoubleClick}
+              ref={inputLabel}
+              readOnly={!canEditLabel}
+              onBlur={e => handleInputBlur(e)}
+              onClickCapture={e => e.stopPropagation()}
+              value={label}
+              onChange={e => setlabel(e.target.value)}
+              placeholder="Node Name"
+            />
+          </div>
 
-        <Space style={{ gap: 12 / getZoom(), alignItems: 'baseline' }}>
-          {(data?.childCount || 0) > 0 &&
-            (data?.isExpanded ? (
-              <EyeOutlined style={{ fontSize: 26 / getZoom() }} onClick={() => handleExpandToggle()} />
-            ) : (
-              <EyeInvisibleOutlined style={{ fontSize: 26 / getZoom() }} onClick={() => handleExpandToggle()} />
-            ))}
-          <Button
-            type="text"
-            icon={<FileLock2 size={20 / getZoom()} />}
-            onClick={() => onFixedHierarchy()}
-            disabled={Boolean(data.outWidth)}
-          />
-        </Space>
+          <Space style={{ gap: 8, alignItems: 'baseline' }}>
+            {(data?.childCount || 0) > 0 &&
+              (data?.isExpanded ? (
+                <EyeOutlined style={{ fontSize: 26 }} onClick={() => handleExpandToggle()} />
+              ) : (
+                <EyeInvisibleOutlined style={{ fontSize: 26 }} onClick={() => handleExpandToggle()} />
+              ))}
+            <Button
+              type="text"
+              icon={<FileLock2 size={20} />}
+              onClick={() => onFixedHierarchy()}
+              disabled={Boolean(data.outWidth)}
+            />
+          </Space>
+        </div>
+        {/* </div> */}
       </div>
+
       <BaseNode
         className=" border-gray-950"
         style={{
@@ -112,7 +150,7 @@ const ExGroupNode: React.FC<CustomNodeProps> = props => {
         <Handle type="source" position={Position.Right} />
       </div>
       <NodeResizeControl style={{ background: 'transparent', border: 'none' }} position={'bottom-right'} nodeId={id}>
-        <ResizeIcon />
+        {data?.isExpanded && <ResizeIcon />}
       </NodeResizeControl>
     </div>
   )
