@@ -8,6 +8,7 @@ import { routesTool } from './config/tool'
 import { routesLearn } from './config/learn'
 import { routesSystem } from './config/system'
 import { routesTest } from './config/test'
+import { routesRole } from './config/role'
 
 export interface RouteConfig {
   path: string
@@ -25,6 +26,7 @@ export const authRoutes: RouteConfig[] = [
   routesLearn,
   routesTool,
   routesTest,
+  routesRole,
 
   { path: '*', name: 'NotFound', component: NotFound, requiresAuth: true, hidden: true },
 ]
