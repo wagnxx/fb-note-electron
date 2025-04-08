@@ -3,13 +3,16 @@ import React, { ReactNode, useEffect } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { Button, Layout, Menu } from 'antd'
 import { authRoutes, RouteConfig } from './routes'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { getSidbarCollapsed } from '@/features/settings/selectors'
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth'
 import { auth, logoutUser } from '@/firebase/authService'
 import { clearAuthState, setAuthState } from '@/features/auth/authSlice'
 import { useNotification } from '@/hooks/useNotification'
 import { RootState } from '@/store/store'
+import useUserRole from '@/features/rolePermission/hooks/useUserRole'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { fetchMenuItems, fetchPermissions } from '@/features/rolePermission'
 
 const { Content, Sider } = Layout
 
@@ -22,9 +25,9 @@ type MenuItem = {
 const AuthLayout: React.FC = () => {
   // const { isAuthenticated, logout, user } = useAuth()
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
-  const dispatch = useDispatch()
-
-  const logout = () => dispatch(clearAuthState())
+  const { menuItems, permissions } = useAppSelector(state => state.rolePermission)
+  const dispatch = useAppDispatch()
+  const { totalPermissionsValue } = useUserRole()
 
   const navigate = useNavigate()
 
@@ -32,6 +35,11 @@ const AuthLayout: React.FC = () => {
 
   // const dispatch = useDispatch() // Redux 使用
   const { showConfirmationDialog } = useNotification()
+
+  useEffect(() => {
+    dispatch(fetchMenuItems())
+    dispatch(fetchPermissions())
+  }, [dispatch])
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
@@ -65,7 +73,21 @@ const AuthLayout: React.FC = () => {
 
     if (!confirmed) return
     await logoutUser()
-    logout()
+    dispatch(clearAuthState())
+  }
+
+  const computeRolePermissions = (route: RouteConfig) => {
+    const menuItem = menuItems.find(item => item.key === route.name)
+
+    if (!menuItem) return true
+
+    const menuPerKeys = menuItem.permissions.filter(item => item !== '*') // not allowed in memu role
+    const menuPerm = permissions.filter(item => menuPerKeys.includes(item.key))
+    const menuRolePermValue = menuPerm.reduce((pre, cur) => {
+      return pre | cur.value
+    }, 0)
+
+    return (totalPermissionsValue & menuRolePermValue) > 0
   }
 
   const filterValidMenus = (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
@@ -73,7 +95,9 @@ const AuthLayout: React.FC = () => {
       const { requiresAuth, path, name, hidden, children } = route
       const fullPath = `${parentPath}${path}/`
 
-      if (hidden || (requiresAuth && !isAuthenticated)) {
+      const hasPer = computeRolePermissions(route)
+
+      if (!hasPer || hidden || (requiresAuth && !isAuthenticated)) {
         return []
       }
 
@@ -91,7 +115,7 @@ const AuthLayout: React.FC = () => {
     })
   }
 
-  const menuItems = filterValidMenus(authRoutes)
+  const validMenuItems = filterValidMenus(authRoutes)
 
   return (
     <Layout>
@@ -113,7 +137,7 @@ const AuthLayout: React.FC = () => {
             </Button>
           )}
         </div>
-        <Menu theme="dark" mode="inline" items={menuItems} />
+        <Menu theme="dark" mode="inline" items={validMenuItems} />
       </Sider>
       <Content style={{ padding: '0px', height: 'calc(100vh - 28px)', overflow: 'auto' }}>
         <Outlet />

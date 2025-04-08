@@ -22,7 +22,7 @@ export interface UserRoleItem {
   userId: string
   userName?: string
   orgName: string
-  role: string | string[]
+  role: string
 }
 export type OrgMember = {
   id?: string

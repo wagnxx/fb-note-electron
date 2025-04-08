@@ -6,8 +6,12 @@ import { standaloneRoutes, authRoutes, RouteConfig } from './routes'
 import PrivateRoute from './PrivateRoute'
 import { AuthProvider } from '@/context/AuthContext'
 import AppHeader from '@/components/layout/AppHeader'
+import useUserRole from '@/features/rolePermission/hooks/useUserRole'
 
 const RoutesList: React.FC = () => {
+  const userRole = useUserRole()
+  // TODO filter by menuitems role
+  // console.log('userRole: ', userRole)
   return (
     <Router>
       <AppHeader />
