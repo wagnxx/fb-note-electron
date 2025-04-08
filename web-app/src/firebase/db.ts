@@ -16,6 +16,7 @@ import {
   where,
   getCountFromServer,
   DocumentSnapshot,
+  runTransaction,
 } from 'firebase/firestore'
 
 import { app } from './firebase'
@@ -28,6 +29,13 @@ const dealError = (error: unknown) => {
   } else {
     console.error('Unknown error:', error)
   }
+}
+
+export interface TransactionOperation {
+  colName: string // 集合名称
+  actionType: 'add' | 'update' | 'delete' // 操作类型
+  docId?: string // 仅在更新或删除时需要 docId
+  docData: DocumentData // 要添加或更新的文档数据
 }
 
 export const db = getFirestore(app)
@@ -258,5 +266,56 @@ export const checkDataExistsByFieldValue = async (
   } catch (error: unknown) {
     dealError(error)
     return false
+  }
+}
+
+export const performFirestoreTransaction = async (
+  operations: TransactionOperation[],
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // 使用事务处理
+    await runTransaction(db, async transaction => {
+      // 遍历所有操作
+      for (const operation of operations) {
+        const colRef = collection(db, operation.colName)
+
+        switch (operation.actionType) {
+          case 'add': {
+            // 处理添加操作
+            const newDocRef = doc(colRef) // 自动生成文档 ID
+            transaction.set(newDocRef, operation.docData) // 使用事务添加文档
+            break
+          }
+
+          case 'update': {
+            // 处理更新操作
+            if (!operation.docId) {
+              throw new Error('docId is required for update operation')
+            }
+            const updateDocRef = doc(colRef, operation.docId)
+            transaction.update(updateDocRef, operation.docData) // 使用事务更新文档
+            break
+          }
+
+          case 'delete': {
+            // 处理删除操作
+            if (!operation.docId) {
+              throw new Error('docId is required for delete operation')
+            }
+            const deleteDocRef = doc(colRef, operation.docId)
+            transaction.delete(deleteDocRef) // 使用事务删除文档
+            break
+          }
+
+          default:
+            throw new Error(`Unsupported actionType: ${operation.actionType}`)
+        }
+      }
+    })
+    console.log('Transaction successfully committed.')
+    return { success: true }
+  } catch (error) {
+    console.error('Transaction failed: ', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' } // 事务失败
   }
 }

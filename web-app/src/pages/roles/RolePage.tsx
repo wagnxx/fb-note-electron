@@ -1,7 +1,13 @@
 // src/pages/roles/RolePage.tsx
 
 import React from 'react'
-import { PermissionManagement, RolePermissionManagement } from '@/features/rolePermission' // 引入 RoleManagement 组件
+import {
+  MenuConfigManagement,
+  OrganizationRequestManagement,
+  PermissionManagement,
+  RolePermissionManagement,
+  UserRoleManagement,
+} from '@/features/rolePermission' // 引入 RoleManagement 组件
 import { Tabs, type TabsProps } from 'antd'
 
 const RolePage = () => {
@@ -15,6 +21,21 @@ const RolePage = () => {
       key: 'Permission2',
       label: 'Permission',
       children: <PermissionManagement />,
+    },
+    {
+      key: 'userRole',
+      label: 'User Role',
+      children: <UserRoleManagement />,
+    },
+    {
+      key: 'orgReq',
+      label: 'Org Request',
+      children: <OrganizationRequestManagement />,
+    },
+    {
+      key: 'menuConfig',
+      label: 'Menu Config',
+      children: <MenuConfigManagement />,
     },
   ]
   return (

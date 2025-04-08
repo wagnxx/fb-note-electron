@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Modal, Form, Input } from 'antd'
-import { PermissionItem } from '../types'
+import { PermissionItem } from '../types/types'
 
 interface Props {
   open: boolean

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Table, Button, Tag, Popconfirm } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store/store'
-import { RolePermission } from '../types'
+import { RolePermission } from '../types/types'
 import RolePermissionModal from './RolePermissionModal'
 import { createRole, fetchPermissions, fetchRolePermissions, modifyRole, removeRole } from '../rolePermissionSlice'
 
@@ -12,10 +12,14 @@ const RolePermissionManagement = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingRole, setEditingRole] = useState<RolePermission | null>(null)
 
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth)
+
   useEffect(() => {
-    dispatch(fetchPermissions())
-    dispatch(fetchRolePermissions('org_abc'))
-  }, [dispatch])
+    if (isAuthenticated) {
+      dispatch(fetchPermissions())
+      dispatch(fetchRolePermissions('org_abc'))
+    }
+  }, [dispatch, isAuthenticated])
 
   const openAdd = () => {
     setEditingRole(null)
@@ -73,7 +77,11 @@ const RolePermissionManagement = () => {
         ) : (
           keys.map(key => {
             const desc = permissions.find(p => p.key === key)?.desc_en || key
-            return <Tag key={key}>{desc}</Tag>
+            return (
+              <Tag key={key} title={desc}>
+                {key}
+              </Tag>
+            )
           })
         ),
     },

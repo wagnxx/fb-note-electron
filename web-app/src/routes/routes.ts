@@ -9,6 +9,7 @@ import { routesLearn } from './config/learn'
 import { routesSystem } from './config/system'
 import { routesTest } from './config/test'
 import { routesRole } from './config/role'
+import UserProfile from '@/pages/user/Profile'
 
 export interface RouteConfig {
   path: string
@@ -41,6 +42,13 @@ export const standaloneRoutes: RouteConfig[] = [
     path: '/login',
     name: 'login',
     component: Login,
+  },
+  {
+    path: '/userProfile',
+    name: 'userProfile',
+    component: UserProfile,
+    // requiresAuth: true,
+    hidden: true,
   },
   {
     path: 'tool/mindmap/local',

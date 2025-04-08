@@ -2,7 +2,6 @@
 import React, { ReactNode, useEffect } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { Button, Layout, Menu } from 'antd'
-import { useAuth } from '../context/AuthContext'
 import { authRoutes, RouteConfig } from './routes'
 import { useDispatch, useSelector } from 'react-redux'
 import { getSidbarCollapsed } from '@/features/settings/selectors'
@@ -10,6 +9,7 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth'
 import { auth, logoutUser } from '@/firebase/authService'
 import { clearAuthState, setAuthState } from '@/features/auth/authSlice'
 import { useNotification } from '@/hooks/useNotification'
+import { RootState } from '@/store/store'
 
 const { Content, Sider } = Layout
 
@@ -20,12 +20,17 @@ type MenuItem = {
 }
 
 const AuthLayout: React.FC = () => {
-  const { isAuthenticated, logout, user } = useAuth()
+  // const { isAuthenticated, logout, user } = useAuth()
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
+  const dispatch = useDispatch()
+
+  const logout = () => dispatch(clearAuthState())
+
   const navigate = useNavigate()
 
   const sidbarCfdsfollapsed = useSelector(getSidbarCollapsed)
 
-  const dispatch = useDispatch() // Redux 使用
+  // const dispatch = useDispatch() // Redux 使用
   const { showConfirmationDialog } = useNotification()
 
   useEffect(() => {
@@ -94,7 +99,9 @@ const AuthLayout: React.FC = () => {
         <div className=" flex justify-center py-2">
           {isAuthenticated ? (
             <>
-              <span style={{ color: '#fff' }}>{user?.displayName || user?.email}</span>
+              <Button type="text" size="small" style={{ color: '#fff' }} onClick={() => navigate('/userProfile')}>
+                {user?.displayName || user?.email}
+              </Button>
 
               <Button onClick={handleLogout} type="text" size="small" danger>
                 Logout

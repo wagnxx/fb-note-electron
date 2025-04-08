@@ -9,12 +9,28 @@ import {
   addRolePermissionAPI,
   updateRolePermissionAPI,
   deleteRolePermissionAPI,
+  fetchUserRolesAPI,
+  updateUserRoleAPI,
+  fetchOrganizationRequestsAPI,
+  approveRequestAPI,
+  rejectRequestAPI,
+  fetchOrgsAPI,
+  createOrganizationRequestsAPI,
+  deleteUserRoleAPI,
+  fetchMenuItemsAPI,
+  createMenuItemAPI,
+  updateMenuItemAPI,
+  deleteMenuItemAPI,
 } from '@/service/role'
 
 const initialState: RolePermissionState = {
   permissions: [],
   rolePermissions: [],
   loading: false,
+  userRoles: [],
+  organizationRequests: [],
+  orgs: [],
+  menuItems: [],
 }
 
 export const fetchPermissions = createAsyncThunk('rolePermission/fetchPermissions', fetchPermissionsFromAPI)
@@ -58,6 +74,35 @@ export const deletePermission = createAsyncThunk('rolePermission/deletePermissio
   }
 })
 
+export const fetchUserRoles = createAsyncThunk('rolePermission/fetchUserRoles', fetchUserRolesAPI)
+export const updateUserRole = createAsyncThunk('rolePermission/updateUserRole', updateUserRoleAPI)
+export const deleteUserRole = createAsyncThunk('rolePermission/deleteUserRole', deleteUserRoleAPI)
+
+// 新增组织申请的异步操作
+export const fetchOrganizationRequests = createAsyncThunk(
+  'rolePermission/fetchOrganizationRequests',
+  fetchOrganizationRequestsAPI,
+)
+
+export const approveRequest = createAsyncThunk('rolePermission/approveRequest', approveRequestAPI)
+export const rejectRequest = createAsyncThunk('rolePermission/rejectRequest', rejectRequestAPI)
+export const fetchOrgs = createAsyncThunk('rolePermission/fetchOrgs', fetchOrgsAPI)
+
+export const createOrganizationRequest = createAsyncThunk('organization/createRequest', createOrganizationRequestsAPI)
+
+// 请求菜单数据
+export const fetchMenuItems = createAsyncThunk('rolePermission/fetchMenuItems', fetchMenuItemsAPI)
+
+// 添加菜单项
+export const addMenuItem = createAsyncThunk('rolePermission/addMenuItem', createMenuItemAPI)
+// 非常语义清晰
+
+// 更新菜单项
+export const updateMenuItem = createAsyncThunk('rolePermission/updateMenuItem', updateMenuItemAPI)
+
+// 删除菜单项
+export const deleteMenuItem = createAsyncThunk('rolePermission/deleteMenuItem', deleteMenuItemAPI)
+
 const rolePermissionSlice = createSlice({
   name: 'rolePermission',
   initialState,
@@ -86,6 +131,20 @@ const rolePermissionSlice = createSlice({
         if (index !== -1) {
           state.permissions[index] = updated
         }
+      })
+      .addCase(fetchUserRoles.fulfilled, (state, action) => {
+        state.userRoles = action.payload
+      })
+      // 新增组织申请的处理
+      .addCase(fetchOrganizationRequests.fulfilled, (state, action) => {
+        state.organizationRequests = action.payload
+      })
+      .addCase(fetchOrgs.fulfilled, (state, action) => {
+        console.log('fetch orgs :', action.payload)
+        state.orgs = action.payload
+      })
+      .addCase(fetchMenuItems.fulfilled, (state, action) => {
+        state.menuItems = action.payload
       })
   },
 })

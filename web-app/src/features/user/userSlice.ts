@@ -2,12 +2,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface UserState {
-  users: { id: string; name: string }[]
+  user: { id: string; name: string }[]
   isLoading: boolean
 }
 
 const initialState: UserState = {
-  users: [],
+  user: [],
   isLoading: false,
 }
 
@@ -16,7 +16,7 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUsers(state, action: PayloadAction<{ id: string; name: string }[]>) {
-      state.users = action.payload
+      state.user = action.payload
     },
     setLoading(state, action: PayloadAction<boolean>) {
       state.isLoading = action.payload
