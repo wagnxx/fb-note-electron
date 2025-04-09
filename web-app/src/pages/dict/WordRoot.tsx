@@ -8,7 +8,7 @@ import WordRootDoc from './components/WordRootDoc'
 const { Content, Sider } = Layout
 
 const RootStudio: React.FC = () => {
-  const [view, setView] = useState<string>('table')
+  const [view, setView] = useState<string>('1') //  default table-1 => value = 1
   const [isTable, setIsTable] = useState(true)
   const [isSiderOpen, setIsSiderOpen] = useState(false)
 
