@@ -6,6 +6,7 @@ import { PermissionItem } from '../types/types'
 import PermissionModal from './PermissionModal'
 import { AppDispatch } from '@/store/store'
 import { addPermission, deletePermission, fetchPermissions, updatePermission } from '../rolePermissionSlice'
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 
 const PermissionManagement = () => {
   const dispatch = useDispatch<AppDispatch>()
@@ -71,15 +72,16 @@ const PermissionManagement = () => {
             render: (_: any, record: PermissionItem) => (
               <div className="flex gap-2">
                 <Button
+                  type="text"
+                  icon={<EditOutlined />}
+                  title="Edit"
                   onClick={() => {
                     setEditing(record)
                     setModalOpen(true)
                   }}
-                >
-                  Edit
-                </Button>
+                />
                 <Popconfirm title="Delete this permission?" onConfirm={() => handleDelete(record)}>
-                  <Button danger>Delete</Button>
+                  <Button type="text" icon={<DeleteOutlined />} title="Delete" danger />
                 </Popconfirm>
               </div>
             ),

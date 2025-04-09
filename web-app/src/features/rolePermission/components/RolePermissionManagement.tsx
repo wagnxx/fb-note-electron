@@ -5,6 +5,7 @@ import { AppDispatch, RootState } from '@/store/store'
 import { RolePermission } from '../types/types'
 import RolePermissionModal from './RolePermissionModal'
 import { createRole, fetchPermissions, fetchRolePermissions, modifyRole, removeRole } from '../rolePermissionSlice'
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 
 const RolePermissionManagement = () => {
   const dispatch = useDispatch<AppDispatch>()
@@ -89,9 +90,9 @@ const RolePermissionManagement = () => {
       title: 'Actions',
       render: (_: any, record: RolePermission) => (
         <div className="flex gap-2">
-          <Button onClick={() => openEdit(record)}>Edit</Button>
+          <Button type="text" icon={<EditOutlined />} title="Edit" onClick={() => openEdit(record)} />
           <Popconfirm title="Confirm delete?" onConfirm={() => handleDelete(record)}>
-            <Button danger>Delete</Button>
+            <Button type="text" icon={<DeleteOutlined />} title="Delete" danger />
           </Popconfirm>
         </div>
       ),
