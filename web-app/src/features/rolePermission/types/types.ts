@@ -6,6 +6,11 @@ export interface PermissionItem {
   id?: string
   key: string
   index: number
+  /**
+   * @deprecated replaced by `index`
+   * This field is no longer used in permission calculations.
+   * Will be removed in future versions.
+   */
   value: number
   desc_en: string
   desc_zh: string

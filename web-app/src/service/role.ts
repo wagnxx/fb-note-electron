@@ -25,7 +25,7 @@ const COL_ORG_MEMBERS = 'orgMembers'
 const COL_PERMISSIONS = 'permissions'
 const COL_ROLE_PERMISSIONS = 'rolePermissions'
 
-export const addPermissionAPI = async (item: PermissionItem) => {
+export const createPermissionAPI = async (item: PermissionItem) => {
   if (!auth?.currentUser?.uid) {
     return Promise.reject('logout')
   }

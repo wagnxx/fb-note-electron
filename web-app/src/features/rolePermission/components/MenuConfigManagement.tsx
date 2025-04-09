@@ -148,7 +148,7 @@ const MenuConfigManagement: React.FC = () => {
           <Form.Item label="Order" name="order" rules={[{ required: true }]}>
             <Input type="number" />
           </Form.Item>
-          <Form.Item label="Permissions" name="permissions" rules={[{ required: true }]}>
+          <Form.Item label="Permissions" name="permissions">
             <Select mode="multiple" options={allPermissions.map(p => ({ label: p.key, value: p.key }))} allowClear />
           </Form.Item>
         </Form>

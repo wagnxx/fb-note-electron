@@ -5,7 +5,7 @@ import { UserRoleItem } from '../types'
 
 interface RoleWithValue {
   role: string[] | string
-  value: number // 使用数字表示权限值
+  permissionIndexes: number[] // 使用权限的索引列表代替权限值
 }
 
 const defaultRole: UserRoleItem = {
@@ -48,33 +48,28 @@ const useUserRole = () => {
         if (!rolePerm) {
           return {
             role: userRole.role,
-            value: 0, // 没有角色时，默认没有权限
+            permissionIndexes: [], // 没有角色时，默认没有权限
           }
         }
 
         const permssionKeys = rolePerm.permissions
-        let userPermissons
+        let userPermissionIndexes: number[]
         if (permssionKeys.includes('*')) {
-          // 如果角色包含 '*'，则返回所有权限
-          userPermissons = [...permissions]
+          // 如果角色包含 '*'，则返回所有权限的索引
+          userPermissionIndexes = permissions.map(item => item.index)
         } else {
-          // 否则，根据角色的权限列表来过滤权限
-          userPermissons = permissions.filter(item => permssionKeys.includes(item.key))
+          // 否则，根据角色的权限列表来过滤权限的索引
+          userPermissionIndexes = permissions.filter(item => permssionKeys.includes(item.key)).map(item => item.index)
         }
 
-        // 使用位运算（bitwise OR）来计算角色的综合权限值
-        const roleValue = userPermissons.reduce((pre, cur) => {
-          return pre | cur.value
-        }, 0)
-
-        // 返回包含角色和计算出的权限值
+        // 返回包含角色和权限索引
         return {
           role: userRole.role,
-          value: roleValue,
+          permissionIndexes: userPermissionIndexes,
         }
       })
 
-      // 将角色和权限值存入状态
+      // 将角色和权限索引存入状态
       setUserRoleWithPermissions(roleWithPermissions)
     }
 
@@ -83,10 +78,17 @@ const useUserRole = () => {
 
   // 计算所有角色的综合权限值
   const totalPermissionsValue = userRoleWithPermissions.reduce((totalValue, role) => {
-    return totalValue | role.value
-  }, 0)
+    return totalValue | calculateRoleValue(role.permissionIndexes)
+  }, 0n) // 0n 是 BigInt 的初始化值
 
   return { userRoleWithPermissions, totalPermissionsValue }
 }
 
 export default useUserRole
+
+// 计算角色的综合权限值
+export const calculateRoleValue = (permissionIndexes: number[]): bigint => {
+  return permissionIndexes.reduce((totalValue, index) => {
+    return totalValue | (2n ** BigInt(index))
+  }, 0n)
+}

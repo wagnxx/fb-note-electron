@@ -1,7 +1,7 @@
 // src/components/AuthLayout.tsx
-import React, { ReactNode, useEffect } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
-import { Button, Layout, Menu } from 'antd'
+import { Button, Layout, Menu, Spin } from 'antd'
 import { authRoutes, RouteConfig } from './routes'
 import { useSelector } from 'react-redux'
 import { getSidbarCollapsed } from '@/features/settings/selectors'
@@ -10,7 +10,7 @@ import { auth, logoutUser } from '@/firebase/authService'
 import { clearAuthState, setAuthState } from '@/features/auth/authSlice'
 import { useNotification } from '@/hooks/useNotification'
 import { RootState } from '@/store/store'
-import useUserRole from '@/features/rolePermission/hooks/useUserRole'
+import useUserRole, { calculateRoleValue } from '@/features/rolePermission/hooks/useUserRole'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { fetchMenuItems, fetchPermissions } from '@/features/rolePermission'
 
@@ -23,18 +23,21 @@ type MenuItem = {
 }
 
 const AuthLayout: React.FC = () => {
-  // const { isAuthenticated, logout, user } = useAuth()
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
   const { menuItems, permissions } = useAppSelector(state => state.rolePermission)
   const dispatch = useAppDispatch()
   const { totalPermissionsValue } = useUserRole()
-
   const navigate = useNavigate()
-
-  const sidbarCfdsfollapsed = useSelector(getSidbarCollapsed)
-
-  // const dispatch = useDispatch() // Redux 使用
+  const sidebarCollapsed = useSelector(getSidbarCollapsed)
   const { showConfirmationDialog } = useNotification()
+  // 新增 loading 状态
+  const [isMenuLoaded, setIsMenuLoaded] = useState(false)
+
+  useEffect(() => {
+    if (menuItems.length > 0) {
+      setIsMenuLoaded(true) // menuItems 加载完成后更新状态
+    }
+  }, [menuItems])
 
   useEffect(() => {
     dispatch(fetchMenuItems())
@@ -66,8 +69,9 @@ const AuthLayout: React.FC = () => {
   const handleLogin = async () => {
     navigate('/login')
   }
+
   const handleLogout = async () => {
-    let confirmed = await showConfirmationDialog({
+    const confirmed = await showConfirmationDialog({
       content: `Are you sure you want to logout?`,
     })
 
@@ -76,57 +80,59 @@ const AuthLayout: React.FC = () => {
     dispatch(clearAuthState())
   }
 
-  const computeRolePermissions = (route: RouteConfig) => {
-    const menuItem = menuItems.find(item => item.key === route.name)
+  const computeRolePermissions = useCallback(
+    (route: RouteConfig) => {
+      const menuItem = menuItems.find(item => item.key === route.name)
+      if (!menuItem) return true
+      const menuPermKeys = menuItem.permissions.filter(p => p !== '*')
+      if (menuPermKeys.length === 0) return true
 
-    if (!menuItem) return true
+      const menuPermIndexes = permissions.filter(item => menuPermKeys.includes(item.key)).map(item => item.index)
 
-    const menuPerKeys = menuItem.permissions.filter(item => item !== '*') // not allowed in memu role
-    const menuPerm = permissions.filter(item => menuPerKeys.includes(item.key))
-    const menuRolePermValue = menuPerm.reduce((pre, cur) => {
-      return pre | cur.value
-    }, 0)
+      const menuPermValue = calculateRoleValue(menuPermIndexes)
+      return (totalPermissionsValue & menuPermValue) !== 0n
+    },
+    [menuItems, permissions, totalPermissionsValue],
+  )
 
-    return (totalPermissionsValue & menuRolePermValue) > 0
-  }
+  const filterValidMenus = useCallback(
+    (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
+      return routes.flatMap(route => {
+        const { requiresAuth, path, name, hidden, children } = route
+        const fullPath = `${parentPath.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
 
-  const filterValidMenus = (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
-    return routes.flatMap(route => {
-      const { requiresAuth, path, name, hidden, children } = route
-      const fullPath = `${parentPath}${path}/`
+        const hasPermission = computeRolePermissions(route)
 
-      const hasPer = computeRolePermissions(route)
+        if (!hasPermission || hidden || (requiresAuth && !isAuthenticated)) {
+          return []
+        }
 
-      if (!hasPer || hidden || (requiresAuth && !isAuthenticated)) {
-        return []
-      }
+        const menuItem: MenuItem = {
+          key: fullPath,
+          label: <Link to={fullPath}>{name}</Link>,
+        }
 
-      const menuItem: MenuItem = {
-        key: fullPath,
-        // label: children ? name : <Link to={fullPath}>{name}</Link>,
-        label: <Link to={fullPath}>{name}</Link>,
-      }
+        if (children) {
+          menuItem.children = filterValidMenus(children, fullPath)
+        }
 
-      if (children) {
-        menuItem.children = filterValidMenus(children, fullPath)
-      }
+        return menuItem.children?.length ? [menuItem] : [menuItem]
+      })
+    },
+    [computeRolePermissions, isAuthenticated],
+  )
 
-      return menuItem.children?.length ? [menuItem] : [menuItem]
-    })
-  }
-
-  const validMenuItems = filterValidMenus(authRoutes)
+  const validMenuItems = useMemo(() => filterValidMenus(authRoutes), [filterValidMenus])
 
   return (
     <Layout>
-      <Sider width={200} trigger={null} collapsedWidth={0} collapsible collapsed={sidbarCfdsfollapsed}>
-        <div className=" flex justify-center py-2">
+      <Sider width={200} trigger={null} collapsedWidth={0} collapsible collapsed={sidebarCollapsed}>
+        <div className="flex justify-center py-2">
           {isAuthenticated ? (
             <>
               <Button type="text" size="small" style={{ color: '#fff' }} onClick={() => navigate('/userProfile')}>
                 {user?.displayName || user?.email}
               </Button>
-
               <Button onClick={handleLogout} type="text" size="small" danger>
                 Logout
               </Button>
@@ -137,7 +143,19 @@ const AuthLayout: React.FC = () => {
             </Button>
           )}
         </div>
-        <Menu theme="dark" mode="inline" items={validMenuItems} />
+        {/* <Menu theme="dark" mode="inline" items={validMenuItems} /> */}
+        <Spin
+          spinning={!isMenuLoaded}
+          tip={<span style={{ textShadow: 'none' }}>Loading menu...</span>}
+          className="flex justify-center  items-center  "
+          style={{ height: '100vh' }}
+        >
+          {isMenuLoaded && validMenuItems.length === 0 ? (
+            <div>No menu items available</div> // 没有有效菜单项时的提示
+          ) : (
+            <Menu theme="dark" mode="inline" items={isMenuLoaded ? validMenuItems : []} />
+          )}
+        </Spin>
       </Sider>
       <Content style={{ padding: '0px', height: 'calc(100vh - 28px)', overflow: 'auto' }}>
         <Outlet />

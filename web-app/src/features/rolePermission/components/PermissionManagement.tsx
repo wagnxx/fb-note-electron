@@ -19,16 +19,27 @@ const PermissionManagement = () => {
   }, [dispatch])
 
   const handleSubmit = (data: PermissionItem) => {
-    if (editing) {
-      dispatch(updatePermission(data))
-    } else {
-      dispatch(addPermission(data))
-    }
-    setModalOpen(false)
+    let action = editing ? updatePermission : addPermission
+
+    dispatch(action(data) as any)
+      .unwrap()
+      .then((res: string | boolean) => {
+        if (res) {
+          dispatch(fetchPermissions())
+        }
+        setModalOpen(false)
+      })
   }
 
   const handleDelete = (item: PermissionItem) => {
-    dispatch(deletePermission(item))
+    if (!item.id) return
+    dispatch(deletePermission([item.id]))
+      .unwrap()
+      .then(res => {
+        if (res) {
+          dispatch(fetchPermissions())
+        }
+      })
   }
 
   return (
