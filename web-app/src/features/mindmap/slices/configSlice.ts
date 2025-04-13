@@ -21,6 +21,7 @@ type StrictGlobalProperties = GlobalProperty<PropertyType>[]
 // **全局默认属性**
 const GLOBAL_PROPERTIES: StrictGlobalProperties = [
   { key: 'showTollbar', type: 'boolean', value: true },
+  { key: 'showNodeFinder', type: 'boolean', value: true },
   { key: 'showMiniMap', type: 'boolean', value: true },
   { key: 'showControls', type: 'boolean', value: true },
   { key: 'showBackground', type: 'boolean', value: true },

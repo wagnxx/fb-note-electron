@@ -52,6 +52,7 @@ export type FlowProps = {
   // The property is only used to test。It is used in the effect function and the DEFAULT_NODES.
   compId: string
   showTollbar?: boolean
+  showNodeFinder?: boolean
   showMiniMap?: boolean
   showControls?: boolean
   showBackground?: boolean
@@ -84,6 +85,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
       initEdgeList,
       compId,
       showTollbar = true,
+      showNodeFinder = true,
       showMiniMap = true,
       showControls = true,
       showBackground = true,
@@ -389,7 +391,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
               onGroupSelections={onGroupSelections}
             />
           )}
-          <NodeSearchSelect style={{}} nodes={sortedNodes} />
+          {showNodeFinder && <NodeSearchSelect style={{}} nodes={sortedNodes} />}
         </PanelBorderTools>
 
         <ReactFlow
