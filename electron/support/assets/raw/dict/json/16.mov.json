@@ -1,0 +1,676 @@
+[
+    {
+      "name": "mov",
+      "siblings": [
+        "mob",
+        "mot"
+      ],
+      "isPrefix": true,
+      "isSuffix": true,
+      "from": "来源于拉丁语的-mot-，-mov-，-mob-它们是同源异形根，意为 tomove。-mov-来源于拉丁动词 movere，-mot-来源于 movere 的动名词词干，mob 是 movere 的形容词性分词的词干。它们的同义词根有来源于拉丁语的 migr 和来源于希腊语的。",
+      "extension": "动/移动/搬迁/迁移",
+      "group": [
+        {
+          "name": "move",
+          "meaning": " n. 移动；步骤；迁居；策略 vi. 移动；搬家，迁移；离开vt. 移动；感动",
+          "structurare": ""
+        },
+        {
+          "name": "moving",
+          "meaning": "adj. 感人的",
+          "structurare": ""
+        },
+        {
+          "name": "unmoving",
+          "meaning": " adj. 不感动人的；静止的",
+          "structurare": ""
+        },
+        {
+          "name": "movingly",
+          "meaning": "adv. 感人地，动人地",
+          "structurare": ""
+        },
+        {
+          "name": "moved",
+          "meaning": "adj. 感动的；被移动的",
+          "structurare": ""
+        },
+        {
+          "name": "unmoved",
+          "meaning": "adj. 无动于衷的；不动摇的",
+          "structurare": ""
+        },
+        {
+          "name": "movement",
+          "meaning": "n. 运动",
+          "structurare": ""
+        },
+        {
+          "name": "mover",
+          "meaning": "n. 原动力；鼓动者；搬运公司；搬家工人",
+          "structurare": ""
+        },
+        {
+          "name": "movable",
+          "meaning": "adj. 活动的，可移动的",
+          "structurare": ""
+        },
+        {
+          "name": "unmovable",
+          "meaning": "adj. 不动的；不改变的；固定的",
+          "structurare": ""
+        },
+        {
+          "name": "immovable",
+          "meaning": "adj. 不动的；固定的；不改变的",
+          "structurare": ""
+        },
+        {
+          "name": "earthmover",
+          "meaning": "n. 推土机，重型推土机",
+          "structurare": ""
+        },
+        {
+          "name": "countermove",
+          "meaning": "n. 对抗手段；报复行动 vi. 采取对抗行动 vt. 采取报复手段",
+          "structurare": ""
+        },
+        {
+          "name": "move-in",
+          "meaning": "n. 移入",
+          "structurare": ""
+        },
+        {
+          "name": "slow-moving",
+          "meaning": "adj. 滞销的；动作缓慢的",
+          "structurare": ""
+        },
+        {
+          "name": "fast-moving",
+          "meaning": "adj. 移动迅速的",
+          "structurare": ""
+        },
+        {
+          "name": "quick-moving",
+          "meaning": "n. 快速移动 速动",
+          "structurare": ""
+        },
+        {
+          "name": "earth-moving",
+          "meaning": "adj. 运土的",
+          "structurare": ""
+        },
+        {
+          "name": "remove",
+          "meaning": "vt. 迁移；搬迁",
+          "structurare": ""
+        },
+        {
+          "name": "remover",
+          "meaning": "n. 去除剂；搬运工；搬家公司",
+          "structurare": ""
+        },
+        {
+          "name": "removal",
+          "meaning": " n. 搬迁，搬走",
+          "structurare": ""
+        },
+        {
+          "name": "removed",
+          "meaning": " adj. 远离的；隔了...代的",
+          "structurare": ""
+        },
+        {
+          "name": "removable",
+          "meaning": "adj. 可移动的；可去掉的；可免职的",
+          "structurare": ""
+        },
+        {
+          "name": "snow-removal",
+          "meaning": "n. 除雪；清扫积雪",
+          "structurare": ""
+        },
+        {
+          "name": "movie",
+          "meaning": "n. 电影；电影院",
+          "structurare": ""
+        },
+        {
+          "name": "moviegoer",
+          "meaning": "n. 常看电影的人",
+          "structurare": ""
+        },
+        {
+          "name": "movie-going",
+          "meaning": "n. 看电影的人；adj. 常去看电影的",
+          "structurare": ""
+        },
+        {
+          "name": "movie-theater",
+          "meaning": "n. 电影院",
+          "structurare": ""
+        },
+        {
+          "name": "movie-like",
+          "meaning": "adj. 像电影那样的",
+          "structurare": ""
+        },
+        {
+          "name": "b-movie",
+          "meaning": "n. 便宜的劣质电影",
+          "structurare": ""
+        },
+        {
+          "name": "movie-making",
+          "meaning": "n. 制片",
+          "structurare": ""
+        },
+        {
+          "name": "moviemaker",
+          "meaning": "n. 电影制作人",
+          "structurare": ""
+        },
+        {
+          "name": "action-movie",
+          "meaning": "n. 动作片",
+          "structurare": ""
+        },
+        {
+          "name": "horror-movie",
+          "meaning": "n. 恐怖片，惊恐片；恐怖电影",
+          "structurare": ""
+        },
+        {
+          "name": "silent-movie",
+          "meaning": "n. 无声电影",
+          "structurare": ""
+        },
+        {
+          "name": "motive",
+          "meaning": "n. 动机",
+          "structurare": ""
+        },
+        {
+          "name": "motivic",
+          "meaning": "adj. 动机的；乐旨的",
+          "structurare": ""
+        },
+        {
+          "name": "motivate",
+          "meaning": "vt. 刺激；使有动机；激发…的积极性",
+          "structurare": ""
+        },
+        {
+          "name": "motivated",
+          "meaning": "adj. 有动机的；有积极性的",
+          "structurare": ""
+        },
+        {
+          "name": "motivator",
+          "meaning": "n. 动力；激励因素",
+          "structurare": ""
+        },
+        {
+          "name": "motivation",
+          "meaning": "n. 动力",
+          "structurare": ""
+        },
+        {
+          "name": "motivational",
+          "meaning": "adj. 动机的；激发性的；有关动机的；动机说明",
+          "structurare": ""
+        },
+        {
+          "name": "self-motivated",
+          "meaning": "adj. 自我激励的",
+          "structurare": ""
+        },
+        {
+          "name": "unmotivated",
+          "meaning": "adj. 动机不明的",
+          "structurare": ""
+        },
+        {
+          "name": "automotive",
+          "meaning": "adj. 自动的，机动的",
+          "structurare": ""
+        },
+        {
+          "name": "electro-motive",
+          "meaning": "adj. 电动的；电动势的 n. 电动火车头",
+          "structurare": ""
+        },
+        {
+          "name": "politically-motivated",
+          "meaning": "adj. 有政治动机的",
+          "structurare": ""
+        },
+        {
+          "name": "promote",
+          "meaning": "vt. 促进；提升；推销；发扬 vi. 成为王后或其他大于卒的子",
+          "structurare": ""
+        },
+        {
+          "name": "promoted",
+          "meaning": "adj. 晋升的",
+          "structurare": ""
+        },
+        {
+          "name": "promotion",
+          "meaning": "n. 提升，[劳经] 晋升；推销，促销；促进；发扬，振兴",
+          "structurare": ""
+        },
+        {
+          "name": "promotional",
+          "meaning": "adj. 促销的；增进的；奖励的",
+          "structurare": ""
+        },
+        {
+          "name": "promoter",
+          "meaning": "n. 促进者；发起人；催化剂；促进剂；启动子",
+          "structurare": ""
+        },
+        {
+          "name": "self-promotion",
+          "meaning": "n. 自我推销；自促作用",
+          "structurare": ""
+        },
+        {
+          "name": "health-promoting",
+          "meaning": "n. 健康促进",
+          "structurare": ""
+        },
+        {
+          "name": "demote",
+          "meaning": "vt. 使降级；使降职",
+          "structurare": ""
+        },
+        {
+          "name": "demotion",
+          "meaning": "n. 降级；降职；降等",
+          "structurare": ""
+        },
+        {
+          "name": "demotic",
+          "meaning": "adj. 通俗的，民众的",
+          "structurare": ""
+        },
+        {
+          "name": "locomote",
+          "meaning": "vt. 移动；行动",
+          "structurare": ""
+        },
+        {
+          "name": "locomotive",
+          "meaning": "adj. 移动的，运动的 n. 机车，火车头",
+          "structurare": ""
+        },
+        {
+          "name": "locomotion",
+          "meaning": "n. 运动；移动；旅行",
+          "structurare": ""
+        },
+        {
+          "name": "motion",
+          "meaning": "n. 动作；移动；手势；请求；意向；议案 vi. 运动；打手势vt. 运动；向…打手势",
+          "structurare": ""
+        },
+        {
+          "name": "motionless",
+          "meaning": "adj. 静止的；不运动的",
+          "structurare": ""
+        },
+        {
+          "name": "motionlessly",
+          "meaning": "adv. 不动地",
+          "structurare": ""
+        },
+        {
+          "name": "motion-picture",
+          "meaning": "adj. 电影的",
+          "structurare": ""
+        },
+        {
+          "name": "slow-motion",
+          "meaning": "adj. 缓慢的；慢动作的；高速度摄影的",
+          "structurare": ""
+        },
+        {
+          "name": "full-motion",
+          "meaning": "n. 全动态",
+          "structurare": ""
+        },
+        {
+          "name": "stop-motion",
+          "meaning": "n. 单格拍制（动画片拍摄手法）",
+          "structurare": ""
+        },
+        {
+          "name": "emote",
+          "meaning": "测试",
+          "structurare": ""
+        },
+        {
+          "name": "emotion",
+          "meaning": "n. 感情；情绪",
+          "structurare": ""
+        },
+        {
+          "name": "emotional",
+          "meaning": "adj. 情绪的；易激动的；感动人的",
+          "structurare": ""
+        },
+        {
+          "name": "unemotional",
+          "meaning": "adj. 不易动感情的；非感情的；无动于衷的",
+          "structurare": ""
+        },
+        {
+          "name": "emotionless",
+          "meaning": "adj. 没有情感的；不露情感的",
+          "structurare": ""
+        },
+        {
+          "name": "emotive",
+          "meaning": "adj. 感情的；情绪的；表现感情的",
+          "structurare": ""
+        },
+        {
+          "name": "emotivism",
+          "meaning": "n. 情绪主义，情绪论",
+          "structurare": ""
+        },
+        {
+          "name": "emotionally",
+          "meaning": "adv. 感情上；情绪上；令人激动地；情绪冲动地",
+          "structurare": ""
+        },
+        {
+          "name": "emotionality",
+          "meaning": "n. 情绪性；感动性",
+          "structurare": ""
+        },
+        {
+          "name": "emotionalism",
+          "meaning": "n. 感情主义；诉诸感情；主情主义",
+          "structurare": ""
+        },
+        {
+          "name": "non-emotional",
+          "meaning": "adj. 不诉诸感情的；非感情的",
+          "structurare": ""
+        },
+        {
+          "name": "social-emotional",
+          "meaning": " adj. 社会情绪的；人际情感的",
+          "structurare": ""
+        },
+        {
+          "name": "socioemotional",
+          "meaning": "n. 社会性情绪",
+          "structurare": ""
+        },
+        {
+          "name": "remote",
+          "meaning": "adj. 遥远的",
+          "structurare": ""
+        },
+        {
+          "name": "remotely",
+          "meaning": " adv. 遥远地；偏僻地；（程度）极微地，极轻地",
+          "structurare": ""
+        },
+        {
+          "name": "remoteness",
+          "meaning": "n. 遥远；偏僻；细微；时间久远",
+          "structurare": ""
+        },
+        {
+          "name": "remote-control",
+          "meaning": "n. 遥控",
+          "structurare": ""
+        },
+        {
+          "name": "remote-controlled",
+          "meaning": " adj. 远距离操纵的；遥控的",
+          "structurare": ""
+        },
+        {
+          "name": "motor",
+          "meaning": "n. 发动机，机动车",
+          "structurare": ""
+        },
+        {
+          "name": "motoring",
+          "meaning": "n. 驾驶汽车；乘汽车",
+          "structurare": ""
+        },
+        {
+          "name": "motorist",
+          "meaning": " n. 驾车旅行的人，开汽车的人",
+          "structurare": ""
+        },
+        {
+          "name": "motoric",
+          "meaning": "adj. [生理学]肌肉运动的",
+          "structurare": ""
+        },
+        {
+          "name": "motorized",
+          "meaning": "adj. 摩托化的；机动化的",
+          "structurare": ""
+        },
+        {
+          "name": "non-motorized",
+          "meaning": "adj. 非机动化（步行、骑自行车等方式）",
+          "structurare": ""
+        },
+        {
+          "name": "motorbike",
+          "meaning": "n. 摩托车",
+          "structurare": ""
+        },
+        {
+          "name": "motorway",
+          "meaning": "n.（英）高速公路",
+          "structurare": ""
+        },
+        {
+          "name": "motormouth",
+          "meaning": "n. 说话快并且健谈",
+          "structurare": ""
+        },
+        {
+          "name": "motorcade",
+          "meaning": "n. 汽车行列，车队",
+          "structurare": ""
+        },
+        {
+          "name": "motorcar",
+          "meaning": "n. （英）汽车；（美）电动车",
+          "structurare": ""
+        },
+        {
+          "name": "motorcoach",
+          "meaning": "n. 公共汽车",
+          "structurare": ""
+        },
+        {
+          "name": "motorsport",
+          "meaning": "n. 赛车运动；摩托车运动",
+          "structurare": ""
+        },
+        {
+          "name": "motorcycle",
+          "meaning": "n. 摩托车；机动车 vi. 骑摩托车",
+          "structurare": ""
+        },
+        {
+          "name": "motorcyclist",
+          "meaning": "n. 骑摩托车的人；乘机车者",
+          "structurare": ""
+        },
+        {
+          "name": "motorcycling",
+          "meaning": "n. 摩托运动",
+          "structurare": ""
+        },
+        {
+          "name": "motorboat",
+          "meaning": "n. 摩托艇，汽船",
+          "structurare": ""
+        },
+        {
+          "name": "motorman",
+          "meaning": "n. 司机",
+          "structurare": ""
+        },
+        {
+          "name": "motor-driven",
+          "meaning": "adj. 电动的；[机] 电机驱动的，[机] 电动机拖动的",
+          "structurare": ""
+        },
+        {
+          "name": "motor-vehicle",
+          "meaning": "n. 汽车；机动车辆",
+          "structurare": ""
+        },
+        {
+          "name": "motorhome",
+          "meaning": "n. 旅宿车",
+          "structurare": ""
+        },
+        {
+          "name": "servomotor",
+          "meaning": "n. 伺服电动机；继动器",
+          "structurare": ""
+        },
+        {
+          "name": "motel",
+          "meaning": "n. 汽车旅馆",
+          "structurare": ""
+        },
+        {
+          "name": "motile",
+          "meaning": "adj. (生物)能动的，有自动力的",
+          "structurare": ""
+        },
+        {
+          "name": "motility",
+          "meaning": "n. 运动性；能动性；自动力",
+          "structurare": ""
+        },
+        {
+          "name": "mob",
+          "meaning": "n. 暴民，暴徒；民众；乌合之众 vt. 大举包围，围攻；蜂拥进入 vi. 聚众生事，聚众滋事",
+          "structurare": ""
+        },
+        {
+          "name": "mobster",
+          "meaning": " n. 匪徒；暴徒",
+          "structurare": ""
+        },
+        {
+          "name": "mobile",
+          "meaning": "adj. 可移动的；机动的；易变的；非固定的 n. 运动物体",
+          "structurare": ""
+        },
+        {
+          "name": "mobility",
+          "meaning": "n. 移动性；机动性；[电子] 迁移率",
+          "structurare": ""
+        },
+        {
+          "name": "mobilize",
+          "meaning": "vt. 动员，调动；集合，组织；使…流通；使…松动 vi. 组织；动员起来",
+          "structurare": ""
+        },
+        {
+          "name": "mobilized",
+          "meaning": "adj. 动员了的；运动的；好动的",
+          "structurare": ""
+        },
+        {
+          "name": "mobilization",
+          "meaning": "n. 动员；调动",
+          "structurare": ""
+        },
+        {
+          "name": "demobilize",
+          "meaning": "vt. 遣散；使复员；使退伍（demobilise）",
+          "structurare": ""
+        },
+        {
+          "name": "demobilization",
+          "meaning": "n. 复员；遣散（demobilize 的名词）",
+          "structurare": ""
+        },
+        {
+          "name": "automobile",
+          "meaning": "n. 汽车 vt. 驾驶汽车",
+          "structurare": ""
+        },
+        {
+          "name": "snowmobile",
+          "meaning": "n. 雪上汽车；机动雪橇",
+          "structurare": ""
+        },
+        {
+          "name": "bookmobile",
+          "meaning": "n. 流动的汽车图书馆",
+          "structurare": ""
+        },
+        {
+          "name": "mobile-phone",
+          "meaning": "n. 手机；行动电话",
+          "structurare": ""
+        },
+        {
+          "name": "mobile-home",
+          "meaning": "n. （拖车型）活动房屋；拖车住房",
+          "structurare": ""
+        },
+        {
+          "name": "immobile",
+          "meaning": "adj. 固定的；稳定的；不变的",
+          "structurare": ""
+        },
+        {
+          "name": "immobility",
+          "meaning": "n. 不动，固定",
+          "structurare": ""
+        },
+        {
+          "name": "immobilize",
+          "meaning": "vt. 使固定；使不动；使停止流通",
+          "structurare": ""
+        },
+        {
+          "name": "immobilized",
+          "meaning": "adj. 固定化的",
+          "structurare": ""
+        },
+        {
+          "name": "immobilization",
+          "meaning": "n. 使停止流通，固定",
+          "structurare": ""
+        },
+        {
+          "name": "motif",
+          "meaning": "n. 主题；动机；主旨；图形；意念",
+          "structurare": ""
+        },
+        {
+          "name": "commotion",
+          "meaning": "n. 骚动，动乱",
+          "structurare": ""
+        },
+        {
+          "name": "motocross",
+          "meaning": "n. 摩托车越野赛",
+          "structurare": ""
+        }
+      ]
+  
+      }
+    ]

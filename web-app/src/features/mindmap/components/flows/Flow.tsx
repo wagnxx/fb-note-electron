@@ -36,6 +36,8 @@ import {
   NODE_WIDTH,
   NodeType,
 } from '../../constants'
+import NodeSearchSelect from '../tools/NodeSearchSelect'
+import PanelBorderTools from '../tools/PanelBorderTools'
 
 export type FlowProps = {
   bgVType?: BackgroundVariant
@@ -375,17 +377,21 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
 
     return (
       <div style={{ position: 'relative', userSelect: 'none' }} className={className} ref={keyPressTargetRef}>
-        {showTollbar && (
-          <Toolbar
-            onCreateRootNode={() => handleAddRootNode()}
-            onCreateNode={() => handleCreateFreeNode()}
-            onDelete={batchDelete}
-            onLogNodes={handleLogNodes}
-            onToggleNote={handleToggleNoteVisibility}
-            onArrange={type => handleArrange(type)}
-            onGroupSelections={onGroupSelections}
-          />
-        )}
+        <PanelBorderTools className="flex ">
+          {showTollbar && (
+            <Toolbar
+              onCreateRootNode={() => handleAddRootNode()}
+              onCreateNode={() => handleCreateFreeNode()}
+              onDelete={batchDelete}
+              onLogNodes={handleLogNodes}
+              onToggleNote={handleToggleNoteVisibility}
+              onArrange={type => handleArrange(type)}
+              onGroupSelections={onGroupSelections}
+            />
+          )}
+          <NodeSearchSelect style={{}} nodes={sortedNodes} />
+        </PanelBorderTools>
+
         <ReactFlow
           nodes={sortedNodes}
           edges={edges}

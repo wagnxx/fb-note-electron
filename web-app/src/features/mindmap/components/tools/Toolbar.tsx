@@ -1,6 +1,6 @@
 // src/features/mindmap/components/Toolbar.tsx
 import React from 'react'
-import { Button, Dropdown, MenuProps, Space } from 'antd'
+import { Button, Dropdown, MenuProps } from 'antd'
 import { DownOutlined } from '@ant-design/icons'
 import { MenuItemType } from 'antd/es/menu/interface'
 
@@ -73,39 +73,15 @@ const Toolbar: React.FC<ToolbarProps> = ({
     .filter((item): item is MenuItemType => 'onClick' in item! || item!.type === 'submenu')
 
   return (
-    <div
-      style={{
-        marginBottom: '10px',
-        padding: '10px',
-        backgroundColor: 'rgb(238 242 255 / var(--tw-bg-opacity))',
-        borderRadius: '6px',
-        // boxShadow: '1px 1px 4px rgba(0, 0, 0, 0.4)',
-        position: 'absolute',
-        right: '12px',
-        top: '16px',
-        zIndex: '99',
+    <Dropdown
+      menu={{
+        items: validBtns.slice(0),
       }}
     >
-      <Space>
-        {/* {validBtns
-          .slice(0, 1)
-          .filter(item => item.onClick)
-          .map((btn, index) => (
-            <Button key={index} size="small" type="text" disabled={!btn.onClick} onClick={btn.onClick}>
-              {btn.label}
-            </Button>
-          ))} */}
-        <Dropdown
-          menu={{
-            items: validBtns.slice(0),
-          }}
-        >
-          <Button type="text" icon={<DownOutlined />} iconPosition="end">
-            Operation Action
-          </Button>
-        </Dropdown>
-      </Space>
-    </div>
+      <Button type="text" icon={<DownOutlined />} iconPosition="end">
+        Operation Action
+      </Button>
+    </Dropdown>
   )
 }
 
