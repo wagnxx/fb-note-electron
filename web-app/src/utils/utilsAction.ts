@@ -18,7 +18,6 @@ class Action {
 
   public do(fn: (...args: any[]) => void) {
     fn?.()
-    console.log('Do something')
     return this
   }
 

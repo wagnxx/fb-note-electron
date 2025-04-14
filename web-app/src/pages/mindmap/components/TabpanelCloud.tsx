@@ -8,6 +8,8 @@ import { Button, Spin } from 'antd'
 import { Timestamp } from 'firebase/firestore'
 import { CloudDownloadOutlined } from '@ant-design/icons'
 import { TabItem, StoragedFile } from '@/features/mindmap/types'
+import useUserRole from '@/features/rolePermission/hooks/useUserRole'
+import { PERMISSIONS } from '@/features/rolePermission'
 
 export type CloudMindFile = {
   id?: string
@@ -29,6 +31,7 @@ const TabpanelCloud = forwardRef<TabpanelRef, Props>(({ getCanvasData, resetCanv
   const { handleRequestWithNotification, showNotification } = useNotification()
 
   const { isAuthenticated } = useAuth()
+  const { isPermitted } = useUserRole()
 
   const refreshData = () => {
     setLoading(true)
@@ -153,6 +156,10 @@ const TabpanelCloud = forwardRef<TabpanelRef, Props>(({ getCanvasData, resetCanv
         <TabpanelList
           fileList={fileList}
           selectedFile={selectedFile}
+          allowedActions={{
+            delete: isPermitted(PERMISSIONS.MIND_DELETE),
+            update: isPermitted(PERMISSIONS.MIND_EDIT),
+          }}
           onRemoveItem={handleRemoveItem}
           onSaveItem={handleSaveItem}
           onClickItem={handleGetLocalFile}

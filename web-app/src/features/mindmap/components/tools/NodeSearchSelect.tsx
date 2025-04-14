@@ -1,16 +1,23 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { AutoComplete, Input } from 'antd'
-import { useReactFlow } from '@xyflow/react'
-import { ExtendedNode } from '../../types'
+import { EdgeChange, NodeChange, useReactFlow } from '@xyflow/react'
+import { ExtendedEdge, ExtendedNode } from '../../types'
+import { FlowStateReducerParams } from '../../hooks/useNodeOperaton'
 
 interface NodeSearchSelectProps {
   nodes: ExtendedNode[]
   placeholder?: string
+  handleFlowStateChange?: (
+    nodeChanges: NodeChange<ExtendedNode>[],
+    edgeChanges: EdgeChange<ExtendedEdge>[],
+    stateReducers?: FlowStateReducerParams,
+  ) => void
 }
 
 const NodeSearchSelect: React.FC<NodeSearchSelectProps & React.HTMLAttributes<HTMLDivElement>> = ({
   nodes,
   placeholder = '搜索节点',
+  handleFlowStateChange,
   ...props
 }) => {
   const [searchValue, setSearchValue] = useState('')
@@ -55,7 +62,7 @@ const NodeSearchSelect: React.FC<NodeSearchSelectProps & React.HTMLAttributes<HT
       pos.x = globalPos.x
       pos.y = globalPos.y
     }
-
+    handleFlowStateChange?.([{ id: node.id, type: 'replace', item: { ...node, className: 'highlight' } }], [])
     setCenter(pos.x, pos.y, { zoom: 1.2, duration: 600 })
   }
 

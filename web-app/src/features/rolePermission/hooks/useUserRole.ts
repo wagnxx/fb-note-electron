@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
-import { fetchUserRoles, fetchPermissions, fetchRolePermissions } from '../rolePermissionSlice'
+import { fetchUserRoles, fetchPermissions, fetchRolePermissions } from '../slices/rolePermissionSlice'
 import { UserRoleItem } from '../types'
+import { calculateRoleValueFromValue } from '../utils/roleValue'
 
-interface RoleWithValue {
+type RoleWithValue = {
   role: string[] | string
-  permissionIndexes: number[] // 使用权限的索引列表代替权限值
+  permissions: { key: string; value: bigint }[]
 }
 
 const defaultRole: UserRoleItem = {
@@ -19,13 +20,12 @@ const defaultRole: UserRoleItem = {
 const useUserRole = () => {
   const dispatch = useAppDispatch()
 
-  // 获取当前用户的角色信息以及权限
-  const { rolePermissions, userRoles, permissions } = useAppSelector(state => state.rolePermission)
+  const { rolePermissions, userRoles, permissionsKeyValue } = useAppSelector(state => state.rolePermission)
   const user = useAppSelector(state => state.auth.user)
 
   const [userRoleWithPermissions, setUserRoleWithPermissions] = useState<RoleWithValue[]>([])
+  const [canCheckPermission, setCanCheckPermission] = useState(false)
 
-  // 筛选当前用户加入的组织
   const joindOrgs = useMemo(
     () => userRoles.filter(item => item.userId === user?.uid) || [defaultRole],
     [user?.uid, userRoles],
@@ -33,7 +33,6 @@ const useUserRole = () => {
 
   useEffect(() => {
     if (user) {
-      // 假设你通过一个API获取用户角色，调用dispatch请求
       dispatch(fetchRolePermissions(''))
       dispatch(fetchUserRoles())
       dispatch(fetchPermissions())
@@ -42,53 +41,66 @@ const useUserRole = () => {
 
   useEffect(() => {
     const calculateRoleWithPermissions = () => {
-      // 如果有用户角色，从 userRoles 中找出当前角色
       const roleWithPermissions = joindOrgs.map((userRole: UserRoleItem) => {
         const rolePerm = rolePermissions.find(item => item.role === userRole.role)
         if (!rolePerm) {
+          setCanCheckPermission(false)
           return {
             role: userRole.role,
-            permissionIndexes: [], // 没有角色时，默认没有权限
+            permissions: [],
           }
         }
 
         const permssionKeys = rolePerm.permissions
-        let userPermissionIndexes: number[]
+
+        let permissionsKV: RoleWithValue['permissions'] = []
         if (permssionKeys.includes('*')) {
-          // 如果角色包含 '*'，则返回所有权限的索引
-          userPermissionIndexes = permissions.map(item => item.index)
+          permissionsKV = Object.entries(permissionsKeyValue).map(([key, value]) => ({ key, value }))
         } else {
-          // 否则，根据角色的权限列表来过滤权限的索引
-          userPermissionIndexes = permissions.filter(item => permssionKeys.includes(item.key)).map(item => item.index)
+          permissionsKV = permssionKeys.map(key => ({ key, value: permissionsKeyValue[key] }))
         }
 
-        // 返回包含角色和权限索引
         return {
           role: userRole.role,
-          permissionIndexes: userPermissionIndexes,
+          permissions: permissionsKV,
         }
       })
 
-      // 将角色和权限索引存入状态
       setUserRoleWithPermissions(roleWithPermissions)
     }
 
     calculateRoleWithPermissions()
-  }, [joindOrgs, permissions, rolePermissions])
 
-  // 计算所有角色的综合权限值
+    if (Object.keys(permissionsKeyValue).length) {
+      setCanCheckPermission(true)
+    }
+  }, [joindOrgs, permissionsKeyValue, rolePermissions])
+
   const totalPermissionsValue = userRoleWithPermissions.reduce((totalValue, role) => {
-    return totalValue | calculateRoleValue(role.permissionIndexes)
-  }, 0n) // 0n 是 BigInt 的初始化值
+    return totalValue | calculateRoleValueFromValue(role.permissions.map(item => item.value))
+  }, 0n)
 
-  return { userRoleWithPermissions, totalPermissionsValue }
+  /**
+   * 检查用户是否拥有指定权限 key
+   */
+  const isPermitted = useCallback(
+    (key: string): boolean => {
+      if (!canCheckPermission) return false
+      const value = permissionsKeyValue[key]
+      if (value === undefined) {
+        console.warn(`[Permission] Unknown permission key: "${key}"`)
+        return false
+      }
+      return (totalPermissionsValue & value) !== 0n
+    },
+    [canCheckPermission, permissionsKeyValue, totalPermissionsValue],
+  )
+
+  return {
+    userRoleWithPermissions,
+    totalPermissionsValue,
+    isPermitted, // ✅ 导出 check 方法
+  }
 }
 
 export default useUserRole
-
-// 计算角色的综合权限值
-export const calculateRoleValue = (permissionIndexes: number[]): bigint => {
-  return permissionIndexes.reduce((totalValue, index) => {
-    return totalValue | (2n ** BigInt(index))
-  }, 0n)
-}

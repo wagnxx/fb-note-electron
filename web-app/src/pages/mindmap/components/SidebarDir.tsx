@@ -6,6 +6,8 @@ import TabpanelCloud from './TabpanelCloud'
 import { useNotification } from '@/hooks/useNotification'
 import { Save } from 'lucide-react'
 import { TabItem } from '@/features/mindmap/types'
+import useUserRole from '@/features/rolePermission/hooks/useUserRole'
+import { PERMISSIONS } from '@/features/rolePermission'
 
 type StorageType = 'local' | 'cloud'
 
@@ -33,6 +35,7 @@ const SidebarDir: FC<{
   const cloudRef = useRef<TabpanelRef>(null)
 
   const { showConfirmModal } = useNotification()
+  const { isPermitted } = useUserRole()
 
   const onChange = (key: StorageType) => {
     setActiveTabsKey(key)
@@ -96,6 +99,7 @@ const SidebarDir: FC<{
     {
       key: TABS_KEY.cloud,
       label: 'Cloud-based',
+      disabled: !isPermitted(PERMISSIONS.MIND_READ),
       children: (
         <TabpanelCloud
           key={activeTabsKey}
@@ -124,13 +128,14 @@ const SidebarDir: FC<{
     },
     {
       key: '2',
+      disabled: true,
       label: (
         <Button
           type="text"
           style={{ display: 'unset', textAlign: 'left' }}
           block
           onClick={() => handleSaveAsNew('cloud')}
-          disabled={activeTabsKey !== TABS_KEY.cloud}
+          disabled={!isPermitted(PERMISSIONS.MIND_EDIT) && activeTabsKey === TABS_KEY.cloud}
         >
           Save to Cloud As New
         </Button>
@@ -139,7 +144,13 @@ const SidebarDir: FC<{
     {
       key: '3',
       label: (
-        <Button type="text" style={{ display: 'unset', textAlign: 'left' }} block onClick={handleSaveCurrentFile}>
+        <Button
+          type="text"
+          style={{ display: 'unset', textAlign: 'left' }}
+          block
+          onClick={handleSaveCurrentFile}
+          disabled={!isPermitted(PERMISSIONS.MIND_EDIT) && activeTabsKey === TABS_KEY.cloud}
+        >
           Save File
         </Button>
       ),

@@ -15,7 +15,7 @@ import { calculateMiddleValue } from '@/utils/utilsArray'
 import { useApplyNodeChange } from './useApplyNodeChange'
 import { GROUP_NODE_GUTTER, GROUP_NODE_PREFIX, NODE_TYPES } from '../constants'
 
-type FlowStateReducerParams = {
+export type FlowStateReducerParams = {
   nodeReducer?: (currentNodes: ExtendedNode[]) => ExtendedNode[]
   edgeReducer?: (currentNodes: ExtendedEdge[]) => ExtendedEdge[]
 }
@@ -939,6 +939,8 @@ const useNodeOperaton = ({
 
   const onNodeDrag = useCallback(
     (event: React.MouseEvent, node: ExtendedNode) => {
+      if (node.parentId) return
+
       const groupsNodes = nodes.filter(item => item.type === NODE_TYPES.GROUP)
       const groupMap = new Map(groupsNodes.map(n => [n.id, n]))
       if (groupMap.get(node.parentId || '')) {

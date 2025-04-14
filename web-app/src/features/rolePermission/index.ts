@@ -1,7 +1,9 @@
 // src/features/rolePermissionManagement/index.ts
 export * from './types'
-export * from './rolePermissionSlice'
-export { default as rolePermissionReducer } from './rolePermissionSlice'
+export * from './slices/rolePermissionSlice'
+export * from './constants'
+export * from './utils/roleValue'
+export { default as rolePermissionReducer } from './slices/rolePermissionSlice'
 export { default as RolePermissionManagement } from './components/RolePermissionManagement'
 export { default as PermissionManagement } from './components/PermissionManagement'
 export { default as UserRoleManagement } from './components/UserRoleManagement'

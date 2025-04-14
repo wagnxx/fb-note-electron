@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store/store'
 import { RolePermission } from '../types/types'
 import RolePermissionModal from './RolePermissionModal'
-import { createRole, fetchPermissions, fetchRolePermissions, modifyRole, removeRole } from '../rolePermissionSlice'
+import { createRole, fetchPermissions, fetchRolePermissions, modifyRole, removeRole } from '../slices/rolePermissionSlice'
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 
 const RolePermissionManagement = () => {

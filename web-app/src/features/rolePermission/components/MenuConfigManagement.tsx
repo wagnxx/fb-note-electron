@@ -2,7 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { Tree, Button, Modal, Input, Select, Tooltip, Popconfirm, Form } from 'antd'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { addMenuItem, deleteMenuItem, fetchMenuItems, fetchPermissions, updateMenuItem } from '../rolePermissionSlice'
+import {
+  addMenuItem,
+  deleteMenuItem,
+  fetchMenuItems,
+  fetchPermissions,
+  updateMenuItem,
+} from '../slices/rolePermissionSlice'
 import { MenuItem } from '../types'
 import { Optional, PartialWithRequiredId } from '@/utils/types'
 import { AsyncThunkAction } from '@reduxjs/toolkit'

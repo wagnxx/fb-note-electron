@@ -10,9 +10,9 @@ import { auth, logoutUser } from '@/firebase/authService'
 import { clearAuthState, setAuthState } from '@/features/auth/authSlice'
 import { useNotification } from '@/hooks/useNotification'
 import { RootState } from '@/store/store'
-import useUserRole, { calculateRoleValue } from '@/features/rolePermission/hooks/useUserRole'
+import useUserRole from '@/features/rolePermission/hooks/useUserRole'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { fetchMenuItems, fetchPermissions } from '@/features/rolePermission'
+import { calculateRoleValue, fetchMenuItems, fetchPermissions, hasPermissionByValue } from '@/features/rolePermission'
 
 const { Content, Sider } = Layout
 
@@ -90,7 +90,7 @@ const AuthLayout: React.FC = () => {
       const menuPermIndexes = permissions.filter(item => menuPermKeys.includes(item.key)).map(item => item.index)
 
       const menuPermValue = calculateRoleValue(menuPermIndexes)
-      return (totalPermissionsValue & menuPermValue) !== 0n
+      return hasPermissionByValue(totalPermissionsValue, menuPermValue)
     },
     [menuItems, permissions, totalPermissionsValue],
   )

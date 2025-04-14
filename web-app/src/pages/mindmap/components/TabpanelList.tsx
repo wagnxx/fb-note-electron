@@ -10,7 +10,18 @@ const TabpanelList: FC<{
   onRemoveItem: (item: StoragedFile) => void
   onSaveItem: (item: StoragedFile) => void
   onClickItem: (item: StoragedFile) => void
-}> = ({ fileList, selectedFile, onRemoveItem, onSaveItem, onClickItem }) => {
+  allowedActions?: {
+    delete: boolean
+    update: boolean
+  }
+}> = ({
+  fileList,
+  selectedFile,
+  onRemoveItem,
+  onSaveItem,
+  onClickItem,
+  allowedActions = { delete: true, update: true },
+}) => {
   return (
     <List
       dataSource={fileList}
@@ -18,25 +29,30 @@ const TabpanelList: FC<{
         <List.Item
           style={{ background: selectedFile?.name === item.name ? '#e6f7ff' : '' }}
           actions={[
-            <Popconfirm
-              title="Delete the task"
-              description="Are you sure to delete the file?"
-              onConfirm={() => onRemoveItem(item)}
-              okText="Yes"
-              cancelText="No"
-            >
-              <CloseOutlined />
-            </Popconfirm>,
-            <Popconfirm
-              title="Submit the task"
-              description="Are you sure to resave file?"
-              onConfirm={() => onSaveItem(item)}
-              okText="Yes"
-              cancelText="No"
-              disabled={selectedFile?.name !== item.name}
-            >
-              <CheckOutlined />
-            </Popconfirm>,
+            allowedActions.delete && (
+              <Popconfirm
+                title="Delete the task"
+                description="Are you sure to delete the file?"
+                onConfirm={() => onRemoveItem(item)}
+                okText="Yes"
+                cancelText="No"
+                disabled={allowedActions.delete}
+              >
+                <CloseOutlined />
+              </Popconfirm>
+            ),
+            allowedActions.update && (
+              <Popconfirm
+                title="Submit the task"
+                description="Are you sure to resave file?"
+                onConfirm={() => onSaveItem(item)}
+                okText="Yes"
+                cancelText="No"
+                disabled={selectedFile?.name !== item.name}
+              >
+                <CheckOutlined />
+              </Popconfirm>
+            ),
           ]}
         >
           <List.Item.Meta

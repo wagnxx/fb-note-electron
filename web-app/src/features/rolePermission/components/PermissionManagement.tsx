@@ -5,7 +5,7 @@ import { RootState } from '@/store/store'
 import { PermissionItem } from '../types/types'
 import PermissionModal from './PermissionModal'
 import { AppDispatch } from '@/store/store'
-import { addPermission, deletePermission, fetchPermissions, updatePermission } from '../rolePermissionSlice'
+import { addPermission, deletePermission, fetchPermissions, updatePermission } from '../slices/rolePermissionSlice'
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 
 const PermissionManagement = () => {

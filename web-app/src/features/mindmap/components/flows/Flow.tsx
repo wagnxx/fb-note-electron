@@ -240,6 +240,18 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
 
       setselectedNode(node)
       onClickNode(node)
+
+      const historyIntersectionNodes = nodes.filter(node => node.className?.includes('highlight'))
+      if (historyIntersectionNodes.length) {
+        handleFlowStateChange(
+          historyIntersectionNodes.map(item => ({
+            id: item.id,
+            type: 'replace',
+            item: { ...item, className: '' },
+          })),
+          [],
+        )
+      }
     }
 
     function cmdAndCPressedFn() {}
@@ -391,7 +403,7 @@ const Flow = forwardRef<FlowDiagramRef, FlowProps>(
               onGroupSelections={onGroupSelections}
             />
           )}
-          {showNodeFinder && <NodeSearchSelect style={{}} nodes={sortedNodes} />}
+          {showNodeFinder && <NodeSearchSelect nodes={sortedNodes} handleFlowStateChange={handleFlowStateChange} />}
         </PanelBorderTools>
 
         <ReactFlow

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { RolePermissionState } from './types'
+import { RolePermissionState } from '../types'
 import {
   fetchPermissionsFromAPI,
   fetchRolePermissionFromAPI,
@@ -25,6 +25,7 @@ import {
 
 const initialState: RolePermissionState = {
   permissions: [],
+  permissionsKeyValue: {},
   rolePermissions: [],
   loading: false,
   userRoles: [],
@@ -81,7 +82,18 @@ const rolePermissionSlice = createSlice({
   extraReducers: builder => {
     builder
       .addCase(fetchPermissions.fulfilled, (state, action) => {
-        state.permissions = action.payload
+        const permissions = action.payload
+        state.permissions = permissions
+        // 计算 key-value 映射
+        const permissionsKeyValue: Record<string, bigint> = permissions.reduce(
+          (acc, cur, index) => {
+            acc[cur.key] = 1n << BigInt(index) // 或者是 2n ** BigInt(index)
+            return acc
+          },
+          {} as Record<string, bigint>,
+        )
+
+        state.permissionsKeyValue = permissionsKeyValue
       })
       .addCase(fetchRolePermissions.fulfilled, (state, action) => {
         state.rolePermissions = action.payload

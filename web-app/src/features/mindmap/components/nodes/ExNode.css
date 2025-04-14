@@ -3,7 +3,9 @@
 }
 .react-flow__node.highlight {
   background-color: #918fbe;
-  color: white;
+  box-shadow: 0 0 0 4px rgb(145, 143, 190); /* 柔光边框感，不是阴影 */
+  border-radius: 8px;
+  transition: all 0.3s ease-in-out;
 }
  
 .intersection-flow .react-flow__handle {

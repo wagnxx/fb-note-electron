@@ -52,6 +52,7 @@ export interface OrgItem {
 
 export interface RolePermissionState {
   permissions: PermissionItem[]
+  permissionsKeyValue: Record<string, bigint>
   rolePermissions: RolePermission[]
   userRoles: UserRoleItem[]
   organizationRequests: OrganizationRequest[] // 添加组织申请请求类型

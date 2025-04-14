@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Table, Select, Button, Input, Popconfirm, Space } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store/store'
-import { deleteUserRole, fetchRolePermissions, fetchUserRoles, updateUserRole } from '../rolePermissionSlice'
+import { deleteUserRole, fetchRolePermissions, fetchUserRoles, updateUserRole } from '../slices/rolePermissionSlice'
 import { useNotification } from '@/hooks/useNotification'
 import { CheckOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons'
 

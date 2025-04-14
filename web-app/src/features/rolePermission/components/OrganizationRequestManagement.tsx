@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Table, Button, Popconfirm, Form, Input, Modal } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store/store'
-import { fetchOrganizationRequests, approveRequest, rejectRequest } from '../rolePermissionSlice'
+import { fetchOrganizationRequests, approveRequest, rejectRequest } from '../slices/rolePermissionSlice'
 import { OrganizationRequest } from '../types/types'
 import { useNotification } from '@/hooks/useNotification'
 
