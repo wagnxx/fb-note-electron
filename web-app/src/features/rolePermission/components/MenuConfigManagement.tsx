@@ -9,7 +9,7 @@ import {
   fetchPermissions,
   updateMenuItem,
 } from '../slices/rolePermissionSlice'
-import { MenuItem } from '../types'
+import { SystemMenuItem as MenuItem } from '../types'
 import { Optional, PartialWithRequiredId } from '@/utils/types'
 import { AsyncThunkAction } from '@reduxjs/toolkit'
 

@@ -1,7 +1,7 @@
 // menuTypes.ts
 
 // 原始数据结构：保存的数据
-export interface MenuItem {
+export interface SystemMenuItem {
   id: string
   label: string
   key: string

@@ -1,5 +1,6 @@
 import {
   addDocToCol,
+  batchAddOrUpdateDocs,
   deleteDocsByIds,
   getFieldValues,
   performFirestoreTransaction,
@@ -8,7 +9,7 @@ import {
 } from '@/firebase/db'
 import { auth } from '@/firebase/authService'
 import {
-  MenuItem,
+  SystemMenuItem as MenuItem,
   OrganizationRequest,
   OrgItem,
   PermissionItem,
@@ -37,6 +38,12 @@ export const updatePermissionAPI = async (item: Partial<PermissionItem>) => {
     return Promise.reject('logout')
   }
   return updateDocData(COL_PERMISSIONS, item.id!, item)
+}
+export const batchUpdatePermissionAPI = async (docs: { id: string; data: Partial<PermissionItem> }[]) => {
+  if (!auth?.currentUser?.uid) {
+    return Promise.reject('logout')
+  }
+  return batchAddOrUpdateDocs(COL_PERMISSIONS, docs)
 }
 export const fetchPermissionsFromAPI = async () => {
   if (!auth?.currentUser?.uid) {

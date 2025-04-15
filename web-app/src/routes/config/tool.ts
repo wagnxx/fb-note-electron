@@ -19,11 +19,9 @@ export const routesTool: RouteConfig = {
       component: MindMapManagePage,
       children: [
         {
-          path: 'cloud',
-          name: 'MindMapCloud',
+          path: 'make',
+          name: 'MindMapMake',
           component: MindMap,
-          isDesktop: true,
-          // hidden: true,
         },
       ],
     },

@@ -1,4 +1,4 @@
-import { MenuItem } from '@/features/rolePermission/types/'
+import { SystemMenuItem as MenuItem } from '@/features/rolePermission/types/'
 
 export const mockMenuItems: MenuItem[] = [
   {

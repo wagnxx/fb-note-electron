@@ -12,6 +12,7 @@ export const routesLearn = {
     {
       path: 'dict',
       name: 'dict',
+      isDesktop: true,
       component: Dict,
     },
     {

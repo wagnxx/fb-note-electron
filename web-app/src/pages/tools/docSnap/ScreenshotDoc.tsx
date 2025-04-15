@@ -1,9 +1,5 @@
 import { useAuth } from '@/context/AuthContext'
-import {
-  batchUpdateScreenshotDoc,
-  deleteScreenshotDocs,
-  getAllScreenshotDoc,
-} from '@/service/screenshotDoc'
+import { batchUpdateScreenshotDoc, deleteScreenshotDocs, getAllScreenshotDoc } from '@/service/screenshotDoc'
 import React, { useEffect, useState } from 'react'
 import {
   Card,
@@ -31,6 +27,8 @@ import { FieldValue, Timestamp } from 'firebase/firestore'
 import { transFBDate2Local } from '@/utils/utilsDate'
 import { sortData } from '@/utils/utilsArray'
 import { shuffleColors } from '@/utils/utilsColor'
+import useUserRole from '@/features/rolePermission/hooks/useUserRole'
+import { PERMISSIONS } from '@/features/rolePermission'
 
 const { Meta } = Card
 const { Title, Text } = Typography
@@ -56,6 +54,7 @@ const ScreenshotDocs: React.FC = () => {
   const [canGoBack, setCanGoBack] = useState(false)
 
   // const docTypeFormRef = useRef<FormInstance>(null)
+  const { isPermitted } = useUserRole()
 
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
@@ -90,13 +89,10 @@ const ScreenshotDocs: React.FC = () => {
 
     setIsFormloading(true)
 
-    const r = await handleRequestWithNotification(
-      async () => await batchUpdateScreenshotDoc([docData]),
-      {
-        successField: null,
-        errorField: null,
-      },
-    )
+    const r = await handleRequestWithNotification(async () => await batchUpdateScreenshotDoc([docData]), {
+      successField: null,
+      errorField: null,
+    })
 
     setIsFormloading(false)
     setIsDocEditModalVisible(false)
@@ -126,13 +122,10 @@ const ScreenshotDocs: React.FC = () => {
 
     if (!item?.id) return
 
-    const r = await handleRequestWithNotification(
-      async () => await deleteScreenshotDocs([item.id!]),
-      {
-        successField: null,
-        errorField: null,
-      },
-    )
+    const r = await handleRequestWithNotification(async () => await deleteScreenshotDocs([item.id!]), {
+      successField: null,
+      errorField: null,
+    })
 
     if (r) {
       refreshPage()
@@ -162,11 +155,7 @@ const ScreenshotDocs: React.FC = () => {
     getAllScreenshotDoc()
       .then(data => {
         if (data) {
-          const sortedData = sortData<ScreenshotDoc>(
-            data as ScreenshotDoc[],
-            ['order', 'createTime'],
-            'desc',
-          )
+          const sortedData = sortData<ScreenshotDoc>(data as ScreenshotDoc[], ['order', 'createTime'], 'desc')
 
           setData(
             sortedData.map(item => ({
@@ -202,7 +191,7 @@ const ScreenshotDocs: React.FC = () => {
           <Button type="text" onClick={refreshPage}>
             Refresh
           </Button>
-          <Button type="text" onClick={handleAddDoc}>
+          <Button type="text" onClick={handleAddDoc} disabled={!isPermitted(PERMISSIONS.DOCSNAP_CREATE)}>
             <PlusOutlined />
           </Button>
           <Switch
@@ -255,12 +244,7 @@ const ScreenshotDocs: React.FC = () => {
                   hoverable
                   cover={
                     doc.screenshots.length ? (
-                      <Image
-                        src={doc.screenshots[0]}
-                        alt={doc.docName}
-                        height={200}
-                        preview={false}
-                      />
+                      <Image src={doc.screenshots[0]} alt={doc.docName} height={200} preview={false} />
                     ) : (
                       <div
                         style={{
@@ -302,11 +286,7 @@ const ScreenshotDocs: React.FC = () => {
                         <Space>
                           {doc?.keyTerms?.length
                             ? doc.keyTerms.map((k, index) => (
-                                <Tag
-                                  key={k}
-                                  bordered={false}
-                                  color={shuffledColors[index % shuffledColors.length]}
-                                >
+                                <Tag key={k} bordered={false} color={shuffledColors[index % shuffledColors.length]}>
                                   {k}
                                 </Tag>
                               ))
@@ -324,7 +304,11 @@ const ScreenshotDocs: React.FC = () => {
                             'No screenshots available'
                           )}
 
-                          <Button type="text" onClick={() => handleEditClick(doc)}>
+                          <Button
+                            type="text"
+                            onClick={() => handleEditClick(doc)}
+                            disabled={!isPermitted(PERMISSIONS.DOCSNAP_EDIT)}
+                          >
                             Edit
                           </Button>
                           <Popconfirm
@@ -333,8 +317,9 @@ const ScreenshotDocs: React.FC = () => {
                             onConfirm={() => handleConfirm(doc)}
                             okText="Yes"
                             cancelText="No"
+                            disabled={!isPermitted(PERMISSIONS.DOCSNAP_DELETE)}
                           >
-                            <Button size="small" danger>
+                            <Button size="small" danger disabled={!isPermitted(PERMISSIONS.DOCSNAP_DELETE)}>
                               Delete
                             </Button>
                           </Popconfirm>

@@ -7,7 +7,7 @@ import {
   getFieldValues,
 } from '@/firebase/db'
 import { auth } from '@/firebase/authService'
-import { serverTimestamp, where } from 'firebase/firestore'
+import { serverTimestamp } from 'firebase/firestore'
 import { ScreenshotDoc } from '@/pages/tools/docSnap/ScreenshotDoc'
 
 const COL_SCREENSHOT = 'screenshotDoc'
@@ -57,7 +57,7 @@ export const getAllScreenshotDoc = () => {
     // ['docName', 'id', 'createTime', 'keyTerms', 'screenshots'],
     'all',
     [
-      where('createId', '==', auth.currentUser.uid),
+      // where('createId', '==', auth.currentUser.uid),
       // where('docName', '>', ''),
       // orderBy('createTime', 'desc'),
     ],

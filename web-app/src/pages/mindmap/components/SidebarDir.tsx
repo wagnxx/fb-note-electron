@@ -8,6 +8,7 @@ import { Save } from 'lucide-react'
 import { TabItem } from '@/features/mindmap/types'
 import useUserRole from '@/features/rolePermission/hooks/useUserRole'
 import { PERMISSIONS } from '@/features/rolePermission'
+import DesktopOnly from '@/components/platform/DesktopOnly'
 
 type StorageType = 'local' | 'cloud'
 
@@ -30,7 +31,7 @@ const SidebarDir: FC<{
   resetCanvasData: (data: TabItem[]) => void
 }> = ({ getCanvasData, resetCanvasData }) => {
   const [isSaving, setIsSaving] = useState(false)
-  const [activeTabsKey, setActiveTabsKey] = useState<StorageType>(TABS_KEY.local)
+  const [activeTabsKey, setActiveTabsKey] = useState<StorageType>()
   const localRef = useRef<TabpanelRef>(null)
   const cloudRef = useRef<TabpanelRef>(null)
 
@@ -88,12 +89,14 @@ const SidebarDir: FC<{
       key: TABS_KEY.local,
       label: 'Local',
       children: (
-        <TabpanelLocal
-          key={activeTabsKey}
-          ref={localRef}
-          getCanvasData={getCanvasData}
-          resetCanvasData={resetCanvasData}
-        />
+        <DesktopOnly>
+          <TabpanelLocal
+            key={activeTabsKey}
+            ref={localRef}
+            getCanvasData={getCanvasData}
+            resetCanvasData={resetCanvasData}
+          />
+        </DesktopOnly>
       ),
     },
     {

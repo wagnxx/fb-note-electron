@@ -1,11 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Table, Button, Popconfirm } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { PermissionItem } from '../types/types'
 import PermissionModal from './PermissionModal'
 import { AppDispatch } from '@/store/store'
-import { addPermission, deletePermission, fetchPermissions, updatePermission } from '../slices/rolePermissionSlice'
+import {
+  addPermission,
+  batchUpdatePermission,
+  deletePermission,
+  fetchPermissions,
+  updatePermission,
+} from '../slices/rolePermissionSlice'
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 
 const PermissionManagement = () => {
@@ -14,6 +20,7 @@ const PermissionManagement = () => {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<PermissionItem | null>(null)
+  const selectedKeysRef = useRef<PermissionItem[]>([])
 
   useEffect(() => {
     dispatch(fetchPermissions())
@@ -43,10 +50,28 @@ const PermissionManagement = () => {
       })
   }
 
+  const handleTranslateIndex = () => {
+    if (!selectedKeysRef.current.length) return
+    const rows = selectedKeysRef.current
+      .filter(item => Boolean(item.id))
+      .filter(item => typeof item.index === 'string')
+      .map(item => ({ id: item.id!, data: { index: Number(item.index) } }))
+    dispatch(batchUpdatePermission(rows))
+  }
+
+  const rowSelection = {
+    onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
+      selectedKeysRef.current = selectedRows
+    },
+  }
+
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center gap-3  mb-4">
         <h2 className="text-lg font-medium">Permission Management</h2>
+        <Button danger style={{ marginLeft: 'auto' }} disabled onClick={handleTranslateIndex}>
+          Translate index To Numbers
+        </Button>
         <Button
           onClick={() => {
             setEditing(null)
@@ -59,7 +84,8 @@ const PermissionManagement = () => {
       </div>
       <Table
         dataSource={permissions}
-        rowKey="key"
+        // rowSelection={rowSelection}
+        rowKey="id"
         loading={loading}
         columns={[
           { title: 'Key', dataIndex: 'key' },

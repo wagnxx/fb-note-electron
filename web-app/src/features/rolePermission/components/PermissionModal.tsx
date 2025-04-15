@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Modal, Form, Input } from 'antd'
+import { Modal, Form, Input, InputNumber } from 'antd'
 import { PermissionItem } from '../types/types'
 
 interface Props {
@@ -54,7 +54,8 @@ const PermissionModal: React.FC<Props> = ({ open, onCancel, onSubmit, defaultDat
           <Input disabled={!!defaultData} />
         </Form.Item>
         <Form.Item name="index" label="Index" rules={[{ required: true }]}>
-          <Input type="number" />
+          {/* <Input type="number" /> */}
+          <InputNumber style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item name="desc_en" label="Description (EN)" rules={[{ required: true }]}>
           <Input />

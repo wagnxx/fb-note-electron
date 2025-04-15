@@ -21,6 +21,7 @@ import {
   updateMenuItemAPI,
   deleteMenuItemAPI,
   createPermissionAPI,
+  batchUpdatePermissionAPI,
 } from '@/service/role'
 
 const initialState: RolePermissionState = {
@@ -44,6 +45,7 @@ export const removeRole = createAsyncThunk('rolePermission/removeRole', deleteRo
 
 export const addPermission = createAsyncThunk('rolePermission/addPermission', createPermissionAPI)
 export const updatePermission = createAsyncThunk('rolePermission/updatePermission', updatePermissionAPI)
+export const batchUpdatePermission = createAsyncThunk('rolePermission/updatePermission', batchUpdatePermissionAPI)
 export const deletePermission = createAsyncThunk('rolePermission/deletePermission', deletePermissionAPI)
 
 export const fetchUserRoles = createAsyncThunk('rolePermission/fetchUserRoles', fetchUserRolesAPI)

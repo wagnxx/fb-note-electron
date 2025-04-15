@@ -1,6 +1,6 @@
 // src/features/rolePermissionManagement/types.ts
 
-import { MenuItem } from './menuTypes'
+import { SystemMenuItem as MenuItem } from './menuTypes'
 
 export interface PermissionItem {
   id?: string

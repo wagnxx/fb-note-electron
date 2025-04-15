@@ -1,18 +1,23 @@
 // src/components/AuthLayout.tsx
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
-import { Button, Layout, Menu, Spin } from 'antd'
+import { Button, Empty, Layout, Menu, Spin } from 'antd'
 import { authRoutes, RouteConfig } from './routes'
 import { useSelector } from 'react-redux'
 import { getSidbarCollapsed } from '@/features/settings/selectors'
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth'
-import { auth, logoutUser } from '@/firebase/authService'
-import { clearAuthState, setAuthState } from '@/features/auth/authSlice'
+import { logoutUser } from '@/firebase/authService'
+import { clearAuthState } from '@/features/auth/authSlice'
 import { useNotification } from '@/hooks/useNotification'
-import { RootState } from '@/store/store'
 import useUserRole from '@/features/rolePermission/hooks/useUserRole'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { calculateRoleValue, fetchMenuItems, fetchPermissions, hasPermissionByValue } from '@/features/rolePermission'
+import {
+  calculateRoleValueFromValue,
+  fetchMenuItems,
+  hasPermissionByValue,
+  SystemMenuItem,
+} from '@/features/rolePermission'
+import { useInitAuthEffect } from '@/hooks/useInitAuthEffect'
+import { isElectron } from '@/utils/utilsSystem'
 
 const { Content, Sider } = Layout
 
@@ -23,48 +28,33 @@ type MenuItem = {
 }
 
 const AuthLayout: React.FC = () => {
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
-  const { menuItems, permissions } = useAppSelector(state => state.rolePermission)
+  const { isAuthenticated, user } = useAppSelector(state => state.auth)
+  const menuItems = useAppSelector(state => state.rolePermission.menuItems)
   const dispatch = useAppDispatch()
-  const { totalPermissionsValue } = useUserRole()
+  const { totalPermissionsValue, canCheckPermission, userRoleWithPermissions, permissionsKeyValue } = useUserRole()
   const navigate = useNavigate()
   const sidebarCollapsed = useSelector(getSidbarCollapsed)
   const { showConfirmationDialog } = useNotification()
   // 新增 loading 状态
   const [isMenuLoaded, setIsMenuLoaded] = useState(false)
 
+  useInitAuthEffect()
+
   useEffect(() => {
-    if (menuItems.length > 0) {
-      setIsMenuLoaded(true) // menuItems 加载完成后更新状态
+    if (user) {
+      setIsMenuLoaded(false)
+      dispatch(fetchMenuItems())
+        .unwrap()
+        .then(res => {
+          // console.log('fech menu success', res)
+          setIsMenuLoaded(true)
+        })
+        .catch(err => {
+          console.error('Fetch menu failed:', err)
+          setIsMenuLoaded(true) // 必须设置为 true，不然永 loading
+        })
     }
-  }, [menuItems])
-
-  useEffect(() => {
-    dispatch(fetchMenuItems())
-    dispatch(fetchPermissions())
-  }, [dispatch])
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
-      if (user) {
-        dispatch(
-          setAuthState({
-            isAuthenticated: true,
-            user: {
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName,
-              photoURL: user.photoURL,
-            },
-          }),
-        )
-      } else {
-        dispatch(clearAuthState())
-      }
-    })
-
-    return () => unsubscribe()
-  }, [dispatch])
+  }, [dispatch, user])
 
   const handleLogin = async () => {
     navigate('/login')
@@ -80,32 +70,57 @@ const AuthLayout: React.FC = () => {
     dispatch(clearAuthState())
   }
 
+  const memuItemKV: Record<string, SystemMenuItem> = useMemo(
+    () =>
+      menuItems.reduce(
+        (pre, cur) => {
+          pre[cur.key] = cur
+          return pre
+        },
+        {} as Record<string, SystemMenuItem>,
+      ),
+    [menuItems],
+  )
+
   const computeRolePermissions = useCallback(
     (route: RouteConfig) => {
-      const menuItem = menuItems.find(item => item.key === route.name)
+      // const menuItem = menuItems.find(item => item.key === route.name)
+      const menuItem = memuItemKV[route.name]
       if (!menuItem) return true
       const menuPermKeys = menuItem.permissions.filter(p => p !== '*')
       if (menuPermKeys.length === 0) return true
 
-      const menuPermIndexes = permissions.filter(item => menuPermKeys.includes(item.key)).map(item => item.index)
+      // const menuPermIndexes = permissions.filter(item => menuPermKeys.includes(item.key)).map(item => item.index)
+      const menuPervalues = menuPermKeys.map(item => permissionsKeyValue[item]).filter(item => item !== undefined)
+      // const menuPermValue = calculateRoleValue(menuPermIndexes)
+      const menuPermValue = calculateRoleValueFromValue(menuPervalues)
+      const hasPer = hasPermissionByValue(totalPermissionsValue, menuPermValue)
 
-      const menuPermValue = calculateRoleValue(menuPermIndexes)
-      return hasPermissionByValue(totalPermissionsValue, menuPermValue)
+      if (route.name === 'Dict') {
+        console.log('totlevalue has per', totalPermissionsValue, route.name, hasPer)
+        console.log('userRoleWithPermissions: ', userRoleWithPermissions)
+        console.log('permissionsKeyValue: ', permissionsKeyValue)
+        console.log('menuPermKeys: ', menuPermKeys)
+      }
+
+      return hasPer
     },
-    [menuItems, permissions, totalPermissionsValue],
+    [memuItemKV, permissionsKeyValue, totalPermissionsValue, userRoleWithPermissions],
   )
 
   const filterValidMenus = useCallback(
     (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
+      console.log('start filter menus')
       return routes.flatMap(route => {
-        const { requiresAuth, path, name, hidden, children } = route
+        const { requiresAuth, path, isDesktop, name, hidden, children } = route
         const fullPath = `${parentPath.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
 
         const hasPermission = computeRolePermissions(route)
 
-        if (!hasPermission || hidden || (requiresAuth && !isAuthenticated)) {
+        if (!hasPermission || hidden || (requiresAuth && !isAuthenticated) || (isDesktop && !isElectron())) {
           return []
         }
+        // const { children, ...state } = route
 
         const menuItem: MenuItem = {
           key: fullPath,
@@ -122,7 +137,12 @@ const AuthLayout: React.FC = () => {
     [computeRolePermissions, isAuthenticated],
   )
 
-  const validMenuItems = useMemo(() => filterValidMenus(authRoutes), [filterValidMenus])
+  const validMenuItems = useMemo(() => {
+    console.log('canCheckPermission', canCheckPermission)
+    if (!isMenuLoaded || !canCheckPermission) return []
+    // return []
+    return filterValidMenus(authRoutes)
+  }, [isMenuLoaded, canCheckPermission, filterValidMenus])
 
   return (
     <Layout>
@@ -151,7 +171,7 @@ const AuthLayout: React.FC = () => {
           style={{ height: '100vh' }}
         >
           {isMenuLoaded && validMenuItems.length === 0 ? (
-            <div>No menu items available</div> // 没有有效菜单项时的提示
+            <Empty description="No available menu" /> // 没有有效菜单项时的提示
           ) : (
             <Menu theme="dark" mode="inline" items={isMenuLoaded ? validMenuItems : []} />
           )}
