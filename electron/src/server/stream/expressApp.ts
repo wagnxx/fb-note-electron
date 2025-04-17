@@ -1,15 +1,46 @@
 import express, { Request, Response } from 'express';
 import fs from 'fs';
-import path from 'path';
+import path, { resolve } from 'path';
 import cors from 'cors'
+import history from 'connect-history-api-fallback';
+
 
 // 创建 express 实例
 const server = express();
 const port = 4000;
 
+const isDev = false
+
 server.use(cors());
+
+
+
+const staticPath = path.join(__dirname, isDev ? '..' : '../..', 'web-app/build')
+
+
+// History fallback for React router (only rewrite for non-static requests)
+server.use(
+    history({
+      index: '/ulogi/index.html',
+      rewrites: [
+        {
+          // 忽略真实资源请求
+          from: /^\/ulogi\/(.*\.(js|css|png|jpg|jpeg|svg|ico|json|map))$/,
+          to: (context: any) => context.parsedUrl.pathname
+        }
+      ]
+    })
+  );
+  
+  // Static file serving (必须在 fallback 后面)
+  server.use(
+    '/ulogi',
+    express.static(staticPath, { redirect: false })
+  );
+
+
 // 使用中间件控制访问路径
-server.use('/assets', express.static(path.join(__dirname, '..', 'support/assets')));  // 只允许访问 /assets 文件夹
+server.use('/assets', express.static(path.join(__dirname, isDev ? '..' : '../..', 'support/assets')));  // 只允许访问 /assets 文件夹
 server.use('/logs', (req: Request, res: Response) => {  // 限制访问 /logs
     res.status(403).send('Access to logs folder is forbidden');
 });
@@ -108,12 +139,18 @@ server.get('/image', (req: Request, res: Response) => {
     });
 });
 
-
+server.get('/a', (req: Request, res: Response) => {
+    res.send('aaaa')
+} )
 
 
 // 启动 HTTP 服务
 export const startVideoStreamServer = () => {
-    server.listen(port, () => {
-        console.log(`Video stream server running at http://localhost:${port}`);
-    });
+    return new Promise((resolve, reject) => {
+        server.listen(port, () => {
+            console.log(`Video stream server running at http://localhost:${port}`);
+            resolve(void 0)
+        });
+    })
+
 };

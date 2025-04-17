@@ -1,22 +1,41 @@
 import { config } from 'dotenv';
 config();
+
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import { startVideoStreamServer } from './videoStream';
+import { startVideoStreamServer } from './server/stream/expressApp';
 import { preloadPath } from './config/paths';
-import { isDev } from './config/config';
+import { isDev, WEB_DEV_URL , WEB_PROD_URL} from './config/config';
 import { initializeIPCHandlers } from './ipc/handlers';
 import { logger } from './utils/logger';
 import { ChildProcess } from 'child_process';
 import AppWindowManager from './managers/AppWindowManager';
+import HotModuleReloader from './utils/HotModuleReloader';
+import chalk from 'chalk';
+
 
 let innerProcess: ChildProcess[] = []
 
+if (isDev) {
+  new HotModuleReloader(path.join(__dirname, '../dist'), {
+    include: ['server', 'ipc'],
+    exclude: ['main.js'],
+    onReload: (mod, filePath) => {
+      // 你可以在这里重新执行 handler、router 等
+    },
+  }).init();
+}
+
+
 function createWindow() {
+  // const iconPath = path.join(__dirname, '../assets/icons/icon.icns')
+
+  // console.log('Icon Path:', iconPath); // 输出图标路径
   const win = new BrowserWindow({
     width: 800,
     height: 600,
     titleBarStyle: 'hidden',
+    // icon: iconPath, 
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -25,33 +44,35 @@ function createWindow() {
       // webSecurity: false,
       disableBlinkFeatures: 'Autofill',
       // allowRunningInsecureContent: true,
-      devTools: true,
+      devTools: isDev,
     },
   });
 
-  win.webContents.openDevTools();
-
- 
 
 
-  if (isDev && process.env.ELECTRON_START_URL) {
-    win.loadURL(process.env.ELECTRON_START_URL);
-  } else {
-    win.loadFile(path.join(__dirname, '../../web-app/build/index.html'));
-  }
+  
+  if (isDev) {
+    win.webContents.openDevTools();
+    // win.loadURL(process.env.ELECTRON_START_URL);
+    // win.loadFile(path.join(__dirname, '../../web-app/build/index.html'));
+  } 
 
   return win
 }
 
-// 启动 HTTP 服务
-startVideoStreamServer();
 
 app?.whenReady()?.then(() => {
-  const win = createWindow();
-
   const appWindowManager = AppWindowManager.getInstance();
-  appWindowManager.setWinInstance(win)
-  appWindowManager.setAppInstance(app); // 设置 app 实例
+  // 启动 HTTP 服务
+  startVideoStreamServer().then(() => {
+    const win = createWindow();
+    // win.loadURL(isDev ? WEB_DEV_URL! : WEB_PROD_URL)
+    win.loadURL( WEB_DEV_URL + '/ulogi')
+    appWindowManager.setWinInstance(win)
+    appWindowManager.setAppInstance(app); // 设置 app 实例
+
+  });
+
 
   innerProcess = initializeIPCHandlers() as ChildProcess[]
 

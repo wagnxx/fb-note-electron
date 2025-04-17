@@ -15,7 +15,8 @@ i18n
       escapeValue: false, // 避免 XSS 攻击
     },
     backend: {
-      loadPath: '/locales/{{lng}}.json', // 指定语言文件路径
+      // eslint-disable-next-line no-undef
+      loadPath: process.env.NODE_ENV === 'production' ? '/ulogi/i18n/{{lng}}.json' : '/i18n/{{lng}}.json', // 开发环境是 /i18n
     },
   })
 // 监听 Redux 的语言状态变化

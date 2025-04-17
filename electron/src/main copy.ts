@@ -9,7 +9,7 @@ import fs from 'fs';
 import { exec } from 'child_process';
 import { IPC_ACTIONS } from './constants';
 import { createLogger, format, transports } from 'winston';
-import { startVideoStreamServer } from './videoStream';
+import { startVideoStreamServer } from './server/stream/expressApp';
 
 
 

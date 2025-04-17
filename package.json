@@ -1,5 +1,8 @@
 {
-	"dependencies": {
-		"uuid": "^11.0.2"
-	}
+  "scripts": {
+    "start": "scripty"
+  },
+  "dependencies": {
+    "scripty": "^3.0.0"
+  }
 }

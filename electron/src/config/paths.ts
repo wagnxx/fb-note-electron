@@ -8,13 +8,13 @@ const getPath = (...segments: string[]): string => {
     if (isDev) {
         return path.join(__dirname, '../..', ...segments);
     }
-    return path.join(__dirname, '../..', SUPPORT_DIR, ...segments);
+    return path.join(__dirname, '../../..', SUPPORT_DIR, ...segments);
 };
 
 // 类型定义
 export const preloadPath: string = isDev
     ? path.join(__dirname, '../../', 'preload.js')
-    : getPath('preload', 'preload.js');
+    : getPath('preload.js');
 
 export const SOCKS_RELATIVE_PATH: string = isDev
     ? '../../socks-server.js'

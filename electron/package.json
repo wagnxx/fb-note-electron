@@ -1,11 +1,12 @@
 {
-  "name": "fb-note",
+  "name": "ulogi",
   "version": "1.0.0",
   "description": "A desktop app for managing notes and tasks.",
   "main": "dist/main.js",
   "scripts": {
     "dev:start": "scripty",
     "dev:ele": "scripty",
+    "dev:tsc": "scripty",
     "build:tsc": "scripty",
     "build:rollup": "scripty",
     "build:rollup-w": "scripty",
@@ -62,6 +63,8 @@
   "license": "ISC",
   "dependencies": {
     "@types/cors": "^2.8.17",
+    "chalk": "^4.1.2",
+    "connect-history-api-fallback": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
@@ -74,11 +77,13 @@
     "winston": "^3.16.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
+    "@types/express": "^5.0.1",
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/node": "^22.9.0",
+    "@types/resolve": "^1.20.6",
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",
+    "electron-reloader": "^1.2.3",
     "rollup": "^4.24.4",
     "rollup-plugin-typescript2": "^0.36.0",
     "scripty": "^2.1.1",

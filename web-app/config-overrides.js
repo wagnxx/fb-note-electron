@@ -4,10 +4,12 @@
 const webpack = require('webpack');
 const path = require('path');
 
+
 module.exports = {
   webpack: (config, env) => {
 
-    config.output.publicPath =  process.env.REACT_APP_ENV === 'production' ? './' : '/';
+    // config.output.publicPath =  process.env.REACT_APP_ENV === 'production' ? './' : '/';
+    config.output.publicPath =  process.env.REACT_APP_ENV === 'production' ? '/ulogi' : '/ulogi';
     // 添加 fallback 配置
     config.resolve.fallback = {
       fs: false, // 禁用 fs

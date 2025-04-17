@@ -68,7 +68,6 @@
     "winston": "^3.15.0",
     "worker-loader": "^3.0.8"
   },
-  "main": "electron/main.js",
   "scripts": {
     "start:web": "REACT_APP_ENV=development react-app-rewired start",
     "build:web": "REACT_APP_ENV=production react-app-rewired build",

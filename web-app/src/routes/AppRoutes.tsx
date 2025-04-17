@@ -13,7 +13,7 @@ const RoutesList: React.FC = () => {
   // TODO filter by menuitems role
   // console.log('userRole: ', userRole)
   return (
-    <Router>
+    <Router basename="/ulogi">
       <AppHeader />
       <Routes>
         {/* 渲染独立页面 */}
