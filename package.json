@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "start": "scripty"
+    "start": "scripty",
+    "build": "scripty"
   },
   "dependencies": {
     "scripty": "^3.0.0"

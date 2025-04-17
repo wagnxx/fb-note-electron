@@ -12,7 +12,8 @@
     "build:rollup-w": "scripty",
     "build:socks": "scripty",
     "build:ele-simple": "scripty",
-    "build:ele": "scripty"
+    "build:ele": "scripty",
+    "build:release": "scripty"
   },
   "build": {
     "productName": "fb-note-electron",
