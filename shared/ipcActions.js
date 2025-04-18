@@ -34,6 +34,8 @@
     PAUSE_DOWNLOAD: 'pause-download',
     RESUME_DOWNLOAD: 'resume-download',
     CANCEL_DOWNLOAD: 'cancel-download',
+    
+    IMAGE_TO_ICONS: 'image_to_icons',
   };
   
  module.exports = {

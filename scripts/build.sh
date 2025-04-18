@@ -20,7 +20,7 @@ build_web() {
   info "Building web-app..."
   cd "$WEB_DIR" || { error "Web directory not found"; exit 1; }
 
-  if pnpm run build:web; then
+  if pnpm run build:prod; then
     success "Web-app built successfully."
   else
     error "Web-app build failed."

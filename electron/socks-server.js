@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+ 
 const { Socks5Server,AUTH_METHODS } = require('socks5-server');
 const path = require('path')
 const fs = require('fs')

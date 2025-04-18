@@ -29,6 +29,8 @@ import useComputedFilter from './useComputedFilter'
 import ScreenshotCardItem from './ScreenshotCardItem'
 import { useNavigate } from 'react-router-dom'
 import { useNotification } from '@/hooks/useNotification'
+import useUserRole from '@/features/rolePermission/hooks/useUserRole'
+import { PERMISSIONS } from '@/features/rolePermission'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export type Prop = {
   doc?: ScreenshotDoc
@@ -68,6 +70,7 @@ const ScreenShots: FC<ScreenTypes> = ({ doc, video, onSaveScreenshot, onJumpTo, 
   const imgRefs = useRef<{ [key: string]: HTMLImageElement | null }>({})
 
   const navigate = useNavigate()
+  const { isPermitted } = useUserRole()
 
   const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
 
@@ -648,7 +651,10 @@ const ScreenShots: FC<ScreenTypes> = ({ doc, video, onSaveScreenshot, onJumpTo, 
             <Button onClick={handleCopyImage} disabled={selectedKeys.size === 0 || isCroping}>
               Copy Images
             </Button>
-            <Button onClick={handleCreateDoc} disabled={selectedKeys.size === 0 || docExisted}>
+            <Button
+              onClick={handleCreateDoc}
+              disabled={selectedKeys.size === 0 || docExisted || !isPermitted(PERMISSIONS.DOCSNAP_CREATE)}
+            >
               Create Doc
             </Button>
           </Space>

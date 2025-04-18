@@ -12,6 +12,10 @@ export const PERMISSIONS = {
   DOCSNAP_READ: 'docSnap_read',
   DOCSNAP_EDIT: 'docSnap_edit',
   DOCSNAP_DELETE: 'docSnap_delete',
+  DICT_READ: 'dict_read',
+  DICT_EDIT: 'dict_edit',
+  DICT_DELETE: 'dict_delete',
+  DICT_CREATE: 'dict_create',
 } as const
 
 export type PermissionKey = keyof typeof PERMISSIONS

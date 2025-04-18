@@ -12,7 +12,7 @@ is_port_open() {
 start_web() {
   echo "🚀 Starting web-app..."
   cd "$WEB_DIR"
-  pnpm dev:start &
+  pnpm run dev:start &
   WEB_PID=$!
   cd - >/dev/null
 }
@@ -20,7 +20,7 @@ start_web() {
 start_electron() {
   echo "⚡ Launching Electron app..."
   cd "$ELECTRON_DIR"
-  pnpm dev:start
+  npm run dev:start
 }
 
 # 主逻辑
@@ -39,3 +39,5 @@ else
 fi
 
 start_electron
+
+

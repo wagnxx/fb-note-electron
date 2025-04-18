@@ -1,7 +1,10 @@
 // renderer/pages/IconGenerator.tsx
 import { Button, Upload, Tabs } from 'antd'
+import { useState } from 'react'
 
 export default function IconGenerator() {
+  const [outputDir, setOutputDir] = useState('')
+
   return (
     <div className="p-6 space-y-4">
       <Upload.Dragger multiple={false} accept="image/*">

@@ -69,8 +69,9 @@
     "worker-loader": "^3.0.8"
   },
   "scripts": {
-    "start:web": "REACT_APP_ENV=development react-app-rewired start",
-    "build:web": "REACT_APP_ENV=production react-app-rewired build",
+    "dev:start": "REACT_APP_ENV=development react-app-rewired start",
+    "build:prod": "REACT_APP_ENV=production react-app-rewired build",
+    "build:preview": "REACT_APP_ENV=production react-app-rewired build",
     "test:web": "react-app-rewired test"
   },
   "eslintConfig": {},
