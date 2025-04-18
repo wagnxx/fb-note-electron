@@ -12,6 +12,8 @@ electron/temps
 electron/logs
 electron/release
 electron/support/download
-
+electron/support/logs
+electron/support/temps
+*.error
 
 test/
