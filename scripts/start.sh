@@ -40,4 +40,5 @@ fi
 
 start_electron
 
-
+trap "kill $WEB_PID " EXIT
+wait $WEB_PID  # 👈 加上这行
