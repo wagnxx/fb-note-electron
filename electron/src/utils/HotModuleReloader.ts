@@ -14,6 +14,7 @@ class HotModuleReloader {
   private include: string[];
   private exclude: string[];
   private onReload?: (mod: any, filePath: string) => void;
+  private loadedModules: Set<string> = new Set(); // 追踪已加载模块
 
   constructor(rootDir: string, options: HotReloadOptions = {}) {
     this.rootDir = rootDir;
@@ -70,10 +71,15 @@ class HotModuleReloader {
         const resolvedPath = require.resolve(filePath);
         delete require.cache[resolvedPath]; // 删除缓存
         const mod = require(resolvedPath); // 重新加载模块
-        console.log(chalk.green('[HMR] 🔁 Reloaded module: ') + chalk.cyan(path.relative(this.rootDir, filePath)));
-        // 如果有 onReload 回调函数，执行它
-        if (this.onReload) {
-          this.onReload(mod, filePath);
+
+        // 如果是首次加载，则不执行 onReload 通知
+        if (!this.loadedModules.has(filePath)) {
+          this.loadedModules.add(filePath); // 标记为已加载
+        } else {
+          console.log(chalk.green('[HMR] 🔁 Reloaded module: ') + chalk.cyan(path.relative(this.rootDir, filePath));
+          if (this.onReload) {
+            this.onReload(mod, filePath);
+          }
         }
       } catch (err) {
         console.log(chalk.green('HMR] ❌  ') + chalk.red(`Failed to reload module: ${filePath}`), err);

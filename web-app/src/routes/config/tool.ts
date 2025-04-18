@@ -7,6 +7,7 @@ import ScreenshotDoc from '@/pages/tools/docSnap/ScreenshotDoc'
 import { RouteConfig } from '../routes'
 import DocToImageConverter from '@/pages/tools/docSnap/DocToImageConverter'
 import MindMap from '@/pages/mindmap/MindMap'
+import IconGenerator from '@/pages/tools/image/IconGenerator'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -65,6 +66,11 @@ export const routesTool: RouteConfig = {
           component: DocToImageConverter,
         },
       ],
+    },
+    {
+      path: 'image',
+      name: 'Image',
+      component: IconGenerator,
     },
   ],
 }

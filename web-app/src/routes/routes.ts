@@ -4,12 +4,12 @@ import NotFound from '@/pages/error/NotFound'
 import GuidePage from '@/pages/home/GuidePage'
 import MindMap from '@/pages/mindmap/MindMap'
 import Login from '@/pages/login/Login'
+import UserProfile from '@/pages/user/Profile'
 import { routesTool } from './config/tool'
 import { routesLearn } from './config/learn'
 import { routesSystem } from './config/system'
 import { routesTest } from './config/test'
 import { routesRole } from './config/role'
-import UserProfile from '@/pages/user/Profile'
 
 export interface RouteConfig {
   path: string

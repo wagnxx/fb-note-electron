@@ -21,22 +21,22 @@ module.exports = {
       from: 'support',
       to: path.join(SUPPORT_DIR),
     },
-    {
-      from: 'preload.js',
-      to: path.join(SUPPORT_DIR, 'preload.js'),
-    },
+    // {
+    //   from: 'preload.js',
+    //   to: path.join(SUPPORT_DIR, 'preload.js'),
+    // },
     {
       from: 'build-service',
       to: path.join(SUPPORT_DIR, 'build-service'),
     },
-    {
-      from: 'logs',
-      to: path.join(SUPPORT_DIR, 'logs'),
-    },
-    {
-      from: 'temps',
-      to: path.join(SUPPORT_DIR, 'temps'),
-    },
+    // {
+    //   from: 'logs',
+    //   to: path.join(SUPPORT_DIR, 'logs'),
+    // },
+    // {
+    //   from: 'temps',
+    //   to: path.join(SUPPORT_DIR, 'temps'),
+    // },
     {
       from: '../web-app/build',
       to: 'web-app/build',
@@ -50,8 +50,8 @@ module.exports = {
     target: ['dmg'],
     icon: 'assets/icons/ulogi_mac.icns',
   },
-  win: {
-    target: ['nsis'],
-    icon: 'assets/icons/ulogi_win.ico',
-  },
+  // win: {
+  //   target: ['nsis'],
+  //   icon: 'assets/icons/ulogi_win.ico',
+  // },
 };

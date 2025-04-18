@@ -71,35 +71,7 @@
   "scripts": {
     "start:web": "REACT_APP_ENV=development react-app-rewired start",
     "build:web": "REACT_APP_ENV=production react-app-rewired build",
-    "test:web": "react-app-rewired test",
-    "start:ele": "ELECTRON_START_URL=http://localhost:3000 electron .",
-    "build:socks": "pkg electron/socks-server.js --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --out=electron/build-service/socks-server",
-    "build:ele": "electron-builder",
-    "pack": "node packager.js",
-    "eject": "react-scripts eject"
-  },
-  "build": {
-    "productName": "fb-note-electron",
-    "appId": "fb.note.electron",
-    "asar": true,
-    "files": [
-      "electron/**/*",
-      "public/**/*",
-      "build/**/*",
-      "electron/build-service/socks-server-*"
-    ],
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "icon": "electron/assets/icons/icon.icns"
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ],
-      "icon": "electron/assets/icons/icon.ico"
-    }
+    "test:web": "react-app-rewired test"
   },
   "eslintConfig": {},
   "browserslist": {

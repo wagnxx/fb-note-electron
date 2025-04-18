@@ -1,9 +1,8 @@
 import { config } from 'dotenv';
-config();
-
-import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import { startVideoStreamServer } from './server/stream/expressApp';
+config({ path: path.resolve(__dirname, '../.env'), });
+
+import { app, BrowserWindow } from 'electron'
 import { preloadPath } from './config/paths';
 import { isDev, WEB_DEV_URL , WEB_PROD_URL} from './config/config';
 import { initializeIPCHandlers } from './ipc/handlers';
@@ -12,21 +11,32 @@ import { ChildProcess } from 'child_process';
 import AppWindowManager from './managers/AppWindowManager';
 import HotModuleReloader from './utils/HotModuleReloader';
 import chalk from 'chalk';
+import streamServer from './server/stream/server';
 
 
 let innerProcess: ChildProcess[] = []
 
-if (isDev) {
-  new HotModuleReloader(path.join(__dirname, '../dist'), {
-    include: ['server', 'ipc'],
+// HMR 逻辑和服务重启
+function runHMR() {
+  const reloader = new HotModuleReloader(path.join(__dirname, '../dist'), {
+    include: ['server'],
     exclude: ['main.js'],
-    onReload: (mod, filePath) => {
-      // 你可以在这里重新执行 handler、router 等
+    onReload: async (_mod: any, filePath: string) => {
+      // console.log('update ::::: ', _mod, filePath);
+      if (filePath.indexOf('server/stream/expressApp.js') > -1) {
+        console.log('update ::::: server/stream/expressApp.js');
+        try {
+          await streamServer.restart()
+          console.log('[HMR] New video stream server started.');
+        } catch (err) {
+          console.error('[HMR] Failed to restart video stream server:', err);
+        }
+      }
     },
-  }).init();
+  });
+
+  reloader.init();
 }
-
-
 function createWindow() {
   // const iconPath = path.join(__dirname, '../assets/icons/icon.icns')
 
@@ -51,11 +61,7 @@ function createWindow() {
 
 
   
-  if (isDev) {
-    win.webContents.openDevTools();
-    // win.loadURL(process.env.ELECTRON_START_URL);
-    // win.loadFile(path.join(__dirname, '../../web-app/build/index.html'));
-  } 
+
 
   return win
 }
@@ -64,10 +70,13 @@ function createWindow() {
 app?.whenReady()?.then(() => {
   const appWindowManager = AppWindowManager.getInstance();
   // 启动 HTTP 服务
-  startVideoStreamServer().then(() => {
+  streamServer.restart().then(() => {
     const win = createWindow();
-    // win.loadURL(isDev ? WEB_DEV_URL! : WEB_PROD_URL)
-    win.loadURL( WEB_DEV_URL + '/ulogi')
+    if (isDev) {
+      win.webContents.openDevTools();
+      runHMR()
+    } 
+    win.loadURL(isDev ? WEB_DEV_URL! : WEB_PROD_URL)
     appWindowManager.setWinInstance(win)
     appWindowManager.setAppInstance(app); // 设置 app 实例
 

@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 const { contextBridge, ipcRenderer } = require('electron');
-const { IPC_ACTIONS } = require('../shared/ipcActions.js');
+const { IPC_ACTIONS } = require('../../shared/ipcActions.js');
 
 contextBridge.exposeInMainWorld('electron', {
   IPC_ACTIONS,
