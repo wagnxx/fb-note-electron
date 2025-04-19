@@ -1,33 +1,42 @@
 {
-    "extends": "../tsconfig.base.json",
-    "compilerOptions": {
-        "sourceMap": true,
-        "target": "ESNext",
-        "module": "CommonJS",
-        "moduleResolution": "node",
-        "outDir": "./dist",
-        "rootDir": "./src",
-        "strict": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "resolveJsonModule": true,
-        "baseUrl": "./",
-        "paths": {
-            "*": [
-                "node_modules/*",
-                "src/types/*"
-            ]
-        },
-        "typeRoots": [
-            "node_modules/@types"
-        ],
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    // "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    // "rootDir": "../",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "node_modules/*",
+        "src/types/*"
+      ],
+      "@/*": [
+        "./src/*"
+      ],
+      "@shared/*": [
+        "../shared/*"
+      ]
     },
-    "include": [
-        "src/**/*"
+    "typeRoots": [
+      "node_modules/@types"
     ],
-    "exclude": [
-        "node_modules",
-        "**/*.spec.ts"
-    ],
+  },
+  "include": [
+    "src/**/*",
+    "../shared/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+    "rollup.config.*"
+  ],
 }

@@ -8,6 +8,7 @@
     CHECK_SOCKS_SERVICE: 'check-socks-service',
     GET_SOCKS_SERVICE_INFO: 'get-socks-service-info',
 
+    
     GET_LOGS: 'get-logs',
     SUBPROCESS_ERROR: 'subprocess-errors',
 

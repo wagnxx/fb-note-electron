@@ -1,12 +1,12 @@
 import path from 'path'
 import fs from 'fs'
 import { ipcMain } from 'electron'
-import { IPC_ACTIONS } from '../constants'
+import { IPC_ACTIONS } from '@/constants'
 import { ChildProcess, exec, spawn } from 'child_process'
-import { IpcMainEvent } from 'electron/main'
-import { isDev } from '../config/config'
-import { infoFile, LOG_FILE_PATH, pidFile, SOCKS_RELATIVE_PATH } from '../config/paths'
-import { logger } from '../utils/logger'
+import { IpcMainEvent } from 'electron'
+import { isDev } from '@/config/config'
+import { infoFile, LOG_FILE_PATH, pidFile, SOCKS_RELATIVE_PATH } from '@/config/paths'
+import { logger } from '@/utils/logger'
 
 let socksProcess: ChildProcess | null = null
 export const setupSocksHandler = () => {

@@ -3,6 +3,7 @@ import sharp from 'sharp'
 import fs from 'fs'
 import path from 'path'
 import { ensureDirectoryExists, renameAndOverwrite } from './fileManager'
+import { GenerateResult, IconOptions } from '@shared/types'
 
 export interface CropRange {
   left: number
@@ -184,18 +185,18 @@ export const mergeImages = async ({
   }
 }
 
-export interface IconOptions {
-  input: string
-  outputDir: string
-  rounded?: boolean
-  radius?: number
-}
+// export interface IconOptions {
+//   input: string
+//   outputDir: string
+//   rounded?: boolean
+//   radius?: number
+// }
 
-export interface GenerateResult {
-  ok: boolean
-  message: string
-  data: string[]
-}
+// export interface GenerateResult {
+//   ok: boolean
+//   message: string
+//   data: string[]
+// }
 export const generateMacIcons = (options: IconOptions): GenerateResult => {
   const { input, outputDir, rounded, radius = 30 } = options
   let processedInput = input

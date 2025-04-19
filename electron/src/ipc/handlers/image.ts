@@ -1,8 +1,9 @@
 import path from 'path'
 import fs from 'fs'
 import { dialog, ipcMain } from 'electron'
-import { IPC_ACTIONS } from '../constants'
-import { generateMacIcons, GenerateResult, generateWinIcons, IconOptions } from '../utils/imageUtils'
+import { IPC_ACTIONS } from '@/constants'
+import { generateMacIcons, generateWinIcons } from '@/utils/imageUtils'
+import { GenerateResult, IconOptions } from '@shared/types'
 
 type IpcIconOptions = Omit<IconOptions, 'input' | 'outputDir'> & {
   type: 'mac' | 'win'
@@ -36,7 +37,7 @@ export const imageHandler = () => {
       if (type === 'mac') {
         return generateMacIcons(params)
       } else {
-        return generateMacIcons(params)
+        return generateWinIcons(params)
       }
     },
   )

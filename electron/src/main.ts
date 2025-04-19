@@ -5,7 +5,7 @@ config({ path: path.resolve(__dirname, '../.env') })
 import { app, BrowserWindow } from 'electron'
 import { preloadPath } from './config/paths'
 import { isDev, WEB_DEV_URL, WEB_PROD_URL } from './config/config'
-import { initializeIPCHandlers } from './ipc/handlers'
+import { initializeIPCHandlers } from './ipc'
 import { logger } from './utils/logger'
 import { ChildProcess } from 'child_process'
 import AppWindowManager from './managers/AppWindowManager'

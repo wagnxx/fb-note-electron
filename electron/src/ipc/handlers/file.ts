@@ -1,14 +1,14 @@
 import path from 'path'
 import fs from 'fs'
 import { dialog, ipcMain } from 'electron'
-import { IPC_ACTIONS } from '../constants'
+import { IPC_ACTIONS } from '@/constants'
 import { exec, spawn } from 'child_process'
-import { deleteFile, fileExists, getDirectoryStructureSync, readDirectory } from '../utils/fileManager'
+import { deleteFile, fileExists, getDirectoryStructureSync, readDirectory } from '@/utils/fileManager'
 import mammoth from 'mammoth'
-import { convertDocToImage } from '../utils/docUtils'
+import { convertDocToImage } from '@/utils/docUtils'
 import { arrayBuffer } from 'stream/consumers'
-import AppWindowManager from '../managers/AppWindowManager'
-import { DOWNLOAD_DIR } from '../config/config'
+import AppWindowManager from '@/managers/AppWindowManager'
+import { DOWNLOAD_DIR } from '@/config/config'
 
 export const setupFileHandler = () => {
   ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async (event, options = { type: 'file' }) => {

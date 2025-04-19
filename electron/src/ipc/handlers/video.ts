@@ -1,12 +1,12 @@
 import path from 'path'
 import fs from 'fs'
 import { dialog, ipcMain } from 'electron'
-import { IPC_ACTIONS } from '../constants'
+import { IPC_ACTIONS } from '@/constants'
 import { spawn } from 'child_process'
-import { deleteFile, deleteFiles, ensureDirectoryExists, fileExists, writeFile } from '../utils/fileManager'
-import { batchCropImages, CropRange, FileWithCropRange, mergeImages } from '../utils/imageUtils'
-import { extractFrameAtTime, extractTextFromImage } from '../utils/imageText'
-import { Downloader, DownloadOptions } from '../utils/Downloader'
+import { deleteFile, deleteFiles, ensureDirectoryExists, fileExists, writeFile } from '@/utils/fileManager'
+import { batchCropImages, CropRange, FileWithCropRange, mergeImages } from '@/utils/imageUtils'
+import { extractFrameAtTime, extractTextFromImage } from '@/utils/imageText'
+import { Downloader, DownloadOptions } from '@/utils/Downloader'
 const downloader = new Downloader()
 
 export const setupVideoStreamHandler = () => {
