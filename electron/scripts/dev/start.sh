@@ -28,13 +28,13 @@ max_wait_time=20
 wait_time=0
 
 # 检查 dist/main.js 是否存在
-while [ ! -f "dist/main.js" ] && [ $wait_time -lt $max_wait_time ]; do
+while [ ! -f "dist/main.entry.js" ] && [ $wait_time -lt $max_wait_time ]; do
   sleep 2
   wait_time=$((wait_time + 2))
 done
 
 # 如果在最大等待时间内找到了 main.js 文件
-if [ -f "dist/main.js" ]; then
+if [ -f "dist/main.entry.js" ]; then
   success "TypeScript build succeeded. Found main.js in dist."
   
   # 启动 Electron

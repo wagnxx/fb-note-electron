@@ -15,5 +15,6 @@ electron/support/download
 electron/support/logs
 electron/support/temps
 *.error
+.temps
 
 test/

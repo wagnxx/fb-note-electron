@@ -1,39 +1,44 @@
-import express, { Request, Response } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import fs from 'fs'
 import path, { resolve } from 'path'
 import cors from 'cors'
 import history from 'connect-history-api-fallback'
+import { getDistPath } from '@/config'
 
-const isDev = true
-const staticPath = path.join(__dirname, isDev ? '../../../../..' : '../../../..', 'web-app/build')
-const assetsPath = path.join(__dirname, isDev ? '../../..' : '../../../..', 'support/assets')
+const isDev = false
+const staticPath = path.join(getDistPath(), '../..', 'web-app/build')
+const assetsPath = path.join(getDistPath(), isDev ? '..' : '../..', 'support/assets')
+
+const portals = ['/ulogi']
 
 export const createApp = () => {
   // 创建 express 实例
   const server = express()
   server.use(cors())
+  server.use((req: Request, res: Response, next: NextFunction) => {
+    const portal = portals.find(item => item === req.path)
+    if (portal) {
+      console.log('[ULOGI] Root matched. Redirecting to index.html')
+      req.url = portal + '/'
+    }
+    next()
+  })
 
+  // history fallback 处理 SPA 的页面跳转（必须在 static 之前）
   server.use(
     '/ulogi',
     history({
-      index: '/ulogi/index.html',
-      rewrites: [
-        {
-          // 忽略真实资源请求
-          from: /^\/ulogi\/(.*\.(js|css|png|jpg|jpeg|svg|ico|json|map))$/,
-          to: (context: any) => context.parsedUrl.pathname,
-        },
-      ],
+      index: '/index.html',
     }),
   )
 
   // 静态资源服务放 fallback 后
-  server.use('/ulogi', express.static(staticPath, { redirect: false }))
-
   // 使用中间件控制访问路径
+  server.use('/ulogi', express.static(staticPath))
   server.use('/assets', express.static(assetsPath)) // 只允许访问 /assets 文件夹
+
+  // 限制访问 /logs
   server.use('/logs', (req: Request, res: Response) => {
-    // 限制访问 /logs
     res.status(403).send('Access to logs folder is forbidden')
   })
 
@@ -131,11 +136,7 @@ export const createApp = () => {
   })
 
   server.get('/test', (req: Request, res: Response) => {
-    res.send('test222')
-  })
-
-  server.get('/a', (req: Request, res: Response) => {
-    res.send('aaaaa')
+    res.send('raa')
   })
 
   return server

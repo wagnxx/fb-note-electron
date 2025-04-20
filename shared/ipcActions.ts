@@ -39,6 +39,10 @@
     IMAGE_TO_ICONS: 'image_to_icons',
   };
   
- module.exports = {
-    IPC_ACTIONS
- } 
+//  module.exports = {
+//     IPC_ACTIONS
+//  } 
+
+export {
+   IPC_ACTIONS
+}

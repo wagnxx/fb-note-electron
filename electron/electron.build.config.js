@@ -12,8 +12,9 @@ module.exports = {
     output: "release" // 指定打包输出目录
   },
   files: [
-    "dist/**/*",
-    'node_modules/**', // 需要测试 该选文件夹必选
+    "!./node_modules/**",            // ✅ 只排除当前目录
+    "!./package.json", 
+    "dist/**",
     ".env",
   ],
   extraResources: [
@@ -21,29 +22,13 @@ module.exports = {
       from: 'support',
       to: path.join(SUPPORT_DIR),
     },
-    // {
-    //   from: 'preload.js',
-    //   to: path.join(SUPPORT_DIR, 'preload.js'),
-    // },
     {
       from: 'build-service',
       to: path.join(SUPPORT_DIR, 'build-service'),
     },
-    // {
-    //   from: 'logs',
-    //   to: path.join(SUPPORT_DIR, 'logs'),
-    // },
-    // {
-    //   from: 'temps',
-    //   to: path.join(SUPPORT_DIR, 'temps'),
-    // },
     {
       from: '../web-app/build',
       to: 'web-app/build',
-    },
-    {
-      from: '../shared',
-      to: path.join('shared'),
     },
   ],
   mac: {

@@ -1,23 +1,22 @@
-import { config } from 'dotenv'
 import path from 'path'
-config({ path: path.resolve(__dirname, '../.env') })
-
 import { app, BrowserWindow } from 'electron'
-import { preloadPath } from './config/paths'
-import { isDev, WEB_DEV_URL, WEB_PROD_URL } from './config/config'
+import * as config from './config'
 import { initializeIPCHandlers } from './ipc'
 import { logger } from './utils/logger'
 import { ChildProcess } from 'child_process'
 import AppWindowManager from './managers/AppWindowManager'
 import HotModuleReloader from './utils/HotModuleReloader'
-import chalk from 'chalk'
 import streamServer from './server/stream/server'
+import fs from 'fs'
+const { isDev, preloadPath, WEB_DEV_URL, WEB_PROD_URL } = config
 
 let innerProcess: ChildProcess[] = []
 
+fs.writeFile(path.join(__dirname, 'partialConfig.json'), JSON.stringify(config, null, 2), () => {})
+
 // HMR 逻辑和服务重启
 function runHMR() {
-  const reloader = new HotModuleReloader(path.join(__dirname, '../dist'), {
+  const reloader = new HotModuleReloader(path.join(config.getDistPath(), 'electron/src'), {
     // include: ['server'],
     exclude: ['main.js'],
     onReload: async (_mod: any, filePath: string) => {
@@ -53,7 +52,7 @@ function createWindow() {
       // webSecurity: false,
       disableBlinkFeatures: 'Autofill',
       // allowRunningInsecureContent: true,
-      devTools: isDev,
+      devTools: true,
     },
   })
 
@@ -66,10 +65,12 @@ app?.whenReady()?.then(() => {
   streamServer.restart().then(() => {
     const win = createWindow()
     if (isDev) {
-      win.webContents.openDevTools()
       runHMR()
+      win.webContents.openDevTools()
     }
+    console.log('config =================  ', config)
     win.loadURL(isDev ? WEB_DEV_URL! : WEB_PROD_URL)
+
     appWindowManager.setWinInstance(win)
     appWindowManager.setAppInstance(app) // 设置 app 实例
   })
