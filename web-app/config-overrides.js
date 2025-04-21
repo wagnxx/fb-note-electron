@@ -22,7 +22,8 @@ module.exports = {
      '@': path.resolve(__dirname, 'src/'),
      '@components': path.resolve(__dirname, 'src/components/'),
      '@utils': path.resolve(__dirname, 'src/utils/'),
-     '@hooks': path.resolve(__dirname, 'src/hooks/')
+     '@hooks': path.resolve(__dirname, 'src/hooks/'),
+     '@shared': path.resolve(__dirname, '../shared/')
     }
 
     config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']

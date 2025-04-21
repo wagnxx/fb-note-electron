@@ -4,9 +4,10 @@ import { dialog, ipcMain } from 'electron'
 import { IPC_ACTIONS } from '@/constants'
 import { spawn } from 'child_process'
 import { deleteFile, deleteFiles, ensureDirectoryExists, fileExists, writeFile } from '@/utils/fileManager'
-import { batchCropImages, CropRange, FileWithCropRange, mergeImages } from '@/utils/imageUtils'
+import { batchCropImages, mergeImages } from '@/utils/imageUtils'
 import { extractFrameAtTime, extractTextFromImage } from '@/utils/imageText'
 import { Downloader, DownloadOptions } from '@/utils/Downloader'
+import { CropRange } from '@shared/types'
 const downloader = new Downloader()
 
 export const setupVideoStreamHandler = () => {
@@ -34,15 +35,15 @@ export const setupVideoStreamHandler = () => {
   ipcMain.on('start-download', (event, options: DownloadOptions) => {
     downloader.startDownload(event, options)
   })
-  ipcMain.handle(IPC_ACTIONS.PAUSE_DOWNLOAD, (event, videoId: string) => {
+  ipcMain.handle(IPC_ACTIONS.DOWNLOAD_PAUSE, (event, videoId: string) => {
     return downloader.pauseDownload(videoId)
   })
 
-  ipcMain.handle(IPC_ACTIONS.RESUME_DOWNLOAD, (event, videoId: string) => {
+  ipcMain.handle(IPC_ACTIONS.DOWNLOAD_RESUME, (event, videoId: string) => {
     return downloader.resumeDownload(videoId)
   })
 
-  ipcMain.handle(IPC_ACTIONS.CANCEL_DOWNLOAD, (event, videoId: string) => {
+  ipcMain.handle(IPC_ACTIONS.DOWNLOAD_CANCEL, (event, videoId: string) => {
     return downloader.cancelDownload(videoId)
   })
 
@@ -90,7 +91,7 @@ export const setupVideoStreamHandler = () => {
         needDecode = false,
       }: {
         filePaths: string[] | { path: string; cropRange: CropRange }[]
-        cropRange: CropRange
+        cropRange?: CropRange
         needDecode?: boolean
       },
     ) => {

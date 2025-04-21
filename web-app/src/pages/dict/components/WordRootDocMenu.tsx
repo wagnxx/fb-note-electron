@@ -1,6 +1,7 @@
 import DesktopOnly from '@/components/platform/DesktopOnly'
-import { FileSystemItem, getDirectoryStructure } from '@/utils/utilsIpc'
+import { getDirectoryStructure } from '@/utils/utilsIpc'
 import { TableOutlined } from '@ant-design/icons'
+import { FileSystemItem } from '@shared/types'
 import { Menu, MenuProps } from 'antd'
 import React, { FC, useEffect, useState } from 'react'
 

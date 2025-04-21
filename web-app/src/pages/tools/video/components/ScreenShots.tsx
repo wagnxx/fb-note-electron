@@ -31,6 +31,7 @@ import { useNavigate } from 'react-router-dom'
 import { useNotification } from '@/hooks/useNotification'
 import useUserRole from '@/features/rolePermission/hooks/useUserRole'
 import { PERMISSIONS } from '@/features/rolePermission'
+import { CropRange } from '@shared/types'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 export type Prop = {
   doc?: ScreenshotDoc
@@ -371,7 +372,7 @@ const ScreenShots: FC<ScreenTypes> = ({ doc, video, onSaveScreenshot, onJumpTo, 
     })
     // TODO
     const params = {
-      filePaths: filePaths,
+      filePaths: filePaths as string[] | { path: string; cropRange: CropRange }[],
       needDecode: true,
     }
 
@@ -411,7 +412,7 @@ const ScreenShots: FC<ScreenTypes> = ({ doc, video, onSaveScreenshot, onJumpTo, 
 
     const params = {
       enFolder: encodeURIComponent(video.url.replace(/\.[\w]+$/, '')),
-      layout: 'col',
+      layout: 'col' as 'col',
       images,
       mergedName: video.name + '_' + 'merged.png',
     }
@@ -453,7 +454,7 @@ const ScreenShots: FC<ScreenTypes> = ({ doc, video, onSaveScreenshot, onJumpTo, 
     setIsCardLoading(true)
     //Currently, only one merged image is supported
     const filePath = screenshotsMap[names[0]].path
-    const fileBuffer = await ipcRenderer?.invoke('read-stream', encodeURIComponent(filePath))
+    const fileBuffer = await ipcRenderer?.invoke(IPC_ACTIONS.READ_STREAM, encodeURIComponent(filePath))
     if (!fileBuffer) {
       return
     }
@@ -504,7 +505,7 @@ const ScreenShots: FC<ScreenTypes> = ({ doc, video, onSaveScreenshot, onJumpTo, 
     const params = {
       enVideoPath: encodeURIComponent(video.url),
       name: screenshotsMap[item].name,
-      time: screenshotsMap[item].at,
+      time: screenshotsMap[item].at!,
     }
     // EXRACT_VIDEO_FRAME_TEXT
     const r = await handleRequestWithNotification(

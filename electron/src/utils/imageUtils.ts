@@ -3,19 +3,7 @@ import sharp from 'sharp'
 import fs from 'fs'
 import path from 'path'
 import { ensureDirectoryExists, renameAndOverwrite } from './fileManager'
-import { GenerateResult, IconOptions } from '@shared/types'
-
-export interface CropRange {
-  left: number
-  top: number
-  width: number
-  height: number
-}
-
-export interface FileWithCropRange {
-  path: string
-  cropRange: CropRange
-}
+import { CropRange, FileWithCropRange, GenerateResult, IconOptions } from '@shared/types'
 
 /**
  * 单张图片裁剪并保存为文件

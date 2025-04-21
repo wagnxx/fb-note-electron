@@ -53,9 +53,7 @@ const { Title, Paragraph } = Typography
 const { ipcRenderer, IPC_ACTIONS } = window?.electron || { ipcRenderer: {} }
 
 const MultiDocSnap: React.FC = () => {
-  const [imageSizes, setImageSizes] = useState<Record<string, { width: number; height: number }>>(
-    {},
-  )
+  const [imageSizes, setImageSizes] = useState<Record<string, { width: number; height: number }>>({})
   const [previewVisible, setPreviewVisible] = useState(false)
   const [previewImage, setPreviewImage] = useState('')
   const [previewTitle, setPreviewTitle] = useState('')
@@ -68,8 +66,7 @@ const MultiDocSnap: React.FC = () => {
   const [hasError, setHasError] = useState(false)
 
   const navigate = useNavigate()
-  const { handleRequestWithNotification, showNotification, showConfirmationDialog } =
-    useNotification()
+  const { handleRequestWithNotification, showNotification, showConfirmationDialog } = useNotification()
 
   const allSnaps = useMemo(() => {
     const all = snapGroups.reduce((prev: Snap[], cur) => {
@@ -86,11 +83,7 @@ const MultiDocSnap: React.FC = () => {
   }, [allSnaps, selectedKeys])
 
   const handlePreview = (snap: Snap) => {
-    setPreviewImage(
-      snap.isRemote
-        ? snap.path
-        : `http://localhost:4000/image?src=/${encodeURIComponent(snap.path)}`,
-    )
+    setPreviewImage(snap.isRemote ? snap.path : `http://localhost:4000/image?src=/${encodeURIComponent(snap.path)}`)
     setPreviewTitle(snap.name)
     setPreviewVisible(true)
   }
@@ -154,10 +147,9 @@ const MultiDocSnap: React.FC = () => {
   const handleCancel = () => setPreviewVisible(false)
 
   const handleLoadFromLocal = async () => {
-    const r = await handleRequestWithNotification(
-      async () => await getFileDialogList('directory'),
-      { successMessage: '' },
-    )
+    const r = await handleRequestWithNotification(async () => await getFileDialogList('directory'), {
+      successMessage: '',
+    })
 
     if (r.ok) {
       if (snapGroups.some(item => item.path === r.folderPath)) {
@@ -240,7 +232,7 @@ const MultiDocSnap: React.FC = () => {
       showNotification('error', 'Please enter a valid file path.', 'message')
       return
     }
-    const r = await ipcRenderer?.invoke('check_folder_exist', storageDirectory)
+    const r = await ipcRenderer?.invoke(IPC_ACTIONS.CHECK_FOLDER_EXIST, storageDirectory)
     if (!r) {
       showNotification('error', 'The folder cannot be found.', 'message')
       return
@@ -261,15 +253,13 @@ const MultiDocSnap: React.FC = () => {
 
     const params = {
       enFolder: encodeURIComponent(storageDirectory),
-      layout: 'col',
+      layout: 'col' as 'col',
       images,
       mergedName: mergedDocName + '_' + 'merged.png',
     }
     console.log('params:: ', params)
 
-    handleRequestWithNotification(
-      async () => await ipcRenderer?.invoke(IPC_ACTIONS.MERGE_IMAGES, params),
-    )
+    handleRequestWithNotification(async () => await ipcRenderer?.invoke(IPC_ACTIONS.MERGE_IMAGES, params))
   }
 
   const handleUpload = async () => {
@@ -287,7 +277,7 @@ const MultiDocSnap: React.FC = () => {
     if (!confirmed) return
     //Currently, only one merged image is supported
     const filePath = sortedselectedItems[0].path
-    const fileBuffer = await ipcRenderer?.invoke('read-stream', encodeURIComponent(filePath))
+    const fileBuffer = await ipcRenderer?.invoke(IPC_ACTIONS.READ_STREAM, encodeURIComponent(filePath))
     if (!fileBuffer) {
       return
     }
@@ -325,12 +315,7 @@ const MultiDocSnap: React.FC = () => {
               >
                 {selectedKeys.size === 100 ? 'Deselect All' : 'Select All'}
               </Checkbox>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                size="middle"
-                onClick={handleLoadFromLocal}
-              >
+              <Button type="primary" icon={<PlusOutlined />} size="middle" onClick={handleLoadFromLocal}>
                 Add Snap
               </Button>
             </Space>
@@ -344,11 +329,7 @@ const MultiDocSnap: React.FC = () => {
               >
                 Merge
               </Button>
-              <Button
-                size="middle"
-                disabled={selectedKeys.size === 0 || !mergedDocName}
-                onClick={handleUpload}
-              >
+              <Button size="middle" disabled={selectedKeys.size === 0 || !mergedDocName} onClick={handleUpload}>
                 Upload
               </Button>
             </Space>
@@ -400,10 +381,7 @@ const MultiDocSnap: React.FC = () => {
             onDragOver={handleDragOver}
             // onDragLeave={handleDragLeave}
           >
-            <SortableContext
-              items={allSnaps.map(item => item.path)}
-              strategy={verticalListSortingStrategy}
-            >
+            <SortableContext items={allSnaps.map(item => item.path)} strategy={verticalListSortingStrategy}>
               {snapGroups.map((group, groupIndex) => (
                 <div key={groupIndex} style={{ marginBottom: '40px' }}>
                   <Title level={3}>{group.name}</Title>
@@ -453,8 +431,8 @@ const MultiDocSnap: React.FC = () => {
           </Button>
         </Space>
         <Paragraph>
-          This page allows users to manage and view merged screenshots from multiple documents,
-          grouped dynamically with each new addition.
+          This page allows users to manage and view merged screenshots from multiple documents, grouped dynamically with
+          each new addition.
         </Paragraph>
       </Typography>
       <Divider />

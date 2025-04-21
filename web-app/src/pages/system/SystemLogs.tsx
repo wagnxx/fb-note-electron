@@ -16,7 +16,7 @@ const SystemLogs: React.FC<Props> = () => {
   const [errored, setErrored] = useState('')
 
   const getLogs = async () => {
-    const result: any = await ipcRenderer?.invoke(IPC_ACTIONS.GET_LOGS, null)
+    const result: any = await ipcRenderer?.invoke(IPC_ACTIONS.GET_LOGS)
     console.log('logs:::', result)
 
     if (result?.logs) {

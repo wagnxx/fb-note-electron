@@ -66,7 +66,7 @@ const VideoDownloader: React.FC<{ showTitle?: boolean }> = ({ showTitle = true }
       })
       return
     }
-    ipcRenderer.send('start-download', {
+    ipcRenderer.send(IPC_ACTIONS.DOWNLOAD_START, {
       videoUrl: videoRemoteUrl,
       enDownloadDir: encodeURIComponent(downloadDir),
       videoId: id,
@@ -107,7 +107,7 @@ const VideoDownloader: React.FC<{ showTitle?: boolean }> = ({ showTitle = true }
   }
 
   const handleSelectDirectory = async () => {
-    const selectedDir = await ipcRenderer.invoke('select-file', { type: 'directory' })
+    const selectedDir = await ipcRenderer.invoke(IPC_ACTIONS.SELECT_FILE, { type: 'directory' })
     if (selectedDir?.path) {
       setDownloadDir(selectedDir.path)
     }
@@ -125,14 +125,14 @@ const VideoDownloader: React.FC<{ showTitle?: boolean }> = ({ showTitle = true }
     if (!item.id) return
     console.log(`handleToggleResume video: `, item)
     if (item.isDownloading) {
-      ipcRenderer.invoke(IPC_ACTIONS.PAUSE_DOWNLOAD, item.id).then((res: boolean) => {
+      ipcRenderer.invoke(IPC_ACTIONS.DOWNLOAD_PAUSE, item.id).then((res: boolean) => {
         console.log('puased state:', res)
         if (res) {
           toggleItemResume(item, true)
         }
       })
     } else {
-      ipcRenderer.invoke(IPC_ACTIONS.RESUME_DOWNLOAD, item.id).then((res: boolean) => {
+      ipcRenderer.invoke(IPC_ACTIONS.DOWNLOAD_RESUME, item.id).then((res: boolean) => {
         console.log('puased state:', res)
         if (res) {
           toggleItemResume(item, false)
@@ -254,7 +254,7 @@ const VideoDownloader: React.FC<{ showTitle?: boolean }> = ({ showTitle = true }
   }, [downloadList, isFirstRender])
 
   useEffect(() => {
-    ipcRenderer.on('download-title', ({ videoId, videoTitle }) => {
+    ipcRenderer.on(IPC_ACTIONS.DOWNLOAD_TITLE, ({ videoId, videoTitle }) => {
       if (!videoId || !videoTitle) {
         console.error('Invalid download title data:', { videoId, videoTitle })
         return
@@ -270,7 +270,7 @@ const VideoDownloader: React.FC<{ showTitle?: boolean }> = ({ showTitle = true }
       })
     })
 
-    ipcRenderer.on('download-progress', ({ videoId, progress, path }) => {
+    ipcRenderer.on(IPC_ACTIONS.DOWNLOAD_PROGRESS, ({ videoId, progress, path }) => {
       if (!videoId || !progress) {
         console.error('Invalid download progress data:', { videoId, progress })
         return
@@ -286,7 +286,7 @@ const VideoDownloader: React.FC<{ showTitle?: boolean }> = ({ showTitle = true }
       })
     })
 
-    ipcRenderer.on('download-complete', ({ videoId, path }) => {
+    ipcRenderer.on(IPC_ACTIONS.DOWNLOAD_COMPLETE, ({ videoId, path }) => {
       if (!videoId || !path) {
         console.error('Invalid download complete data:', { videoId, path })
         return
@@ -306,7 +306,7 @@ const VideoDownloader: React.FC<{ showTitle?: boolean }> = ({ showTitle = true }
       })
     })
 
-    ipcRenderer.on('download-error', ({ videoId, errorMessage }) => {
+    ipcRenderer.on(IPC_ACTIONS.DOWNLOAD_ERROR, ({ videoId, errorMessage }) => {
       if (!videoId || !errorMessage) {
         console.error('Invalid download error data:', { videoId, errorMessage })
         return

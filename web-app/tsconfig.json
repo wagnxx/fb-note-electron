@@ -21,7 +21,9 @@
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": [
+        "./*"
+      ],
       "@components/*": [
         "components/*"
       ],
@@ -31,13 +33,25 @@
       "@hooks/*": [
         "hooks/*"
       ],
-      "@radix-ui/*": ["node_modules/@radix-ui/*"]
+      "@radix-ui/*": [
+        "node_modules/@radix-ui/*"
+      ],
+      "@shared/*": [
+        "../../shared/*"
+      ]
     },
     "typeRoots": [
-      "./types"
+      // "./types"
     ]
   },
   "include": [
     "src/**/*",
-  ]
+    "../../shared/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+    "eslint.config.*",
+    "config-overrides.*"
+  ],
 }

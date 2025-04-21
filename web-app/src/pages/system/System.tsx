@@ -31,7 +31,7 @@ const onFinishOfProxy: FormProps<SettingFormFieldType>['onFinish'] = values => {
 const onFinishOfSocks5: FormProps<SettingFormFieldType>['onFinish'] = values => {
   console.log('onFinishOfSocks5:', values)
   if (isElectron()) {
-    ipcRenderer?.send('start-socks-service', {
+    ipcRenderer?.send(IPC_ACTIONS.START_SOCKS_SERVICE, {
       type: 'socks5',
       payload: values,
       action: ACTIONS.INTERNAL_START,
@@ -56,7 +56,7 @@ export default function System() {
   const checkServiceStatus = useCallback(async () => {
     if (isElectron()) {
       try {
-        const serviceinfo: any = await ipcRenderer?.invoke(IPC_ACTIONS.GET_SOCKS_SERVICE_INFO, null)
+        const serviceinfo: any = await ipcRenderer?.invoke(IPC_ACTIONS.GET_SOCKS_SERVICE_INFO)
 
         setIsSocksServerRunning(serviceinfo?.isRunning || false)
         if (serviceinfo.host && serviceinfo.port) {
@@ -95,17 +95,26 @@ export default function System() {
       setConsoleOutput(prevOutput => [...prevOutput, outputMessage])
     }
 
+    const wrappedHandleServiceOutput = (...args: any[]) => {
+      const [data, action] = args
+      handleServiceOutput(data, action)
+    }
+    const wrappedHandleServiceStatus = (...args: any[]) => {
+      const [data] = args
+      handleServiceStatus(data)
+    }
+
     // 确保 ipcRenderer 事件监听器存在
-    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, handleServiceOutput)
-    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_ERROR, handleServiceOutput)
-    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, handleServiceOutput)
-    ipcRenderer.on('socks-service-status', handleServiceStatus) // 监听服务状态
+    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, wrappedHandleServiceOutput)
+    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_ERROR, wrappedHandleServiceOutput)
+    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, wrappedHandleServiceOutput)
+    ipcRenderer.on(IPC_ACTIONS.SOCKS_SERVICE_STATUS, wrappedHandleServiceStatus) // 监听服务状态
 
     return () => {
-      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, handleServiceOutput)
-      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_ERROR, handleServiceOutput)
-      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, handleServiceOutput)
-      ipcRenderer.removeListener('socks-service-status', handleServiceStatus) // 移除服务状态监听器
+      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_OUTPUT, wrappedHandleServiceOutput)
+      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_ERROR, wrappedHandleServiceOutput)
+      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_STOPPED, wrappedHandleServiceOutput)
+      ipcRenderer.removeListener(IPC_ACTIONS.SOCKS_SERVICE_STATUS, wrappedHandleServiceStatus) // 移除服务状态监听器
     }
   }, [checkServiceStatus])
 
@@ -125,11 +134,7 @@ export default function System() {
       key: '2',
       label: 'Socks5',
       children: (
-        <SettingForm
-          initialValues={initialSocks5Values}
-          onFinish={onFinishOfSocks5}
-          onFinishFailed={onFinishFailed}
-        />
+        <SettingForm initialValues={initialSocks5Values} onFinish={onFinishOfSocks5} onFinishFailed={onFinishFailed} />
       ),
       extra: (
         <Switch

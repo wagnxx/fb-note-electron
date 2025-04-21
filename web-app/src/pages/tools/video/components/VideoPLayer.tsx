@@ -75,12 +75,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   const customSliderRef = useRef<CustomSliderRef>(null)
 
   const [notificationApi, notificationHandleContext] = notification.useNotification()
-  const {
-    elementRef: videoRef,
-    isFullscreen,
-    goFullscreen,
-    exitFullscreen,
-  } = useFullscreen<HTMLVideoElement>()
+  const { elementRef: videoRef, isFullscreen, goFullscreen, exitFullscreen } = useFullscreen<HTMLVideoElement>()
 
   const currentScreenShotDoc = screenshotDocs.find(item => item.docId === video.id)
   const currentMarkedMoments = markedMoments.find(item => item.docId === video.id)
@@ -172,7 +167,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   }
 
   // 获取预览图的函数
-  const getPreviewImage = (time: number, option: { width: number; height: number }) => {
+  const getPreviewImage = (time: number, option: { width: number; height: number }): Promise<string | null> => {
     const hiddenVideo = hiddenVideoRef.current
     const canvas = document.createElement('canvas')
 
@@ -214,6 +209,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
     setHoverTime(tm)
     getPreviewImage(tm, { width, height }) // 获取并显示预览图
       .then(dataURL => {
+        if (!dataURL) return
+
         const options = {
           dataURL,
           enVideoPath: encodeURIComponent(video.url),
@@ -221,26 +218,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
           name: formatSecondsToHHmmss(tm, '-'),
         }
 
-        ipcRenderer
-          .invoke(IPC_ACTIONS.SAVE_SCREENSHOT, options)
-          .then((res: { filePath: string; message: string }) => {
-            console.log('after save, response is: ', res)
-            if (res.message) {
-              console.log('err', res.message)
-              return
-            }
-            if (res.filePath) {
-              handleSaveScreenshot({
-                docId: video.id,
-                screenshots: [{ path: res.filePath, name: formatSecondsToHHmmss(tm, '-'), at: tm }],
-                action: 'add',
-              })
-              notificationApi.success({
-                message: 'Saved screenshot  successfully',
-                description: `Saved filepath is : ${res.filePath}`,
-              })
-            }
-          })
+        ipcRenderer.invoke(IPC_ACTIONS.SAVE_SCREENSHOT, options).then((res: { filePath: string; message: string }) => {
+          console.log('after save, response is: ', res)
+          if (res.message) {
+            console.log('err', res.message)
+            return
+          }
+          if (res.filePath) {
+            handleSaveScreenshot({
+              docId: video.id,
+              screenshots: [{ path: res.filePath, name: formatSecondsToHHmmss(tm, '-'), at: tm }],
+              action: 'add',
+            })
+            notificationApi.success({
+              message: 'Saved screenshot  successfully',
+              description: `Saved filepath is : ${res.filePath}`,
+            })
+          }
+        })
       })
     // getPreviewImage(tm) // 获取并显示预览图
   }
@@ -261,10 +256,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
       const rest = prev.filter(item => item.docId !== video.id)
       const cur = prev.find(item => item.docId === video.id) || { moments: [] }
 
-      const curMoments =
-        type === 'add'
-          ? [...new Set([...cur.moments, tm])]
-          : cur?.moments.filter(item => item !== tm)
+      const curMoments = type === 'add' ? [...new Set([...cur.moments, tm])] : cur?.moments.filter(item => item !== tm)
 
       const curMoment = {
         docId: video.id,
@@ -407,8 +399,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
       let currentAt = 0
       try {
         const timeArray = (playerAtTime && (JSON.parse(playerAtTime) as PlayerAtTime[])) || []
-        const current =
-          (timeArray && timeArray.find(item => item.videoId === video.id)) || ({} as PlayerAtTime)
+        const current = (timeArray && timeArray.find(item => item.videoId === video.id)) || ({} as PlayerAtTime)
         currentAt = current.at
       } catch (error) {}
 
@@ -447,10 +438,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
   }, [video])
 
   return video ? (
-    <div
-      ref={videoContainerRef}
-      className="video-player p-2  bg-slate-200  h-full  overflow-y-auto "
-    >
+    <div ref={videoContainerRef} className="video-player p-2  bg-slate-200  h-full  overflow-y-auto ">
       {notificationHandleContext}
       <div className="video-container relative">
         <video
@@ -511,11 +499,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
                       <span className="popover-label">More settings</span>
                     </Col>
                     <Col span={12}>
-                      <Switch
-                        checked={showMoreSettings}
-                        onChange={setShowMoreSettings}
-                        className="popover-switch"
-                      />
+                      <Switch checked={showMoreSettings} onChange={setShowMoreSettings} className="popover-switch" />
                     </Col>
                   </Row>
 
@@ -584,21 +568,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
                 title={
                   <div>
                     <p>
-                      You can capture screenshots at any time while the video is playing or paused.
-                      The three sliders represent hours, minutes, and seconds, from left to right.
-                      Clicking on any tick mark on these sliders indicates your intention to capture
-                      a screenshot at that specific moment.
+                      You can capture screenshots at any time while the video is playing or paused. The three sliders
+                      represent hours, minutes, and seconds, from left to right. Clicking on any tick mark on these
+                      sliders indicates your intention to capture a screenshot at that specific moment.
                     </p>
 
                     <p>
-                      The screenshot action is focused on the seconds slider. To take a screenshot,
-                      simply double-click on a tick mark on the seconds slider, and a 'Save Image'
-                      button will appear. Click this button to capture the screenshot.
+                      The screenshot action is focused on the seconds slider. To take a screenshot, simply double-click
+                      on a tick mark on the seconds slider, and a 'Save Image' button will appear. Click this button to
+                      capture the screenshot.
                     </p>
 
                     <p>
-                      Additionally, clicking the play button will jump the video to the selected
-                      time and resume playback from that point.
+                      Additionally, clicking the play button will jump the video to the selected time and resume
+                      playback from that point.
                     </p>
                   </div>
                 }
@@ -618,19 +601,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
               <Button size="small" onClick={handleCropCurrentImage} type="text" danger>
                 Take Screenshot Now
               </Button>
-              <Button
-                size="small"
-                onClick={() => handleMarkMoment({ tm: currentTime, type: 'add' })}
-                type="text"
-              >
+              <Button size="small" onClick={() => handleMarkMoment({ tm: currentTime, type: 'add' })} type="text">
                 Mark Moment
               </Button>
-              <Button
-                size="small"
-                onClick={handleSyncWithVideoTime}
-                type="text"
-                style={{ color: '#1890ff' }}
-              >
+              <Button size="small" onClick={handleSyncWithVideoTime} type="text" style={{ color: '#1890ff' }}>
                 Sync with Video
               </Button>
             </Space>
@@ -660,9 +634,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ onError, video, setPlaylist }
       />
     </div>
   ) : (
-    <div className=" text-2xl flex justify-center items-center h-full  text-white w-full">
-      Please select a video
-    </div>
+    <div className=" text-2xl flex justify-center items-center h-full  text-white w-full">Please select a video</div>
   )
 }
 

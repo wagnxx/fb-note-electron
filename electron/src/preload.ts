@@ -1,31 +1,33 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
-import { IPC_ACTIONS } from '../../shared/ipcActions'
+import { IPC_ACTIONS } from '@shared/ipcActions'
+import type { ELECTRON_BRIDGE } from '@shared/types/'
 
-type IpcHandler = (...args: unknown[]) => void
-
-contextBridge.exposeInMainWorld('electron', {
+const electronBridge: ELECTRON_BRIDGE = {
   IPC_ACTIONS,
 
   ipcRenderer: {
-    send: (channel: string, ...data: unknown[]) => {
-      ipcRenderer.send(channel, ...data)
+    send: (channel, ...args) => {
+      ipcRenderer.send(channel, ...args)
     },
 
-    on: (channel: string, func: IpcHandler) => {
-      ipcRenderer.on(channel, (_event: IpcRendererEvent, ...args: unknown[]) => func(...args))
-    },
-
-    removeListener: (channel: string, func: IpcHandler) => {
-      ipcRenderer.removeListener(channel, (_event: IpcRendererEvent, ...args: unknown[]) => func(...args))
-    },
-
-    invoke: (channel: string, data: unknown) => {
-      const validChannels = Object.values(IPC_ACTIONS) as string[]
-
-      if (validChannels.includes(channel)) {
-        return ipcRenderer.invoke(channel, data)
+    on: (channel, listener) => {
+      const wrapped = (_event: IpcRendererEvent, ...args: unknown[]) => {
+        listener(...(args as any))
       }
-      return Promise.reject('Not supported')
+      ipcRenderer.on(channel, wrapped)
+    },
+
+    removeListener: (channel, listener) => {
+      const wrapped = (_event: IpcRendererEvent, ...args: unknown[]) => {
+        listener(...(args as any))
+      }
+      ipcRenderer.removeListener(channel, wrapped)
+    },
+
+    invoke: (channel, ...args) => {
+      return ipcRenderer.invoke(channel, ...args)
     },
   },
-})
+}
+
+contextBridge.exposeInMainWorld('electron', electronBridge)

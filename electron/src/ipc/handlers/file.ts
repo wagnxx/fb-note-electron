@@ -9,9 +9,10 @@ import { convertDocToImage } from '@/utils/docUtils'
 import { arrayBuffer } from 'stream/consumers'
 import AppWindowManager from '@/managers/AppWindowManager'
 import { DOWNLOAD_DIR } from '@/config'
+import { FILE_PICKER_RES } from '@shared/types'
 
 export const setupFileHandler = () => {
-  ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async (event, options = { type: 'file' }) => {
+  ipcMain.handle(IPC_ACTIONS.SELECT_FILE, async (event, options = { type: 'file' }): Promise<FILE_PICKER_RES> => {
     let properties: (
       | 'openFile'
       | 'openDirectory'

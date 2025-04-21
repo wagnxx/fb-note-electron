@@ -1,11 +1,7 @@
+import { FileSystemItem } from '@shared/types'
+
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
-export interface FileSystemItem {
-  name: string
-  path: string
-  isDirectory: boolean
-  children?: FileSystemItem[]
-}
 export const getDirectoryStructure = <T extends FileSystemItem = FileSystemItem>(path: string): Promise<T[]> => {
   return ipcRenderer.invoke(IPC_ACTIONS.GET_DIRECTORY_STRUCTURE, path)
 }
@@ -17,7 +13,10 @@ export const parseDocFile = (file: string | ArrayBuffer) => {
 export const converDocToImage = async <T extends string | ArrayBuffer>(
   file: T,
 ): Promise<T extends string ? { arrayBuffer: ArrayBuffer } : { arrayBuffer: ArrayBuffer; filePath: string }> => {
-  return ipcRenderer.invoke(IPC_ACTIONS.CONVERT_DOC_TO_IMAGE, file)
+  return ipcRenderer.invoke<
+    typeof IPC_ACTIONS.CONVERT_DOC_TO_IMAGE,
+    T extends string ? { arrayBuffer: ArrayBuffer } : { arrayBuffer: ArrayBuffer; filePath: string }
+  >(IPC_ACTIONS.CONVERT_DOC_TO_IMAGE, file)
 }
 
 export const saveBase64ToImage = async ({
@@ -41,7 +40,7 @@ export const getFileInfo = async <T extends 'file' | 'directory' | 'both'>(
 ): Promise<
   (T extends 'file' ? { path: string; name: string; type: string } : { path: string; type: string }) | null
 > => {
-  return ipcRenderer?.invoke(IPC_ACTIONS.SELECT_FILE, { type })
+  return ipcRenderer?.invoke<typeof IPC_ACTIONS.SELECT_FILE, T>(IPC_ACTIONS.SELECT_FILE, { type })
 }
 
 export const getFileDialogList = async <T extends 'file' | 'directory' | 'both'>(
