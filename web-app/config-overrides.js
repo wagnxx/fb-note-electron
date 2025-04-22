@@ -34,6 +34,24 @@ module.exports = {
             'process.env.ELECTRON': JSON.stringify(process.env.ELECTRON || 'false'),
           }),
     ]
+
+
+    config.watchOptions = {
+      ignored: /node_modules/,
+    };
+
+    const oneOfRule = config.module.rules.find(rule => Array.isArray(rule.oneOf));
+    if (oneOfRule) {
+      oneOfRule.oneOf.forEach(rule => {
+        if (rule.include && typeof rule.include === 'string' && rule.include.includes('src')) {
+          rule.include = [rule.include, path.resolve(__dirname, '../shared')];
+        }
+      });
+    }
+
+    
+
+
     return config;
   },
 };

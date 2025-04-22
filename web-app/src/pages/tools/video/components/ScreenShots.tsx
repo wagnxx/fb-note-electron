@@ -354,25 +354,28 @@ const ScreenShots: FC<ScreenTypes> = ({ doc, video, onSaveScreenshot, onJumpTo, 
       }
     })
 
-    const filePaths = items.map(item => {
-      const currentItem = byTemplate ? cropRange[0] : cropRange.find(it => it.name === item.name)
+    const filePaths = items
+      .map(item => {
+        const currentItem = byTemplate ? cropRange[0] : cropRange.find(it => it.name === item.name)
 
-      if (!currentItem) return
+        if (!currentItem) return
 
-      const currentCrop = {
-        left: Math.floor(currentItem.range.x),
-        top: Math.floor(currentItem.range.y),
-        width: Math.floor(currentItem.range.width),
-        height: Math.floor(currentItem.range.height),
-      }
-      return {
-        path: encodeURIComponent(item.path),
-        cropRange: currentCrop,
-      }
-    })
+        const currentCrop: CropRange = {
+          left: Math.floor(currentItem.range.x),
+          top: Math.floor(currentItem.range.y),
+          width: Math.floor(currentItem.range.width),
+          height: Math.floor(currentItem.range.height),
+        }
+        return {
+          path: encodeURIComponent(item.path),
+          cropRange: currentCrop,
+        }
+      })
+      .filter((item): item is { path: string; cropRange: CropRange } => !!item) // 👈 类型保护
+
     // TODO
     const params = {
-      filePaths: filePaths as string[] | { path: string; cropRange: CropRange }[],
+      filePaths: filePaths,
       needDecode: true,
     }
 
