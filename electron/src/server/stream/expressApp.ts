@@ -1,13 +1,12 @@
 import express, { NextFunction, Request, Response } from 'express'
 import fs from 'fs'
-import path, { resolve } from 'path'
+import path from 'path'
 import cors from 'cors'
 import history from 'connect-history-api-fallback'
-import { getDistPath } from '@/config'
+import { getDistPath, getSupportPath } from '@/config'
 
-const isDev = false
 const staticPath = path.join(getDistPath(), '../..', 'web-app/build')
-const assetsPath = path.join(getDistPath(), isDev ? '..' : '../..', 'support/assets')
+const assetsPath = getSupportPath('assets')
 
 const portals = ['/ulogi']
 

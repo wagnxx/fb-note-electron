@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, SetStateAction, Dispatch } from 'react'
 
 // 自定义 debounce 实现
 export const useDebounce = (func: Function, delay: number) => {
@@ -29,7 +29,16 @@ export const useThrottle = (callback: Function, delay: number) => {
   return throttle
 }
 
-export const usePinchZoom = () => {
+type PinchParams = {
+  step?: number
+  max?: number
+  min?: number
+}
+export const usePinchZoom = ({ step = 0.1, max = 3, min = 0.5 }: PinchParams = {}): [
+  number,
+  Dispatch<SetStateAction<number>>,
+] => {
+  // const { step = 0.1, max = 3 } = params
   const [scale, setScale] = useState(1)
 
   // 处理鼠标滚轮事件，进行缩放
@@ -37,7 +46,7 @@ export const usePinchZoom = () => {
     if (e.ctrlKey) {
       // 按住 Ctrl 键触发缩放
       e.preventDefault()
-      setScale(prevScale => Math.min(Math.max(prevScale + e.deltaY * -0.1, 0.5), 3))
+      setScale(prevScale => Math.min(Math.max(prevScale + e.deltaY * -step, min), max))
     }
   }
 
@@ -54,5 +63,5 @@ export const usePinchZoom = () => {
     }
   }, [debouncedWheel])
 
-  return [scale]
+  return [scale, setScale]
 }
