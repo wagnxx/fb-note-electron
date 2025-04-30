@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import 'pdfjs-dist/web/pdf_viewer.css'
 import ModalForm from '@/components/modal/ModalForm'
 import DocText, { DocTextItem } from './DocText'
-import PdfViewer from '@/components/docs/pdf/PdfViewer'
 import { TextContent } from 'pdfjs-dist/types/src/display/api'
+import PdfViewer from '@/components/docs/pdf/PdfViewer'
 
 const { ipcRenderer, IPC_ACTIONS } = window.electron || {}
 
@@ -53,6 +53,7 @@ const WordRootDoc: React.FC<{ path: string }> = ({ path }) => {
   return (
     <div style={{ paddingBottom: '20px', height: 'calc(100vh - 30px)', background: '#eee' }} className="page">
       {pdfUrl && <PdfViewer fileUrl={pdfUrl} onExtractText={extractTextFromPage} />}
+
       <ModalForm
         visible={isTextModalVisible}
         Child={DocText}

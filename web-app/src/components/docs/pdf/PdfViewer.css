@@ -1,0 +1,18 @@
+.textLayer ::selection {
+  background: rgba(0, 0, 255, 0.3) !important;
+  /* background: red !important; */
+}
+
+.textLayer ::-moz-selection {
+  background: rgba(0, 0, 255, 0.3);
+}
+
+.textLayer>span {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  user-select: text !important;
+  transform-origin: 0% 0%;
+  opacity: 1
+}

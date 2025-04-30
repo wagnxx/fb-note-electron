@@ -1,26 +1,28 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { getDocument, GlobalWorkerOptions, PDFDocumentProxy, RenderTask } from 'pdfjs-dist'
 import 'pdfjs-dist/web/pdf_viewer.css'
+import './PdfViewer.css'
 import { Button, Select, Space } from 'antd'
 import { usePinchZoom } from '@/hooks/usePinchZoom'
 import { TextContent } from 'pdfjs-dist/types/src/display/api'
+import { TextLayerBuilder } from 'pdfjs-dist/web/pdf_viewer.mjs'
 
 // 设置 PDF.js worker
 const SOURCE_SERVICE_HOST = 'http://localhost:4000'
-
 GlobalWorkerOptions.workerSrc = SOURCE_SERVICE_HOST + '/assets/worker/pdf.worker.min.mjs'
-let renderTask: RenderTask | null = null
 
 const SLIDER_MAX = 64
 const SLIDER_MIN = 0.1
-const PdfViewer: React.FC<{ fileUrl: string; onExtractText?: (textContent: TextContent) => void }> = ({
-  fileUrl,
-  onExtractText,
-}) => {
+
+const PdfViewer: React.FC<{
+  fileUrl: string
+  onExtractText?: (textContent: TextContent) => void
+}> = ({ fileUrl, onExtractText }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const pdfRef = useRef<PDFDocumentProxy | null>(null)
-  const [totalPages, setTotalPages] = useState(0)
+  const renderTasksRef = useRef<Map<number, RenderTask>>(new Map())
 
+  const [totalPages, setTotalPages] = useState(0)
   const [visiblePages, setVisiblePages] = useState<Set<number>>(new Set())
   const [scale, setScale] = usePinchZoom({ max: SLIDER_MAX, step: 0.5, min: SLIDER_MIN })
 
@@ -40,148 +42,125 @@ const PdfViewer: React.FC<{ fileUrl: string; onExtractText?: (textContent: TextC
 
     const scrollTop = container.scrollTop
     const clientHeight = container.clientHeight
-    const pageHeight = 800 * scale + 20 // 每页高度（假设标准 800px 高，含 margin）
+    const pageHeight = 800 * scale + 20
 
     const startPage = Math.max(1, Math.floor(scrollTop / pageHeight))
     const endPage = Math.min(totalPages, Math.ceil((scrollTop + clientHeight) / pageHeight))
 
-    const pages = new Set<number>()
+    const newVisible = new Set<number>()
     for (let i = startPage - 2; i <= endPage + 2; i++) {
       if (i >= 1 && i <= totalPages) {
-        pages.add(i)
+        newVisible.add(i)
       }
     }
-    setVisiblePages(pages)
+    setVisiblePages(newVisible)
   }, [scale, totalPages])
 
   useEffect(() => {
     const container = containerRef.current
-    if (container) {
-      container.addEventListener('scroll', handleScroll)
-      handleScroll()
-    }
-    return () => {
-      container?.removeEventListener('scroll', handleScroll)
-    }
+    if (!container) return
+    container.addEventListener('scroll', handleScroll)
+    handleScroll()
+    return () => container.removeEventListener('scroll', handleScroll)
   }, [handleScroll])
 
-  // 渲染单页
+  // 渲染单页（异步，支持多页并发）
   const renderPage = useCallback(
-    (pageNum: number, canvas: HTMLCanvasElement) => {
-      if (renderTask) {
-        renderTask.cancel() // 取消当前正在进行的渲染任务
+    async (pageNum: number, canvas: HTMLCanvasElement) => {
+      const context = canvas.getContext('2d')
+      if (!context || !pdfRef.current) return
+
+      // 取消前一次渲染任务
+      const prevTask = renderTasksRef.current.get(pageNum)
+      if (prevTask) {
+        prevTask.cancel()
+        renderTasksRef.current.delete(pageNum)
       }
 
-      if (!canvas) return
+      const page = await pdfRef.current.getPage(pageNum)
+      const viewport = page.getViewport({ scale })
 
-      pdfRef?.current?.getPage(pageNum).then(page => {
-        const context = canvas.getContext('2d')
-        if (!context) return
+      canvas.width = viewport.width
+      canvas.height = viewport.height
+      canvas.style.width = `${viewport.width}px`
+      canvas.style.height = `${viewport.height}px`
 
-        const viewport = page.getViewport({ scale })
-        canvas.height = viewport.height
-        canvas.width = viewport.width
-
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        }
-
-        renderTask = page.render(renderContext) // 新的渲染任务
-        renderTask.promise
-          .then(() => {
-            renderTask = null
-          })
-          .catch(error => {
-            // console.error('Error during render:', error)
-          })
-          .finally(() => {
-            // setIsLoading(false)
-          })
+      const renderTask = page.render({
+        canvasContext: context,
+        viewport,
       })
+
+      renderTasksRef.current.set(pageNum, renderTask)
+
+      try {
+        await renderTask.promise
+        renderTasksRef.current.delete(pageNum)
+
+        // 渲染文字层
+        const textContent = await page.getTextContent()
+        const textLayerDiv = canvas.parentElement?.querySelector('.textLayer')
+        if (textLayerDiv) textLayerDiv.remove()
+
+        const newTextLayerDiv = document.createElement('div')
+        newTextLayerDiv.className = 'textLayer'
+        const textLayer = new TextLayerBuilder({ pdfPage: page })
+        textLayer.div = newTextLayerDiv
+        textLayer.render(viewport, { textContent })
+
+        canvas.parentElement?.appendChild(newTextLayerDiv)
+      } catch (e) {
+        // 被取消或出错
+      }
     },
     [scale],
   )
 
   const handleExtractText = useCallback(() => {
-    if (!pdfRef.current) return
+    if (!pdfRef.current || !containerRef.current) return
 
-    // 计算当前页
-    const container = containerRef.current
-    if (!container) return
+    const scrollTop = containerRef.current.scrollTop
+    const approxPage = Math.max(1, Math.floor((scrollTop + 100) / (800 * scale + 20)))
 
-    const scrollTop = container.scrollTop
-    const clientHeight = container.clientHeight
-
-    // 获取每一页的实际高度
-    const pageHeightPromises = []
-    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-      const pagePromise = pdfRef.current.getPage(pageNum).then(page => {
-        const viewport = page.getViewport({ scale })
-        return viewport.height + 20 // 加上 margin
+    pdfRef.current
+      .getPage(approxPage)
+      .then(page => page.getTextContent())
+      .then(textContent => {
+        onExtractText?.(textContent)
       })
-      pageHeightPromises.push(pagePromise)
-    }
-
-    // 等待所有页面的高度计算完成
-    Promise.all(pageHeightPromises).then(pageHeights => {
-      const currentVisiblePage = Math.max(1, Math.floor((scrollTop + 100) / pageHeights[0]))
-
-      pdfRef
-        .current!.getPage(currentVisiblePage + 1)
-        .then(page => {
-          page.getTextContent().then(textContent => onExtractText?.(textContent))
-        })
-        .catch(error => {
-          console.error('Error getting page:', error)
-        })
-      // 提取当前页文本
-      // onExtractText?.(pdfRef.current!, currentVisiblePage + 1)
-    })
-  }, [onExtractText, scale, totalPages])
+      .catch(console.error)
+  }, [onExtractText, scale])
 
   return (
-    <div style={{ height: '100%', overflow: 'auto' }}>
+    <div style={{ height: '100%', overflow: 'hidden' }}>
       <Space style={{ padding: '10px' }}>
-        <span>Zoom In/out</span>
+        <span>Zoom</span>
         <Select
-          style={{ width: '100px' }}
+          style={{ width: 100 }}
           value={scale}
-          onChange={val => setScale(val)}
-          options={[
-            { value: 0.25, label: '0.25' },
-            { value: 0.5, label: '0.5' },
-            { value: 1, label: '1' },
-            { value: 1.25, label: '1.25' },
-            { value: 1.5, label: '1.5' },
-            { value: 1.75, label: '1.75' },
-            { value: 2, label: '2' },
-          ]}
-        ></Select>
+          onChange={setScale}
+          options={[0.25, 0.5, 1, 1.25, 1.5, 1.75, 2].map(v => ({ value: v, label: v.toString() }))}
+        />
         <Button onClick={handleExtractText}>Get Current Text</Button>
       </Space>
 
-      <div ref={containerRef} style={{ height: 'calc(100% - 80px)', overflow: 'auto' }}>
+      <div ref={containerRef} style={{ height: 'calc(100% - 60px)', overflow: 'auto' }}>
         {Array.from({ length: totalPages }, (_, i) => {
           const pageNum = i + 1
+          const isVisible = visiblePages.has(pageNum)
           return (
             <div
               key={pageNum}
-              style={{
-                margin: '10px 0',
-                display: 'flex',
-                justifyContent: 'center',
-              }}
+              style={{ margin: '10px 0', display: 'flex', justifyContent: 'center', position: 'relative' }}
             >
-              {visiblePages.has(pageNum) ? (
-                <canvas
-                  ref={canvas => {
-                    if (canvas) {
-                      renderPage(pageNum, canvas)
-                    }
-                  }}
-                  style={{ background: '#fff', boxShadow: '0 0 4px rgba(0,0,0,0.3)' }}
-                />
+              {isVisible ? (
+                <div style={{ position: 'relative' }}>
+                  <canvas
+                    style={{ background: '#fff', boxShadow: '0 0 4px rgba(0,0,0,0.3)' }}
+                    ref={canvas => {
+                      if (canvas) renderPage(pageNum, canvas)
+                    }}
+                  />
+                </div>
               ) : (
                 <div style={{ height: 800 * scale, width: 600 * scale, background: '#ccc' }} />
               )}

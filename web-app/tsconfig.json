@@ -41,7 +41,7 @@
       ]
     },
     "typeRoots": [
-      // "./types"
+      "./types"
     ]
   },
   "include": [
