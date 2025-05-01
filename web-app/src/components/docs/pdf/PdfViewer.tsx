@@ -153,7 +153,7 @@ const PdfViewer: React.FC<{
               style={{ margin: '10px 0', display: 'flex', justifyContent: 'center', position: 'relative' }}
             >
               {isVisible ? (
-                <div style={{ position: 'relative' }}>
+                <div className="page-container">
                   <canvas
                     style={{ background: '#fff', boxShadow: '0 0 4px rgba(0,0,0,0.3)' }}
                     ref={canvas => {

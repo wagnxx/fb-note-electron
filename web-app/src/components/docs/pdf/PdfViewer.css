@@ -1,11 +1,30 @@
+.page-container {
+  position: relative;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  background: white;
+  width: max-content;
+}
+
+.textLayer {
+  width: 100%;
+}
+
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .textLayer ::selection {
-  background: rgba(0, 0, 255, 0.3) !important;
-  /* background: red !important; */
+  background: rgba(0, 0, 255, 0.3);
 }
 
 .textLayer ::-moz-selection {
   background: rgba(0, 0, 255, 0.3);
 }
+
+
 
 .textLayer>span {
   color: transparent;
