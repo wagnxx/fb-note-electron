@@ -88,7 +88,7 @@ const useUserRole = () => {
       if (!canCheckPermission) return false
       const value = permissionsKeyValue[key]
       if (value === undefined) {
-        console.warn(`[Permission] Unknown permission key: "${key}"`)
+        // console.warn(`[Permission] Unknown permission key: "${key}"`)
         return false
       }
       return (totalPermissionsValue & value) !== 0n
@@ -104,12 +104,12 @@ const useUserRole = () => {
         dispatch(fetchPermissions()).unwrap(),
       ])
         .then(([rolePermissions, userRoles, permissions]) => {
-          console.log(' PRomise all success')
+          // console.log(' PRomise all success')
           hasFetchedRef.current = true
           calculateRoleWithPermissions(rolePermissions, userRoles, permissions)
         })
         .catch(err => {
-          console.log('promse all err: ', err)
+          // console.log('promse all err: ', err)
           hasFetchedRef.current = false
         })
     }

@@ -6,9 +6,6 @@ import { isElectron } from '../../utils/utilsSystem'
 import SystemLogs from '../system/SystemLogs'
 import { findItemFromArrayByKey } from '../../utils/utilsArray'
 
-// 检查是否在 Electron 环境中
-console.log('isElectron:::', isElectron())
-
 const EmptyPage = () => (
   <Flex justify="center" align="center" style={{ height: '100vh' }}>
     <Empty description={'The web platform cannot be supported.'} />

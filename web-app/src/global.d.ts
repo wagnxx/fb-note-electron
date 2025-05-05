@@ -5,6 +5,8 @@ import { ELECTRON_BRIDGE } from '../../shared/types'
 declare global {
   interface Window {
     electron: ELECTRON_BRIDGE
+    gapi: any
+    google: any
   }
 }
 

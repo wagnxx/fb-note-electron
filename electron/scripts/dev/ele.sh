@@ -1,2 +1,2 @@
 #!/bin/bash
-ELECTRON_START_URL=http://localhost:3000/ulogi electron .
+ELECTRON_START_URL=http://127.0.0.1:3000/ulogi electron .

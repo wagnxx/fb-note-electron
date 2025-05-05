@@ -8,9 +8,6 @@ type WorkerResponse = {
   edges?: any
 }
 
-const testworkerUrl = new URL('@/workers/test.worker.ts', import.meta.url)
-console.log('testworkerUrl', testworkerUrl.href) // 打印解析后的 URL
-
 type Props = {
   setNodes: React.Dispatch<React.SetStateAction<ExtendedNode[]>>
   setEdges: React.Dispatch<React.SetStateAction<ExtendedEdge[]>>

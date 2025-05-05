@@ -4,7 +4,7 @@ import 'pdfjs-dist/web/pdf_viewer.css'
 import './PdfViewer.css'
 import { Button, Select, Space } from 'antd'
 import { usePinchZoom } from '@/hooks/usePinchZoom'
-import { TextContent } from 'pdfjs-dist/types/src/display/api'
+import { DocumentInitParameters, TextContent, TypedArray } from 'pdfjs-dist/types/src/display/api'
 import { TextLayerBuilder } from 'pdfjs-dist/web/pdf_viewer.mjs'
 
 // 设置 PDF.js worker
@@ -15,7 +15,7 @@ const SLIDER_MAX = 64
 const SLIDER_MIN = 0.1
 
 const PdfViewer: React.FC<{
-  fileUrl: string
+  fileUrl: string | URL | TypedArray | ArrayBuffer | DocumentInitParameters
   onExtractText?: (textContent: TextContent) => void
 }> = ({ fileUrl, onExtractText }) => {
   const containerRef = useRef<HTMLDivElement>(null)

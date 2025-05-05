@@ -96,21 +96,13 @@ const AuthLayout: React.FC = () => {
       const menuPermValue = calculateRoleValueFromValue(menuPervalues)
       const hasPer = hasPermissionByValue(totalPermissionsValue, menuPermValue)
 
-      if (route.name === 'Dict') {
-        console.log('totlevalue has per', totalPermissionsValue, route.name, hasPer)
-        console.log('userRoleWithPermissions: ', userRoleWithPermissions)
-        console.log('permissionsKeyValue: ', permissionsKeyValue)
-        console.log('menuPermKeys: ', menuPermKeys)
-      }
-
       return hasPer
     },
-    [memuItemKV, permissionsKeyValue, totalPermissionsValue, userRoleWithPermissions],
+    [memuItemKV, permissionsKeyValue, totalPermissionsValue],
   )
 
   const filterValidMenus = useCallback(
     (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
-      console.log('start filter menus')
       return routes.flatMap(route => {
         const { requiresAuth, path, isDesktop, name, hidden, children } = route
         const fullPath = `${parentPath.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
@@ -138,7 +130,6 @@ const AuthLayout: React.FC = () => {
   )
 
   const validMenuItems = useMemo(() => {
-    console.log('canCheckPermission', canCheckPermission)
     if (!isMenuLoaded || !canCheckPermission) return []
     // return []
     return filterValidMenus(authRoutes)

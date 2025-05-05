@@ -8,6 +8,7 @@ import { RouteConfig } from '../routes'
 import DocToImageConverter from '@/pages/tools/docSnap/DocToImageConverter'
 import MindMap from '@/pages/mindmap/MindMap'
 import IconGenerator from '@/pages/tools/image/IconGenerator'
+import Books from '@/pages/tools/books'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -71,6 +72,11 @@ export const routesTool: RouteConfig = {
       path: 'image',
       name: 'Image',
       component: IconGenerator,
+    },
+    {
+      path: 'books',
+      name: 'Books',
+      component: Books,
     },
   ],
 }
