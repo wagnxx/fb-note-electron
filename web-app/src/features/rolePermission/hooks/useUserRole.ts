@@ -25,6 +25,7 @@ const useUserRole = () => {
 
   const [userRoleWithPermissions, setUserRoleWithPermissions] = useState<RoleWithValue[]>([])
   const [canCheckPermission, setCanCheckPermission] = useState(false)
+  const [isLoadPermError, setIsLoadPermError] = useState(false)
   const hasFetchedRef = useRef(false)
 
   const calculateRoleWithPermissions = useCallback(
@@ -109,8 +110,10 @@ const useUserRole = () => {
           calculateRoleWithPermissions(rolePermissions, userRoles, permissions)
         })
         .catch(err => {
-          // console.log('promse all err: ', err)
+          console.log('promse all err: ', err)
           hasFetchedRef.current = false
+          setCanCheckPermission(false)
+          setIsLoadPermError(true)
         })
     }
   }, [dispatch, user, calculateRoleWithPermissions])
@@ -121,6 +124,7 @@ const useUserRole = () => {
     isPermitted, // ✅ 导出 check 方法
     canCheckPermission,
     permissionsKeyValue,
+    isLoadPermError,
   }
 }
 

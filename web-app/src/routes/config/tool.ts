@@ -9,6 +9,7 @@ import DocToImageConverter from '@/pages/tools/docSnap/DocToImageConverter'
 import MindMap from '@/pages/mindmap/MindMap'
 import IconGenerator from '@/pages/tools/image/IconGenerator'
 import Books from '@/pages/tools/books'
+import ChatRoom from '@/pages/tools/chat/ChatRoom'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -31,6 +32,7 @@ export const routesTool: RouteConfig = {
       path: 'video',
       name: 'Video',
       component: ParentEmpty,
+      requiresAuth: false,
       children: [
         {
           path: 'cinemaMoments',
@@ -50,6 +52,7 @@ export const routesTool: RouteConfig = {
       path: 'docSnap',
       name: 'Doc Snap',
       component: ParentEmpty,
+      requiresAuth: true,
       children: [
         {
           path: 'manage',
@@ -72,11 +75,19 @@ export const routesTool: RouteConfig = {
       path: 'image',
       name: 'Image',
       component: IconGenerator,
+      requiresAuth: false,
     },
     {
       path: 'books',
       name: 'Books',
       component: Books,
+      requiresAuth: false,
+    },
+    {
+      path: 'chat',
+      name: 'ChatRoom',
+      component: ChatRoom,
+      requiresAuth: false,
     },
   ],
 }

@@ -2,7 +2,7 @@
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { Button, Empty, Layout, Menu, Spin } from 'antd'
-import { authRoutes, RouteConfig } from './routes'
+import { authRoutes, getUnrequiresAuthRoutes, RouteConfig } from './routes'
 import { useSelector } from 'react-redux'
 import { getSidbarCollapsed } from '@/features/settings/selectors'
 import { logoutUser } from '@/firebase/authService'
@@ -31,7 +31,7 @@ const AuthLayout: React.FC = () => {
   const { isAuthenticated, user } = useAppSelector(state => state.auth)
   const menuItems = useAppSelector(state => state.rolePermission.menuItems)
   const dispatch = useAppDispatch()
-  const { totalPermissionsValue, canCheckPermission, userRoleWithPermissions, permissionsKeyValue } = useUserRole()
+  const { totalPermissionsValue, canCheckPermission, isLoadPermError, permissionsKeyValue } = useUserRole()
   const navigate = useNavigate()
   const sidebarCollapsed = useSelector(getSidbarCollapsed)
   const { showConfirmationDialog } = useNotification()
@@ -42,17 +42,22 @@ const AuthLayout: React.FC = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('ha suer', user)
       setIsMenuLoaded(false)
+
       dispatch(fetchMenuItems())
         .unwrap()
         .then(res => {
-          // console.log('fech menu success', res)
+          console.log('fech menu success', res)
+          // setIsMenuLoaded(true)
+        })
+        .catch(err => {})
+        .finally(() => {
+          console.log('fetch menu finished.')
           setIsMenuLoaded(true)
         })
-        .catch(err => {
-          console.error('Fetch menu failed:', err)
-          setIsMenuLoaded(true) // 必须设置为 true，不然永 loading
-        })
+    } else {
+      setIsMenuLoaded(true)
     }
   }, [dispatch, user])
 
@@ -128,12 +133,42 @@ const AuthLayout: React.FC = () => {
     },
     [computeRolePermissions, isAuthenticated],
   )
+  const filterUnAuthValidMenus = useCallback(
+    (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
+      return routes.flatMap(route => {
+        const { requiresAuth, path, isDesktop, name, hidden, children } = route
+        const fullPath = `${parentPath.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
+
+        if (hidden || (isDesktop && !isElectron())) {
+          return []
+        }
+        // const { children, ...state } = route
+
+        const menuItem: MenuItem = {
+          key: fullPath,
+          label: <Link to={fullPath}>{name}</Link>,
+        }
+
+        if (children) {
+          menuItem.children = filterValidMenus(children, fullPath)
+        }
+
+        return menuItem.children?.length ? [menuItem] : [menuItem]
+      })
+    },
+    [filterValidMenus],
+  )
 
   const validMenuItems = useMemo(() => {
-    if (!isMenuLoaded || !canCheckPermission) return []
+    // if (!isMenuLoaded || !canCheckPermission) return []
+    if (!isMenuLoaded || !canCheckPermission || isLoadPermError) {
+      const unAuthRoutes = getUnrequiresAuthRoutes()
+      console.log('unAuthRoutes: ', unAuthRoutes)
+      return filterUnAuthValidMenus(unAuthRoutes)
+    }
     // return []
     return filterValidMenus(authRoutes)
-  }, [isMenuLoaded, canCheckPermission, filterValidMenus])
+  }, [canCheckPermission, filterUnAuthValidMenus, filterValidMenus, isMenuLoaded, isLoadPermError])
 
   return (
     <Layout>
@@ -156,15 +191,15 @@ const AuthLayout: React.FC = () => {
         </div>
         {/* <Menu theme="dark" mode="inline" items={validMenuItems} /> */}
         <Spin
-          spinning={!isMenuLoaded}
+          spinning={!isMenuLoaded && !isLoadPermError}
           tip={<span style={{ textShadow: 'none' }}>Loading menu...</span>}
           className="flex justify-center  items-center  "
           style={{ height: '100vh' }}
         >
-          {isMenuLoaded && validMenuItems.length === 0 ? (
+          {validMenuItems.length === 0 ? (
             <Empty description="No available menu" /> // 没有有效菜单项时的提示
           ) : (
-            <Menu theme="dark" mode="inline" items={isMenuLoaded ? validMenuItems : []} />
+            <Menu theme="dark" mode="inline" items={validMenuItems} />
           )}
         </Spin>
       </Sider>

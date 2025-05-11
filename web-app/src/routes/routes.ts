@@ -57,3 +57,13 @@ export const standaloneRoutes: RouteConfig[] = [
   },
   // 其他独立页面路由
 ]
+
+export const getUnrequiresAuthRoutes = () => {
+  const filter = (route: RouteConfig) => {
+    if (route.children?.length) {
+      route.children = route.children.filter(filter)
+    }
+    return !route.requiresAuth
+  }
+  return authRoutes.filter(filter)
+}

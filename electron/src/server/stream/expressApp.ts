@@ -4,6 +4,7 @@ import path from 'path'
 import cors from 'cors'
 import history from 'connect-history-api-fallback'
 import { getDistPath, getSupportPath } from '@/config'
+import { getLocalWiFiIP } from '@/utils/netUtils'
 
 const staticPath = path.join(getDistPath(), '../..', 'web-app/build')
 const assetsPath = getSupportPath('assets')
@@ -134,8 +135,16 @@ export const createApp = () => {
     })
   })
 
+  server.get('/wifiIP', (req: Request, res: Response) => {
+    const alias = getLocalWiFiIP()
+    res.status(200)
+    res.send(alias)
+  })
+
+  // getLocalWiFiIP
+
   server.get('/test', (req: Request, res: Response) => {
-    res.send('raa')
+    res.send('raa -')
   })
 
   return server

@@ -3,11 +3,13 @@ import Dict from '@/pages/dict/Dict'
 import Sentences from '@/pages/dict/Sentences'
 import WordAffix from '@/pages/dict/WordAffix'
 import WordRoot from '@/pages/dict/WordRoot'
+import { RouteConfig } from '../routes'
 
-export const routesLearn = {
+export const routesLearn: RouteConfig = {
   path: '/learn',
   name: 'Dict',
   component: ParentEmpty,
+  requiresAuth: true,
   children: [
     {
       path: 'dict',

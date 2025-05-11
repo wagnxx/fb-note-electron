@@ -116,7 +116,7 @@ class GoogleDriveService {
   }
 
   // 修改方法签名：去掉 accessToken 参数
-  @withTokenRefresh
+  // @withTokenRefresh
   async openPicker(onPick?: (doc: any) => void): Promise<void> {
     const accessToken = await this.getValidToken() // 内部自己处理 token
 

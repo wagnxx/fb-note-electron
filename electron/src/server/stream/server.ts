@@ -1,10 +1,10 @@
+// server.ts
 import type { Server } from 'http'
 
 let currentServer: Server | null = null
 const PORT = 4000
 
 async function restart(): Promise<Server> {
-  // 尝试关闭旧服务（如果有）
   if (currentServer) {
     console.log('🛑 Closing previous video stream server...')
     await new Promise<void>((resolve, reject) => {
@@ -21,19 +21,23 @@ async function restart(): Promise<Server> {
     currentServer = null
   }
 
-  // 动态导入最新模块
   try {
     const mod = await import(`./expressApp`)
     const app = mod.createApp()
 
     const server = app.listen(PORT, () => {
-      console.log(`🚀 Video stream server running at http://localhost:${PORT}`)
+      console.log(`🚀 Server running at http://localhost:${PORT}`)
     })
+
+    // 👇 绑定 WebSocket 服务
+    const { bindWSServer } = await import('./wss')
+    // ??
+    bindWSServer(server)
 
     currentServer = server
     return server
   } catch (err) {
-    console.error('❌ Failed to start new video stream server:', err)
+    console.error('❌ Failed to start new server:', err)
     throw err
   }
 }

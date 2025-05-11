@@ -10,6 +10,7 @@ import videoPlayerReducer from '@/features/video/videoPlayer'
 import mindmapConfigReducer from '@/features/mindmap//slices/configSlice'
 import mindmapFlowwReducer from '@/features/mindmap//slices/flowSlice'
 import { rolePermissionReducer } from '@/features/rolePermission'
+import chatReducer from '@/features/chat/chatSlice'
 
 // 配置持久化设置
 const persistConfig = {
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   mindmapConfig: mindmapConfigReducer,
   mindmapFlow: mindmapFlowwReducer,
   rolePermission: rolePermissionReducer,
+  chat: chatReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

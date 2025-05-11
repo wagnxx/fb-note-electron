@@ -147,6 +147,9 @@ type MenuItemDocument = MenuItem & {
 }
 
 export const fetchMenuItemsAPI = async (): Promise<MenuItemDocument[]> => {
+  if (!auth?.currentUser?.uid) {
+    return Promise.reject('logout')
+  }
   // 模拟API请求
   return getFieldValues(COL_MENUITEMS, 'all')
 }
