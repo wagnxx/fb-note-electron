@@ -1,13 +1,14 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { Server as HTTPServer } from 'http'
 import { parse } from 'url'
+import { getLocalWiFiIP } from '@/utils/netUtils'
 
 // 数据结构定义
 interface ClientMeta {
   userId: string // 新增 userId
   username: string
   groupId: string
-  socket: WebSocket
+  socket: WebSocket | null
 }
 
 interface Group {
@@ -19,11 +20,14 @@ interface Group {
 }
 
 interface Message {
+  id: string
   type: 'text' | 'image' | 'file'
   sender: string
   groupId: string
   content: string
   timestamp: number
+  fileName?: string
+  fileType?: string
 }
 
 export type ServerMessage =
@@ -37,12 +41,32 @@ export type ServerMessage =
       timestamp: number
     }
   | Message
+  | {
+      type: 'message-history'
+      groupId: string
+      messages: Message[]
+    }
 
 // 存储群组信息
 const groups = new Map<string, Group>()
+
 let groupInited = false
 
 let wss: WebSocketServer | null = null
+
+const FUNCTION_COMMANDS = {
+  getWifiIp: '@getWifiIp',
+  getUsers: '@getUsers',
+}
+const systemClient: ClientMeta = { userId: 'system', username: 'System', groupId: '', socket: null }
+const defaultGroup: Group = {
+  id: 'sys',
+  name: 'SystemGroup',
+  members: [],
+  admin: '',
+  messages: [],
+}
+groups.set(defaultGroup.id, defaultGroup)
 
 // 启动 WebSocket 服务器
 export function bindWSServer(httpServer: HTTPServer) {
@@ -97,7 +121,7 @@ function handleClientMessage(ws: WebSocket, data: any, client: ClientMeta | null
       handleGroupInit(data)
       break
     case 'group-create':
-      handleGroupCreate(data)
+      handleGroupCreate(ws, data)
       break
     case 'group-req':
       handleGroupRequest(ws)
@@ -115,15 +139,15 @@ function handleClientMessage(ws: WebSocket, data: any, client: ClientMeta | null
 // 处理客户端加入群组
 function handleJoinGroup(ws: WebSocket, data: any) {
   const { username, groupId, userId } = data
-  // const userId = uuidv4() // 生成唯一的 userId
   const client: ClientMeta = { userId, username, groupId, socket: ws }
-
+  const systemClientScope = { ...systemClient, groupId }
   if (!groups.has(groupId)) {
     groups.set(groupId, { id: groupId, name: '', members: [], admin: '', messages: [] })
   }
 
   const group = groups.get(groupId)!
   group.members.push(client)
+  group.members.push(systemClientScope)
 
   if (!group.admin) group.admin = username
 
@@ -136,6 +160,13 @@ function handleJoinGroup(ws: WebSocket, data: any) {
     groups: [...groups.values()],
   }
   broadcast(groupId, message)
+
+  const historyMessage: ServerMessage = {
+    type: 'message-history',
+    groupId,
+    messages: groups.get(groupId)?.messages || [],
+  }
+  ws.send(JSON.stringify(historyMessage))
 }
 
 // 处理群组初始化
@@ -148,9 +179,10 @@ function handleGroupInit(data: any) {
 }
 
 // 处理群组创建
-function handleGroupCreate(data: any) {
+function handleGroupCreate(ws: WebSocket, data: any) {
   groups.set(data.group.id, data.group)
   console.log('Group created:', data.group)
+  handleGroupRequest(ws)
 }
 
 // 处理群组请求
@@ -166,29 +198,46 @@ function handleGroupRequest(ws: WebSocket) {
 
 // 处理消息发送
 function handleMessage(data: any) {
-  const { content, fileName, fileType, sender, groupId } = data
+  const { content, fileName, fileType, sender, groupId, id } = data
+
   const message: Message = {
-    type: 'text', // 默认文本消息
+    id,
+    type: 'text',
     sender,
-    groupId, // 👈 修复关键
+    groupId,
     content,
     timestamp: Date.now(),
   }
 
-  if (fileName) {
+  // 文件消息处理
+  if (fileName && fileType) {
     message.type = 'file'
-    message.content = fileName
+    message.content = content // 保留 base64 或 URL
+    message.fileName = fileName // 👈 新增字段
+    message.fileType = fileType // 👈 新增字段
   }
 
-  if (fileType) {
-    message.content = fileType
-  }
-
-  // 保存消息到群组
+  // 保存并广播
   const group = groups.get(groupId)
   if (group) {
     group.messages.push(message)
     broadcast(groupId, message)
+
+    // 指令消息处理
+    if (content === FUNCTION_COMMANDS.getWifiIp) {
+      const senderUser = group.members.find(user => user.userId === sender)
+      if (!senderUser) return
+
+      const wifi = getLocalWiFiIP()
+      const resContent = `@${senderUser.username}\n${wifi?.address || ''}`
+
+      const funcMessage: Message = {
+        ...message,
+        content: resContent,
+        sender: systemClient.userId,
+      }
+      broadcast(groupId, funcMessage)
+    }
   }
 }
 
@@ -209,7 +258,7 @@ function broadcast(groupId: string, message: ServerMessage) {
   const payload = JSON.stringify(message)
 
   group.members.forEach(client => {
-    if (client.socket.readyState === WebSocket.OPEN) {
+    if (client.socket?.readyState === WebSocket.OPEN) {
       client.socket.send(payload)
     }
   })

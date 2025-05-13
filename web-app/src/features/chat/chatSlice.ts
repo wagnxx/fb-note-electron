@@ -41,6 +41,10 @@ const chatSlice = createSlice({
       }
       state.messagesByGroup[groupId].push(action.payload)
     },
+    updateMessage(state, action: PayloadAction<{ groupId: string; messages: Message[] }>) {
+      const { groupId, messages } = action.payload
+      state.messagesByGroup[groupId] = messages
+    },
     updateGroups(state, action: PayloadAction<Group[]>) {
       state.groups = action.payload
     },
@@ -59,6 +63,7 @@ const chatSlice = createSlice({
   },
 })
 
-export const { addMessage, updateGroups, systemNotify, setWebSocketState, clearSystemMessages } = chatSlice.actions
+export const { addMessage, updateMessage, updateGroups, systemNotify, setWebSocketState, clearSystemMessages } =
+  chatSlice.actions
 
 export default chatSlice.reducer

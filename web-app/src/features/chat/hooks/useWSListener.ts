@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { addMessage, updateGroups, systemNotify, setWebSocketState } from '../chatSlice'
+import { addMessage, updateGroups, systemNotify, setWebSocketState, updateMessage } from '../chatSlice'
 import { getWSClient } from '../service/wsClient'
 import { ServerMessage } from '../types'
 import { useNotification } from '@/hooks/useNotification'
@@ -38,6 +38,9 @@ export function useWSListener() {
           case 'image':
           case 'file':
             dispatch(addMessage(data)) // 将消息添加到 state
+            break
+          case 'message-history':
+            dispatch(updateMessage(data))
             break
           case 'group-res':
             dispatch(updateGroups(data.groups)) // 更新群组信息

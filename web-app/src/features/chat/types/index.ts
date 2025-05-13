@@ -1,12 +1,26 @@
 // 单条消息结构（服务端统一使用）
-export interface Message {
+interface BaseMessage {
   id: string
-  type: 'text' | 'image' | 'file'
   sender: string
   groupId: string
-  content: string
   timestamp: number
 }
+
+export type Message =
+  | (BaseMessage & {
+      type: 'text'
+      content: string
+    })
+  | (BaseMessage & {
+      type: 'image'
+      content: string // base64 或 URL
+    })
+  | (BaseMessage & {
+      type: 'file'
+      fileName: string
+      fileType: string
+      content: string // 可选：文件下载 URL、base64、hash 等
+    })
 
 // 群组结构
 export type Group = {
@@ -68,3 +82,8 @@ export type ServerMessage =
       timestamp: number
     }
   | Message // 普通群消息（含 text / image / file）
+  | {
+      type: 'message-history'
+      groupId: string
+      messages: Message[]
+    }
