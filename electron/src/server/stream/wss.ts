@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { Server as HTTPServer } from 'http'
 import { parse } from 'url'
-import { getLocalWiFiIP } from '@/utils/netUtils'
+import { getLocalWiFiIP, getNetworkInfo } from '@/utils/netUtils'
 
 // 数据结构定义
 interface ClientMeta {
@@ -228,15 +228,22 @@ function handleMessage(data: any) {
       const senderUser = group.members.find(user => user.userId === sender)
       if (!senderUser) return
 
-      const wifi = getLocalWiFiIP()
-      const resContent = `@${senderUser.username}\n${wifi?.address || ''}`
+      // const wifi = getLocalWiFiIP()
 
-      const funcMessage: Message = {
-        ...message,
-        content: resContent,
-        sender: systemClient.userId,
-      }
-      broadcast(groupId, funcMessage)
+      getNetworkInfo().then(({ ip, gateway }) => {
+        const resContent =
+          `@${senderUser.username}\n` +
+          `Your IP Address: ${ip || 'Unknown'}\n` +
+          `Router Address: ${gateway || 'Unknown'}\n` +
+          `Make sure other devices are connected to the same network segment.`
+
+        const funcMessage: Message = {
+          ...message,
+          content: resContent,
+          sender: systemClient.userId,
+        }
+        broadcast(groupId, funcMessage)
+      })
     }
   }
 }

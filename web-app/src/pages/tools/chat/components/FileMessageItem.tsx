@@ -1,7 +1,8 @@
 import React from 'react'
 import { Image } from 'antd'
+import { cn } from '@/lib/utils'
 
-interface FileMessageItemProps {
+type FileMessageItemProps = {
   fileUrl: string
   fileName: string
   fileType: string
@@ -16,11 +17,17 @@ const getFileIcon = (type: string) => {
   return '📎'
 }
 
-const FileMessageItem: React.FC<FileMessageItemProps> = ({ fileUrl, fileName, fileType }) => {
+const FileMessageItem: React.FC<FileMessageItemProps & React.HTMLAttributes<HTMLDivElement>> = ({
+  fileUrl,
+  fileName,
+  fileType,
+  className,
+  ...rest
+}) => {
   const isImage = fileType.startsWith('image/')
 
   return (
-    <div className="max-w-xs break-words">
+    <div className={cn('max-w-xs break-words', className)} {...rest}>
       {isImage ? (
         <div className="space-y-1">
           <Image

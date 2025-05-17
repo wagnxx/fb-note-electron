@@ -6,10 +6,16 @@ import { useAppSelector } from '@/store/hooks'
 import { sendMessage } from '@/features/chat/service/chatService'
 import { cn } from '@/lib/utils'
 import FileMessageItem from './FileMessageItem'
+import Avatar from './Avatar'
 
 const FUNCTION_COMMANDS = ['@getWifiIp', '@getUsers']
 
-const ChatWindow: React.FC<{ groupId: string }> = ({ groupId }) => {
+const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: string }> = ({
+  groupId,
+  className,
+  style,
+  ...rest
+}) => {
   const [input, setInput] = useState('')
   const [options, setOptions] = useState<{ value: string }[]>([])
 
@@ -87,27 +93,43 @@ const ChatWindow: React.FC<{ groupId: string }> = ({ groupId }) => {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-auto space-y-2">
-        {messages.map(msg => (
-          <div
-            key={`${msg.id}-${msg.groupId}`}
-            className={cn('flex', msg.sender !== wsState.id ? 'justify-start' : 'justify-end')}
-          >
-            <div className="p-2">
-              <strong>{getUserName(msg.sender)}: </strong>
-              {msg.type === 'text' ? (
-                <span>{msg.content}</span>
-              ) : msg.type === 'file' ? (
-                <FileMessageItem fileUrl={msg.content} fileName={msg.fileName} fileType={msg.fileType} />
-              ) : null}
-            </div>
-          </div>
-        ))}
-        <div ref={bottomRef} />
+    <div className={cn('flex flex-col  gap-2', className)} style={style}>
+      {/* 中间内容区 */}
+
+      <div className="flex-1 min-h-0">
+        <div className="h-full space-y-2 overflow-auto px-1 py-2">
+          {messages.map(msg => {
+            const isSender = msg.sender === wsState.id
+            return (
+              <div key={`${msg.id}-${msg.groupId}`} className={cn('flex', isSender ? 'justify-end' : 'justify-start')}>
+                <div
+                  className={cn('flex items-start gap-2 ', isSender ? 'flex-row-reverse' : 'flex-row')}
+                  style={{ minWidth: 0 }}
+                >
+                  <Avatar userName={getUserName(msg.sender)} style={{ width: 40, height: 40, flexShrink: 0 }} />
+                  <div
+                    className={cn(
+                      'rounded-xl px-3 py-2 whitespace-pre-line break-words',
+                      isSender ? 'bg-blue-100 text-black' : 'bg-gray-100 text-black',
+                    )}
+                    style={{ flexGrow: 1, minWidth: 0 }}
+                  >
+                    {msg.type === 'text' ? (
+                      msg.content
+                    ) : msg.type === 'file' ? (
+                      <FileMessageItem fileUrl={msg.content} fileName={msg.fileName} fileType={msg.fileType} />
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+          <div ref={bottomRef} />
+        </div>
       </div>
 
-      <div className="border-t pt-2 mt-2 flex gap-2">
+      {/* 输入区域 */}
+      <div className="border-t py-2 px-1  flex gap-2  h-max">
         <AutoComplete
           value={input}
           options={options}

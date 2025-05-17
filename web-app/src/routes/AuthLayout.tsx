@@ -31,7 +31,7 @@ const AuthLayout: React.FC = () => {
   const { isAuthenticated, user } = useAppSelector(state => state.auth)
   const menuItems = useAppSelector(state => state.rolePermission.menuItems)
   const dispatch = useAppDispatch()
-  const { totalPermissionsValue, canCheckPermission, isLoadPermError, permissionsKeyValue } = useUserRole()
+  const { totalPermissionsValue, canCheckPermission, permissionsKeyValue } = useUserRole()
   const navigate = useNavigate()
   const sidebarCollapsed = useSelector(getSidbarCollapsed)
   const { showConfirmationDialog } = useNotification()
@@ -42,13 +42,13 @@ const AuthLayout: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      console.log('ha suer', user)
+      // console.log('ha suer', user)
       setIsMenuLoaded(false)
 
       dispatch(fetchMenuItems())
         .unwrap()
         .then(res => {
-          console.log('fech menu success', res)
+          // console.log('fech menu success', res)
           // setIsMenuLoaded(true)
         })
         .catch(err => {})
@@ -161,14 +161,15 @@ const AuthLayout: React.FC = () => {
 
   const validMenuItems = useMemo(() => {
     // if (!isMenuLoaded || !canCheckPermission) return []
-    if (!isMenuLoaded || !canCheckPermission || isLoadPermError) {
+    // console.log('isMenuLoaded , canCheckPermission , user', isMenuLoaded, canCheckPermission, user)
+    if (!isMenuLoaded || !canCheckPermission || !user) {
       const unAuthRoutes = getUnrequiresAuthRoutes()
-      console.log('unAuthRoutes: ', unAuthRoutes)
+      // console.log('unAuthRoutes: ', unAuthRoutes)
       return filterUnAuthValidMenus(unAuthRoutes)
     }
     // return []
     return filterValidMenus(authRoutes)
-  }, [canCheckPermission, filterUnAuthValidMenus, filterValidMenus, isMenuLoaded, isLoadPermError])
+  }, [isMenuLoaded, canCheckPermission, user, filterValidMenus, filterUnAuthValidMenus])
 
   return (
     <Layout>
@@ -191,7 +192,7 @@ const AuthLayout: React.FC = () => {
         </div>
         {/* <Menu theme="dark" mode="inline" items={validMenuItems} /> */}
         <Spin
-          spinning={!isMenuLoaded && !isLoadPermError}
+          spinning={!isMenuLoaded && !!user}
           tip={<span style={{ textShadow: 'none' }}>Loading menu...</span>}
           className="flex justify-center  items-center  "
           style={{ height: '100vh' }}
