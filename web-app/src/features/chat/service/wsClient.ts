@@ -8,10 +8,22 @@ type ClientType = {
 
 let client: ClientType = null
 
+const SOCKET_USER_ID = 'socket_user_id'
+
+const getId = (id: string) => {
+  let sId = sessionStorage.getItem(SOCKET_USER_ID)
+
+  if (!sId) {
+    sessionStorage.setItem(SOCKET_USER_ID, id)
+    sId = id
+  }
+  return sId
+}
+
 // 只有在首次调用时创建 WebSocket 实例
 export function getWSClient(): ClientType {
   if (!client) {
-    const id = uuidv4() // 生成唯一的 userId
+    const id = getId(uuidv4()) // 生成唯一的 userId
     // 创建 WebSocket 实例并设置事件监听
     const socket = new WebSocket('ws://192.168.100.199:4000/chat') // 根据实际的 WebSocket 服务端地址修改
 

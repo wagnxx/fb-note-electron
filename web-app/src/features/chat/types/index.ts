@@ -60,6 +60,14 @@ export type ClientMessage =
   | {
       type: 'group-req'
     }
+  | {
+      type: 'message-history-req'
+      groupId: string
+    }
+  | {
+      type: 'reset-user'
+      id: string
+    }
 // | {
 //     type: 'message'
 //     sender: string
@@ -83,7 +91,10 @@ export type ServerMessage =
     }
   | Message // 普通群消息（含 text / image / file）
   | {
-      type: 'message-history'
+      type: 'message-history-res'
       groupId: string
       messages: Message[]
+    }
+  | {
+      type: 'reset-user-success'
     }

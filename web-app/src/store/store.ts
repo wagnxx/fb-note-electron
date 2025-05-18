@@ -2,13 +2,14 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { persistStore } from 'redux-persist'
 import persistedReducer from './rootReducer'
+import { chatMiddleware } from '@/features/chat/chatMiddleware'
 
 const store = configureStore({
   reducer: persistedReducer, // 使用持久化后的 reducer
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: false, // 根据需要禁用序列化检查
-    }),
+    }).concat(chatMiddleware),
 })
 
 const persistor = persistStore(store) // 创建持久化对象

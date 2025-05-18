@@ -40,9 +40,12 @@ export type ServerMessage =
       groups: Group[]
       timestamp: number
     }
+  | {
+      type: 'reset-user-success'
+    }
   | Message
   | {
-      type: 'message-history'
+      type: 'message-history-res'
       groupId: string
       messages: Message[]
     }
@@ -126,6 +129,12 @@ function handleClientMessage(ws: WebSocket, data: any, client: ClientMeta | null
     case 'group-req':
       handleGroupRequest(ws)
       break
+    case 'message-history-req':
+      handleGetGroupMessages(ws, data)
+      break
+    case 'reset-user':
+      handleResetUser(ws, data)
+      break
     case 'text':
     case 'image':
     case 'file':
@@ -162,7 +171,7 @@ function handleJoinGroup(ws: WebSocket, data: any) {
   broadcast(groupId, message)
 
   const historyMessage: ServerMessage = {
-    type: 'message-history',
+    type: 'message-history-res',
     groupId,
     messages: groups.get(groupId)?.messages || [],
   }
@@ -185,6 +194,35 @@ function handleGroupCreate(ws: WebSocket, data: any) {
   handleGroupRequest(ws)
 }
 
+// 处理群组请求
+function handleGetGroupMessages(ws: WebSocket, data: any) {
+  const groupId = data.groupId
+  if (!groupId) return
+  const group = groups.get(groupId)
+  if (!group) return
+
+  const historyMessage: ServerMessage = {
+    type: 'message-history-res',
+    groupId,
+    messages: group?.messages || [],
+  }
+  ws.send(JSON.stringify(historyMessage))
+}
+function handleResetUser(ws: WebSocket, data: any) {
+  const id = data.id
+  let updated = false
+  groups.forEach(group => {
+    const members = group.members
+    const user = members.find(mem => mem.userId === id)
+    if (user && user.socket !== ws) {
+      user.socket = ws
+      updated = true
+    }
+  })
+  if (updated) {
+    ws.send(JSON.stringify({ type: 'reset-user-success' }))
+  }
+}
 // 处理群组请求
 function handleGroupRequest(ws: WebSocket) {
   const message = {
@@ -242,6 +280,7 @@ function handleMessage(data: any) {
           content: resContent,
           sender: systemClient.userId,
         }
+        group.messages.push(funcMessage)
         broadcast(groupId, funcMessage)
       })
     }
@@ -252,7 +291,7 @@ function handleMessage(data: any) {
 function handleClientDisconnect(client: ClientMeta) {
   const group = groups.get(client.groupId)
   if (group) {
-    group.members = group.members.filter(c => c !== client)
+    // group.members = group.members.filter(c => c !== client)
     console.log(`👤 ${client.username} left group [${client.groupId}]`)
     broadcast(client.groupId, { type: 'system', message: `${client.username} left the chat.` })
   }

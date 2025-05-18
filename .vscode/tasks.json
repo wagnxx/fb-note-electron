@@ -16,6 +16,27 @@
             "runOptions": {
                 "runOn": "folderOpen"
             }
-        }
+        },
+        {
+            "label": "rollup: build - production",
+            "type": "shell",
+            "command": "./node_modules/.bin/rollup",
+            "args": [
+              "-c",
+              "rollup.config.mjs"
+            ],
+            "options": {
+              "cwd": "${workspaceFolder}/electron", // ⚠️ 指定为 electron 目录
+              "env": {
+                "NODE_ENV": "debug"
+              }
+            },
+            "group": {
+              "kind": "build",
+              "isDefault": false
+            },
+            "problemMatcher": []
+          }
+          
     ]
 }

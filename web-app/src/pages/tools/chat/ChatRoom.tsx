@@ -5,16 +5,21 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
 import { cn } from '@/lib/utils'
 import ChatWindow from './components/ChatWindow'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { selectGroup } from '@/features/chat/chatSlice'
 
 const ChatRoomPage: React.FC = () => {
   const [stage, setStage] = useState<'chatList' | 'chat'>('chatList') // 控制主内容区域
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+
+  const selectedGroupId = useAppSelector(state => state.chat.currentGroupId)
+  const dispatch = useAppDispatch()
 
   useWSListener()
 
   const handleSelectGroup = (groupId: string) => {
-    setSelectedGroupId(groupId)
+    // setSelectedGroupId(groupId)
+    dispatch(selectGroup(groupId))
     setStage('chat')
   }
 
@@ -33,11 +38,7 @@ const ChatRoomPage: React.FC = () => {
   })
 
   return (
-    <div
-      className={cn(' bg-white   h-full w-full flex', isMobile ? 'flex-col' : 'flex-row')}
-      // style={{ height: 'calc(100vh - 30px)' }}
-      // style={{ height: '100%' }}
-    >
+    <div className={cn(' bg-white   h-full w-full flex', isMobile ? 'flex-col' : 'flex-row')}>
       {(!isMobile || stage === 'chatList') && (
         <div
           style={{

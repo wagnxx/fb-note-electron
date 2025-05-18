@@ -5,11 +5,12 @@
             "name": "Launch Electron App",
             "type": "node",
             "request": "launch",
-            "preLaunchTask": "tsc: build - electron", // 确保 TypeScript 代码编译
-            "program": "${workspaceFolder}/electron/dist/main.js", // 编译后的 JS 文件
+            "preLaunchTask": "rollup: build - production", // 确保 TypeScript 代码编译
+            // "preLaunchTask": "tsc: build - electron", // 确保 TypeScript 代码编译
+            "program": "${workspaceFolder}/electron/dist/main.entry.js", // 编译后的 JS 文件
             "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron", // Electron 可执行路径
             "env": {
-                "ELECTRON_START_URL": "http://localhost:3000" // 环境变量
+                "ELECTRON_START_URL": "http://127.0.0.1:3000/ulogi" // 环境变量
             },
             "cwd": "${workspaceFolder}/electron", // 工作目录
             "outFiles": [
@@ -19,6 +20,7 @@
             "skipFiles": [
                 "<node_internals>/**" // 忽略内部模块
             ]
-        }
+        },
+        
     ]
 }

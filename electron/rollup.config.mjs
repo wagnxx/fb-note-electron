@@ -8,21 +8,22 @@ import typescript from 'rollup-plugin-typescript2';
 import nodeGlobals from 'rollup-plugin-node-globals';
 import del from 'rollup-plugin-delete';
 import terser from '@rollup/plugin-terser';
-
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 const pkg = require('./package.json');
 const { dependencies } = pkg;
 
-const isDev = process.env.NODE_ENV !== 'production';
+const mode = process.env.NODE_ENV || 'development';
+const isDev = mode === 'development';
+const isDebug = mode === 'debug';
+const isProd = mode === 'production';
+
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
-// 外部化的模块（不打包进来）
-const externalDeps = [
-  'electron',
-  // path.resolve(__dirname, '../shared/ipcActions.ts')  // 👈 明确 external ipcActions
-];
+const externalDeps = ['electron'];
+
+const preserveModules = isDev || isDebug;
 
 export default [
   // main.ts 打包
@@ -31,12 +32,10 @@ export default [
     output: {
       dir: 'dist',
       format: 'cjs',
-      sourcemap: false,
-      preserveModules: isDev,
+      sourcemap: isDebug || isProd,
+      preserveModules,
       exports: 'auto',
-      ...(isDev ? {
-
-      } : { entryFileNames: 'main.js' }),
+      ...(preserveModules ? {} : { entryFileNames: 'main.js' }),
     },
     plugins: [
       // del({ targets: 'dist/*' }),
@@ -56,10 +55,9 @@ export default [
         useTsconfigDeclarationDir: true,
       }),
       nodeGlobals(),
-      ...(isDev ? [] : [terser()]),
+      ...(isProd ? [terser()] : []),
     ],
     external: (id) => {
-      // if (externalDeps.includes(id)) return true;
       if (/node_modules/.test(id)) return true;
       return false;
     },
@@ -86,14 +84,15 @@ export default [
     ],
     external: externalDeps,
     watch: isDev
-    ? {
-        clearScreen: false,
-        include: ['src/preload.ts'],
-        exclude: 'node_modules/**',
-      }
-    : null,
+      ? {
+          clearScreen: false,
+          include: ['src/preload.ts'],
+          exclude: 'node_modules/**',
+        }
+      : null,
   },
-  // preload.ts 打包
+
+  // main.entry.ts 打包
   {
     input: 'src/main.entry.ts',
     output: { file: 'dist/main.entry.js', format: 'cjs' },

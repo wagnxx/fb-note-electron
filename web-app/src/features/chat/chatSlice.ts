@@ -15,11 +15,13 @@ interface ChatState {
   groups: Group[]
   systemMessages: string[]
   wsState: WebSocketState
+  currentGroupId: string
 }
 
 const initialState: ChatState = {
   messagesByGroup: {},
   groups: [],
+  currentGroupId: '',
   systemMessages: [],
   wsState: {
     ws: null,
@@ -60,10 +62,20 @@ const chatSlice = createSlice({
     clearSystemMessages(state) {
       state.systemMessages = []
     },
+    selectGroup(state, action: PayloadAction<string>) {
+      state.currentGroupId = action.payload
+    },
   },
 })
 
-export const { addMessage, updateMessage, updateGroups, systemNotify, setWebSocketState, clearSystemMessages } =
-  chatSlice.actions
+export const {
+  addMessage,
+  updateMessage,
+  updateGroups,
+  systemNotify,
+  setWebSocketState,
+  clearSystemMessages,
+  selectGroup,
+} = chatSlice.actions
 
 export default chatSlice.reducer

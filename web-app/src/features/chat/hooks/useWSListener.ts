@@ -39,11 +39,15 @@ export function useWSListener() {
           case 'file':
             dispatch(addMessage(data)) // 将消息添加到 state
             break
-          case 'message-history':
+          case 'message-history-res':
             dispatch(updateMessage(data))
             break
           case 'group-res':
             dispatch(updateGroups(data.groups)) // 更新群组信息
+            break
+          case 'reset-user-success':
+            console.log('reset user success')
+            socket.send(JSON.stringify({ type: 'group-req' }))
             break
           case 'system':
             dispatch(systemNotify(data.message)) // 处理系统通知
@@ -59,8 +63,10 @@ export function useWSListener() {
 
     // WebSocket 连接建立
     socket.onopen = () => {
+      console.log('WebSocket connection opned')
       updateConnectionState(true) // 更新连接状态为已连接
-      socket.send(JSON.stringify({ type: 'group-req' }))
+      // socket.send(JSON.stringify({ type: 'group-req' }))
+      socket.send(JSON.stringify({ type: 'reset-user', id: userId }))
     }
 
     // WebSocket 连接关闭
