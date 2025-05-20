@@ -2,8 +2,8 @@ import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { addMessage, updateGroups, systemNotify, setWebSocketState, updateMessage } from '../chatSlice'
 import { getWSClient } from '../service/wsClient'
-import { ServerMessage } from '../types'
 import { useNotification } from '@/hooks/useNotification'
+import { ServerToClientMessage } from '@shared/types'
 
 export function useWSListener() {
   const dispatch = useDispatch()
@@ -30,7 +30,7 @@ export function useWSListener() {
     // 监听消息
     socket.onmessage = event => {
       try {
-        const data: ServerMessage = JSON.parse(event.data)
+        const data: ServerToClientMessage = JSON.parse(event.data)
 
         // 根据消息类型分发不同的 Redux action
         switch (data.type) {

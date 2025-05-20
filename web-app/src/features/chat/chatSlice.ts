@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Message, Group } from './types'
+import { ChatGroup as Group, ChatMessage as Message } from '@shared/types'
 
 // 定义 WebSocket 状态
 interface WebSocketState {

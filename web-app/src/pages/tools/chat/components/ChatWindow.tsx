@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { AutoComplete, Button, Input, Upload } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
-import { ClientMeta, Message } from '@/features/chat/types'
+import { ChatClientMetaBase, ChatMessage } from '@shared/types'
 import { useAppSelector } from '@/store/hooks'
 import { sendMessage } from '@/features/chat/service/chatService'
 import { cn } from '@/lib/utils'
@@ -26,7 +26,7 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
   // 发送文本消息
   const sendMessageText = () => {
     if (!input.trim()) return
-    const msg: Message = {
+    const msg: ChatMessage = {
       id: Date.now().toString(),
       groupId,
       sender: wsState.id,
@@ -42,7 +42,7 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
   const sendFile = (file: File) => {
     const reader = new FileReader()
     reader.onload = () => {
-      const msg: Message = {
+      const msg: ChatMessage = {
         id: Date.now().toString(),
         groupId,
         sender: wsState.id,
@@ -69,7 +69,7 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
     if (id === wsState.id) return 'Me'
     const curGroup = groups.find(item => item.id === groupId)
     if (!curGroup) return
-    const members: ClientMeta[] = curGroup.members
+    const members: ChatClientMetaBase[] = curGroup.members
     const item = members.find(mem => mem.userId === id)
     return item?.username || 'Unknown'
   }

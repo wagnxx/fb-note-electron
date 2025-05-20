@@ -3,12 +3,12 @@ import { Button, Space } from 'antd'
 import JoinGroupModal from './JoinGroupModal'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { updateGroups } from '@/features/chat/chatSlice'
-import { Group } from '@/features/chat/types'
 import { sendMessage } from '@/features/chat/service/chatService'
 import { selectJoinedGroupIds } from '@/features/chat/selectors'
 import CreateGroupModal from './CreateGroupModal'
 import { cn } from '@/lib/utils'
 import { PlusOutlined } from '@ant-design/icons'
+import { ChatGroup as Group } from '@shared/types'
 
 const ChatGroupList: React.FC<{
   onSelectGroup: (id: string) => void

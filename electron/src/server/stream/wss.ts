@@ -1,54 +1,8 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { Server as HTTPServer } from 'http'
 import { parse } from 'url'
-import { getLocalWiFiIP, getNetworkInfo } from '@/utils/netUtils'
-
-// 数据结构定义
-interface ClientMeta {
-  userId: string // 新增 userId
-  username: string
-  groupId: string
-  socket: WebSocket | null
-}
-
-interface Group {
-  id: string
-  name: string
-  members: ClientMeta[]
-  admin: string
-  messages: Message[]
-}
-
-interface Message {
-  id: string
-  type: 'text' | 'image' | 'file'
-  sender: string
-  groupId: string
-  content: string
-  timestamp: number
-  fileName?: string
-  fileType?: string
-}
-
-export type ServerMessage =
-  | {
-      type: 'system'
-      message: string
-    }
-  | {
-      type: 'group-res'
-      groups: Group[]
-      timestamp: number
-    }
-  | {
-      type: 'reset-user-success'
-    }
-  | Message
-  | {
-      type: 'message-history-res'
-      groupId: string
-      messages: Message[]
-    }
+import { getNetworkInfo } from '@/utils/netUtils'
+import { ChatGroup as Group, ChatClientMetaBase as ClientMeta, ServerToClientMessage, ChatMessage } from '@shared/types'
 
 // 存储群组信息
 const groups = new Map<string, Group>()
@@ -163,14 +117,14 @@ function handleJoinGroup(ws: WebSocket, data: any) {
   console.log(`👤 ${username} (userId: ${userId}) joined group [${groupId}]`)
   broadcast(groupId, { type: 'system', message: `${username} joined the chat.` })
 
-  const message: ServerMessage = {
+  const message: ServerToClientMessage = {
     type: 'group-res',
     timestamp: Date.now(),
     groups: [...groups.values()],
   }
   broadcast(groupId, message)
 
-  const historyMessage: ServerMessage = {
+  const historyMessage: ServerToClientMessage = {
     type: 'message-history-res',
     groupId,
     messages: groups.get(groupId)?.messages || [],
@@ -201,7 +155,7 @@ function handleGetGroupMessages(ws: WebSocket, data: any) {
   const group = groups.get(groupId)
   if (!group) return
 
-  const historyMessage: ServerMessage = {
+  const historyMessage: ServerToClientMessage = {
     type: 'message-history-res',
     groupId,
     messages: group?.messages || [],
@@ -238,52 +192,64 @@ function handleGroupRequest(ws: WebSocket) {
 function handleMessage(data: any) {
   const { content, fileName, fileType, sender, groupId, id } = data
 
-  const message: Message = {
-    id,
-    type: 'text',
-    sender,
-    groupId,
-    content,
-    timestamp: Date.now(),
-  }
+  // 构建消息对象
+  let message: ChatMessage
 
-  // 文件消息处理
   if (fileName && fileType) {
-    message.type = 'file'
-    message.content = content // 保留 base64 或 URL
-    message.fileName = fileName // 👈 新增字段
-    message.fileType = fileType // 👈 新增字段
+    // 文件消息
+    message = {
+      id,
+      type: 'file',
+      sender,
+      groupId,
+      content,
+      timestamp: Date.now(),
+      fileName,
+      fileType,
+    }
+  } else {
+    // 文本消息
+    message = {
+      id,
+      type: 'text',
+      sender,
+      groupId,
+      content,
+      timestamp: Date.now(),
+    }
   }
 
   // 保存并广播
   const group = groups.get(groupId)
-  if (group) {
-    group.messages.push(message)
-    broadcast(groupId, message)
+  if (!group) return
 
-    // 指令消息处理
-    if (content === FUNCTION_COMMANDS.getWifiIp) {
-      const senderUser = group.members.find(user => user.userId === sender)
-      if (!senderUser) return
+  group.messages.push(message)
+  broadcast(groupId, message)
 
-      // const wifi = getLocalWiFiIP()
+  // 指令消息处理
+  if (message.type === 'text' && content === FUNCTION_COMMANDS.getWifiIp) {
+    const senderUser = group.members.find(user => user.userId === sender)
+    if (!senderUser) return
 
-      getNetworkInfo().then(({ ip, gateway }) => {
-        const resContent =
-          `@${senderUser.username}\n` +
-          `Your IP Address: ${ip || 'Unknown'}\n` +
-          `Router Address: ${gateway || 'Unknown'}\n` +
-          `Make sure other devices are connected to the same network segment.`
+    getNetworkInfo().then(({ ip, gateway }) => {
+      const resContent =
+        `@${senderUser.username}\n` +
+        `Your IP Address: ${ip || 'Unknown'}\n` +
+        `Router Address: ${gateway || 'Unknown'}\n` +
+        `Make sure other devices are connected to the same network segment.`
 
-        const funcMessage: Message = {
-          ...message,
-          content: resContent,
-          sender: systemClient.userId,
-        }
-        group.messages.push(funcMessage)
-        broadcast(groupId, funcMessage)
-      })
-    }
+      const funcMessage: ChatMessage = {
+        id: `${id}-sys-resp`,
+        type: 'text',
+        sender: systemClient.userId,
+        groupId,
+        content: resContent,
+        timestamp: Date.now(),
+      }
+
+      group.messages.push(funcMessage)
+      broadcast(groupId, funcMessage)
+    })
   }
 }
 
@@ -298,7 +264,7 @@ function handleClientDisconnect(client: ClientMeta) {
 }
 
 // 广播消息到群组
-function broadcast(groupId: string, message: ServerMessage) {
+function broadcast(groupId: string, message: ServerToClientMessage) {
   const group = groups.get(groupId)
   if (!group) return
   const payload = JSON.stringify(message)
