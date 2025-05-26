@@ -30,7 +30,7 @@ async function restart(): Promise<Server> {
     })
 
     // 👇 绑定 WebSocket 服务
-    const { bindWSServer } = await import('./wss')
+    const { bindWSServer } = await import('./ws')
     // ??
     bindWSServer(server)
 

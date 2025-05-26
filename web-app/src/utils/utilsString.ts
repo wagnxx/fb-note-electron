@@ -76,3 +76,30 @@ function normalize(path: Path): Path {
   // 返回规范化后的路径
   return '/' + stack.join('/')
 }
+
+export function getMessagePreviewType(content: any): string {
+  if (!content) return ''
+
+  // 文件对象（浏览器 File 类型）
+  if (typeof File !== 'undefined' && content instanceof File) {
+    const type = content.type
+    if (type.startsWith('image/')) return '[image]'
+    if (type === 'application/pdf') return '[pdf]'
+    return '[file]'
+  }
+
+  // Base64 图片 / PDF 判断
+  if (typeof content === 'string' && content.startsWith('data:')) {
+    if (content.startsWith('data:image/')) return '[image]'
+    if (content.startsWith('data:application/pdf')) return '[pdf]'
+    return '[file]'
+  }
+
+  // 普通文本（保留前 20 字）
+  if (typeof content === 'string') {
+    return content.length > 20 ? content.slice(0, 20) + '...' : content
+  }
+
+  // 其他类型
+  return '[unknown]'
+}

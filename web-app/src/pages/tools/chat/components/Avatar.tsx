@@ -1,7 +1,7 @@
-import { Avatar } from 'antd'
+import { Avatar, AvatarProps } from 'antd'
 import React, { FC } from 'react'
 
-type Props = { userName?: string; style?: React.CSSProperties; className?: string } & Partial<typeof Avatar>
+type Props = { userName?: string; style?: React.CSSProperties; className?: string } & Partial<AvatarProps>
 
 const AvatarText: FC<Props> = ({ userName, ...rest }) => {
   // return <div>{userName}</div>

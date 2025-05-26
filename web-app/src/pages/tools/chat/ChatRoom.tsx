@@ -43,6 +43,7 @@ const ChatRoomPage: React.FC = () => {
         <div
           style={{
             width: isMobile ? '100%' : '240px',
+            height: '100%',
           }}
         >
           <ChatList onSelectGroup={id => handleSelectGroup(id)} />

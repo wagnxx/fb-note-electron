@@ -1,27 +1,26 @@
-import express, { Request, Response } from 'express'
+import express from 'express'
 import path from 'path'
 import history from 'connect-history-api-fallback'
+import morgan from 'morgan'
 import { getDistPath, getSupportPath } from '@/config'
-import video from './routes/video'
-import image from './routes/image'
-import wifiIP from './routes/wifiIP'
 import cors from './middlewares/cors'
 import { createPortalRedirectMiddleware } from './middlewares/portalRedirect'
 import gzipStatic from './middlewares/gzipStatic'
 import { forbidLogsAccess } from './middlewares/permissions'
+import routes from './routes'
 
 const staticPath = path.join(getDistPath(), '../..', 'web-app/build')
 const assetsPath = getSupportPath('assets')
 
 export const createApp = () => {
-  const server = express()
-
-  server.use(cors())
+  const app = express()
+  app.use(morgan('dev'))
+  app.use(cors())
 
   // 请求路径重定向
-  server.use(createPortalRedirectMiddleware({ portals: ['/ulogi'] }))
+  app.use(createPortalRedirectMiddleware({ portals: ['/ulogi'] }))
 
-  server.use(
+  app.use(
     '/ulogi',
     // history fallback，处理 SPA
     history({ index: '/index.html' }),
@@ -32,19 +31,18 @@ export const createApp = () => {
   )
 
   // 静态资源目录
-  server.use('/assets', express.static(assetsPath))
+  app.use('/assets', express.static(assetsPath))
 
   // 禁止访问 /logs
-  server.use('/logs', forbidLogsAccess)
+  app.use('/logs', forbidLogsAccess)
 
-  // 路由挂载
-  server.use('/video', video)
-  server.use('/image', image)
-  server.use('/wifiIP', wifiIP)
+  // 路由挂载 全部统一挂载到根
+  app.use('/', routes)
 
-  server.get('/test', (req: Request, res: Response) => {
-    res.send('raa -')
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('[ULOGI ERROR]', err)
+    res.status(500).json({ message: 'Internal Server Error' })
   })
 
-  return server
+  return app
 }

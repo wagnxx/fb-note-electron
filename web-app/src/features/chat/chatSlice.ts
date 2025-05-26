@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ChatGroup as Group, ChatMessage as Message } from '@shared/types'
+import { ChatGroup as Group, ChatMessage as Message, User } from '@shared/types'
 
 // 定义 WebSocket 状态
 interface WebSocketState {
   ws: WebSocket | null
   id: string
+  username?: string
+  avatar?: string
   isConnected: boolean
   connectionError: string | null
 }
@@ -16,6 +18,7 @@ interface ChatState {
   systemMessages: string[]
   wsState: WebSocketState
   currentGroupId: string
+  users?: User[] | null
 }
 
 const initialState: ChatState = {
@@ -26,6 +29,8 @@ const initialState: ChatState = {
   wsState: {
     ws: null,
     id: '',
+    username: '',
+    avatar: '',
     isConnected: false,
     connectionError: null,
   },
@@ -56,8 +61,17 @@ const chatSlice = createSlice({
     systemNotify(state, action: PayloadAction<string>) {
       state.systemMessages.push(action.payload)
     },
+    updateUsers(state, action: PayloadAction<User[]>) {
+      state.users = action.payload
+    },
     setWebSocketState(state, action: PayloadAction<WebSocketState>) {
       state.wsState = action.payload
+    },
+    updateWebSocketState(state, action: PayloadAction<Partial<WebSocketState>>) {
+      state.wsState = {
+        ...state.wsState,
+        ...action.payload,
+      }
     },
     clearSystemMessages(state) {
       state.systemMessages = []
@@ -73,7 +87,9 @@ export const {
   updateMessage,
   updateGroups,
   systemNotify,
+  updateUsers,
   setWebSocketState,
+  updateWebSocketState,
   clearSystemMessages,
   selectGroup,
 } = chatSlice.actions

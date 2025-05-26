@@ -7,6 +7,7 @@ import { sendMessage } from '@/features/chat/service/chatService'
 import { cn } from '@/lib/utils'
 import FileMessageItem from './FileMessageItem'
 import Avatar from './Avatar'
+import { readFileAsBase64 } from '@/utils/utilsFile'
 
 const FUNCTION_COMMANDS = ['@getWifiIp', '@getUsers']
 
@@ -19,7 +20,7 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
   const [input, setInput] = useState('')
   const [options, setOptions] = useState<{ value: string }[]>([])
 
-  const { wsState, groups } = useAppSelector(state => state.chat)
+  const { wsState, groups, users } = useAppSelector(state => state.chat)
   const messages = useAppSelector(state => state.chat.messagesByGroup[groupId] || [])
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -40,21 +41,19 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
 
   // 发送文件消息
   const sendFile = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => {
+    readFileAsBase64(file).then(result => {
       const msg: ChatMessage = {
         id: Date.now().toString(),
         groupId,
         sender: wsState.id,
         type: 'file',
-        content: reader.result as string,
+        content: result,
         fileName: file.name,
         fileType: file.type,
         timestamp: Date.now(),
       }
       sendMessage(msg)
-    }
-    reader.readAsDataURL(file)
+    })
     return false
   }
 
@@ -72,6 +71,15 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
     const members: ChatClientMetaBase[] = curGroup.members
     const item = members.find(mem => mem.userId === id)
     return item?.username || 'Unknown'
+  }
+
+  const getUser = (id: string) => {
+    const user = users?.find(item => item.id === id)
+    if (!user) return
+    return {
+      ...user,
+      isSelef: id === wsState.id,
+    }
   }
 
   const handleInputChange = (value: string) => {
@@ -99,14 +107,19 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
       <div className="flex-1 min-h-0">
         <div className="h-full space-y-2 overflow-auto px-1 py-2">
           {messages.map(msg => {
-            const isSender = msg.sender === wsState.id
+            const sender = getUser(msg.sender)
+            const isSender = sender?.isSelef
             return (
               <div key={`${msg.id}-${msg.groupId}`} className={cn('flex', isSender ? 'justify-end' : 'justify-start')}>
                 <div
                   className={cn('flex items-start gap-2 ', isSender ? 'flex-row-reverse' : 'flex-row')}
                   style={{ minWidth: 0 }}
                 >
-                  <Avatar userName={getUserName(msg.sender)} style={{ width: 40, height: 40, flexShrink: 0 }} />
+                  <Avatar
+                    userName={isSender ? 'M' : sender?.name}
+                    src={sender?.avatar}
+                    style={{ width: 40, height: 40, flexShrink: 0 }}
+                  />
                   <div
                     className={cn(
                       'rounded-xl px-3 py-2 whitespace-pre-line break-words',
