@@ -1,16 +1,31 @@
-import React, { useEffect, useState } from 'react'
-import ChatList from './components/ChatList'
+import React, { useRef, useState } from 'react'
 import { useWSListener } from '@/features/chat/hooks/useWSListener'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Button } from 'antd'
 import { cn } from '@/lib/utils'
 import ChatWindow from './components/ChatWindow'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { selectGroup } from '@/features/chat/chatSlice'
+import Siderbar, { SiderbarRef } from './components/Siderbar'
+import { afterRaf } from '@/utils/utilsAsyncFunc'
+import { Empty } from 'antd'
+import { useDraggable } from '@/hooks/useDraggable'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const ChatRoomPage: React.FC = () => {
-  const [stage, setStage] = useState<'chatList' | 'chat'>('chatList') // 控制主内容区域
-  const [isMobile, setIsMobile] = useState(false)
+  const [stage, setStage] = useState<'siderbar' | 'chat'>('siderbar')
+  const siderbarRef = useRef<SiderbarRef>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  const { resetPosition } = useDraggable({ ref: wrapperRef })
+
+  const isMobile = useIsMobile({
+    onChange: isM => {
+      if (isM) {
+        resetPosition('top-left')
+      } else {
+        resetPosition('center')
+      }
+    },
+  })
 
   const selectedGroupId = useAppSelector(state => state.chat.currentGroupId)
   const dispatch = useAppDispatch()
@@ -18,50 +33,55 @@ const ChatRoomPage: React.FC = () => {
   useWSListener()
 
   const handleSelectGroup = (groupId: string) => {
-    // setSelectedGroupId(groupId)
     dispatch(selectGroup(groupId))
     setStage('chat')
   }
 
-  useEffect(() => {
-    const handleResize = function () {
-      const isMob = window.innerWidth < 768
-      setIsMobile(isMob)
-    }
-
-    window.addEventListener('resize', handleResize, false)
-    handleResize()
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  })
+  const handleBack = () => {
+    setStage('siderbar')
+    afterRaf().then(() => {
+      siderbarRef.current?.init()
+    })
+  }
 
   return (
-    <div className={cn(' bg-white   h-full w-full flex', isMobile ? 'flex-col' : 'flex-row')}>
-      {(!isMobile || stage === 'chatList') && (
-        <div
-          style={{
-            width: isMobile ? '100%' : '240px',
-            height: '100%',
-          }}
-        >
-          <ChatList onSelectGroup={id => handleSelectGroup(id)} />
-        </div>
+    <div
+      ref={wrapperRef}
+      style={{
+        position: isMobile ? 'static' : 'fixed',
+        left: 0,
+        top: 0,
+        width: isMobile ? '100%' : '66%',
+        aspectRatio: '6 / 4',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+        backgroundColor: '#f1f5f9',
+        zIndex: 1000,
+      }}
+      className={cn('flex  cursor-move', isMobile ? 'flex-col w-full h-full' : 'flex-row rounded-lg overflow-hidden')}
+    >
+      {!isMobile && (
+        <div className="drag-header w-full h-8 bg-slate-300 cursor-move absolute top-0 left-0 z-10 rounded-t-lg" />
       )}
 
-      {/* 主内容区域 */}
-      <div className={cn('flex-1 flex flex-col   min-h-0')}>
-        {/* 移动端返回按钮 */}
-        {isMobile && stage === 'chat' && (
-          <div className="h-max ">
-            <Button icon={<ArrowLeftOutlined />} type="link" className="-ml-2" onClick={() => setStage('chatList')}>
-              返回
-            </Button>
+      <div className="flex w-full h-full pt-8">
+        {(!isMobile || stage === 'siderbar') && (
+          <div
+            style={{
+              width: isMobile ? '100%' : '340px',
+              height: '100%',
+            }}
+          >
+            <Siderbar ref={siderbarRef} onSelectGroup={handleSelectGroup} isMobile={isMobile} />
           </div>
         )}
 
-        {stage === 'chat' && selectedGroupId && <ChatWindow groupId={selectedGroupId} className="flex-1 min-h-0 " />}
+        <div className="flex-1 flex flex-col min-h-0 min-w-0">
+          {stage === 'chat' && selectedGroupId ? (
+            <ChatWindow className="flex-1 min-h-0" groupId={selectedGroupId} isMobile={isMobile} onBack={handleBack} />
+          ) : (
+            <Empty className="pt-20 bg-white flex-1" />
+          )}
+        </div>
       </div>
     </div>
   )

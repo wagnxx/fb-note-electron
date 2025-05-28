@@ -1,0 +1,249 @@
+import React, { ForwardRefExoticComponent, useEffect, useImperativeHandle, useState } from 'react'
+import ChatGroupList from './ChatGroupList'
+import { Avatar, Descriptions, DescriptionsProps, Flex, Input, List, Space, Tabs, TabsProps } from 'antd'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { selectJoinedGroupIds } from '@/features/chat/selectors'
+import { cn } from '@/lib/utils'
+import { sendMessage } from '@/features/chat/service/chatService'
+import AvatarUploader from './AvatarUploader'
+import UserListItem from './UserListItem'
+import { ChatGroup } from '@shared/types'
+import { getMessagePreviewType } from '@/utils/utilsString'
+import { delayFor } from '@/utils/utilsAsyncFunc'
+import { mergeBase64Avatars } from '@/utils/utilsImage'
+import useFirstRender from '@/hooks/useFirstRender'
+
+const TAB_KEYS = {
+  ALL_USER: 'allUser',
+  CHAT_LIST: 'chatList',
+}
+
+// const BLACK_PLACEHOLDER =
+// 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQI12NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII='
+export const BLACK_PLACEHOLDER =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAEklEQVR4nO3BMQEAAAgCoNm/9F3hAAcAqCwR+AIAAAAASUVORK5CYII='
+
+type SiderbarProps = { isMobile: boolean; onSelectGroup: (id: string) => void }
+// 你期望暴露出去的 ref 类型（可以自定义具体能力）
+export type SiderbarRef = {
+  init: () => void
+}
+
+const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<SiderbarRef>) => {
+  const [keyword, setKeyword] = useState('')
+
+  const dispatch = useAppDispatch()
+
+  const { groups, wsState, users } = useAppSelector(state => state.chat)
+  const joinedGroupIds = useAppSelector(selectJoinedGroupIds)
+
+  const [selectedGroupId, setSelectedGroupId] = useState<string>()
+  const [activeTabKey, setActiveTabKey] = useState('')
+
+  const joinedGroups = groups
+    .filter(group => joinedGroupIds.includes(group.id))
+    .filter(group => group.name.toLowerCase().includes(keyword.toLowerCase()))
+
+  const [groupsWithAvatar, setGroupsWithAvatar] = useState<(ChatGroup & { avatar?: string; lastMsg?: string })[]>([])
+
+  const isFirstRender = useFirstRender()
+
+  useEffect(() => {
+    // if (activeTabKey === '' || activeTabKey === TAB_KEYS.ALL_USER) {
+    // }
+    delayFor(500).then(() => {
+      sendMessage({ type: 'user-req' })
+    })
+    if (activeTabKey === TAB_KEYS.CHAT_LIST) {
+      sendMessage({ type: 'group-req' })
+    }
+  }, [activeTabKey])
+
+  const handleApplySuccess = () => {}
+
+  const handleSelectGroupItem = (id: string) => {
+    onSelectGroup(id)
+    setSelectedGroupId(id)
+  }
+
+  const handleUpdateAvatar = (avatar: string) => {
+    sendMessage({ type: 'reset-user', avatar, id: wsState.id })
+  }
+
+  const getLastedChat = (group: ChatGroup) => {
+    const content = group?.messages[group.messages.length - 1]?.content
+    return getMessagePreviewType(content)
+  }
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      init() {
+        setActiveTabKey(TAB_KEYS.CHAT_LIST)
+      },
+    }),
+    [],
+  )
+  useEffect(() => {
+    const loadAvatars = async (isEmpty: boolean) => {
+      if (isEmpty) {
+        const result = joinedGroups.map(group => {
+          return {
+            ...group,
+            avatar: BLACK_PLACEHOLDER,
+            lastMsg: getLastedChat(group),
+          }
+        })
+
+        setGroupsWithAvatar(result)
+        return
+      }
+      const result = await Promise.all(
+        joinedGroups.map(async group => {
+          const userImages = group.members
+            .slice(0, 4)
+            .map(item => {
+              const user = users?.find(u => u.id === item.userId)
+              return user?.avatar
+            })
+            .filter(Boolean) as string[]
+
+          // 补足 4 张头像
+          while (userImages.length < 4) {
+            userImages.push(BLACK_PLACEHOLDER)
+          }
+
+          const avatar = await mergeBase64Avatars(userImages, 100)
+
+          return {
+            ...group,
+            avatar,
+            lastMsg: getLastedChat(group),
+          }
+        }),
+      )
+      setGroupsWithAvatar(result)
+    }
+
+    if (users?.length && joinedGroups.length) {
+      loadAvatars(false)
+    } else if (isFirstRender) {
+      loadAvatars(true)
+    }
+  }, [joinedGroups, users, isFirstRender])
+
+  const userDescItems: DescriptionsProps['items'] = [
+    {
+      key: '1',
+      label: 'userName',
+      children: wsState.username,
+    },
+    {
+      key: '2',
+      label: 'userId',
+      children: wsState.id,
+    },
+    {
+      key: '3',
+      label: 'ws is connected',
+      children: String(wsState.isConnected),
+    },
+  ]
+
+  const tabItems: TabsProps['items'] = [
+    {
+      key: TAB_KEYS.CHAT_LIST,
+      label: 'chat',
+      children: (
+        <>
+          <div className="flex-1 overflow-auto custom-scrollbar pr-1">
+            <List
+              dataSource={groupsWithAvatar}
+              renderItem={(group, index) => (
+                <List.Item
+                  key={group.id}
+                  onClick={() => handleSelectGroupItem(group.id)}
+                  className={cn(
+                    'px-4 py-2 cursor-pointer rounded-md transition-all select-none',
+                    selectedGroupId === group.id
+                      ? 'bg-blue-100 text-blue-700 font-medium shadow-sm'
+                      : 'hover:bg-gray-100',
+                  )}
+                  style={{ border: 'none' }}
+                >
+                  {/* <div className="truncate w-full">
+                    <Title level={5}>{group.name}</Title>
+                    <span>{getLastedChat(group)}</span>
+                  </div> */}
+                  <List.Item.Meta
+                    avatar={<Avatar src={group.avatar} />}
+                    title={<a>{group.name}</a>}
+                    description={group.lastMsg}
+                  />
+                </List.Item>
+              )}
+            />
+            <div>
+              <img src={BLACK_PLACEHOLDER} style={{ width: '90%', height: '40px' }} />
+            </div>
+          </div>
+        </>
+      ),
+    },
+    {
+      key: TAB_KEYS.ALL_USER,
+      label: 'all user',
+      children: (
+        <Space direction="vertical">
+          {users && users.map(user => <UserListItem key={user.id} user={user}></UserListItem>)}
+        </Space>
+      ),
+    },
+    {
+      key: '3',
+      label: 'groups',
+      children: <ChatGroupList onJoined={handleApplySuccess} onSelectGroup={id => {}} />,
+    },
+    {
+      key: '4',
+      label: 'profile',
+      children: (
+        <div>
+          <Flex justify="center">
+            <AvatarUploader username={wsState.username} avatar={wsState.avatar} onUpdateAvatar={handleUpdateAvatar} />
+          </Flex>
+          <Descriptions items={userDescItems} column={1} />
+        </div>
+      ),
+    },
+  ]
+
+  return (
+    <div className={cn('p-2  h-full', isMobile ? '' : '  border-r-slate-50')}>
+      <div className="border-r border-gray-200  pb-3">
+        <Input
+          allowClear
+          // addonAfter={<PlusOutlined onClick={() => setShowApplyPopover(prev => !prev)} />}
+          placeholder="Search the list"
+          value={keyword}
+          onChange={e => setKeyword(e.target.value)}
+        />
+      </div>
+
+      <Tabs
+        items={tabItems}
+        activeKey={activeTabKey}
+        onChange={setActiveTabKey}
+        tabPosition={isMobile ? 'top' : 'left'}
+      />
+    </div>
+  )
+}
+
+// export default Siderbar
+// export default forwardRef<SiderbarRef, SiderbarProps>(Siderbar)
+
+// 这样导出的类型是带 ref 能力的
+const ForwardedSidebar: ForwardRefExoticComponent<SiderbarProps & SiderbarRef> = React.forwardRef(Siderbar)
+
+export default React.forwardRef(Siderbar)

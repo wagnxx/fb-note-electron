@@ -1,28 +1,30 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { AutoComplete, Button, Input, Upload } from 'antd'
-import { UploadOutlined } from '@ant-design/icons'
-import { ChatClientMetaBase, ChatMessage } from '@shared/types'
+import { ArrowLeftOutlined, UploadOutlined } from '@ant-design/icons'
+import { ChatMessage } from '@shared/types'
 import { useAppSelector } from '@/store/hooks'
 import { sendMessage } from '@/features/chat/service/chatService'
 import { cn } from '@/lib/utils'
 import FileMessageItem from './FileMessageItem'
 import Avatar from './Avatar'
 import { readFileAsBase64 } from '@/utils/utilsFile'
+import { MoreHorizontal } from 'lucide-react'
 
 const FUNCTION_COMMANDS = ['@getWifiIp', '@getUsers']
 
-const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: string }> = ({
-  groupId,
-  className,
-  style,
-  ...rest
-}) => {
+const ChatWindow: React.FC<
+  React.HTMLAttributes<HTMLDivElement> & { groupId: string; isMobile: boolean; onBack: () => void }
+> = ({ groupId, isMobile, onBack, className, style, ...rest }) => {
   const [input, setInput] = useState('')
   const [options, setOptions] = useState<{ value: string }[]>([])
 
   const { wsState, groups, users } = useAppSelector(state => state.chat)
   const messages = useAppSelector(state => state.chat.messagesByGroup[groupId] || [])
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  const group = useMemo(() => {
+    return groups.find(item => item.id === groupId)
+  }, [groupId, groups])
 
   // 发送文本消息
   const sendMessageText = () => {
@@ -64,15 +66,6 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
     return () => clearTimeout(timeout)
   }, [messages])
 
-  const getUserName = (id: string) => {
-    if (id === wsState.id) return 'Me'
-    const curGroup = groups.find(item => item.id === groupId)
-    if (!curGroup) return
-    const members: ChatClientMetaBase[] = curGroup.members
-    const item = members.find(mem => mem.userId === id)
-    return item?.username || 'Unknown'
-  }
-
   const getUser = (id: string) => {
     const user = users?.find(item => item.id === id)
     if (!user) return
@@ -102,9 +95,20 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
 
   return (
     <div className={cn('flex flex-col  gap-2', className)} style={style}>
+      <div className="h-max flex  items-center">
+        {isMobile && (
+          <Button icon={<ArrowLeftOutlined />} type="link" className="-ml-2" onClick={onBack}>
+            返回
+          </Button>
+        )}
+        <span className=" mx-auto">
+          {group?.name}({group?.members.length})
+        </span>
+        <Button icon={<MoreHorizontal color="#333" size="16" />} type="link" disabled></Button>
+      </div>
       {/* 中间内容区 */}
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 bg-slate-50 min-h-0">
         <div className="h-full space-y-2 overflow-auto px-1 py-2">
           {messages.map(msg => {
             const sender = getUser(msg.sender)
@@ -142,7 +146,7 @@ const ChatWindow: React.FC<React.HTMLAttributes<HTMLDivElement> & { groupId: str
       </div>
 
       {/* 输入区域 */}
-      <div className="border-t py-2 px-1  flex gap-2  h-max">
+      <div className="border-t py-2 px-1  flex gap-2  h-max pr-1">
         <AutoComplete
           value={input}
           options={options}
