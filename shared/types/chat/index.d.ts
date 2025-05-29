@@ -30,11 +30,14 @@ export type ChatMessage =
 export interface ChatGroup {
   id: string
   name: string
-  members: ChatClientMetaBase[]
+  // members: Uid[]
   admin: string
-  messages: ChatMessage[]
+  // messages: ChatMessage[]
 }
-
+export type ChatGroupWithMember = ChatGroup & {
+  members: User[]
+}
+export type ChatGroupJoind = { group: ChatGroupWithMember, latestMessage: ChatMessage | null }
 export interface ChatClientMetaBase {
   username: string
   groupId: string
@@ -71,7 +74,7 @@ export type ClientToServerMessage =
     group: ChatGroup
   }
   | {
-    type: 'group-req'
+    type: 'groups-req'
   }
   | {
     type: 'message-history-req'
@@ -81,8 +84,16 @@ export type ClientToServerMessage =
     type: 'reset-user'
   } & User)
   | ({
-    type: 'user-req'
+    type: 'users-req'
   })
+  | ({
+    type: 'init-req',
+  } & User)
+  | (
+    {
+      type: 'joined-groups-req',
+    } & Pick<User, 'id'>
+  )
 
 // ===================== 服务端 → 客户端 =====================
 
@@ -93,8 +104,8 @@ export type ServerToClientMessage =
     message: string
   }
   | {
-    type: 'group-res'
-    groups: ChatGroup[]
+    type: 'groups-res'
+    groups: ChatGroupWithMember[]
     timestamp: number
   }
   | {
@@ -106,12 +117,24 @@ export type ServerToClientMessage =
     type: 'reset-user-success'
   } & User)
   | {
-    type: 'user-res'
+    type: 'users-res'
     users: User[]
   }
+  | {
+    type: 'init-res',
+    joinedGroups: ChatGroupJoind[],
+    allGroups: ChatGroupWithMember[],
+    allUsers: User[],
+    currentUser: User
+  }
+  | {
+    type: 'joined-groups-res',
+    joinedGroups: ChatGroupJoind[],
+  }
 
+export type Uid = string
 export interface User {
-  id: string
+  id: Uid
   name?: string
   online?: boolean
   avatar?: string

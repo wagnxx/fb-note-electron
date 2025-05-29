@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ChatGroup as Group, ChatMessage as Message, User } from '@shared/types'
+import { ChatGroupJoind, ChatGroupWithMember, ChatMessage as Message, User } from '@shared/types'
 
 // 定义 WebSocket 状态
 interface WebSocketState {
@@ -14,7 +14,8 @@ interface WebSocketState {
 // 定义初始状态
 interface ChatState {
   messagesByGroup: Record<string, Message[]>
-  groups: Group[]
+  groups: ChatGroupWithMember[]
+  joinedGroups: ChatGroupJoind[]
   systemMessages: string[]
   wsState: WebSocketState
   currentGroupId: string
@@ -24,6 +25,7 @@ interface ChatState {
 const initialState: ChatState = {
   messagesByGroup: {},
   groups: [],
+  joinedGroups: [],
   currentGroupId: '',
   systemMessages: [],
   wsState: {
@@ -52,8 +54,11 @@ const chatSlice = createSlice({
       const { groupId, messages } = action.payload
       state.messagesByGroup[groupId] = messages
     },
-    updateGroups(state, action: PayloadAction<Group[]>) {
+    updateGroups(state, action: PayloadAction<ChatGroupWithMember[]>) {
       state.groups = action.payload
+    },
+    updateJoinedGroups(state, action: PayloadAction<ChatGroupJoind[]>) {
+      state.joinedGroups = action.payload
     },
     // updateJoinedGroups(state, action: PayloadAction<string[]>) {
     //   state.joinedGroupIds = action.payload
@@ -86,6 +91,7 @@ export const {
   addMessage,
   updateMessage,
   updateGroups,
+  updateJoinedGroups,
   systemNotify,
   updateUsers,
   setWebSocketState,

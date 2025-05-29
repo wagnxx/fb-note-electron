@@ -43,5 +43,7 @@ export async function getWSClient(): Promise<ClientType> {
 }
 const getApiBaseUrl = () => {
   // eslint-disable-next-line no-undef
-  return process.env.REACT_APP_ENV !== 'production' ? 'http://localhost:4000' : ''
+  // return process.env.REACT_APP_ENV !== 'production' ? 'http://localhost:4000' : ''
+  // return process.env.REACT_APP_ENV !== 'production' ? 'http://192.168.100.200:4000' : ''
+  return 'http://192.168.100.200:4000'
 }

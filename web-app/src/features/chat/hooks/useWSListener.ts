@@ -8,6 +8,7 @@ import {
   updateMessage,
   updateWebSocketState,
   updateUsers,
+  updateJoinedGroups,
 } from '../chatSlice'
 import { getWSClient } from '../service/wsClient'
 import { useNotification } from '@/hooks/useNotification'
@@ -52,7 +53,7 @@ export function useWSListener() {
               case 'message-history-res':
                 dispatch(updateMessage(data))
                 break
-              case 'group-res':
+              case 'groups-res':
                 dispatch(updateGroups(data.groups))
                 break
               case 'reset-user-success': {
@@ -63,7 +64,22 @@ export function useWSListener() {
                 socket!.send(JSON.stringify({ type: 'group-req' }))
                 break
               }
-              case 'user-res':
+              case 'init-res': {
+                dispatch(updateJoinedGroups(data.joinedGroups))
+                dispatch(updateGroups(data.allGroups))
+                dispatch(updateUsers(data.allUsers))
+
+                const { name: username, avatar } = data.currentUser
+                let update = getValidObject({ username, avatar })
+                dispatch(updateWebSocketState({ ...update }))
+                break
+              }
+
+              case 'joined-groups-res':
+                dispatch(updateJoinedGroups(data.joinedGroups))
+                break
+
+              case 'users-res':
                 dispatch(updateUsers(data.users))
                 break
               case 'system':
@@ -81,7 +97,7 @@ export function useWSListener() {
         socket.onopen = () => {
           console.log('WebSocket connection opened')
           updateConnectionState(true)
-          socket!.send(JSON.stringify({ type: 'reset-user', id: userId }))
+          socket!.send(JSON.stringify({ type: 'init-req', id: userId }))
         }
 
         socket.onclose = () => {

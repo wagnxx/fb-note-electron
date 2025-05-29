@@ -2,9 +2,8 @@ import React, { useState } from 'react'
 import { Button, Space } from 'antd'
 import JoinGroupModal from './JoinGroupModal'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
-import { updateGroups, updateWebSocketState } from '@/features/chat/chatSlice'
+import { updateWebSocketState } from '@/features/chat/chatSlice'
 import { sendMessage } from '@/features/chat/service/chatService'
-import { selectJoinedGroupIds } from '@/features/chat/selectors'
 import CreateGroupModal from './CreateGroupModal'
 import { cn } from '@/lib/utils'
 import { PlusOutlined } from '@ant-design/icons'
@@ -18,18 +17,17 @@ const ChatGroupList: React.FC<{
   const [createModalVisible, setCreateModalVisible] = useState(false)
   const [selectedGroupId, setSelectedGroupId] = useState<string>()
 
-  const { groups, wsState } = useAppSelector(state => state.chat)
-  const joinedGroupIds = useAppSelector(selectJoinedGroupIds)
+  const { groups, wsState, joinedGroups } = useAppSelector(state => state.chat)
 
   const dispatch = useAppDispatch()
   const [joinModalVisible, setJoinModalVisible] = useState(false)
-  const [joinTargetGroup, setJoinTargetGroup] = useState<Group | null>(null)
+  const [joinTargetGroup, setJoinTargetGroup] = useState<Omit<Group, 'messages'> | null>(null)
 
   const refreshGroups = () => {
-    sendMessage({ type: 'group-req' })
+    sendMessage({ type: 'groups-req' })
   }
 
-  const handleJoin = (group: Group) => {
+  const handleJoin = (group: Omit<Group, 'messages'>) => {
     setJoinTargetGroup(group)
 
     if (!wsState.username) {
@@ -49,8 +47,8 @@ const ChatGroupList: React.FC<{
         userId: wsState.id,
         groupId: joinTargetGroup.id,
       })
-      const updated = groups.map(g => (g.id === joinTargetGroup.id ? { ...g, joined: true } : g))
-      dispatch(updateGroups(updated))
+      // const updated = groups.map(g => (g.id === joinTargetGroup.id ? { ...g, joined: true } : g))
+      // dispatch(updateGroups(updated))
       dispatch(updateWebSocketState({ username }))
       setJoinModalVisible(false)
       onJoined()
@@ -74,7 +72,7 @@ const ChatGroupList: React.FC<{
           >
             <div className="truncate">{group.name}</div>
 
-            {!joinedGroupIds.includes(group.id) && (
+            {!joinedGroups.some(j => j.group.id === group.id) && (
               <Button size="small" type="primary" onClick={() => handleJoin(group)}>
                 申请
               </Button>

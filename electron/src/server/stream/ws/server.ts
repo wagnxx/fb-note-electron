@@ -1,9 +1,9 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { parse } from 'url'
 import { Server as HTTPServer, IncomingMessage } from 'http'
-import { handleClientDisconnect } from './services/disconnect'
-import { routeMessage } from './messageRouter'
+import { dispatcher } from './manages/ctx'
 
+// 初始化控制器
 export function bindServer(httpServer: HTTPServer) {
   const wss = new WebSocketServer({ noServer: true })
 
@@ -22,18 +22,16 @@ export function bindServer(httpServer: HTTPServer) {
 }
 
 export function handleConnection(ws: WebSocket, req: IncomingMessage) {
-  let client = null
-
   ws.on('message', raw => {
     try {
       const data = JSON.parse(raw.toString())
-      routeMessage(ws, data, client)
+      dispatcher.dispatch(ws, data)
     } catch (err) {
       console.error('Invalid message:', err)
     }
   })
 
   ws.on('close', () => {
-    if (client) handleClientDisconnect(client)
+    // handleClientDisconnect(ws)
   })
 }

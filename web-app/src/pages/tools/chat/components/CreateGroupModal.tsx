@@ -16,9 +16,9 @@ const CreateGroupModal: React.FC<{
       group: {
         id: groupName,
         name: groupName,
-        members: [],
+        // members: [],
         admin: '',
-        messages: [],
+        // messages: [],
       },
     })
     setGroupName('')

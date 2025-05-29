@@ -2,24 +2,22 @@ import React, { ForwardRefExoticComponent, useEffect, useImperativeHandle, useSt
 import ChatGroupList from './ChatGroupList'
 import { Avatar, Descriptions, DescriptionsProps, Flex, Input, List, Space, Tabs, TabsProps } from 'antd'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { selectJoinedGroupIds } from '@/features/chat/selectors'
 import { cn } from '@/lib/utils'
 import { sendMessage } from '@/features/chat/service/chatService'
 import AvatarUploader from './AvatarUploader'
 import UserListItem from './UserListItem'
-import { ChatGroup } from '@shared/types'
-import { getMessagePreviewType } from '@/utils/utilsString'
+import { ChatGroupWithMember } from '@shared/types'
 import { delayFor } from '@/utils/utilsAsyncFunc'
 import { mergeBase64Avatars } from '@/utils/utilsImage'
 import useFirstRender from '@/hooks/useFirstRender'
+import { getMessagePreviewType } from '@/utils/utilsString'
 
 const TAB_KEYS = {
   ALL_USER: 'allUser',
   CHAT_LIST: 'chatList',
+  ALL_GROUPS: 'allGroups',
 }
 
-// const BLACK_PLACEHOLDER =
-// 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQI12NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII='
 export const BLACK_PLACEHOLDER =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAEklEQVR4nO3BMQEAAAgCoNm/9F3hAAcAqCwR+AIAAAAASUVORK5CYII='
 
@@ -34,17 +32,14 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
 
   const dispatch = useAppDispatch()
 
-  const { groups, wsState, users } = useAppSelector(state => state.chat)
-  const joinedGroupIds = useAppSelector(selectJoinedGroupIds)
+  const { wsState, users, joinedGroups } = useAppSelector(state => state.chat)
 
   const [selectedGroupId, setSelectedGroupId] = useState<string>()
   const [activeTabKey, setActiveTabKey] = useState('')
 
-  const joinedGroups = groups
-    .filter(group => joinedGroupIds.includes(group.id))
-    .filter(group => group.name.toLowerCase().includes(keyword.toLowerCase()))
-
-  const [groupsWithAvatar, setGroupsWithAvatar] = useState<(ChatGroup & { avatar?: string; lastMsg?: string })[]>([])
+  const [groupsWithAvatar, setGroupsWithAvatar] = useState<
+    (ChatGroupWithMember & { avatar?: string; lastMsg?: string })[]
+  >([])
 
   const isFirstRender = useFirstRender()
 
@@ -52,12 +47,15 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
     // if (activeTabKey === '' || activeTabKey === TAB_KEYS.ALL_USER) {
     // }
     delayFor(500).then(() => {
-      sendMessage({ type: 'user-req' })
+      sendMessage({ type: 'users-req' })
     })
     if (activeTabKey === TAB_KEYS.CHAT_LIST) {
-      sendMessage({ type: 'group-req' })
+      sendMessage({ type: 'joined-groups-req', id: wsState.id })
     }
-  }, [activeTabKey])
+    if (activeTabKey === TAB_KEYS.ALL_GROUPS) {
+      sendMessage({ type: 'groups-req' })
+    }
+  }, [activeTabKey, wsState.id])
 
   const handleApplySuccess = () => {}
 
@@ -68,11 +66,6 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
 
   const handleUpdateAvatar = (avatar: string) => {
     sendMessage({ type: 'reset-user', avatar, id: wsState.id })
-  }
-
-  const getLastedChat = (group: ChatGroup) => {
-    const content = group?.messages[group.messages.length - 1]?.content
-    return getMessagePreviewType(content)
   }
 
   useImperativeHandle(
@@ -87,11 +80,11 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
   useEffect(() => {
     const loadAvatars = async (isEmpty: boolean) => {
       if (isEmpty) {
-        const result = joinedGroups.map(group => {
+        const result = joinedGroups.map(({ group, latestMessage }) => {
           return {
             ...group,
             avatar: BLACK_PLACEHOLDER,
-            lastMsg: getLastedChat(group),
+            lastMsg: getMessagePreviewType(latestMessage?.content),
           }
         })
 
@@ -99,11 +92,10 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
         return
       }
       const result = await Promise.all(
-        joinedGroups.map(async group => {
+        joinedGroups.map(async ({ group, latestMessage }) => {
           const userImages = group.members
             .slice(0, 4)
-            .map(item => {
-              const user = users?.find(u => u.id === item.userId)
+            .map(user => {
               return user?.avatar
             })
             .filter(Boolean) as string[]
@@ -118,7 +110,7 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
           return {
             ...group,
             avatar,
-            lastMsg: getLastedChat(group),
+            lastMsg: getMessagePreviewType(latestMessage?.content),
           }
         }),
       )
@@ -200,7 +192,7 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
       ),
     },
     {
-      key: '3',
+      key: TAB_KEYS.ALL_GROUPS,
       label: 'groups',
       children: <ChatGroupList onJoined={handleApplySuccess} onSelectGroup={id => {}} />,
     },
