@@ -1,6 +1,5 @@
 // server.ts
 import type { Server } from 'http'
-
 let currentServer: Server | null = null
 const PORT = 4000
 
@@ -31,7 +30,6 @@ async function restart(): Promise<Server> {
 
     // 👇 绑定 WebSocket 服务
     const { bindWSServer } = await import('./ws')
-    // ??
     bindWSServer(server)
 
     currentServer = server

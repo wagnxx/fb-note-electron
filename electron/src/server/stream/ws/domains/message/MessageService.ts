@@ -1,29 +1,28 @@
 // domains/message/MessageService.ts
 import { MessageRepository } from './MessageRepository'
 import { TextMessage, FileMessage, ImageMessage, Message } from './Message'
-import { GroupService } from '../group/GroupService'
 import { UserService } from '../user/UserService'
 import { getNetworkInfo } from '@/utils/netUtils'
-import { ServerToClientMessage } from '../../types'
+import { ServerToClientMessage } from '../../interfaces/types'
+
+import { IGroupService } from '../../interfaces/services/IGroupService'
+import { inject, injectable, TYPES } from '../../core/ioc.config'
+import { LazyServiceIdentifier } from 'inversify'
+import { IMessageService } from '../../interfaces/services/IMessageService'
 
 const FUNCTION_COMMANDS = {
   getWifiIp: '@getWifiIp',
   getUsers: '@getUsers',
 }
-
-export class MessageService {
-  private groupService?: GroupService // 声明为可选
+@injectable()
+export class MessageService implements IMessageService {
+  private readonly messageRepository: MessageRepository
 
   constructor(
-    private messageRepository: MessageRepository,
-    // private groupService: GroupService,
-    private userService: UserService,
+    @inject(TYPES.UserService) private readonly userService: UserService,
+    @inject(new LazyServiceIdentifier(() => TYPES.GroupService)) private groupService: IGroupService,
   ) {
-    //
-  }
-
-  setGroupService(groupService: GroupService) {
-    this.groupService = groupService
+    this.messageRepository = new MessageRepository()
   }
 
   async addRawMessage(data: {

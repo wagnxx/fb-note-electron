@@ -1,6 +1,7 @@
 // domains/group/GroupRepository.ts
+import { inject, injectable, TYPES } from '../../core/ioc.config'
 import { Group } from './group'
-
+// @injectable()
 export class GroupRepository {
   private groups = new Map<string, Group>()
 

@@ -1,29 +1,23 @@
 // domains/group/GroupService.ts
 import { Group } from './group'
 import { GroupRepository } from './GroupRepository'
-import type { ServerToClientMessage, User, Group as GroupDTO, JoinedGroupResponse } from '../../types'
-import type { UserGroupService } from '../userGroup/UserGroupService'
-import type { UserService } from '../user/UserService'
-import { MessageService } from '../message/MessageService'
+import type { ServerToClientMessage, User, Group as GroupDTO } from '../../interfaces/types'
+import { inject, injectable, TYPES } from '../../core/ioc.config'
+import { IGroupService } from '../../interfaces/services/IGroupService'
+import { IUserService } from '../../interfaces/services/IUserService'
+import { IUserGroupService } from '../../interfaces/services/IUserGroupService'
 
-export class GroupService {
-  // private repo: GroupRepository
-  // private userGroupService: UserGroupService
-  // private userService: UserService
+@injectable()
+export class GroupService implements IGroupService {
   private inited = false
-
   private systemId = 'sys'
+  private readonly repo: GroupRepository
 
   constructor(
-    private readonly repo: GroupRepository,
-    private readonly userGroupService: UserGroupService,
-    private readonly userService: UserService,
-    private readonly messageService: MessageService,
+    @inject(TYPES.UserGroupService) private readonly userGroupService: IUserGroupService,
+    @inject(TYPES.UserService) private readonly userService: IUserService,
   ) {
-    // this.repo = repo
-    // this.userGroupService = userGroupService
-    // this.userService = userService
-    // this.messageService = messageService
+    this.repo = new GroupRepository()
 
     const systemGroup = new Group('sys', 'SystemGroup')
     this.repo.save(systemGroup)
@@ -89,21 +83,10 @@ export class GroupService {
       members,
     }
   }
-  private getGroupsWithMembers(userId: string) {
+  getGroupsWithMembers(userId: string) {
     const groupIds = this.userGroupService.getGroupsByUser(userId)
     const groups = this.getGroups(groupIds)
     const groupWithMembers = groups.map(this.findMember)
     return groupWithMembers
-  }
-  /**
-   * 获取用户加入的群组及最新消息
-   */
-  public getJoinedGroupsWithLatestMessage(userId: string): JoinedGroupResponse[] {
-    const groups = this.getGroupsWithMembers(userId)
-
-    return groups.map(group => ({
-      group,
-      latestMessage: this.messageService.getLatestMessage(group.id), // 组合MessageService
-    })) as JoinedGroupResponse[]
   }
 }

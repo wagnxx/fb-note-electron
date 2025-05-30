@@ -1,5 +1,5 @@
 // domains/group/Group.ts
-import { ServerToClientMessage, User } from '../../types'
+import { ServerToClientMessage, User } from '../../interfaces/types'
 import { WebSocket } from 'ws'
 
 export class Group {

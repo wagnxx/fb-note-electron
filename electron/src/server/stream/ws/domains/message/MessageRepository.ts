@@ -1,6 +1,7 @@
 // domains/message/MessageRepository.ts
+import { inject, injectable, TYPES } from '../../core/ioc.config'
 import { Message } from './Message'
-
+@injectable()
 export class MessageRepository {
   private messagesByGroup = new Map<string, Message[]>()
 

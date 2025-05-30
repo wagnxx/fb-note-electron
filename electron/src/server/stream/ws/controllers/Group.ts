@@ -2,22 +2,25 @@ import { WebSocket } from 'ws'
 
 import {
   ChatMessage,
-  ClientMeta,
   ClientToServerMessage,
   Group,
-  MessageDispatcher,
+  IMessageDispatcher,
   ServerToClientMessage,
   User,
-} from '../types'
+} from '../interfaces/types'
 
-import { UpdateUserProps } from '../types'
+import { UpdateUserProps } from '../interfaces/types'
 import { getValidObject } from '@/utils/object'
 import { GroupService } from '../domains/group/GroupService'
 import { UserService } from '../domains/user/UserService'
 import { UserGroupService } from '../domains/userGroup/UserGroupService'
 import { MessageService } from '../domains/message/MessageService'
 import { BaseWsController } from './BaseWs'
+import { inject, injectable, TYPES } from '../core/ioc.config'
 
+import { ICoordinatorService } from '../interfaces/services/ICoordinatorService'
+
+@injectable()
 export class GroupController extends BaseWsController {
   private readonly FUNCTION_COMMANDS = {
     getWifiIp: '@getWifiIp',
@@ -25,16 +28,20 @@ export class GroupController extends BaseWsController {
   }
 
   constructor(
-    private readonly groupService: GroupService,
-    private readonly userService: UserService,
-    private readonly userGroupService: UserGroupService, // 确保这个参数存在
-    private readonly messageService: MessageService,
+    @inject(TYPES.MessageDispatcher)
+    protected readonly dispatcher: IMessageDispatcher,
+    @inject(TYPES.GroupService) private readonly groupService: GroupService,
+    @inject(TYPES.UserService) private readonly userService: UserService,
+    @inject(TYPES.UserGroupService) private readonly userGroupService: UserGroupService, // 确保这个参数存在
+    @inject(TYPES.MessageService) private readonly messageService: MessageService,
+    @inject(TYPES.CoordinatorService) private readonly coordinatorService: ICoordinatorService,
   ) {
     //
-    super() // 必须调用父类构造函数
+    super(dispatcher) // 必须调用父类构造函数
+    // this.registerHandlers(this.dispatcher)
   }
 
-  public registerHandlers(dispatcher: MessageDispatcher) {
+  public registerHandlers(dispatcher: IMessageDispatcher) {
     //init
     dispatcher.on('init-req', (ws, data) => this.handleInitRequest(ws, data))
 
@@ -107,7 +114,7 @@ export class GroupController extends BaseWsController {
 
     // 发送更新后的群组列表
 
-    const joinedGroups = this.groupService.getJoinedGroupsWithLatestMessage(userId)
+    const joinedGroups = this.coordinatorService.getJoinedGroupsWithLatestMessage(userId)
     const groupMessage: ServerToClientMessage = {
       type: 'joined-groups-res',
       joinedGroups,
@@ -158,22 +165,16 @@ export class GroupController extends BaseWsController {
   }
 
   public handleInitRequest(ws: WebSocket, data: ClientToServerMessage & { type: 'init-req' }) {
-    const groupService = this.groupService
-    const userService = this.userService
-    const userGroupService = this.userGroupService
-
     const userId = data.id
     this.updateUser(ws, userId, data)
 
-    const userUpdated = userService.getUser(userId)
-    const joinedGroupIds = userGroupService.getGroupsByUser(userId)
-    const allGroups = groupService.getAllGroups()
-    const allUsers = userService.getAllUsers()
-    const joinedGroups = joinedGroupIds.map(gid => groupService.getGroup(gid)).filter(Boolean) as Group[]
+    const userUpdated = this.userService.getUser(userId)
+    const allGroups = this.groupService.getAllGroups()
+    const allUsers = this.userService.getAllUsers()
 
     const payload: ServerToClientMessage = {
       type: 'init-res',
-      joinedGroups: groupService.getJoinedGroupsWithLatestMessage(userId),
+      joinedGroups: this.coordinatorService.getJoinedGroupsWithLatestMessage(userId),
       allGroups: allGroups.map(this.findMember),
       allUsers,
       currentUser: userUpdated!,
@@ -193,7 +194,7 @@ export class GroupController extends BaseWsController {
     const userId = data.id
     const payload: ServerToClientMessage = {
       type: 'joined-groups-res',
-      joinedGroups: this.groupService.getJoinedGroupsWithLatestMessage(userId),
+      joinedGroups: this.coordinatorService.getJoinedGroupsWithLatestMessage(userId),
     }
     ws.send(JSON.stringify(payload))
   }

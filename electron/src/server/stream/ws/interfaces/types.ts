@@ -14,10 +14,7 @@ export type {
 
 import { ChatMessage, ClientToServerMessage, User as SharedUser, ChatGroupWithMember } from '@shared/types'
 import { PartialWithRequiredId } from '@/utils/types'
-// export type ReciveMessageType = ChatMessage | ClientToServerMessage
-// export type User = PureUser & {
-//   socket?: WebSocket | null
-// }
+
 // ===================== 扩展服务端专用类型 =====================
 export type User = SharedUser & {
   socket: WebSocket | null // 服务端需要管理 WebSocket 连接
@@ -32,7 +29,7 @@ export type ServerChatGroup = ChatGroupWithMember & {
 }
 
 // WebSocket 事件分发器的类型定义
-export interface MessageDispatcher {
+export interface IMessageDispatcher {
   on<T extends ReciveMessageType['type']>(
     type: T,
     handler: (

@@ -1,21 +1,16 @@
-import { WebSocket } from 'ws'
-// import { MessageDispatcher } from './core/messageDispatcher'
-
-import { SafeMessageDispatcher } from '../core/messageDispatcher'
-import { MessageDispatcher } from '../types'
-// import { MessageDispatcher } from '../types'
+import { IMessageDispatcher } from '../interfaces/types'
 
 export abstract class BaseWsController {
-  protected dispatcher: MessageDispatcher
+  protected dispatcher: IMessageDispatcher
 
-  constructor() {
-    this.dispatcher = new SafeMessageDispatcher()
-    this.registerHandlers(this.dispatcher)
+  constructor(dispatcher: IMessageDispatcher) {
+    this.dispatcher = dispatcher
+    this.registerHandlers(dispatcher)
   }
 
-  protected abstract registerHandlers(dispatcher: MessageDispatcher): void
+  protected abstract registerHandlers(dispatcher: IMessageDispatcher): void
 
-  public getDispatcher(): MessageDispatcher {
+  public getDispatcher(): IMessageDispatcher {
     return this.dispatcher
   }
 }
