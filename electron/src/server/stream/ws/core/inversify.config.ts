@@ -7,10 +7,9 @@ import '../domains/userGroup/UserGroupService'
 import '../domains/group/GroupService'
 import '../domains/message/MessageService'
 import '../domains/coordinator/CoordinatorService'
-import './MessageDispatcher'
 import '../controllers/Group'
 
-//  ==================================== bind by hand =============================
+//  ==================================== bind by hand example =============================
 
 // import '../domains/userGroup/IUserGroupService'
 

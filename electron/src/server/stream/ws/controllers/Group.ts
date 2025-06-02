@@ -15,69 +15,56 @@ import { GroupService } from '../domains/group/GroupService'
 import { UserGroupService } from '../domains/userGroup/UserGroupService'
 import { MessageService } from '../domains/message/MessageService'
 import { BaseWsController } from './BaseWs'
-import { inject, injectable, provide, TYPES } from '../core/ioc.config'
+import { action, inject, provide, TYPES } from '../core/ioc.config'
 
 import { ICoordinatorService } from '../interfaces/services/ICoordinatorService'
 import { IUserService } from '../interfaces/services/IUserService'
 
 @provide(TYPES.GroupController)
 export class GroupController extends BaseWsController {
-  private readonly FUNCTION_COMMANDS = {
-    getWifiIp: '@getWifiIp',
-    getUsers: '@getUsers',
-  }
-
   constructor(
-    @inject(TYPES.MessageDispatcher)
-    protected readonly dispatcher: IMessageDispatcher,
     @inject(TYPES.GroupService) private readonly groupService: GroupService,
     @inject(TYPES.UserService) private readonly userService: IUserService,
-    @inject(TYPES.UserGroupService) private readonly userGroupService: UserGroupService, // 确保这个参数存在
+    @inject(TYPES.UserGroupService) private readonly userGroupService: UserGroupService,
     @inject(TYPES.MessageService) private readonly messageService: MessageService,
     @inject(TYPES.CoordinatorService) private readonly coordinatorService: ICoordinatorService,
   ) {
-    //
-    super(dispatcher) // 必须调用父类构造函数
-    // this.registerHandlers(this.dispatcher)
+    super()
   }
 
-  public registerHandlers(dispatcher: IMessageDispatcher) {
-    //init
-    dispatcher.on('init-req', (ws, data) => this.handleInitRequest(ws, data))
+  // =============================================  init     ==============================================
+  @action('init-req')
+  public handleInitRequest(ws: WebSocket, data: ClientToServerMessage & { type: 'init-req' }) {
+    const userId = data.id
+    this.updateUser(ws, userId, data)
 
-    // group
-    dispatcher.on('group-init', (_, data) => this.handleGroupInit(data))
-    dispatcher.on('group-create', (ws, data) => this.handleGroupCreate(ws, data))
-    dispatcher.on('join', (ws, data) => this.handleJoinGroup(ws, data))
-    dispatcher.on('groups-req', ws => this.handleGroupRequest(ws))
-    // userGroup
-    dispatcher.on('reset-user', (ws, data) => this.handleResetUser(ws, data))
-    dispatcher.on('users-req', (ws, data) => this.handleGetUsers(ws, data))
-    dispatcher.on('joined-groups-req', (ws, data) => this.handleGetJoindGroups(ws, data))
-    // chat message
-    dispatcher.on('message-history-req', (ws, data) => this.handleGetGroupMessages(ws, data))
-    dispatcher.on('text', (_, data) => this.handleMessage(data))
-    dispatcher.on('image', (_, data) => this.handleMessage(data))
-    dispatcher.on('file', (_, data) => this.handleMessage(data))
-  }
+    const userUpdated = this.userService.getUser(userId)
+    const allGroups = this.groupService.getAllGroups()
+    const allUsers = this.userService.getAllUsers()
 
-  // 辅助方法：查找群组成员
-  private findMember = (item: Group) => {
-    const membersId = this.userGroupService.getUsersByGroup(item.id)
-    const members = membersId.map(uid => this.userService.getUser(uid)) as User[]
-    return {
-      ...item,
-      members,
+    const payload: ServerToClientMessage = {
+      type: 'init-res',
+      joinedGroups: this.coordinatorService.getJoinedGroupsWithLatestMessage(userId),
+      allGroups: allGroups.map(this.findMember),
+      allUsers,
+      currentUser: userUpdated!,
     }
+    ws.send(JSON.stringify(payload))
   }
 
-  // 更新用户信息（私有方法）
-  private updateUser(ws: WebSocket, userId: string, data: ClientToServerMessage) {
-    const params: UpdateUserProps = { id: userId, socket: ws }
-    const user = getValidObject(data)
-    this.userService.addOrUpdateUser(userId, { ...params, ...user })
+  @action('group-init')
+  public handleGroupInit(data: { groups: Group[] }) {
+    this.groupService.initGroups(data.groups)
   }
 
+  @action('group-create')
+  public handleGroupCreate(ws: WebSocket, data: ClientToServerMessage & { type: 'group-create' }) {
+    this.groupService.setGroup(data.group)
+    console.log('Group created:', data.group)
+    this.handleGroupRequest(ws)
+  }
+
+  @action('join')
   public handleJoinGroup(ws: WebSocket, data: ClientToServerMessage & { type: 'join' }) {
     const groupService = this.groupService
     const userService = this.userService
@@ -130,16 +117,7 @@ export class GroupController extends BaseWsController {
     ws.send(JSON.stringify(historyMessage))
   }
 
-  public handleGroupInit(data: { groups: Group[] }) {
-    this.groupService.initGroups(data.groups)
-  }
-
-  public handleGroupCreate(ws: WebSocket, data: ClientToServerMessage & { type: 'group-create' }) {
-    this.groupService.setGroup(data.group)
-    console.log('Group created:', data.group)
-    this.handleGroupRequest(ws)
-  }
-
+  @action('groups-req')
   public handleGroupRequest(ws: WebSocket) {
     const message: ServerToClientMessage = {
       type: 'groups-res',
@@ -149,6 +127,33 @@ export class GroupController extends BaseWsController {
     ws.send(JSON.stringify(message))
   }
 
+  // =============================================  user group     ==============================================
+  @action('reset-user')
+  public handleResetUser(ws: WebSocket, data: ClientToServerMessage & { type: 'reset-user' }) {
+    const userId = data.id
+    this.updateUser(ws, userId, data)
+
+    const afterSet = this.userService.getUser(userId)
+    ws.send(JSON.stringify({ ...afterSet, type: 'reset-user-success' }))
+  }
+
+  @action('users-req')
+  public handleGetUsers(ws: WebSocket, data: ClientToServerMessage & { type: 'users-req' }) {
+    const users = this.userService.getAllUsers()
+    ws.send(JSON.stringify({ type: 'users-res', users }))
+  }
+
+  @action('joined-groups-req')
+  public handleGetJoindGroups(ws: WebSocket, data: ClientToServerMessage & { type: 'joined-groups-req' }) {
+    const userId = data.id
+    const payload: ServerToClientMessage = {
+      type: 'joined-groups-res',
+      joinedGroups: this.coordinatorService.getJoinedGroupsWithLatestMessage(userId),
+    }
+    ws.send(JSON.stringify(payload))
+  }
+  // =============================================   chat message     ==============================================
+  @action('message-history-req')
   public handleGetGroupMessages(ws: WebSocket, data: ClientToServerMessage & { type: 'message-history-req' }) {
     const { groupId } = data
     if (!groupId) return
@@ -164,46 +169,28 @@ export class GroupController extends BaseWsController {
     ws.send(JSON.stringify(historyMessage))
   }
 
-  public handleInitRequest(ws: WebSocket, data: ClientToServerMessage & { type: 'init-req' }) {
-    const userId = data.id
-    this.updateUser(ws, userId, data)
-
-    const userUpdated = this.userService.getUser(userId)
-    const allGroups = this.groupService.getAllGroups()
-    const allUsers = this.userService.getAllUsers()
-
-    const payload: ServerToClientMessage = {
-      type: 'init-res',
-      joinedGroups: this.coordinatorService.getJoinedGroupsWithLatestMessage(userId),
-      allGroups: allGroups.map(this.findMember),
-      allUsers,
-      currentUser: userUpdated!,
-    }
-    ws.send(JSON.stringify(payload))
-  }
-
-  public handleResetUser(ws: WebSocket, data: ClientToServerMessage & { type: 'reset-user' }) {
-    const userId = data.id
-    this.updateUser(ws, userId, data)
-
-    const afterSet = this.userService.getUser(userId)
-    ws.send(JSON.stringify({ ...afterSet, type: 'reset-user-success' }))
-  }
-
-  public handleGetJoindGroups(ws: WebSocket, data: ClientToServerMessage & { type: 'joined-groups-req' }) {
-    const userId = data.id
-    const payload: ServerToClientMessage = {
-      type: 'joined-groups-res',
-      joinedGroups: this.coordinatorService.getJoinedGroupsWithLatestMessage(userId),
-    }
-    ws.send(JSON.stringify(payload))
-  }
-  public handleGetUsers(ws: WebSocket, data: ClientToServerMessage & { type: 'users-req' }) {
-    const users = this.userService.getAllUsers()
-    ws.send(JSON.stringify({ type: 'users-res', users }))
-  }
-
-  public handleMessage(data: ChatMessage) {
+  @action('text')
+  @action('image')
+  @action('file')
+  public handleMessage(ws: WebSocket, data: ChatMessage) {
     this.messageService.addRawMessage(data)
+  }
+
+  // =============================================   辅助方法     ==============================================
+  // 辅助方法：查找群组成员
+  private findMember = (item: Group) => {
+    const membersId = this.userGroupService.getUsersByGroup(item.id)
+    const members = membersId.map(uid => this.userService.getUser(uid)) as User[]
+    return {
+      ...item,
+      members,
+    }
+  }
+
+  // 更新用户信息（私有方法）
+  private updateUser(ws: WebSocket, userId: string, data: ClientToServerMessage) {
+    const params: UpdateUserProps = { id: userId, socket: ws }
+    const user = getValidObject(data)
+    this.userService.addOrUpdateUser(userId, { ...params, ...user })
   }
 }
