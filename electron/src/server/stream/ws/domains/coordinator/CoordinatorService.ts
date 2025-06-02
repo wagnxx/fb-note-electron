@@ -1,10 +1,10 @@
-import { inject, injectable, TYPES } from '../../core/ioc.config'
+import { inject, injectable, provide, TYPES } from '../../core/ioc.config'
 import type { ICoordinatorService } from '../../interfaces/services/ICoordinatorService'
 import type { IMessageService } from '../../interfaces/services/IMessageService'
 import type { IGroupService } from '../../interfaces/services/IGroupService'
 import type { JoinedGroupResponse } from '../../interfaces/types'
 
-@injectable()
+@provide(TYPES.CoordinatorService)
 export class CoordinatorService implements ICoordinatorService {
   constructor(
     @inject(TYPES.GroupService) private readonly groupService: IGroupService,

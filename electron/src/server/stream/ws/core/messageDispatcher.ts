@@ -1,8 +1,8 @@
 import { WebSocket } from 'ws'
 import { ReciveMessageType, IMessageDispatcher } from '../interfaces/types'
-import { injectable } from './ioc.config'
+import { injectable, provide, TYPES } from './ioc.config'
 
-@injectable()
+@provide(TYPES.MessageDispatcher)
 export class MessageDispatcher implements IMessageDispatcher {
   private handlers = new Map<ReciveMessageType['type'], (ws: WebSocket, data: any) => void>()
 

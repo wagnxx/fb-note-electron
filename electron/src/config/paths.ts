@@ -1,4 +1,6 @@
-import { getDistPath, getSupportPath, isDev, platform } from './index'
+// import { getDistPath, getSupportPath, isDev, platform } from './index'
+
+import { getDistPath, getSupportPath, isDev, platform } from './basic'
 
 // 类型定义
 export const preloadPath: string = getDistPath('preload.js')

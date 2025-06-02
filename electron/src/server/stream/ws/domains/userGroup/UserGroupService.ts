@@ -1,7 +1,7 @@
 // domains/userGroup/UserGroupService.ts
-import { inject, injectable, TYPES } from '../../core/ioc.config'
+import { provide, TYPES } from '../../core/ioc.config'
 import { IUserGroupService } from './IUserGroupService'
-@injectable()
+@provide(TYPES.UserGroupService)
 export class UserGroupService implements IUserGroupService {
   private groupMembers = new Map<string, Set<string>>()
   private userGroups = new Map<string, Set<string>>()

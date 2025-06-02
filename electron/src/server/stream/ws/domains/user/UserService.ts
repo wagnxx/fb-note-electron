@@ -1,17 +1,17 @@
 // domains/user/UserService.ts
 
-import { inject, injectable, TYPES } from '../../core/ioc.config'
+import { inject, injectable, provide, TYPES } from '../../core/ioc.config'
 import { IUserService } from '../../interfaces/services/IUserService'
 import { User } from './User'
 import { UserRepository } from './UserRepository'
 import { WebSocket } from 'ws'
 
-@injectable()
+@provide(TYPES.UserService)
 export class UserService implements IUserService {
-  private repo: UserRepository
+  // private repo: UserRepository
 
-  constructor() {
-    this.repo = new UserRepository()
+  constructor(@inject(TYPES.UserRepository) private repo: UserRepository) {
+    // this.repo = new UserRepository()
   }
 
   registerUser(params: { id: string; name?: string; socket?: WebSocket | null; avatar?: string }): User {

@@ -1,36 +1,37 @@
 // src/core/inversify.config.ts
-import 'reflect-metadata'
-import { Container } from 'inversify'
-import { TYPES } from './ioc.config'
 
-import { UserService } from '../domains/user/UserService'
-import { UserGroupService } from '../domains/userGroup/UserGroupService'
-import { GroupService } from '../domains/group/GroupService'
-import { MessageService } from '../domains/message/MessageService'
-import { GroupController } from '../controllers/Group'
+import '../domains/user/UserRepository'
+import '../domains/user/UserService'
 
-import { IGroupService } from '../interfaces/services/IGroupService'
-import { IMessageService } from '../interfaces/services/IMessageService'
-import { ICoordinatorService } from '../interfaces/services/ICoordinatorService'
-import { CoordinatorService } from '../domains/coordinator/CoordinatorService'
-import { IUserService } from '../interfaces/services/IUserService'
-import { IUserGroupService } from '../domains/userGroup/IUserGroupService'
-import { MessageDispatcher } from './MessageDispatcher'
+import '../domains/userGroup/UserGroupService'
+import '../domains/group/GroupService'
+import '../domains/message/MessageService'
+import '../domains/coordinator/CoordinatorService'
+import './MessageDispatcher'
+import '../controllers/Group'
 
+//  ==================================== bind by hand =============================
+
+// import '../domains/userGroup/IUserGroupService'
+
+// import '../interfaces/services/IUserService'
+// import '../interfaces/services/IGroupService'
+// import '../interfaces/services/IMessageService'
+// import '../interfaces/services/ICoordinatorService'
 // 容器配置
-const container = new Container()
+// const container = new Container()
 
-// 注册Services
-container.bind<IUserService>(TYPES.UserService).to(UserService).inSingletonScope()
-container.bind<IUserGroupService>(TYPES.UserGroupService).to(UserGroupService).inSingletonScope()
-container.bind<IGroupService>(TYPES.GroupService).to(GroupService).inSingletonScope()
-container.bind<IMessageService>(TYPES.MessageService).to(MessageService).inSingletonScope()
-container.bind<ICoordinatorService>(TYPES.CoordinatorService).to(CoordinatorService)
+// // 注册Services
+// container.bind<IUserService>(TYPES.UserService).to(UserService).inSingletonScope()
+// container.bind<IUserGroupService>(TYPES.UserGroupService).to(UserGroupService).inSingletonScope()
+// container.bind<IGroupService>(TYPES.GroupService).to(GroupService).inSingletonScope()
+// container.bind<IMessageService>(TYPES.MessageService).to(MessageService).inSingletonScope()
+// container.bind<ICoordinatorService>(TYPES.CoordinatorService).to(CoordinatorService)
 
-// 注册Controllers
-container.bind<GroupController>(TYPES.GroupController).to(GroupController).inSingletonScope()
+// // 注册Controllers
+// container.bind<GroupController>(TYPES.GroupController).to(GroupController).inSingletonScope()
 
-// MessageDispatcher
-container.bind(TYPES.MessageDispatcher).to(MessageDispatcher).inSingletonScope()
+// // MessageDispatcher
+// container.bind(TYPES.MessageDispatcher).to(MessageDispatcher).inSingletonScope()
 
-export { container }
+// export { container }

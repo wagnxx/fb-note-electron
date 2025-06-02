@@ -1,7 +1,8 @@
 // domains/user/UserRepository.ts
-import { inject, injectable, TYPES } from '../../core/ioc.config'
+import { inject, injectable, provide, TYPES } from '../../core/ioc.config'
 import { User } from './User'
-@injectable()
+
+@provide(TYPES.UserRepository)
 export class UserRepository {
   private users = new Map<string, User>()
 

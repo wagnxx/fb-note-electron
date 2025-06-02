@@ -12,15 +12,15 @@ import {
 import { UpdateUserProps } from '../interfaces/types'
 import { getValidObject } from '@/utils/object'
 import { GroupService } from '../domains/group/GroupService'
-import { UserService } from '../domains/user/UserService'
 import { UserGroupService } from '../domains/userGroup/UserGroupService'
 import { MessageService } from '../domains/message/MessageService'
 import { BaseWsController } from './BaseWs'
-import { inject, injectable, TYPES } from '../core/ioc.config'
+import { inject, injectable, provide, TYPES } from '../core/ioc.config'
 
 import { ICoordinatorService } from '../interfaces/services/ICoordinatorService'
+import { IUserService } from '../interfaces/services/IUserService'
 
-@injectable()
+@provide(TYPES.GroupController)
 export class GroupController extends BaseWsController {
   private readonly FUNCTION_COMMANDS = {
     getWifiIp: '@getWifiIp',
@@ -31,7 +31,7 @@ export class GroupController extends BaseWsController {
     @inject(TYPES.MessageDispatcher)
     protected readonly dispatcher: IMessageDispatcher,
     @inject(TYPES.GroupService) private readonly groupService: GroupService,
-    @inject(TYPES.UserService) private readonly userService: UserService,
+    @inject(TYPES.UserService) private readonly userService: IUserService,
     @inject(TYPES.UserGroupService) private readonly userGroupService: UserGroupService, // 确保这个参数存在
     @inject(TYPES.MessageService) private readonly messageService: MessageService,
     @inject(TYPES.CoordinatorService) private readonly coordinatorService: ICoordinatorService,

@@ -100,6 +100,7 @@ export default [
       nodeResolve({
         extensions: ['.js', '.ts'],
         preferBuiltins: true,
+        sourcemap: true,
       }),
       typescript(),
       commonjs(),

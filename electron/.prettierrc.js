@@ -6,8 +6,8 @@ module.exports = {
     bracketSpacing: true,
     jsxBracketSameLine: false,
     endOfLine: 'auto',
-    spaceBeforeFunctionParen: true,
+    spaceBeforeFunctionParen: false, //eslint-config-prettier off
     tabWidth: 2,
     useTabs: false,
-    printWidth: 120
+    printWidth: 120,
   }

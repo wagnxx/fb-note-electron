@@ -1,25 +1,25 @@
 // domains/message/MessageService.ts
 import { MessageRepository } from './MessageRepository'
 import { TextMessage, FileMessage, ImageMessage, Message } from './Message'
-import { UserService } from '../user/UserService'
 import { getNetworkInfo } from '@/utils/netUtils'
 import { ServerToClientMessage } from '../../interfaces/types'
 
 import { IGroupService } from '../../interfaces/services/IGroupService'
-import { inject, injectable, TYPES } from '../../core/ioc.config'
+import { inject, injectable, provide, TYPES } from '../../core/ioc.config'
 import { LazyServiceIdentifier } from 'inversify'
 import { IMessageService } from '../../interfaces/services/IMessageService'
+import { IUserService } from '../../interfaces/services/IUserService'
 
 const FUNCTION_COMMANDS = {
   getWifiIp: '@getWifiIp',
   getUsers: '@getUsers',
 }
-@injectable()
+@provide(TYPES.MessageService)
 export class MessageService implements IMessageService {
   private readonly messageRepository: MessageRepository
 
   constructor(
-    @inject(TYPES.UserService) private readonly userService: UserService,
+    @inject(TYPES.UserService) private readonly userService: IUserService,
     @inject(new LazyServiceIdentifier(() => TYPES.GroupService)) private groupService: IGroupService,
   ) {
     this.messageRepository = new MessageRepository()

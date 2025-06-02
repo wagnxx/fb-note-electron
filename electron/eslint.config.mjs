@@ -30,7 +30,6 @@ const commonRules = {
   indent: 'off', // 不使用 indent 规则
   'no-tabs': 'off',
   'keyword-spacing': ['error', { before: true, after: true }], // 冒号后面必须有一个空格
-  'space-before-function-paren': 0,
   'object-curly-spacing': ['error', 'always'],
   'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }], // 最多有2个空行，文件末尾不能有空行
 

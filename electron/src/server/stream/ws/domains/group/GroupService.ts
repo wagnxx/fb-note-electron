@@ -2,12 +2,12 @@
 import { Group } from './group'
 import { GroupRepository } from './GroupRepository'
 import type { ServerToClientMessage, User, Group as GroupDTO } from '../../interfaces/types'
-import { inject, injectable, TYPES } from '../../core/ioc.config'
+import { inject, injectable, provide, TYPES } from '../../core/ioc.config'
 import { IGroupService } from '../../interfaces/services/IGroupService'
 import { IUserService } from '../../interfaces/services/IUserService'
 import { IUserGroupService } from '../../interfaces/services/IUserGroupService'
 
-@injectable()
+@provide(TYPES.GroupService)
 export class GroupService implements IGroupService {
   private inited = false
   private systemId = 'sys'
