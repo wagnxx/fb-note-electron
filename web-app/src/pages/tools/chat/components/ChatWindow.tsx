@@ -102,7 +102,7 @@ const ChatWindow: React.FC<
           </Button>
         )}
         <span className=" mx-auto">
-          {group?.name}({/* {group?.members.length */})
+          {group?.name}({group?.members.length})
         </span>
         <Button icon={<MoreHorizontal color="#333" size="16" />} type="link" disabled></Button>
       </div>

@@ -57,7 +57,7 @@ const ChatRoomPage: React.FC = () => {
         backgroundColor: '#f1f5f9',
         zIndex: 1000,
       }}
-      className={cn('flex  cursor-move', isMobile ? 'flex-col w-full h-full' : 'flex-row rounded-lg overflow-hidden')}
+      className={cn('flex ', isMobile ? 'flex-col w-full h-full' : 'flex-row rounded-lg overflow-hidden')}
     >
       {!isMobile && (
         <div className="drag-header w-full h-8 bg-slate-300 cursor-move absolute top-0 left-0 z-10 rounded-t-lg" />
@@ -79,7 +79,7 @@ const ChatRoomPage: React.FC = () => {
           {stage === 'chat' && selectedGroupId ? (
             <ChatWindow className="flex-1 min-h-0" groupId={selectedGroupId} isMobile={isMobile} onBack={handleBack} />
           ) : (
-            <Empty className="pt-20 bg-white flex-1" />
+            !isMobile && <Empty className="pt-20 bg-white flex-1" />
           )}
         </div>
       </div>

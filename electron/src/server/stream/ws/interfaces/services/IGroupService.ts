@@ -1,3 +1,4 @@
+import { ChatGroupWithMember } from '@shared/types'
 import { Group } from '../../domains/group/group'
 import { Group as GroupDTO, JoinedGroupResponse, ServerToClientMessage, User } from '../types'
 
@@ -11,6 +12,7 @@ export interface IGroupService {
   getGroup(id: string): Group | undefined
   getGroups(ids: string[]): Group[]
   getAllGroups(): Group[]
+  getAllGroupsWithMembers(): ChatGroupWithMember[]
   getSystemId(): string
 
   getGroupsWithMembers(userId: string): (GroupDTO & { members: User[] })[]

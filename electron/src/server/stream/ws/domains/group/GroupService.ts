@@ -70,6 +70,10 @@ export class GroupService implements IGroupService {
   getAllGroups() {
     return this.repo.getAll()
   }
+  getAllGroupsWithMembers() {
+    const allGroups = this.getAllGroups().map(this.findMember)
+    return allGroups
+  }
 
   getSystemId() {
     return this.systemId

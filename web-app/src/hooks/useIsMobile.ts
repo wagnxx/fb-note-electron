@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import useFirstRender from './useFirstRender'
 
 type Props = { breakpoint?: number; onChange?: (isM: boolean) => void }
 export function useIsMobile({ breakpoint = 768, onChange = () => { } }: Props) {
@@ -6,6 +7,9 @@ export function useIsMobile({ breakpoint = 768, onChange = () => { } }: Props) {
     typeof window !== 'undefined' ? window.innerWidth < breakpoint : false,
   )
   const prevValueRef = useRef(isMobile)
+
+  const isFirstRender = useFirstRender()
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -13,7 +17,7 @@ export function useIsMobile({ breakpoint = 768, onChange = () => { } }: Props) {
 
     const handleChange = () => {
       const nextValue = query.matches
-      if (nextValue !== prevValueRef.current) {
+      if (nextValue !== prevValueRef.current || isFirstRender) {
         prevValueRef.current = nextValue
         setIsMobile(nextValue)
         onChange?.(nextValue)
@@ -29,7 +33,7 @@ export function useIsMobile({ breakpoint = 768, onChange = () => { } }: Props) {
     return () => {
       query.removeEventListener?.('change', handleChange)
     }
-  }, [breakpoint, onChange])
+  }, [breakpoint, onChange, isFirstRender])
 
   return isMobile
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Space } from 'antd'
+import { Button, Popconfirm, Space } from 'antd'
 import JoinGroupModal from './JoinGroupModal'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { updateWebSocketState } from '@/features/chat/chatSlice'
@@ -8,7 +8,6 @@ import CreateGroupModal from './CreateGroupModal'
 import { cn } from '@/lib/utils'
 import { PlusOutlined } from '@ant-design/icons'
 import { ChatGroup as Group } from '@shared/types'
-import { afterRaf } from '@/utils/utilsAsyncFunc'
 
 const ChatGroupList: React.FC<{
   onSelectGroup: (id: string) => void
@@ -27,32 +26,33 @@ const ChatGroupList: React.FC<{
     sendMessage({ type: 'groups-req' })
   }
 
+  const applyJoinGroup = (username: string, group: Group) => {
+    sendMessage({
+      type: 'join',
+      username,
+      userId: wsState.id,
+      groupId: group.id,
+    })
+
+    onJoined()
+  }
+
   const handleJoin = (group: Omit<Group, 'messages'>) => {
     setJoinTargetGroup(group)
 
     if (!wsState.username) {
       setJoinModalVisible(true)
     } else {
-      afterRaf().then(() => {
-        confirmJoin(wsState.username!)
-      })
+      applyJoinGroup(wsState.username!, group)
     }
   }
 
   const confirmJoin = (username: string) => {
-    if (joinTargetGroup) {
-      sendMessage({
-        type: 'join',
-        username,
-        userId: wsState.id,
-        groupId: joinTargetGroup.id,
-      })
-      // const updated = groups.map(g => (g.id === joinTargetGroup.id ? { ...g, joined: true } : g))
-      // dispatch(updateGroups(updated))
-      dispatch(updateWebSocketState({ username }))
-      setJoinModalVisible(false)
-      onJoined()
-    }
+    if (!joinTargetGroup) return
+
+    applyJoinGroup(username, joinTargetGroup)
+    dispatch(updateWebSocketState({ username }))
+    setJoinModalVisible(false)
   }
 
   const groupActions = (
@@ -73,9 +73,18 @@ const ChatGroupList: React.FC<{
             <div className="truncate">{group.name}</div>
 
             {!joinedGroups.some(j => j.group.id === group.id) && (
-              <Button size="small" type="primary" onClick={() => handleJoin(group)}>
-                申请
-              </Button>
+              <Popconfirm
+                title="Join"
+                description="Are you sure  to join this Group?"
+                onConfirm={() => handleJoin(group)}
+                // onCancel={cancel}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button size="small" type="primary">
+                  申请
+                </Button>
+              </Popconfirm>
             )}
           </div>
         ))
