@@ -1,4 +1,4 @@
-import { inject, injectable, provide, TYPES } from '../../core/ioc.config'
+import { inject, provide, TYPES } from '../../core/ioc.config'
 import type { ICoordinatorService } from '../../interfaces/services/ICoordinatorService'
 import type { IMessageService } from '../../interfaces/services/IMessageService'
 import type { IGroupService } from '../../interfaces/services/IGroupService'

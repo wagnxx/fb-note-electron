@@ -1,6 +1,6 @@
 // domains/user/UserService.ts
 
-import { inject, injectable, provide, TYPES } from '../../core/ioc.config'
+import { inject, provide, TYPES } from '../../core/ioc.config'
 import { IUserService } from '../../interfaces/services/IUserService'
 import { User } from './User'
 import { UserRepository } from './UserRepository'

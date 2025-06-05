@@ -8,7 +8,7 @@ import unusedImport from 'eslint-plugin-unused-imports';
 
 const commonRules = {
   'prettier/prettier': 'error',
-  '@typescript-eslint/no-unused-vars': 'warn',
+  '@typescript-eslint/no-unused-vars': 'off',
   'no-console': 'off',
   'no-debugger': 'off',
   'semi': ['error', 'never'],
@@ -22,6 +22,17 @@ const commonRules = {
   //   },
   // ],
 
+  'unused-imports/no-unused-imports': 'warn', // ✅ 启用自动删除
+  'unused-imports/no-unused-vars': [ // ✅ 用于未使用变量的警告
+    'warn',
+    {
+      vars: 'all',
+      varsIgnorePattern: '^_',
+      args: 'after-used',
+      argsIgnorePattern: '^_',
+    },
+  ],
+
   // 关闭默认的未使用变量检测规则
   'no-unused-vars': 'off',
 
@@ -30,7 +41,8 @@ const commonRules = {
   indent: 'off', // 不使用 indent 规则
   'no-tabs': 'off',
   'keyword-spacing': ['error', { before: true, after: true }], // 冒号后面必须有一个空格
-  'object-curly-spacing': ['error', 'always'],
+  'object-curly-spacing': 'off', // prettierConfig off 
+  'space-in-parens': 'off',
   'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }], // 最多有2个空行，文件末尾不能有空行
 
   'object-property-newline': 'off',
@@ -42,7 +54,7 @@ export default [
     ignores: ['release/**'],
   },
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '../shared/**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {

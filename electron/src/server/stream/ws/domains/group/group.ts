@@ -7,7 +7,7 @@ export class Group {
     public id: string,
     public name: string = '',
     public admin: string = '',
-  ) { }
+  ) {}
 
   setAdmin(userId: string) {
     this.admin = userId

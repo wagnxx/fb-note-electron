@@ -5,7 +5,7 @@ import { getNetworkInfo } from '@/utils/netUtils'
 import { ServerToClientMessage } from '../../interfaces/types'
 
 import { IGroupService } from '../../interfaces/services/IGroupService'
-import { inject, injectable, provide, TYPES } from '../../core/ioc.config'
+import { inject, provide, TYPES } from '../../core/ioc.config'
 import { LazyServiceIdentifier } from 'inversify'
 import { IMessageService } from '../../interfaces/services/IMessageService'
 import { IUserService } from '../../interfaces/services/IUserService'

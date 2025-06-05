@@ -1,5 +1,5 @@
 // domains/user/UserRepository.ts
-import { inject, injectable, provide, TYPES } from '../../core/ioc.config'
+import { provide, TYPES } from '../../core/ioc.config'
 import { User } from './User'
 
 @provide(TYPES.UserRepository)

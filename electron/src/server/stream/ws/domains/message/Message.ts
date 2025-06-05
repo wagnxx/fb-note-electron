@@ -7,7 +7,7 @@ export abstract class Message {
     public timestamp: number,
     public type: 'text' | 'file' | 'image',
     public content: string,
-  ) { }
+  ) {}
 }
 
 export class TextMessage extends Message {

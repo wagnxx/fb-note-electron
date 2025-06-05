@@ -16,5 +16,6 @@ electron/support/logs
 electron/support/temps
 *.error
 .temps
+.vscode
 
 test/

@@ -1,6 +1,6 @@
 import { ChatGroupWithMember } from '@shared/types'
 import { Group } from '../../domains/group/group'
-import { Group as GroupDTO, JoinedGroupResponse, ServerToClientMessage, User } from '../types'
+import { Group as GroupDTO, ServerToClientMessage, User } from '../types'
 
 // interfaces/services/IGroupService.ts
 export interface IGroupService {

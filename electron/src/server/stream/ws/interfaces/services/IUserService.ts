@@ -2,7 +2,6 @@
 
 import { WebSocket } from 'ws'
 import { User } from '../../domains/user/User'
-import { UserRepository } from '../../domains/user/UserRepository'
 
 export interface IUserService {
   registerUser(params: { id: string; name?: string; socket?: WebSocket | null; avatar?: string }): User

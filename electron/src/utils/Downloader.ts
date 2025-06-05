@@ -1,5 +1,4 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
-import { ipcMain } from 'electron'
 import path from 'path'
 
 // 定义类型

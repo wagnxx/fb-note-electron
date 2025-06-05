@@ -1,14 +1,5 @@
 import { WebSocket } from 'ws'
-
-import {
-  ChatMessage,
-  ClientToServerMessage,
-  Group,
-  IMessageDispatcher,
-  ServerToClientMessage,
-  User,
-} from '../interfaces/types'
-
+import { ChatMessage, ClientToServerMessage, Group, ServerToClientMessage } from '../interfaces/types'
 import { UpdateUserProps } from '../interfaces/types'
 import { getValidObject } from '@/utils/object'
 import { GroupService } from '../domains/group/GroupService'
@@ -16,7 +7,6 @@ import { UserGroupService } from '../domains/userGroup/UserGroupService'
 import { MessageService } from '../domains/message/MessageService'
 import { BaseWsController } from './BaseWs'
 import { action, inject, provide, TYPES } from '../core/ioc.config'
-
 import { ICoordinatorService } from '../interfaces/services/ICoordinatorService'
 import { IUserService } from '../interfaces/services/IUserService'
 
@@ -38,16 +28,12 @@ export class GroupController extends BaseWsController {
     const userId = data.id
     this.updateUser(ws, userId, data)
 
-    const userUpdated = this.userService.getUser(userId)
-    const allGroups = this.groupService.getAllGroups()
-    const allUsers = this.userService.getAllUsers()
-
     const payload: ServerToClientMessage = {
       type: 'init-res',
       joinedGroups: this.coordinatorService.getJoinedGroupsWithLatestMessage(userId),
-      allGroups: allGroups.map(this.findMember),
-      allUsers,
-      currentUser: userUpdated!,
+      allGroups: this.groupService.getAllGroupsWithMembers(),
+      allUsers: this.userService.getAllUsers(),
+      currentUser: this.userService.getUser(userId)!,
     }
     ws.send(JSON.stringify(payload))
   }
@@ -121,7 +107,7 @@ export class GroupController extends BaseWsController {
   public handleGroupRequest(ws: WebSocket) {
     const message: ServerToClientMessage = {
       type: 'groups-res',
-      groups: [...this.groupService.getAllGroups().values()].map(this.findMember),
+      groups: this.groupService.getAllGroupsWithMembers(),
       timestamp: Date.now(),
     }
     ws.send(JSON.stringify(message))
@@ -177,15 +163,6 @@ export class GroupController extends BaseWsController {
   }
 
   // =============================================   辅助方法     ==============================================
-  // 辅助方法：查找群组成员
-  private findMember = (item: Group) => {
-    const membersId = this.userGroupService.getUsersByGroup(item.id)
-    const members = membersId.map(uid => this.userService.getUser(uid)) as User[]
-    return {
-      ...item,
-      members,
-    }
-  }
 
   // 更新用户信息（私有方法）
   private updateUser(ws: WebSocket, userId: string, data: ClientToServerMessage) {

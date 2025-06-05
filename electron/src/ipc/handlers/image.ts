@@ -1,6 +1,4 @@
-import path from 'path'
-import fs from 'fs'
-import { dialog, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import { IPC_ACTIONS } from '@/constants'
 import { generateMacIcons, generateWinIcons } from '@/utils/imageUtils'
 import { GenerateResult, IconOptions } from '@shared/types'

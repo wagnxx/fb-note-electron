@@ -1,5 +1,5 @@
 // domains/message/MessageRepository.ts
-import { inject, injectable, TYPES } from '../../core/ioc.config'
+import { injectable } from '../../core/ioc.config'
 import { Message } from './Message'
 @injectable()
 export class MessageRepository {
