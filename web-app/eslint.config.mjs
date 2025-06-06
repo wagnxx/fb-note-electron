@@ -7,45 +7,9 @@ import unusedImport from 'eslint-plugin-unused-imports';
 import pluginPrettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 import reactHooks from 'eslint-plugin-react-hooks';
+import { webAppRules } from '../eslint.rules.mjs';
 
-// ✅ 抽取通用规则
-const commonRules = {
-  'prettier/prettier': 'error',
 
-  // 检测并删除未使用的导入
-  'unused-imports/no-unused-imports-ts': 'warn',
-  'unused-imports/no-unused-vars-ts': [
-    'warn',
-    {
-      varsIgnorePattern: '^_', // 确保这里没有设置成 "^.*$" 或类似的模式
-      argsIgnorePattern: '^_',
-    },
-  ],
-
-  // 关闭默认的未使用变量检测规则
-  '@typescript-eslint/no-unused-vars': 'off',
-  'no-unused-vars': 'off',
-
-  // React Hooks 规则
-  'react-hooks/rules-of-hooks': 'error', // 检查 Hooks 的规则
-  'react-hooks/exhaustive-deps': 'warn', // 检查依赖项
-
-  // React 规则
-  'react/jsx-uses-react': 'off', // 不再需要引入 React
-  'react/react-in-jsx-scope': 'off', // 不再需要引入 React
-  'react/prop-types': 'off', // 关闭 prop-types 检查，使用 TypeScript 检查
-
-  // 其他 ESLint 规则
-  indent: 'off', // 不使用 indent 规则
-  'no-tabs': 'off',
-  'keyword-spacing': ['error', { before: true, after: true }], // 冒号后面必须有一个空格
-  'space-before-function-paren': 0,
-  'object-curly-spacing': ['error', 'always'],
-  'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }], // 最多有2个空行，文件末尾不能有空行
-  'react-native/no-inline-styles': 'off',
-  'object-property-newline': 'off',
-  ...prettierConfig.rules
-} 
 
 export  default [
   // Global language options for the entire project
@@ -88,6 +52,9 @@ export  default [
         version: 'detect', // 自动检测 React 版本
       },
     },
-    rules: commonRules,
+    rules: {
+      ...webAppRules,
+      ...prettierConfig.rules
+    },
   }
 ];

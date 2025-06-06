@@ -114,7 +114,6 @@ export const mergeImages = async ({
     // 计算合并后的尺寸
     let totalWidth = 0
     let totalHeight = 0
-    const imageBuffers = []
 
     // 根据布局来计算合并尺寸
     if (layout === 'row') {

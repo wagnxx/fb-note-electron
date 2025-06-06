@@ -124,7 +124,7 @@ export class GroupController extends BaseWsController {
   }
 
   @action('users-req')
-  public handleGetUsers(ws: WebSocket, data: ClientToServerMessage & { type: 'users-req' }) {
+  public handleGetUsers(ws: WebSocket, _data: ClientToServerMessage & { type: 'users-req' }) {
     const users = this.userService.getAllUsers()
     ws.send(JSON.stringify({ type: 'users-res', users }))
   }

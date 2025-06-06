@@ -39,7 +39,7 @@ export const createApp = () => {
   // 路由挂载 全部统一挂载到根
   app.use('/', routes)
 
-  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error('[ULOGI ERROR]', err)
     res.status(500).json({ message: 'Internal Server Error' })
   })

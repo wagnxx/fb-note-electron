@@ -135,8 +135,8 @@ export const setupVideoStreamHandler = () => {
     })
     return Promise.all(promises)
   })
-  ipcMain.handle(IPC_ACTIONS.COMPARE_IMAGES, async (event, { enPaths }: { enPaths: string[] }) => {
-    const paths = enPaths.map(p => decodeURIComponent(p))
+  ipcMain.handle(IPC_ACTIONS.COMPARE_IMAGES, async (_event, { enPaths }: { enPaths: string[] }) => {
+    const _paths = enPaths.map(p => decodeURIComponent(p))
   })
   ipcMain.handle(
     IPC_ACTIONS.EXRACT_VIDEO_FRAME_TEXT,

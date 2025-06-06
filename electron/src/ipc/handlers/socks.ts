@@ -42,7 +42,7 @@ export const setupSocksHandler = () => {
                 fs.writeFileSync(infoFile, JSON.stringify({ host, port }))
               }
             } catch (error) {
-              // console.log('parse output error::', error);
+              console.log('parse output error::', error)
             }
           })
 
@@ -163,7 +163,7 @@ function getSocksServiceInfo() {
       data.isRunning = true
     } catch (err) {
       const message = `Process with PID ${pid} is not running.`
-      logger.error(message)
+      logger.error(message, err)
       data.isRunning = false
       data.message = message
     }

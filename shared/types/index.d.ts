@@ -1,2 +1,2 @@
-export * from './ipc';
-export * from './chat';
+export * from './ipc'
+export * from './chat'

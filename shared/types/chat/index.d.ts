@@ -22,10 +22,7 @@ export interface ChatFileMessage extends ChatBaseMessage {
   content: string
 }
 
-export type ChatMessage =
-  | ChatTextMessage
-  | ChatImageMessage
-  | ChatFileMessage
+export type ChatMessage = ChatTextMessage | ChatImageMessage | ChatFileMessage
 
 export interface ChatGroup {
   id: string
@@ -37,7 +34,10 @@ export interface ChatGroup {
 export type ChatGroupWithMember = ChatGroup & {
   members: User[]
 }
-export type ChatGroupJoind = { group: ChatGroupWithMember, latestMessage: ChatMessage | null }
+export type ChatGroupJoind = {
+  group: ChatGroupWithMember
+  latestMessage: ChatMessage | null
+}
 export interface ChatClientMetaBase {
   username: string
   groupId: string
@@ -55,82 +55,79 @@ export interface ChatClientMetaServer extends ChatClientMetaBase {
   socket: WebSocket | null
 }
 
-
 // ===================== 客户端 → 服务端 =====================
 
 export type ClientToServerMessage =
   | {
-    type: 'join'
-    username: string
-    groupId: string
-    userId: string
-  }
+      type: 'join'
+      username: string
+      groupId: string
+      userId: string
+    }
   | {
-    type: 'group-init'
-    groups: ChatGroup[]
-  }
+      type: 'group-init'
+      groups: ChatGroup[]
+    }
   | {
-    type: 'group-create'
-    group: ChatGroup
-  }
+      type: 'group-create'
+      group: ChatGroup
+    }
   | {
-    type: 'groups-req'
-  }
+      type: 'groups-req'
+    }
   | {
-    type: 'message-history-req'
-    groupId: string
-  }
+      type: 'message-history-req'
+      groupId: string
+    }
   | ({
-    type: 'reset-user'
-  } & User)
+      type: 'reset-user'
+    } & User)
+  | {
+      type: 'users-req'
+    }
   | ({
-    type: 'users-req'
-  })
+      type: 'init-req'
+    } & User)
   | ({
-    type: 'init-req',
-  } & User)
-  | (
-    {
-      type: 'joined-groups-req',
-    } & Pick<User, 'id'>
-  )
+      type: 'joined-groups-req'
+    } & Pick<User, 'id'>)
 
 // ===================== 服务端 → 客户端 =====================
 
 export type ServerToClientMessage =
   | ChatMessage
   | {
-    type: 'system'
-    message: string
-  }
+      type: 'system'
+      message: string
+    }
   | {
-    type: 'groups-res'
-    groups: ChatGroupWithMember[]
-    timestamp: number
-  }
+      type: 'groups-res'
+      groups: ChatGroupWithMember[]
+      timestamp: number
+    }
   | {
-    type: 'message-history-res'
-    groupId: string
-    messages: ChatMessage[]
-  }
+      type: 'message-history-res'
+      groupId: string
+      messages: ChatMessage[]
+    }
   | ({
-    type: 'reset-user-success'
-  } & User)
+      type: 'reset-user-success'
+    } & User)
   | {
-    type: 'users-res'
-    users: User[]
-  }
+      type: 'users-res'
+      users: User[]
+    }
   | {
-    type: 'init-res',
-    joinedGroups: ChatGroupJoind[],
-    allGroups: ChatGroupWithMember[],
-    allUsers: User[],
-    currentUser: User
-  }
+      type: 'init-res'
+      joinedGroups: ChatGroupJoind[]
+      allGroups: ChatGroupWithMember[]
+      allUsers: User[]
+      currentUser: User
+    }
   | {
-    type: 'joined-groups-res',
-    joinedGroups: ChatGroupJoind[],
-  }
+      type: 'joined-groups-res'
+      joinedGroups: ChatGroupJoind[]
+    }
 
 export type Uid = string
 export interface User {

@@ -21,6 +21,7 @@ export function bindServer(httpServer: HTTPServer) {
   wss.on('connection', handleConnection)
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 export function handleConnection(ws: WebSocket, req: IncomingMessage) {
   ws.on('message', raw => {
     try {
