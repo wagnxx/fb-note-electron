@@ -9,7 +9,7 @@ import DocToImageConverter from '@/pages/tools/docSnap/DocToImageConverter'
 import MindMap from '@/pages/mindmap/MindMap'
 import IconGenerator from '@/pages/tools/image/IconGenerator'
 import Books from '@/pages/tools/books'
-import ChatRoom from '@/pages/tools/chat/ChatRoom'
+import ChatRoomInner from '@/pages/tools/chat/inner'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -86,8 +86,9 @@ export const routesTool: RouteConfig = {
     {
       path: 'chat',
       name: 'ChatRoom',
-      component: ChatRoom,
+      component: ChatRoomInner,
       requiresAuth: false,
+      isDesktop: true,
     },
   ],
 }

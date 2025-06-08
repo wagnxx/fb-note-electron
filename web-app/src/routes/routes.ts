@@ -10,6 +10,7 @@ import { routesLearn } from './config/learn'
 import { routesSystem } from './config/system'
 import { routesTest } from './config/test'
 import { routesRole } from './config/role'
+import ChatRoomWeb from '@/pages/tools/chat/web'
 
 export interface RouteConfig {
   path: string
@@ -54,6 +55,12 @@ export const standaloneRoutes: RouteConfig[] = [
     path: 'tool/mindmap/local',
     name: 'MindMapLocal',
     component: MindMap,
+  },
+  {
+    path: '/tool/chat/web/',
+    name: 'ChatRoomWeb',
+    component: ChatRoomWeb,
+    requiresAuth: false,
   },
   // 其他独立页面路由
 ]

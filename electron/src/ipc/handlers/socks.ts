@@ -6,6 +6,7 @@ import { ChildProcess, exec, spawn } from 'child_process'
 import { IpcMainEvent } from 'electron'
 import { isDev, infoFile, LOG_FILE_PATH, pidFile, SOCKS_RELATIVE_PATH } from '@/config'
 import { logger } from '@/utils/logger'
+import { getNetworkInfo } from '@/utils/netUtils'
 
 let socksProcess: ChildProcess | null = null
 export const setupSocksHandler = () => {
@@ -97,6 +98,10 @@ export const setupSocksHandler = () => {
   })
   ipcMain.handle(IPC_ACTIONS.GET_LOGS, async () => {
     return await getLogs()
+  })
+  ipcMain.handle(IPC_ACTIONS.GET_WIFI, async () => {
+    const { ip } = await getNetworkInfo()
+    return ip
   })
 
   return {

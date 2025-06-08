@@ -21,14 +21,11 @@ const getId = (id: string) => {
 }
 
 // 只有在首次调用时创建 WebSocket 实例
-export async function getWSClient(): Promise<ClientType> {
+export async function getWSClient(lanIp: string): Promise<ClientType> {
   if (!client) {
     const id = getId(uuidv4()) // 生成唯一的 userId
-    // 动态获取 WebSocket 服务端地址
-    const res = await fetch(`${getApiBaseUrl()}/wifiIP`)
-    const { ip } = await res.json()
-    // 创建 WebSocket 实例并设置事件监听
-    const socket = new WebSocket(`ws://${ip}:4000/chat`)
+
+    const socket = new WebSocket(`ws://${lanIp}:4000/chat`)
 
     socket.onopen = () => {
       console.log('WebSocket connection established')
@@ -41,6 +38,8 @@ export async function getWSClient(): Promise<ClientType> {
   }
   return client
 }
+
+// 不合理的方案
 const getApiBaseUrl = () => {
   // eslint-disable-next-line no-undef
   // return process.env.REACT_APP_ENV !== 'production' ? 'http://localhost:4000' : ''

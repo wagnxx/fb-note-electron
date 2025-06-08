@@ -78,3 +78,6 @@ export const getJsonFromDocFile = <T>(filename: string): Promise<T[] | null> => 
 export const delJsonFile = (filePath: string): Promise<boolean> => {
   return ipcRenderer.invoke(IPC_ACTIONS.DELETE_FILE, filePath)
 }
+export const getWifi = () => {
+  return ipcRenderer.invoke(IPC_ACTIONS.GET_WIFI)
+}

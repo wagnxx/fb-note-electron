@@ -15,7 +15,7 @@ import { useNotification } from '@/hooks/useNotification'
 import { ServerToClientMessage } from '@shared/types'
 import { getValidObject } from '@/utils/utillsObject'
 
-export function useWSListener() {
+export function useWSListener(lanIp: string) {
   const dispatch = useDispatch()
   const { showNotification } = useNotification()
 
@@ -24,7 +24,7 @@ export function useWSListener() {
 
     const initWebSocket = async () => {
       try {
-        const client = await getWSClient()
+        const client = await getWSClient(lanIp)
         const { socket: ws, id: userId } = client || {}
         if (!ws || !userId) return
         socket = ws

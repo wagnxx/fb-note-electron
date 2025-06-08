@@ -136,12 +136,14 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   })
 }
 
-export const copyText = async (text: string): Promise<void> => {
+export const copyText = async (text: string): Promise<void | boolean> => {
   try {
     // 使用 Clipboard API 复制文本
     await navigator.clipboard.writeText(text)
     console.log('文本已复制!')
+    return true
   } catch (err) {
     console.error('复制失败:', err)
+    return false
   }
 }

@@ -1,6 +1,5 @@
 import { FILE_PICKER_OPEN_TYPE, FILE_PICKER_RES, FileSystemItem } from './file'
 import { CropRange } from './video'
-
 type noop = (...args: any[]) => any
 
 // 核心 handlers
@@ -15,6 +14,7 @@ type IpcActionHandlers = {
 
   GET_LOGS: () => string[]
   SUBPROCESS_ERROR: () => Error[]
+  GET_WIFI: () => string | null
 
   SELECT_FILE: (options: { type: FILE_PICKER_OPEN_TYPE }) => FILE_PICKER_RES
   GET_DIRECTORY_STRUCTURE: <T extends FileSystemItem>(path: string) => T[]

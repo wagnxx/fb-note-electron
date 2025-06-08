@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import useFirstRender from './useFirstRender'
 
 type Props = { breakpoint?: number; onChange?: (isM: boolean) => void }
-export function useIsMobile({ breakpoint = 768, onChange = () => { } }: Props) {
+
+export function useIsMobile(props: Props = {}) {
+  const { breakpoint = 768, onChange = () => {} } = props
+
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < breakpoint : false,
   )

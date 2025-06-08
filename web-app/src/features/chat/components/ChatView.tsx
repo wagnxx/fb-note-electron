@@ -1,16 +1,16 @@
 import React, { useRef, useState } from 'react'
 import { useWSListener } from '@/features/chat/hooks/useWSListener'
 import { cn } from '@/lib/utils'
-import ChatWindow from './components/ChatWindow'
+import ChatWindow from './ChatWindow'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { selectGroup } from '@/features/chat/chatSlice'
-import Siderbar, { SiderbarRef } from './components/Siderbar'
+import Siderbar, { SiderbarRef } from './Siderbar'
 import { afterRaf } from '@/utils/utilsAsyncFunc'
 import { Empty } from 'antd'
 import { useDraggable } from '@/hooks/useDraggable'
 import { useIsMobile } from '@/hooks/useIsMobile'
 
-const ChatRoomPage: React.FC = () => {
+const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
   const [stage, setStage] = useState<'siderbar' | 'chat'>('siderbar')
   const siderbarRef = useRef<SiderbarRef>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -30,7 +30,7 @@ const ChatRoomPage: React.FC = () => {
   const selectedGroupId = useAppSelector(state => state.chat.currentGroupId)
   const dispatch = useAppDispatch()
 
-  useWSListener()
+  useWSListener(ip)
 
   const handleSelectGroup = (groupId: string) => {
     dispatch(selectGroup(groupId))
@@ -48,14 +48,20 @@ const ChatRoomPage: React.FC = () => {
     <div
       ref={wrapperRef}
       style={{
-        position: isMobile ? 'static' : 'fixed',
-        left: 0,
-        top: 0,
-        width: isMobile ? '100%' : '66%',
-        aspectRatio: '6 / 4',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
         backgroundColor: '#f1f5f9',
         zIndex: 1000,
+
+        ...(isMobile
+          ? { position: 'static', width: '100%' }
+          : {
+              position: 'fixed',
+              aspectRatio: '6 / 4',
+              width: '66%',
+              minWidth: '680px',
+              left: 0,
+              top: 0,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+            }),
       }}
       className={cn('flex ', isMobile ? 'flex-col w-full h-full' : 'flex-row rounded-lg overflow-hidden')}
     >
@@ -87,4 +93,4 @@ const ChatRoomPage: React.FC = () => {
   )
 }
 
-export default ChatRoomPage
+export default ChatView
