@@ -50,7 +50,7 @@ const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
       style={{
         backgroundColor: '#f1f5f9',
         zIndex: 1000,
-
+        height: ' calc(-28px + 100vh)',
         ...(isMobile
           ? { position: 'static', width: '100%' }
           : {
@@ -63,13 +63,13 @@ const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
               boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
             }),
       }}
-      className={cn('flex ', isMobile ? 'flex-col w-full h-full' : 'flex-row rounded-lg overflow-hidden')}
+      className={cn('flex ', isMobile ? 'flex-col w-full ' : 'flex-row rounded-lg overflow-hidden')}
     >
       {!isMobile && (
         <div className="drag-header w-full h-8 bg-slate-300 cursor-move absolute top-0 left-0 z-10 rounded-t-lg" />
       )}
 
-      <div className="flex w-full h-full pt-8">
+      <div className="flex  w-full h-full pt-8">
         {(!isMobile || stage === 'siderbar') && (
           <div
             style={{
