@@ -21,7 +21,8 @@ info "Checking TypeScript build..."
 
 # 运行 TypeScript 编译并开启 -w 模式来监听文件变化
 # npm run dev:tsc > /dev/null 2>&1 &  # 将 tsc -w 进程放到后台
-npm run dev:tsc > /dev/null & 
+# npm run dev:tsc > /dev/null & 
+npm run dev:tsc & 
 TSC_PID=$!  # 获取 tsc -w 进程的 PID
 
 # 等待最多 20 秒直到 dist 目录下出现 main.js 文件

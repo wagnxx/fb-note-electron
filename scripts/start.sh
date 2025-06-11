@@ -17,6 +17,21 @@ start_web() {
   cd - >/dev/null
 }
 
+wait_for_web_ready() {
+  for i in {1..20}; do
+    # if curl -s "http://localhost:$WEB_PORT" | grep -q "<!DOCTYPE html>"; then
+    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$WEB_PORT" | grep -q "^2"; then
+
+      echo "✅ Web page is ready!"
+      return 0
+    fi
+    echo "⏳ Waiting for full page response... ($i)"
+    sleep 1
+  done
+  echo "❌ Web didn't become ready in time."
+  exit 1
+}
+
 start_electron() {
   echo "⚡ Launching Electron app..."
   cd "$ELECTRON_DIR"
@@ -28,17 +43,10 @@ if is_port_open $WEB_PORT; then
   echo "✅ Web is already running at http://localhost:$WEB_PORT"
 else
   start_web
-  for i in {1..20}; do
-    if is_port_open $WEB_PORT; then
-      echo "✅ Web is now running"
-      break
-    fi
-    echo "⏳ Waiting for web to start... ($i)"
-    sleep 1
-  done
+  wait_for_web_ready
 fi
 
 start_electron
 
 trap "kill $WEB_PID " EXIT
-wait $WEB_PID  # 👈 加上这行
+wait $WEB_PID
