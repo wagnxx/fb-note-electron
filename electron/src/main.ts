@@ -35,6 +35,7 @@ function runHMR() {
 
   reloader.init()
 }
+
 function createWindow() {
   // const iconPath = path.join(__dirname, '../assets/icons/icon.icns')
 
@@ -59,28 +60,39 @@ function createWindow() {
   return win
 }
 
-app?.whenReady()?.then(() => {
+function mountApp() {
   const appWindowManager = AppWindowManager.getInstance()
-  // 启动 HTTP 服务
-  streamServer.restart().then(() => {
-    const win = createWindow()
-    if (isDev) {
-      runHMR()
-      win.webContents.openDevTools()
-    }
-    console.log('config =================  ', config)
-    win.loadURL(isDev ? WEB_DEV_URL! : WEB_PROD_URL)
+  const win = createWindow()
+  if (isDev) {
+    runHMR()
+    win.webContents.openDevTools()
+  }
+  console.log('config =================  ', config)
+  win.loadURL(isDev ? WEB_DEV_URL! : WEB_PROD_URL)
 
-    appWindowManager.setWinInstance(win)
-    appWindowManager.setAppInstance(app) // 设置 app 实例
-  })
+  appWindowManager.setWinInstance(win)
+  appWindowManager.setAppInstance(app) // 设置 app 实例
+}
 
-  innerProcess = initializeIPCHandlers() as ChildProcess[]
+app.whenReady().then(async () => {
+  try {
+    // 启动 HTTP 服务
+    await streamServer.restart()
+    mountApp()
 
-  app.on('activate', () => {
-    console.log('app window activate')
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
+    // 初始化 IPC handlers
+    innerProcess = initializeIPCHandlers() as ChildProcess[]
+
+    // 激活时重建窗口
+    app.on('activate', () => {
+      console.log('app window activate')
+      if (BrowserWindow.getAllWindows().length === 0) {
+        mountApp()
+      }
+    })
+  } catch (error) {
+    console.error('[App Init] Failed during startup:', error)
+  }
 })
 
 app.on('window-all-closed', () => {
