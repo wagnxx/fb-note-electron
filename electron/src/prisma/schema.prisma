@@ -1,0 +1,53 @@
+// 使用 PostgreSQL/MySQL 的时候修改 provider
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // 可换成 "postgresql" 或 "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String    @id @default(cuid())
+  name     String?
+  avatar   String?
+  online   Boolean   @default(true)
+
+  groups   Group[]   @relation("GroupMembers")     // 多对多，隐式关系，不指定 references
+  messages Message[] @relation("UserMessages")  // 🔧 添加 @relation 名称，和 Message.user 对应
+
+}
+
+model Group {
+  id       String    @id @default(cuid())
+  name     String
+  admin    String    // 存储 admin 的 userId，如果你想定义关系，可以改成 adminId + relation
+
+  members  User[]    @relation("GroupMembers")     // 与 User 的多对多隐式关系
+  messages Message[]                              // 一个 group 对多个 messages
+}
+
+model Message {
+  id        String   @id @default(cuid())
+
+  group     Group    @relation(fields: [groupId], references: [id])
+  groupId   String
+
+  user      User     @relation("UserMessages", fields: [sender], references: [id])  // 🔧 和 User.messages 配对
+
+  sender    String
+
+  timestamp BigInt
+  type      MessageType
+  content   String
+
+  fileName  String?  // 用于 FileMessage
+  fileType  String?  // 用于 FileMessage
+}
+
+enum MessageType {
+  text
+  file
+  image
+}

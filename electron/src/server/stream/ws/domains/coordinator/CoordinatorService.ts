@@ -14,8 +14,8 @@ export class CoordinatorService implements ICoordinatorService {
     //
   }
 
-  public getJoinedGroupsWithLatestMessage(userId: string): JoinedGroupResponse[] {
-    const groups = this.groupService.getGroupsWithMembers(userId)
+  public async getJoinedGroupsWithLatestMessage(userId: string): Promise<JoinedGroupResponse[]> {
+    const groups = await this.groupService.getGroupsWithMembers(userId)
 
     return groups.map(group => ({
       group,

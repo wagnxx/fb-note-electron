@@ -58,6 +58,7 @@ const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
               aspectRatio: '6 / 4',
               width: '66%',
               minWidth: '680px',
+              maxHeight: '700px',
               left: 0,
               top: 0,
               boxShadow: '0 4px 16px rgba(0,0,0,0.2)',

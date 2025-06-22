@@ -14,8 +14,13 @@ electron/release
 electron/support/download
 electron/support/logs
 electron/support/temps
+electron/support/prisma/migrations/
+
 *.error
 .temps
 .vscode
+
+# 忽略 SQLite 数据库文件
+*.db
 
 test/

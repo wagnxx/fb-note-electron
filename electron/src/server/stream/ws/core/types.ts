@@ -13,6 +13,8 @@ export const TYPES = {
 
   MessageDispatcher: Symbol('MessageDispatcher'),
   CoordinatorService: Symbol('CoordinatorService'),
+  WebSocketManager: Symbol('WebSocketManager'),
+  WebSocketNotifier: Symbol('WebSocketNotifier'),
 
   // Controllers
   GroupController: Symbol('GroupController'),

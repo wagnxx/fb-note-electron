@@ -5,8 +5,8 @@ import AvatarText from './Avatar'
 import { readFileAsBase64 } from '@/utils/utilsFile'
 
 const AvatarUploader: FC<{
-  avatar?: string
-  username?: string
+  avatar?: string | null
+  username?: string | null
   onUpdateAvatar?: (ava: string) => void
 }> = ({ username, avatar, onUpdateAvatar }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null)

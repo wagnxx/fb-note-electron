@@ -1,12 +1,13 @@
 // src/core/inversify.config.ts
 
-import '../domains/user/UserRepository'
+// import '../domains/user/UserRepository' // 的私有依赖
 import '../domains/user/UserService'
 
 import '../domains/userGroup/UserGroupService'
 import '../domains/group/GroupService'
 import '../domains/message/MessageService'
 import '../domains/coordinator/CoordinatorService'
+import './WebSocketManager'
 import '../controllers/Group'
 
 //  ==================================== bind by hand example =============================

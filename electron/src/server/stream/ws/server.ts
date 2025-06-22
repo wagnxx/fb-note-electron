@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { parse } from 'url'
 import { Server as HTTPServer, IncomingMessage } from 'http'
-import { dispatcher } from './manages/ctx'
+import { dispatcher, wsManager } from './manages/ctx'
 
 // 初始化控制器
 export function bindServer(httpServer: HTTPServer) {
@@ -21,8 +21,21 @@ export function bindServer(httpServer: HTTPServer) {
   wss.on('connection', handleConnection)
 }
 
-// eslint-disable-next-line unused-imports/no-unused-vars
 export function handleConnection(ws: WebSocket, req: IncomingMessage) {
+  // 1. 从 URL 获取 userId，例如：ws://localhost:4000/chat?userId=abc123
+  const url = new URL(req.url || '', `http://${req.headers.host}`)
+  const userId = url.searchParams.get('userId')
+
+  if (!userId) {
+    ws.send(JSON.stringify({ type: 'error', reason: 'userId required in query' }))
+    ws.close()
+    return
+  }
+
+  // 2. 注册用户连接
+  wsManager.addUserConnection(userId, ws)
+
+  // 3. 监听消息并交给 dispatcher
   ws.on('message', raw => {
     try {
       const data = JSON.parse(raw.toString())
@@ -32,7 +45,9 @@ export function handleConnection(ws: WebSocket, req: IncomingMessage) {
     }
   })
 
+  // ✅ 这个是可选的，仅用于打印
   ws.on('close', () => {
-    // handleClientDisconnect(ws)
+    console.log(`[WebSocket] closed: ${userId}`)
+    // 不需要额外 wsManager 清理逻辑，这里只是打印
   })
 }

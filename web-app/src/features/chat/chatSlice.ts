@@ -5,8 +5,8 @@ import { ChatGroupJoind, ChatGroupWithMember, ChatMessage as Message, User } fro
 interface WebSocketState {
   ws: WebSocket | null
   id: string
-  username?: string
-  avatar?: string
+  username?: string | null
+  avatar?: string | null
   isConnected: boolean
   connectionError: string | null
 }

@@ -37,7 +37,7 @@ export class MessageService implements IMessageService {
   }): Promise<void> {
     const { id, groupId, sender, content, type, timestamp = Date.now(), fileName, fileType } = data
 
-    const group = this?.groupService?.getGroup(groupId)
+    const group = await this?.groupService?.getGroup(groupId)
     if (!group) return
 
     let message
@@ -58,7 +58,7 @@ export class MessageService implements IMessageService {
 
     // 处理特殊指令
     if (type === 'text' && content === FUNCTION_COMMANDS.getWifiIp) {
-      const senderUser = this.userService.getUser(sender)
+      const senderUser = await this.userService.getUser(sender)
       if (!senderUser) return
 
       const systemId = this?.groupService?.getSystemId()

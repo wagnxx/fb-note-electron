@@ -1,4 +1,5 @@
 // server.ts
+import prisma from '@/prisma/prismaClient'
 import type { Server } from 'http'
 let currentServer: Server | null = null
 const PORT = 4000
@@ -21,6 +22,9 @@ async function restart(): Promise<Server> {
   }
 
   try {
+    // 确保连接已建立（可选）
+    await prisma.$connect()
+
     const mod = await import(`./expressApp`)
     const app = mod.createApp()
 

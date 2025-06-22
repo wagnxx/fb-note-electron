@@ -122,5 +122,5 @@ export function useWSListener(lanIp: string) {
         socket.close()
       }
     }
-  }, [dispatch, showNotification])
+  }, [dispatch, lanIp, showNotification])
 }

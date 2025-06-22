@@ -132,7 +132,7 @@ export type ServerToClientMessage =
 export type Uid = string
 export interface User {
   id: Uid
-  name?: string
-  online?: boolean
-  avatar?: string
+  name?: string | null
+  online?: boolean | null
+  avatar?: string | null
 }

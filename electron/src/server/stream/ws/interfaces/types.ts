@@ -9,6 +9,7 @@ export type {
   ChatFileMessage,
   ChatImageMessage,
   ClientToServerMessage,
+  ChatGroupWithMember,
   ChatGroupJoind as JoinedGroupResponse,
 } from '@shared/types'
 
@@ -17,7 +18,7 @@ import { PartialWithRequiredId } from '@/utils/types'
 
 // ===================== 扩展服务端专用类型 =====================
 export type User = SharedUser & {
-  socket: WebSocket | null // 服务端需要管理 WebSocket 连接
+  // socket: WebSocket | null // 服务端需要管理 WebSocket 连接
 }
 
 export type ReciveMessageType = ChatMessage | ClientToServerMessage
@@ -40,4 +41,4 @@ export interface IMessageDispatcher {
   dispatch(ws: WebSocket, data: ReciveMessageType): void
 }
 
-export type UpdateUserProps = Omit<User, 'online'> & PartialWithRequiredId<User, 'id' | 'socket'>
+export type UpdateUserProps = Omit<User, 'online'> & PartialWithRequiredId<User, 'id'>
