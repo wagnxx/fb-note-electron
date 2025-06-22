@@ -1,19 +1,17 @@
 // domains/user/UserService.ts
 
-import { provide, TYPES } from '../../core/ioc.config'
+import { inject, provide, TYPES } from '../../core/ioc.config'
+import { WebSocketManager } from '../../core/WebSocketManager'
 import { IUserService } from '../../interfaces/services/IUserService'
 import { User } from './User'
 import { UserRepository } from './UserRepository'
 
 @provide(TYPES.UserService)
 export class UserService implements IUserService {
-  // private repo: UserRepository
   private readonly repo = new UserRepository() // ✅ 手动 new，容器不管
 
-  constructor() {
-    // @inject(TYPES.UserRepository) private repo: UserRepository
-    // this.repo = new UserRepository()
-  }
+  constructor(@inject(TYPES.WebSocketManager) private wsManager: WebSocketManager) {}
+
   getGroups(id: string) {
     return this.repo.getGroups(id)
   }
@@ -47,8 +45,16 @@ export class UserService implements IUserService {
     return (await this.repo.getById(id)) ?? undefined
   }
 
-  getAllUsers() {
-    return this.repo.getAll()
+  async getAllUsers() {
+    const users = await this.repo.getAll()
+    users.forEach(item => {
+      item.online = this.wsManager.isOnline(item.id) || false
+    })
+
+    // 按 online 排序，true 在前
+    users.sort((a, b) => Number(b.online) - Number(a.online))
+
+    return users
   }
 
   getOnlineUsers() {

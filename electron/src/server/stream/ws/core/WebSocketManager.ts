@@ -19,6 +19,10 @@ export class WebSocketManager {
     this.setupConnectionCleanup(ws, userId)
   }
 
+  isOnline(userId: string) {
+    return this.userConnections.has(userId)
+  }
+
   /**
    * 将用户加入群组
    */

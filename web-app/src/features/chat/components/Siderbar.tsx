@@ -1,4 +1,4 @@
-import React, { ForwardRefExoticComponent, useEffect, useImperativeHandle, useState } from 'react'
+import React, { useEffect, useImperativeHandle, useState } from 'react'
 import ChatGroupList from './ChatGroupList'
 import { Avatar, Descriptions, DescriptionsProps, Flex, Input, List, Tabs, TabsProps } from 'antd'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
@@ -186,12 +186,14 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
       key: TAB_KEYS.ALL_USER,
       label: 'all user',
       children: users && (
-        <List
-          dataSource={users}
-          renderItem={user => <UserListItem key={user.id} user={user}></UserListItem>}
-          rowKey={'id'}
-          split
-        />
+        <div className="flex-1 overflow-auto custom-scrollbar pr-1">
+          <List
+            dataSource={users}
+            renderItem={user => <UserListItem key={user.id} user={user}></UserListItem>}
+            rowKey={'id'}
+            split
+          />
+        </div>
       ),
     },
     {
@@ -214,7 +216,7 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
   ]
 
   return (
-    <div className={cn('p-2  h-full', isMobile ? '' : '  border-r-slate-50')}>
+    <div className={cn('p-2 h-full flex flex-col', isMobile ? '' : '  border-r-slate-50')}>
       <div className="border-r border-gray-200  pb-3">
         <Input
           allowClear
@@ -226,6 +228,7 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
       </div>
 
       <Tabs
+        className="flex-1 overflow-hidden"
         items={tabItems}
         activeKey={activeTabKey}
         onChange={setActiveTabKey}
@@ -236,9 +239,5 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
 }
 
 // export default Siderbar
-// export default forwardRef<SiderbarRef, SiderbarProps>(Siderbar)
-
-// 这样导出的类型是带 ref 能力的
-const ForwardedSidebar: ForwardRefExoticComponent<SiderbarProps & SiderbarRef> = React.forwardRef(Siderbar)
 
 export default React.forwardRef(Siderbar)
