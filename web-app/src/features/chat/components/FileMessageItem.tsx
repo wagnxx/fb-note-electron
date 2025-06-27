@@ -1,5 +1,6 @@
 import React from 'react'
-import { Image } from 'antd'
+import { Image, Button, Tooltip } from 'antd'
+import { DownloadOutlined } from '@ant-design/icons'
 import { cn } from '@/lib/utils'
 
 type FileMessageItemProps = {
@@ -29,14 +30,21 @@ const FileMessageItem: React.FC<FileMessageItemProps & React.HTMLAttributes<HTML
   return (
     <div className={cn('max-w-xs break-words', className)} {...rest}>
       {isImage ? (
-        <div className="space-y-1">
+        <div className="space-y-1 relative">
           <Image
             src={fileUrl}
             alt={fileName}
             className="rounded-md border border-gray-300"
-            style={{ maxHeight: 192 }} // = 48px * 4
+            style={{ maxHeight: 192 }} // 48px * 4
           />
-          <div className="text-xs text-gray-500">{fileName}</div>
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-gray-500 truncate max-w-[80%]">{fileName}</div>
+            <Tooltip title="Download">
+              <a href={fileUrl} download={fileName}>
+                <Button type="text" size="small" icon={<DownloadOutlined />} className="text-blue-500" />
+              </a>
+            </Tooltip>
+          </div>
         </div>
       ) : (
         <div className="flex items-center gap-2">

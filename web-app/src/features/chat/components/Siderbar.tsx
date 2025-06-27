@@ -1,16 +1,16 @@
 import React, { useEffect, useImperativeHandle, useState } from 'react'
 import ChatGroupList from './ChatGroupList'
 import { Avatar, Descriptions, DescriptionsProps, Flex, Input, List, Tabs, TabsProps } from 'antd'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { useAppSelector } from '@/store/hooks'
 import { cn } from '@/lib/utils'
 import { sendMessage } from '@/features/chat/service/chatService'
 import AvatarUploader from './AvatarUploader'
 import UserListItem from './UserListItem'
 import { ChatGroupWithMember } from '@shared/types'
-import { delayFor } from '@/utils/utilsAsyncFunc'
 import { mergeBase64Avatars } from '@/utils/utilsImage'
 import useFirstRender from '@/hooks/useFirstRender'
 import { getMessagePreviewType } from '@/utils/utilsString'
+import { delayFor } from '@/utils/utilsAsyncFunc'
 
 const TAB_KEYS = {
   ALL_USER: 'allUser',
@@ -30,8 +30,6 @@ export type SiderbarRef = {
 const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<SiderbarRef>) => {
   const [keyword, setKeyword] = useState('')
 
-  const dispatch = useAppDispatch()
-
   const { wsState, users, joinedGroups } = useAppSelector(state => state.chat)
 
   const [selectedGroupId, setSelectedGroupId] = useState<string>()
@@ -44,11 +42,10 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
   const isFirstRender = useFirstRender()
 
   useEffect(() => {
-    // if (activeTabKey === '' || activeTabKey === TAB_KEYS.ALL_USER) {
-    // }
     delayFor(500).then(() => {
       sendMessage({ type: 'users-req' })
     })
+
     if (activeTabKey === TAB_KEYS.CHAT_LIST) {
       sendMessage({ type: 'joined-groups-req', id: wsState.id })
     }
@@ -146,6 +143,7 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
     {
       key: TAB_KEYS.CHAT_LIST,
       label: 'chat',
+      disabled: !wsState.isConnected,
       children: (
         <>
           <div className="flex-1 overflow-auto custom-scrollbar pr-1">
@@ -185,6 +183,7 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
     {
       key: TAB_KEYS.ALL_USER,
       label: 'all user',
+      disabled: !wsState.isConnected,
       children: users && (
         <div className="flex-1 overflow-auto custom-scrollbar pr-1">
           <List
@@ -199,6 +198,7 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
     {
       key: TAB_KEYS.ALL_GROUPS,
       label: 'groups',
+      disabled: !wsState.isConnected,
       children: <ChatGroupList onJoined={handleApplySuccess} onSelectGroup={id => {}} />,
     },
     {
