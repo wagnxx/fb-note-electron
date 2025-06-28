@@ -5,7 +5,7 @@ import { IPC_ACTIONS } from '@/constants'
 import { deleteFile, fileExists, getDirectoryStructureSync, readDirectory } from '@/utils/fileManager'
 import mammoth from 'mammoth'
 import { convertDocToImage } from '@/utils/docUtils'
-import AppWindowManager from '@/managers/AppWindowManager'
+import AppWindowManager from '@/core/managers/AppWindowManager'
 import { DOWNLOAD_DIR } from '@/config'
 import { FILE_PICKER_RES } from '@shared/types'
 

@@ -2,9 +2,11 @@ import type { IModule } from '@/core/di/IModule'
 import { HttpModule } from '@/modules/http'
 // import { IpcModule } from '@/modules/ipc'
 
-const moduleMap = new Map<string, IModule>()
+type ModuleNameType = 'http'
 
-function register(mod: IModule, name: string) {
+const moduleMap = new Map<ModuleNameType, IModule>()
+
+function register(mod: IModule, name: ModuleNameType) {
   moduleMap.set(name, mod)
 }
 
@@ -24,7 +26,7 @@ export async function stopModules() {
   }
 }
 
-export async function restartModule(name: string) {
+export async function restartModule(name: ModuleNameType) {
   const mod = moduleMap.get(name)
   if (!mod) return
   await mod.stop?.()
