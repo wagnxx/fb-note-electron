@@ -6,8 +6,8 @@ import { logger } from './utils/logger'
 import { ChildProcess } from 'child_process'
 import AppWindowManager from './managers/AppWindowManager'
 import HotModuleReloader from './utils/HotModuleReloader'
-import streamServer from './server/stream/server'
 import fs from 'fs'
+import { restartModule, startModules } from './core/di/loadModules'
 const { isDev, preloadPath, WEB_DEV_URL, WEB_PROD_URL } = config
 
 let innerProcess: ChildProcess[] = []
@@ -21,13 +21,13 @@ function runHMR() {
     exclude: ['main.js'],
     onReload: async (_mod: any, filePath: string) => {
       // console.log('update ::::: ', _mod, filePath);
-      if (filePath.indexOf('server/stream/expressApp.js') > -1) {
-        console.log('update ::::: server/stream/expressApp.js')
+      // 只重启 http 模块
+      if (filePath.includes('modules/http')) {
         try {
-          await streamServer.restart()
-          console.log('[HMR] New video stream server started.')
+          await restartModule('http')
+          console.log('[HMR] HTTP module restarted.')
         } catch (err) {
-          console.error('[HMR] Failed to restart video stream server:', err)
+          console.error('[HMR] Failed to restart http module:', err)
         }
       }
     },
@@ -77,7 +77,9 @@ function mountApp() {
 app.whenReady().then(async () => {
   try {
     // 启动 HTTP 服务
-    await streamServer.restart()
+    // await streamServer.restart()
+    // 启动模块（包括 http 服务等）
+    await startModules()
     mountApp()
 
     // 初始化 IPC handlers

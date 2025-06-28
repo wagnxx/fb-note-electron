@@ -19,7 +19,7 @@ const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
 
   const { resetPosition } = useDraggable({ ref: wrapperRef })
 
-  const isOnline = useMemo(() => wsState.isConnected || false, [])
+  const isOnline = useMemo(() => wsState.isConnected || false, [wsState.isConnected])
 
   const isMobile = useIsMobile({
     onChange: isM => {
