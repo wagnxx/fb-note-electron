@@ -5,6 +5,7 @@ import { BaseModule } from '@/core/di'
 import prisma from '@/prisma/prismaClient'
 
 export class HttpModule extends BaseModule {
+  static moduleName = 'http'
   private server: Server | null = null
   private app: Application | null = null
 

@@ -1,18 +1,15 @@
 import type { IModule } from '@/core/di/IModule'
 import { HttpModule } from '@/modules/http'
+import { IpcModule } from '@/modules/ipc'
 // import { IpcModule } from '@/modules/ipc'
 
-type ModuleNameType = 'http'
+const moduleMap = new Map<string, IModule>()
 
-const moduleMap = new Map<ModuleNameType, IModule>()
-
-function register(mod: IModule, name: ModuleNameType) {
+function register(mod: IModule, name: string) {
   moduleMap.set(name, mod)
 }
-
-register(new HttpModule(), 'http')
-// register(new IpcModule(), 'ipc')
-// ... add more
+// module list
+;[HttpModule, IpcModule].forEach(Mod => register(new Mod(), Mod.moduleName))
 
 export async function startModules() {
   for (const mod of moduleMap.values()) {
@@ -26,7 +23,7 @@ export async function stopModules() {
   }
 }
 
-export async function restartModule(name: ModuleNameType) {
+export async function restartModule(name: string) {
   const mod = moduleMap.get(name)
   if (!mod) return
   await mod.stop?.()
