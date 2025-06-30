@@ -1,6 +1,5 @@
 // src/routes.ts
 import React from 'react'
-import NotFound from '@/pages/error/NotFound'
 import GuidePage from '@/pages/home/GuidePage'
 import MindMap from '@/pages/mindmap/MindMap'
 import Login from '@/pages/login/Login'
@@ -30,7 +29,8 @@ export const authRoutes: RouteConfig[] = [
   routesTest,
   routesRole,
 
-  { path: '*', name: 'NotFound', component: NotFound, requiresAuth: true, hidden: true },
+  // Note: 404 route has been moved to the root level routes configuration
+  // to ensure it catches all unmatched paths correctly
 ]
 
 export const standaloneRoutes: RouteConfig[] = [

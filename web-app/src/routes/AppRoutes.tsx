@@ -7,6 +7,7 @@ import PrivateRoute from './PrivateRoute'
 import { AuthProvider } from '@/context/AuthContext'
 import AppHeader from '@/components/layout/AppHeader'
 import useUserRole from '@/features/rolePermission/hooks/useUserRole'
+import NotFound from '@/pages/error/NotFound'
 
 const RoutesList: React.FC = () => {
   const userRole = useUserRole()
@@ -24,6 +25,7 @@ const RoutesList: React.FC = () => {
 
         {/* 渲染带 AuthLayout 的页面 */}
         <Route element={<AuthLayout />}>{authRoutes.map(route => renderAuthRoute(route))}</Route>
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   )
