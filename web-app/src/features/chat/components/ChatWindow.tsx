@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { AutoComplete, Button, Input, Upload } from 'antd'
 import { ArrowLeftOutlined, UploadOutlined } from '@ant-design/icons'
-import { ChatMessage } from '@shared/types'
+import { ClientToServerMessage } from '@shared/types'
 import { useAppSelector } from '@/store/hooks'
 import { sendMessage } from '@/features/chat/service/chatService'
 import { cn } from '@/lib/utils'
@@ -29,13 +29,16 @@ const ChatWindow: React.FC<
   // 发送文本消息
   const sendMessageText = () => {
     if (!input.trim()) return
-    const msg: ChatMessage = {
-      id: Date.now().toString(),
-      groupId,
-      sender: wsState.id,
+    const msg: ClientToServerMessage = {
       type: 'text',
-      content: input,
-      timestamp: Date.now(),
+      payload: {
+        type: 'text',
+        id: Date.now().toString(),
+        groupId,
+        sender: wsState.id,
+        content: input,
+        timestamp: Date.now(),
+      },
     }
     sendMessage(msg)
     setInput('')
@@ -44,15 +47,18 @@ const ChatWindow: React.FC<
   // 发送文件消息
   const sendFile = (file: File) => {
     readFileAsBase64(file).then(result => {
-      const msg: ChatMessage = {
-        id: Date.now().toString(),
-        groupId,
-        sender: wsState.id,
+      const msg: ClientToServerMessage = {
         type: 'file',
-        content: result,
-        fileName: file.name,
-        fileType: file.type,
-        timestamp: Date.now(),
+        payload: {
+          id: Date.now().toString(),
+          groupId,
+          sender: wsState.id,
+          type: 'file',
+          content: result,
+          fileName: file.name,
+          fileType: file.type,
+          timestamp: Date.now(),
+        },
       }
       sendMessage(msg)
     })

@@ -1,3 +1,16 @@
+// ===================== 用户与基础类型 =====================
+
+export type Uid = string
+
+export interface User {
+  id: Uid
+  name?: string | null
+  online?: boolean | null
+  avatar?: string | null
+}
+
+// ===================== 聊天消息结构 =====================
+
 export interface ChatBaseMessage {
   id: string
   sender: string
@@ -24,99 +37,87 @@ export interface ChatFileMessage extends ChatBaseMessage {
 
 export type ChatMessage = ChatTextMessage | ChatImageMessage | ChatFileMessage
 
+// ===================== 群组结构 =====================
+
 export interface ChatGroup {
   id: string
   name: string
-  // members: Uid[]
   admin: string
-  // messages: ChatMessage[]
 }
+
 export type ChatGroupWithMember = ChatGroup & {
   members: User[]
 }
+
 export type ChatGroupJoind = {
   group: ChatGroupWithMember
   latestMessage: ChatMessage | null
 }
+
+// ===================== 客户端与服务端会话元数据 =====================
+
 export interface ChatClientMetaBase {
   username: string
   groupId: string
   userId: string
-  socket?: any // 由环境决定类型
+  socket?: any // 类型由运行环境决定
   joined?: boolean
 }
 
-// 客户端专用扩展（例如 UI 显示用状态）
 export interface ChatClientMetaClient extends ChatClientMetaBase {
   joined: boolean
 }
-// 服务端专用扩展（包含 WebSocket）
+
 export interface ChatClientMetaServer extends ChatClientMetaBase {
   socket: WebSocket | null
 }
 
-// ===================== 客户端 → 服务端 =====================
+// ===================== 客户端 → 服务端 消息 =====================
 
-export type ClientToServerMessage =
-  | {
-      type: 'join'
-      username: string
-      groupId: string
-      userId: string
-    }
-  | {
-      type: 'group-init'
-      groups: ChatGroup[]
-    }
-  | {
-      type: 'group-create'
-      group: ChatGroup
-    }
-  | {
-      type: 'groups-req'
-    }
-  | {
-      type: 'message-history-req'
-      groupId: string
-    }
-  | ({
-      type: 'reset-user'
-    } & User)
-  | {
-      type: 'users-req'
-    }
-  | ({
-      type: 'init-req'
-    } & User)
-  | ({
-      type: 'joined-groups-req'
-    } & Pick<User, 'id'>)
+// 原始消息类型（不含 requestId）
+export type RawClientToServerMessage =
+  | { type: 'join'; username: string; groupId: string; userId: string }
+  | { type: 'group-init'; groups: ChatGroup[] }
+  | { type: 'group-create'; group: ChatGroup }
+  | { type: 'groups-req' }
+  | { type: 'message-history-req'; groupId: string }
+  | ({ type: 'reset-user' } & User)
+  | { type: 'users-req' }
+  | ({ type: 'init-req' } & User)
+  | ({ type: 'joined-groups-req' } & Pick<User, 'id'>)
 
-// ===================== 服务端 → 客户端 =====================
+export interface ClientMessagePayloadMap {
+  text: ChatTextMessage
+  image: ChatImageMessage
+  file: ChatFileMessage
 
-export type ServerToClientMessage =
-  | ChatMessage
-  | {
-      type: 'system'
-      message: string
-    }
-  | {
-      type: 'groups-res'
-      groups: ChatGroupWithMember[]
-      timestamp: number
-    }
-  | {
-      type: 'message-history-res'
-      groupId: string
-      messages: ChatMessage[]
-    }
-  | ({
-      type: 'reset-user-success'
-    } & User)
-  | {
-      type: 'users-res'
-      users: User[]
-    }
+  join: { username: string; groupId: string; userId: string }
+  'group-init': { groups: ChatGroup[] }
+  'group-create': { group: ChatGroup }
+  'groups-req': {}
+  'message-history-req': { groupId: string }
+  'reset-user': User
+  'users-req': {}
+  'init-req': User
+  'joined-groups-req': Pick<User, 'id'>
+}
+
+// 最终封装：可选 requestId，用于请求响应匹配
+export interface ClientToServerMessage<T extends keyof ClientMessagePayloadMap = keyof ClientMessagePayloadMap> {
+  type: T
+  payload: ClientMessagePayloadMap[T]
+  requestId?: string
+}
+
+// ===================== 服务端 → 客户端 消息 =====================
+
+export type RawServerToClientMessage =
+  | ChatMessage // 聊天内容推送
+  | { type: 'system'; message: string }
+  | { type: 'groups-res'; groups: ChatGroupWithMember[]; timestamp: number }
+  | { type: 'message-history-res'; groupId: string; messages: ChatMessage[] }
+  | ({ type: 'reset-user-success' } & User)
+  | { type: 'users-res'; users: User[] }
   | {
       type: 'init-res'
       joinedGroups: ChatGroupJoind[]
@@ -124,15 +125,29 @@ export type ServerToClientMessage =
       allUsers: User[]
       currentUser: User
     }
-  | {
-      type: 'joined-groups-res'
-      joinedGroups: ChatGroupJoind[]
-    }
+  | { type: 'joined-groups-res'; joinedGroups: ChatGroupJoind[] }
 
-export type Uid = string
-export interface User {
-  id: Uid
-  name?: string | null
-  online?: boolean | null
-  avatar?: string | null
+export interface ServerMessagePayloadMap {
+  text: ChatTextMessage
+  image: ChatImageMessage
+  file: ChatFileMessage
+  system: { message: string }
+  'groups-res': { groups: ChatGroupWithMember[]; timestamp: number }
+  'message-history-res': { groupId: string; messages: ChatMessage[] }
+  'reset-user-success': User
+  'users-res': { users: User[] }
+  'init-res': {
+    joinedGroups: ChatGroupJoind[]
+    allGroups: ChatGroupWithMember[]
+    allUsers: User[]
+    currentUser: User
+  }
+  'joined-groups-res': { joinedGroups: ChatGroupJoind[] }
+}
+
+// 最终封装：服务端返回消息结构（支持 requestId 用于响应识别）
+export interface ServerToClientMessage<T extends keyof ServerMessagePayloadMap = keyof ServerMessagePayloadMap> {
+  type: T
+  payload: ServerMessagePayloadMap[T]
+  requestId?: string
 }
