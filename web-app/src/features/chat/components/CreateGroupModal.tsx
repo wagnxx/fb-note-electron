@@ -13,12 +13,14 @@ const CreateGroupModal: React.FC<{
     // message.success(`创建群组成功：${groupName}`)
     sendMessage({
       type: 'group-create',
-      group: {
-        id: groupName,
-        name: groupName,
-        // members: [],
-        admin: '',
-        // messages: [],
+      payload: {
+        group: {
+          id: groupName,
+          name: groupName,
+          // members: [],
+          admin: '',
+          // messages: [],
+        },
       },
     })
     setGroupName('')

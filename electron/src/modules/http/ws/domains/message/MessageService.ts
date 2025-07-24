@@ -25,18 +25,23 @@ export class MessageService implements IMessageService {
     this.messageRepository = new MessageRepository()
   }
 
-  async addRawMessage(data: {
-    id: string
-    groupId: string
-    sender: string
-    content: string
-    type: 'text' | 'file' | 'image'
-    timestamp?: number
-    fileName?: string
-    fileType?: string
+  async addRawMessage({
+    payload,
+    type: _type,
+  }: {
+    type: string
+    payload: {
+      id: string
+      groupId: string
+      sender: string
+      content: string
+      type: 'text' | 'file' | 'image'
+      timestamp?: number
+      fileName?: string
+      fileType?: string
+    }
   }): Promise<void> {
-    const { id, groupId, sender, content, type, timestamp = Date.now(), fileName, fileType } = data
-
+    const { id, groupId, sender, content, type, timestamp = Date.now(), fileName, fileType } = payload
     const group = await this?.groupService?.getGroup(groupId)
     if (!group) return
 
@@ -54,7 +59,11 @@ export class MessageService implements IMessageService {
     }
 
     this.messageRepository.add(message)
-    this?.groupService?.broadcast(groupId, message as ServerToClientMessage)
+    const message2Client: ServerToClientMessage = {
+      type,
+      payload: message,
+    }
+    this?.groupService?.broadcast(groupId, message2Client)
 
     // 处理特殊指令
     if (type === 'text' && content === FUNCTION_COMMANDS.getWifiIp) {
@@ -74,7 +83,11 @@ export class MessageService implements IMessageService {
       const funcMessage = new TextMessage(`${id}-sys-resp`, groupId, systemId, Date.now(), resContent)
 
       this.messageRepository.add(funcMessage)
-      this?.groupService?.broadcast(groupId, funcMessage as ServerToClientMessage)
+      const funcMessage2Client: ServerToClientMessage = {
+        type,
+        payload: funcMessage,
+      }
+      this?.groupService?.broadcast(groupId, funcMessage2Client)
     }
   }
 

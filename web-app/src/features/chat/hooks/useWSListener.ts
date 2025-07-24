@@ -10,10 +10,10 @@ import {
   updateUsers,
   updateJoinedGroups,
 } from '../chatSlice'
-import { getWSClient } from '../service/wsClient'
+import { getWSClientInstance, WSClient } from '../service/wsClient'
 import { useNotification } from '@/hooks/useNotification'
-import { ServerToClientMessage } from '@shared/types'
 import { getValidObject } from '@/utils/utillsObject'
+import { ChatGroupWithMember, ChatMessage, ServerMessagePayloadMap, ServerToClientMessage, User } from '@shared/types'
 
 export function useWSListener(lanIp: string) {
   const dispatch = useDispatch()
@@ -21,11 +21,16 @@ export function useWSListener(lanIp: string) {
 
   useEffect(() => {
     let socket: WebSocket | null = null
+    let wsClient: WSClient | null = null
 
     const initWebSocket = async () => {
       try {
-        const client = await getWSClient(lanIp)
-        const { socket: ws, id: userId } = client || {}
+        // const client = await getWSClient(lanIp)
+        wsClient = await getWSClientInstance(lanIp)
+        if (!wsClient) return
+
+        // const { socket: ws, id: userId } = client || {}
+        const { socket: ws, userId } = wsClient || {}
         if (!ws || !userId) return
         socket = ws
 
@@ -41,74 +46,87 @@ export function useWSListener(lanIp: string) {
         }
 
         // 监听消息
-        socket.onmessage = event => {
+        wsClient.onPush((msg: ServerToClientMessage) => {
           try {
-            const data: ServerToClientMessage = JSON.parse(event.data)
-            switch (data.type) {
+            // const data = wrapperData.payload
+            const { type, payload: data } = msg
+
+            // const data: ServerToClientMessage = JSON.parse(event.data)
+
+            switch (type) {
               case 'text':
               case 'image':
               case 'file':
-                dispatch(addMessage(data))
+                {
+                  dispatch(addMessage(data as ChatMessage))
+                }
                 break
               case 'message-history-res':
-                dispatch(updateMessage(data))
+                dispatch(updateMessage(data as { groupId: string; messages: ChatMessage[] }))
                 break
               case 'groups-res':
-                dispatch(updateGroups(data.groups))
+                dispatch(updateGroups((data as { groups: ChatGroupWithMember[] }).groups))
+
                 break
               case 'reset-user-success': {
                 console.log('reset user success')
-                const { name: username, avatar } = data
+                const { name: username, avatar } = data as User
                 let update = getValidObject({ username, avatar })
                 dispatch(updateWebSocketState({ ...update }))
                 socket!.send(JSON.stringify({ type: 'group-req' }))
                 break
               }
               case 'init-res': {
-                dispatch(updateJoinedGroups(data.joinedGroups))
-                dispatch(updateGroups(data.allGroups))
-                dispatch(updateUsers(data.allUsers))
+                const { joinedGroups, allGroups, allUsers, currentUser } = data as ServerMessagePayloadMap['init-res']
+                dispatch(updateJoinedGroups(joinedGroups))
+                dispatch(updateGroups(allGroups))
+                dispatch(updateUsers(allUsers))
 
-                const { name: username, avatar } = data.currentUser
-                let update = getValidObject({ username, avatar })
-                dispatch(updateWebSocketState({ ...update }))
+                const update = getValidObject({
+                  username: currentUser.name,
+                  avatar: currentUser.avatar,
+                })
+                dispatch(updateWebSocketState(update))
                 break
               }
 
               case 'joined-groups-res':
-                dispatch(updateJoinedGroups(data.joinedGroups))
+                dispatch(updateJoinedGroups((data as ServerMessagePayloadMap['joined-groups-res']).joinedGroups))
                 break
 
               case 'users-res':
-                dispatch(updateUsers(data.users))
+                dispatch(updateUsers((data as ServerMessagePayloadMap['users-res']).users))
                 break
-              case 'system':
-                dispatch(systemNotify(data.message))
-                showNotification('success', data.message, 'message')
+              case 'system': {
+                const message = (data as { message: string }).message
+                dispatch(systemNotify(message))
+                showNotification('success', message, 'message')
                 break
+              }
               default:
                 console.warn('Unknown message type:', data)
             }
           } catch (err) {
-            console.error('Invalid message received:', event.data)
+            console.error('Invalid message received:', err)
           }
-        }
+        })
 
-        socket.onopen = () => {
+        wsClient.onOpen(() => {
           console.log('WebSocket connection opened')
           updateConnectionState(true)
-          socket!.send(JSON.stringify({ type: 'init-req', id: userId }))
-        }
 
-        socket.onclose = () => {
+          wsClient?.send('init-req', { id: wsClient.userId }) // 注意：userId 可封装在 wsClient 内部暴露
+        })
+
+        wsClient.onClose(() => {
           updateConnectionState(false)
           console.log('WebSocket connection closed')
-        }
+        })
 
-        socket.onerror = err => {
+        wsClient.onError(err => {
           updateConnectionState(false, 'WebSocket error')
           console.error('WebSocket error:', err)
-        }
+        })
       } catch (err) {
         console.error('Failed to initialize WebSocket:', err)
       }
@@ -118,9 +136,7 @@ export function useWSListener(lanIp: string) {
 
     // 清理逻辑
     return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close()
-      }
+      wsClient?.close()
     }
   }, [dispatch, lanIp, showNotification])
 }

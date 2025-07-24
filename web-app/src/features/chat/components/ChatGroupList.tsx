@@ -23,15 +23,17 @@ const ChatGroupList: React.FC<{
   const [joinTargetGroup, setJoinTargetGroup] = useState<Omit<Group, 'messages'> | null>(null)
 
   const refreshGroups = () => {
-    sendMessage({ type: 'groups-req' })
+    sendMessage({ type: 'groups-req', payload: {} })
   }
 
   const applyJoinGroup = (username: string, group: Group) => {
     sendMessage({
       type: 'join',
-      username,
-      userId: wsState.id,
-      groupId: group.id,
+      payload: {
+        username,
+        userId: wsState.id,
+        groupId: group.id,
+      },
     })
 
     onJoined()

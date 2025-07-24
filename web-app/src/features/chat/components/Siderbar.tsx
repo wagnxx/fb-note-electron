@@ -43,14 +43,14 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
 
   useEffect(() => {
     delayFor(500).then(() => {
-      sendMessage({ type: 'users-req' })
+      sendMessage({ type: 'users-req', payload: {} })
     })
 
     if (activeTabKey === TAB_KEYS.CHAT_LIST) {
-      sendMessage({ type: 'joined-groups-req', id: wsState.id })
+      sendMessage({ type: 'joined-groups-req', payload: { id: wsState.id } })
     }
     if (activeTabKey === TAB_KEYS.ALL_GROUPS) {
-      sendMessage({ type: 'groups-req' })
+      sendMessage({ type: 'groups-req', payload: {} })
     }
   }, [activeTabKey, wsState.id])
 
@@ -62,7 +62,7 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
   }
 
   const handleUpdateAvatar = (avatar: string) => {
-    sendMessage({ type: 'reset-user', avatar, id: wsState.id })
+    sendMessage({ type: 'reset-user', payload: { avatar, id: wsState.id } })
   }
 
   useImperativeHandle(
