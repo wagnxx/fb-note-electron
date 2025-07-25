@@ -1,14 +1,30 @@
-// features/chat/services/chatService.ts
-import { ChatMessage, ClientToServerMessage } from '@shared/types'
+import { ClientToServerMessage } from '@shared/types'
 import { getWSClientInstance } from './wsClient'
+type AnyClientMessage = ClientToServerMessage<any>
 
-export function sendMessage(msg: ChatMessage | ClientToServerMessage) {
-  // const ws = store.getState().chat.wsState.ws
+export function sendMessage<T extends AnyClientMessage['type']>(
+  message: Extract<AnyClientMessage, { type: T }>,
+): Promise<any>
+
+export function sendMessage<T extends AnyClientMessage['type']>(
+  type: T,
+  payload: Extract<AnyClientMessage, { type: T }>['payload'],
+): Promise<any>
+
+export function sendMessage(a: string | AnyClientMessage, b?: any): Promise<any> {
   const ws = getWSClientInstance()
   if (!ws) {
-    return
+    return Promise.reject(new Error('WebSocket client not available'))
   }
-  ws.then(client => {
-    client?.send(msg.type, msg)
+
+  return ws.then(client => {
+    if (typeof a === 'string') {
+      return client?.request(a, b!)
+    } else {
+      if (typeof a.type === 'string' && 'payload' in a) {
+        return client?.request(a.type, a.payload)
+      }
+      return Promise.reject(new Error('Invalid message format'))
+    }
   })
 }

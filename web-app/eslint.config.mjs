@@ -54,7 +54,12 @@ export  default [
     },
     rules: {
       ...webAppRules,
-      ...prettierConfig.rules
+      ...prettierConfig.rules,
+      "no-redeclare": "off",
+      "@typescript-eslint/no-redeclare": [
+        "error",
+        { "ignoreDeclarationMerge": true }
+      ]
     },
   }
 ];
