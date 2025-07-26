@@ -102,21 +102,8 @@ export class GroupService implements IGroupService {
     // }
   }
   async getGroupsWithMembers(userId: string) {
-    // const groupIds = this.userGroupService.getGroupsByUser(userId)
-    // const groups = this.getGroups(groupIds)
-    // const groupWithMembers = groups.map(this.findMember)
-    // return groupWithMembers
-    const groups = await this.userService.getGroups(userId)
+    const groups = await this.userService.getUserGroups(userId)
     if (!groups) return []
-
-    const allUsers = await this.userService.getAllUsers()
-    const result: ChatGroupWithMember[] = groups.map(item => ({
-      id: item.id,
-      name: item.name,
-      admin: item.admin,
-      members: (item.memberIds?.map(uid => allUsers.find(user => user.id === uid)).filter(Boolean) as User[]) || [],
-    }))
-
-    return result
+    return groups
   }
 }

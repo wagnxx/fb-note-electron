@@ -2,7 +2,6 @@
 import prisma from '@/prisma/prismaClient'
 import { provide, TYPES } from '../../core/ioc.config'
 import { User } from './User'
-import { Group } from '../group/group'
 
 @provide(TYPES.UserRepository)
 export class UserRepository {
@@ -42,13 +41,19 @@ export class UserRepository {
     prisma.user.delete({ where: { id } })
   }
 
-  async getGroups(id: string) {
+  async getUserGroups(id: string) {
     const user = await prisma.user.findUnique({
       where: { id },
-      include: { groups: true },
+      include: {
+        groups: {
+          include: {
+            members: true,
+          },
+        },
+      },
     })
     if (!user) return null
-    return user.groups as Group[]
+    return user.groups
   }
 
   async getAll(): Promise<User[]> {

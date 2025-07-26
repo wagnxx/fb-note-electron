@@ -12,8 +12,8 @@ export class UserService implements IUserService {
 
   constructor(@inject(TYPES.WebSocketManager) private wsManager: WebSocketManager) {}
 
-  getGroups(id: string) {
-    return this.repo.getGroups(id)
+  getUserGroups(id: string) {
+    return this.repo.getUserGroups(id)
   }
 
   async registerUser(params: { id: string; name?: string; avatar?: string }) {

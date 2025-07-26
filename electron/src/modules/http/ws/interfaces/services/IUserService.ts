@@ -2,7 +2,14 @@
 
 import { WebSocket } from 'ws'
 import { User } from '../../domains/user/User'
-import { Group } from '../../domains/group/group'
+import { Prisma } from '.prisma/client'
+// import { Group } from '../../domains/group/group'
+
+type GroupWithRelations = Prisma.GroupGetPayload<{
+  include: {
+    members: true
+  }
+}>
 
 export interface IUserService {
   registerUser(params: { id: string; name?: string; socket?: WebSocket | null; avatar?: string }): void
@@ -13,7 +20,7 @@ export interface IUserService {
   removeUser(id: string): void
 
   getUser(id: string): Promise<User | undefined>
-  getGroups(id: string): Promise<Group[] | null>
+  getUserGroups(id: string): Promise<GroupWithRelations[] | null>
   getAllUsers(): Promise<User[]>
 
   getOnlineUsers(): Promise<User[]>

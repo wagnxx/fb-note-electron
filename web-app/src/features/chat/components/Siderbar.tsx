@@ -88,16 +88,15 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
         setGroupsWithAvatar(result)
         return
       }
+
       const result = await Promise.all(
         joinedGroups.map(async ({ group, latestMessage }) => {
+          // 取前面成员中有头像的最多4个
           const userImages = group.members
-            .slice(0, 4)
-            .map(user => {
-              return user?.avatar
-            })
-            .filter(Boolean) as string[]
+            .map(user => user?.avatar)
+            .filter(Boolean)
+            .slice(0, 4) as string[]
 
-          // 补足 4 张头像
           while (userImages.length < 4) {
             userImages.push(BLACK_PLACEHOLDER)
           }
@@ -111,15 +110,21 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
           }
         }),
       )
+
       setGroupsWithAvatar(result)
     }
 
-    if (users?.length && joinedGroups.length) {
-      loadAvatars(false)
-    } else if (isFirstRender) {
-      loadAvatars(true)
+    const getAvatars = () => {
+      if (activeTabKey !== TAB_KEYS.CHAT_LIST) return
+
+      if (users?.length && joinedGroups.length) {
+        loadAvatars(false)
+      } else if (isFirstRender) {
+        loadAvatars(true)
+      }
     }
-  }, [joinedGroups, users, isFirstRender])
+    getAvatars()
+  }, [joinedGroups, users, isFirstRender, activeTabKey])
 
   const userDescItems: DescriptionsProps['items'] = [
     {
