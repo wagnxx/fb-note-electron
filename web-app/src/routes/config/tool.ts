@@ -10,6 +10,7 @@ import MindMap from '@/pages/mindmap/MindMap'
 import IconGenerator from '@/pages/tools/image/IconGenerator'
 import Books from '@/pages/tools/books'
 import ChatRoomInner from '@/pages/tools/chat/inner'
+import CoordinateDebugger from '@/pages/tools/image/CoordinateDebugger'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -75,6 +76,12 @@ export const routesTool: RouteConfig = {
       path: 'image',
       name: 'Image',
       component: IconGenerator,
+      requiresAuth: false,
+    },
+    {
+      path: 'CoordinateDebugger',
+      name: 'CoordinateDebugger',
+      component: CoordinateDebugger,
       requiresAuth: false,
     },
     {

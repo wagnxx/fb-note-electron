@@ -1,7 +1,7 @@
 // domains/group/GroupService.ts
 import { Group } from './group'
 import { GroupRepository } from './GroupRepository'
-import type { ServerToClientMessage, User, Group as GroupDTO, ChatGroupWithMember } from '../../interfaces/types'
+import type { ServerToClientMessage, Group as GroupDTO } from '../../interfaces/types'
 import { inject, provide, TYPES } from '../../core/ioc.config'
 import { IGroupService } from '../../interfaces/services/IGroupService'
 import { IUserService } from '../../interfaces/services/IUserService'
@@ -78,15 +78,15 @@ export class GroupService implements IGroupService {
 
   async getAllGroupsWithMembers() {
     const allGroups = await this.repo.getAll(true)
-    const allUsers = await this.userService.getAllUsers()
-    const result: ChatGroupWithMember[] = allGroups.map(item => ({
-      id: item.id,
-      name: item.name,
-      admin: item.admin,
-      members: (item.memberIds?.map(uid => allUsers.find(user => user.id === uid)).filter(Boolean) as User[]) || [],
-    }))
+    // const allUsers = await this.userService.getAllUsers()
+    // const result: ChatGroupWithMember[] = allGroups.map(item => ({
+    //   id: item.id,
+    //   name: item.name,
+    //   admin: item.admin,
+    //   members: (item.memberIds?.map(uid => allUsers.find(user => user.id === uid)).filter(Boolean) as User[]) || [],
+    // }))
 
-    return result
+    return allGroups
   }
 
   getSystemId() {

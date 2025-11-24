@@ -1,6 +1,7 @@
 // domains/group/GroupRepository.ts
 import prisma from '@/prisma/prismaClient'
 import { Group } from './group'
+import { Prisma } from '.prisma/client'
 // @injectable()
 export class GroupRepository {
   // private groups = new Map<string, Group>()
@@ -54,16 +55,21 @@ export class GroupRepository {
     })
   }
 
-  async getAll(includeMembers: boolean = false): Promise<Group[]> {
+  // 1. overloads
+  async getAll(includeMembers: true): Promise<Prisma.GroupGetPayload<{ include: { members: true } }>[]>
+  async getAll(includeMembers?: false): Promise<Prisma.GroupGetPayload<{}>[]>
+  // 2. implementation
+  async getAll(includeMembers: boolean = false) {
     const groupRecords = await prisma.group.findMany({
       include: { members: includeMembers },
     })
 
     // return groupRecords
 
-    return groupRecords.map(
-      record => new Group(record.id, record.name, record.admin, record?.members?.map(user => user.id) || []),
-    )
+    // return groupRecords.map(
+    //   record => new Group(record.id, record.name, record.admin, record?.members?.map(user => user.id) || []),
+    // )
+    return groupRecords
   }
 
   async init(groups: Group[]): Promise<void> {

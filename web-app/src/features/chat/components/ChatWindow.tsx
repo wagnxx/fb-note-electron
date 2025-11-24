@@ -9,6 +9,7 @@ import FileMessageItem from './FileMessageItem'
 import Avatar from './Avatar'
 import { readFileAsBase64 } from '@/utils/utilsFile'
 import { MoreHorizontal } from 'lucide-react'
+import TextMessageItem from './TextMessageItem'
 
 const FUNCTION_COMMANDS = ['@getWifiIp', '@getUsers']
 
@@ -21,6 +22,7 @@ const ChatWindow: React.FC<
   const { wsState, groups, users } = useAppSelector(state => state.chat)
   const messages = useAppSelector(state => state.chat.messagesByGroup[groupId] || [])
   const bottomRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const group = useMemo(() => {
     return groups.find(item => item.id === groupId)
@@ -114,7 +116,7 @@ const ChatWindow: React.FC<
       </div>
       {/* 中间内容区 */}
 
-      <div className="flex-1 bg-slate-50 min-h-0">
+      <div className="flex-1 bg-slate-50 min-h-0" ref={containerRef}>
         <div className="h-full space-y-2 overflow-auto px-1 py-2">
           {messages.map(msg => {
             const sender = getUser(msg.sender)
@@ -138,7 +140,7 @@ const ChatWindow: React.FC<
                     style={{ flexGrow: 1, minWidth: 0 }}
                   >
                     {msg.type === 'text' ? (
-                      msg.content
+                      <TextMessageItem content={msg.content} containerRef={containerRef} />
                     ) : msg.type === 'file' ? (
                       <FileMessageItem fileUrl={msg.content} fileName={msg.fileName} fileType={msg.fileType} />
                     ) : null}
