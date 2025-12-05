@@ -11,6 +11,7 @@ import IconGenerator from '@/pages/tools/image/IconGenerator'
 import Books from '@/pages/tools/books'
 import ChatRoomInner from '@/pages/tools/chat/inner'
 import CoordinateDebugger from '@/pages/tools/image/CoordinateDebugger'
+import Locator from '@/pages/tools/locator/Locator'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -96,6 +97,13 @@ export const routesTool: RouteConfig = {
       component: ChatRoomInner,
       requiresAuth: false,
       isDesktop: true,
+    },
+    {
+      path: 'Locator',
+      name: 'Locator',
+      component: Locator,
+      requiresAuth: false,
+      isDesktop: false,
     },
   ],
 }
