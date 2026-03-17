@@ -28,3 +28,16 @@ export function sendMessage(a: string | AnyClientMessage, b?: any): Promise<any>
     }
   })
 }
+
+// export const fetchInitialHistoryByGroup = (groupId: string) => {
+//   const ws = getWSClientInstance()
+//   if (!ws) {
+//     return Promise.reject(new Error('WebSocket client not available'))
+//   }
+//   return ws.then(client => {
+//     if (!client) {
+//       return Promise.reject(new Error('WebSocket client not initialized'))
+//     }
+//     return client.request('message-history-req', { groupId })
+//   })
+// }

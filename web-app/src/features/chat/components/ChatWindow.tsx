@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { AutoComplete, Button, Input, Upload } from 'antd'
-import { ArrowLeftOutlined, UploadOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 import { ClientToServerMessage } from '@shared/types'
 import { useAppSelector } from '@/store/hooks'
 import { sendMessage } from '@/features/chat/service/chatService'
@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import FileMessageItem from './FileMessageItem'
 import Avatar from './Avatar'
 import { readFileAsBase64 } from '@/utils/utilsFile'
-import { MoreHorizontal } from 'lucide-react'
+import { FileUpIcon, MoreHorizontal, RotateCwIcon, SendIcon } from 'lucide-react'
 import TextMessageItem from './TextMessageItem'
 
 const FUNCTION_COMMANDS = ['@getWifiIp', '@getUsers']
@@ -65,6 +65,14 @@ const ChatWindow: React.FC<
       sendMessage(msg)
     })
     return false
+  }
+
+  const fetchInitialHistory = () => {
+    const msg = {
+      type: 'message-history-req',
+      payload: { groupId },
+    } as ClientToServerMessage
+    return sendMessage(msg)
   }
 
   useEffect(() => {
@@ -168,11 +176,10 @@ const ChatWindow: React.FC<
           <Input className="ant-input" placeholder="输入消息..." />
         </AutoComplete>
         <Upload beforeUpload={sendFile} showUploadList={false}>
-          <Button icon={<UploadOutlined />}>发送文件</Button>
+          <Button icon={<FileUpIcon />}></Button>
         </Upload>
-        <Button type="primary" onClick={sendMessageText}>
-          发送
-        </Button>
+        <Button icon={<RotateCwIcon />} onClick={fetchInitialHistory}></Button>
+        <Button icon={<SendIcon />} onClick={sendMessageText}></Button>
       </div>
     </div>
   )
