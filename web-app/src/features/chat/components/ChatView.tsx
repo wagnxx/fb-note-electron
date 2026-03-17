@@ -6,14 +6,17 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { selectGroup } from '@/features/chat/chatSlice'
 import Siderbar, { SiderbarRef } from './Siderbar'
 import { afterRaf } from '@/utils/utilsAsyncFunc'
-import { Empty } from 'antd'
+import { Button, Empty } from 'antd'
 import { useDraggable } from '@/hooks/useDraggable'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { LinkOutlined } from '@ant-design/icons'
+import QRCode from './QRCode'
 
 const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
   const [stage, setStage] = useState<'siderbar' | 'chat'>('siderbar')
   const siderbarRef = useRef<SiderbarRef>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const [showQRCode, setShowQRCode] = useState(false)
 
   const { wsState } = useAppSelector(state => state.chat)
 
@@ -71,7 +74,16 @@ const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
       className={cn('flex ', isMobile ? 'flex-col w-full ' : 'flex-row rounded-lg overflow-hidden')}
     >
       {!isMobile && (
-        <div className="drag-header w-full h-8 bg-slate-300 cursor-move absolute top-0 left-0 z-10 rounded-t-lg" />
+        <div className="drag-header w-full h-8 bg-slate-300 cursor-move absolute top-0 left-0 z-10 rounded-t-lg">
+          <Button icon={<LinkOutlined />} type="link" className="ml-2" onClick={() => setShowQRCode(prev => !prev)}>
+            Web Link
+          </Button>
+          {showQRCode && (
+            <div className="absolute top-full left-0 p-2 rounded-lg bg-slate-200">
+              <QRCode ip={ip} />
+            </div>
+          )}
+        </div>
       )}
 
       <div className="flex  w-full h-full pt-8">
