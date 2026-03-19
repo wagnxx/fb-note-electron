@@ -39,6 +39,20 @@ class GoogleDriveService {
   SCOPES = 'https://www.googleapis.com/auth/drive'
   TOKEN_KEY = 'google_drive_access_token'
 
+  private createAuthCancelledError(extra?: any): Error & { code: string; type?: string } {
+    const err = new Error('User cancelled Google authorization') as Error & {
+      code: string
+      type?: string
+    }
+
+    err.code = 'AUTH_CANCELLED'
+    if (extra?.type) {
+      err.type = extra.type
+    }
+
+    return err
+  }
+
   // 确保加载所有需要的 Google API 脚本
   loadScript(src: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -83,8 +97,59 @@ class GoogleDriveService {
     }
     return token
   }
-
   async requestNewToken(): Promise<string> {
+    if (!window.google?.accounts?.oauth2) {
+      await this.loadScript('https://accounts.google.com/gsi/client')
+    }
+
+    return new Promise<string>((resolve, reject) => {
+      let settled = false
+
+      const safeResolve = (token: string) => {
+        if (settled) return
+        settled = true
+        this.storeToken(token)
+        resolve(token)
+      }
+
+      const safeReject = (err: any) => {
+        if (settled) return
+        settled = true
+        reject(err)
+      }
+
+      const client = window.google.accounts.oauth2.initTokenClient({
+        client_id: this.GOOGLE_CLIENT_ID,
+        scope: this.SCOPES,
+        callback: (response: any) => {
+          if (response?.access_token) {
+            safeResolve(response.access_token)
+            return
+          }
+
+          const err: any = new Error(response?.error_description || response?.error || 'Failed to get access token')
+          err.code = response?.error || 'AUTH_ERROR'
+          err.response = response
+          safeReject(err)
+        },
+        error_callback: (err: any) => {
+          if (err?.type === 'popup_closed') {
+            safeReject(this.createAuthCancelledError(err))
+            return
+          }
+
+          const authErr: any = new Error(err?.type || 'Google auth failed')
+          authErr.code = 'AUTH_ERROR'
+          authErr.type = err?.type
+          safeReject(authErr)
+        },
+      })
+
+      client.requestAccessToken()
+    })
+  }
+
+  async requestNewToken1(): Promise<string> {
     return new Promise((resolve, reject) => {
       const initAndRequest = (): Promise<string> =>
         new Promise((resolveInner, rejectInner) => {
@@ -118,7 +183,17 @@ class GoogleDriveService {
   // 修改方法签名：去掉 accessToken 参数
   // @withTokenRefresh
   async openPicker(onPick?: (doc: any) => void): Promise<void> {
-    const accessToken = await this.getValidToken() // 内部自己处理 token
+    let accessToken = await this.getValidToken() // 内部自己处理 token
+
+    try {
+      accessToken = await this.getValidToken()
+    } catch (err: any) {
+      // 用户主动关闭授权窗口，不当成真正异常
+      if (err?.code === 'AUTH_CANCELLED') {
+        return
+      }
+      throw err
+    }
 
     return new Promise<void>((resolve, reject) => {
       window.gapi.load('picker', () => {

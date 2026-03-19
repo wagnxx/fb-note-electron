@@ -23,6 +23,11 @@ export const signInWithGoogle = async (): Promise<boolean> => {
     // 创建 Google 提供程序实例
     const provider = new GoogleAuthProvider()
 
+    // 可选：每次都让用户选账号
+    provider.setCustomParameters({
+      prompt: 'select_account',
+    })
+
     // 发起 Google 登录流程
     const result = await signInWithPopup(auth, provider)
 

@@ -13,7 +13,6 @@ const GoogleDrivePicker: React.FC<GoogleDrivePickerProps> = ({ onPick }) => {
     setLoading(true)
     try {
       await googleDriveService.ensureScriptsLoaded()
-
       await googleDriveService.openPicker(onPick)
     } catch (err: any) {
       console.error('Google Picker error:', err)
