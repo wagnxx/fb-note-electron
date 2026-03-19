@@ -3,6 +3,7 @@ import { setupFileHandler } from './handlers/file'
 import { imageHandler } from './handlers/image'
 import { setupSocksHandler } from './handlers/socks'
 import { setupVideoStreamHandler } from './handlers/video'
+import { setupWritingHandler } from './handlers/writing'
 import { BaseModule } from '@/core/di'
 
 export class IpcModule extends BaseModule {
@@ -16,6 +17,7 @@ export class IpcModule extends BaseModule {
     setupVideoStreamHandler()
     setupFileHandler()
     imageHandler()
+    setupWritingHandler()
   }
 
   async stop() {

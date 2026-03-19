@@ -34,7 +34,7 @@
   },
   "include": [
     "src/**/*",
-    "../shared/*"
+    "../shared/**/*"
   ],
   "exclude": [
     "node_modules",

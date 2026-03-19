@@ -11,6 +11,7 @@ import mindmapConfigReducer from '@/features/mindmap//slices/configSlice'
 import mindmapFlowwReducer from '@/features/mindmap//slices/flowSlice'
 import { rolePermissionReducer } from '@/features/rolePermission'
 import chatReducer from '@/features/chat/chatSlice'
+import writingReducer from '@/features/writing/writingSlice'
 
 // 配置持久化设置
 const persistConfig = {
@@ -30,6 +31,7 @@ const rootReducer = combineReducers({
   mindmapFlow: mindmapFlowwReducer,
   rolePermission: rolePermissionReducer,
   chat: chatReducer,
+  writing: writingReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

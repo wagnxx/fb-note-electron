@@ -75,6 +75,15 @@ type IpcActionHandlers = {
   DOWNLOAD_ERROR: noop
 
   IMAGE_TO_ICONS: (imagePath: string) => string[]
+
+  // Writing handlers
+  WRITING_INIT_DIRECTORIES: () => { success: boolean }
+  WRITING_SAVE: (data: any) => { success: boolean; id?: string; error?: string }
+  WRITING_LOAD: (type: string, id: string) => any | null
+  WRITING_LIST: (type: string) => any[]
+  WRITING_DELETE: (type: string, id: string) => boolean
+  WRITING_EXPORT_DATA: () => any
+  WRITING_IMPORT_DATA: (data: any) => { success: number; failed: number }
 }
 
 // 构造类型映射

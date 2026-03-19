@@ -12,6 +12,8 @@ import Books from '@/pages/tools/books'
 import ChatRoomInner from '@/pages/tools/chat/inner'
 import CoordinateDebugger from '@/pages/tools/image/CoordinateDebugger'
 import Locator from '@/pages/tools/locator/Locator'
+import WritingPage from '@/pages/writing/Writing'
+import WritingEditorPage from '@/pages/writing/WritingEditor'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -104,6 +106,17 @@ export const routesTool: RouteConfig = {
       component: Locator,
       requiresAuth: false,
       isDesktop: false,
+    },
+    {
+      path: 'writing',
+      name: 'Writing',
+      component: WritingPage,
+    },
+    {
+      path: 'writing/editor',
+      name: 'WritingEditor',
+      component: WritingEditorPage,
+      hidden: true,
     },
   ],
 }

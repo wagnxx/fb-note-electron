@@ -14,6 +14,10 @@ electron/release
 electron/support/download
 electron/support/logs
 electron/support/temps
+electron/support/*.db
+electron/support/preload.js
+electron/support/.DS_Store
+electron/support/writing
 electron/support/prisma/migrations/
 
 *.error
