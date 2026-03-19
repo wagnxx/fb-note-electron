@@ -14,6 +14,7 @@ export interface WritingItem {
 export interface WritingBase {
   id: string
   title: string
+  description?: string
   createdAt: string
   updatedAt: string
   tags: string[]

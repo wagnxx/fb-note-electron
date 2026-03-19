@@ -14,6 +14,7 @@ import CoordinateDebugger from '@/pages/tools/image/CoordinateDebugger'
 import Locator from '@/pages/tools/locator/Locator'
 import WritingPage from '@/pages/writing/Writing'
 import WritingEditorPage from '@/pages/writing/WritingEditor'
+import WritingViewPage from '@/pages/writing/WritingView'
 
 export const routesTool: RouteConfig = {
   path: '/tool',
@@ -116,6 +117,12 @@ export const routesTool: RouteConfig = {
       path: 'writing/editor',
       name: 'WritingEditor',
       component: WritingEditorPage,
+      hidden: true,
+    },
+    {
+      path: 'writing/view',
+      name: 'WritingView',
+      component: WritingViewPage,
       hidden: true,
     },
   ],

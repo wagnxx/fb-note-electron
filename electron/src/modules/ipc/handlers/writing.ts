@@ -101,9 +101,17 @@ function listWritings(type: WritingType): WritingBase[] {
       try {
         const content = fs.readFileSync(filePath, 'utf-8')
         const writing: WritingItem = JSON.parse(content)
+        const descriptionFromMetadata = writing.metadata?.description
+        const contentSummary = writing.content.replace(/\s+/g, ' ').trim().slice(0, 120)
+        const description =
+          typeof descriptionFromMetadata === 'string' && descriptionFromMetadata.trim().length > 0
+            ? descriptionFromMetadata
+            : contentSummary || '暂无描述'
+
         writings.push({
           id: writing.id,
           title: writing.title,
+          description,
           createdAt: writing.createdAt,
           updatedAt: writing.updatedAt,
           tags: writing.tags,

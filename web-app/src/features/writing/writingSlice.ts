@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import type { WritingItem, WritingType, WritingBase } from '@shared/types/writing'
-import type { WritingState, WritingFormData, WritingFilters } from './types'
+import type { WritingItem, WritingType } from '@shared/types/writing'
+import type { WritingState, WritingFormData, WritingFilters, WritingListEntry } from './types'
 
 const { ipcRenderer, IPC_ACTIONS } = window.electron || ({} as any)
 
@@ -32,7 +32,7 @@ export const loadWriting = createAsyncThunk('writing/load', async ({ type, id }:
 })
 
 export const listWritings = createAsyncThunk('writing/list', async (type: WritingType) => {
-  return await invokeWriting<Array<WritingBase & { type?: WritingType }>>(IPC_ACTIONS.WRITING_LIST, type)
+  return await invokeWriting<WritingListEntry[]>(IPC_ACTIONS.WRITING_LIST, type)
 })
 
 export const deleteWriting = createAsyncThunk(

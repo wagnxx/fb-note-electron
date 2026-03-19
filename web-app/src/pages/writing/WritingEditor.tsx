@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Alert, Button, Form, Input, Space, Spin, Tag, Typography } from 'antd'
 import { useWriting } from '../../features/writing/hooks/useWriting'
 import { validateWritingData, generateWritingTitle } from '../../features/writing/utils/helpers'
 import type { WritingFormData } from '../../features/writing/types'
 import type { WritingType } from '@shared/types/writing'
+
+const { Title } = Typography
+const { TextArea } = Input
 
 const WritingEditorPage: React.FC = () => {
   const navigate = useNavigate()
@@ -24,16 +28,9 @@ const WritingEditorPage: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      // Load existing writing
       fetchWriting(type, id)
     } else {
-      // Initialize new writing
-      setFormData({
-        type,
-        title: generateWritingTitle(type),
-        content: '',
-        tags: [],
-      })
+      setFormData({ type, title: generateWritingTitle(type), content: '', tags: [] })
     }
   }, [id, type, fetchWriting])
 
@@ -54,124 +51,95 @@ const WritingEditorPage: React.FC = () => {
       setValidationErrors(validation.errors)
       return
     }
-
     setValidationErrors([])
     await createWriting(formData)
-    navigate('/writing')
-  }
-
-  const handleCancel = () => {
-    navigate('/writing')
+    navigate('/tool/writing')
   }
 
   const handleAddTag = () => {
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()],
-      }))
+    const val = tagInput.trim()
+    if (val && !formData.tags.includes(val)) {
+      setFormData(prev => ({ ...prev, tags: [...prev.tags, val] }))
       setTagInput('')
     }
   }
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove),
-    }))
-  }
-
-  const handleTagInputKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAddTag()
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="writing-editor">
-        <div className="loading">加载中...</div>
-      </div>
-    )
-  }
-
   return (
-    <div className="writing-editor">
-      <div className="editor-header">
-        <h1>{id ? '编辑' : '新建'}写作</h1>
-        <div className="editor-actions">
-          <button onClick={handleCancel} className="cancel-btn">
-            取消
-          </button>
-          <button onClick={handleSave} className="save-btn">
-            保存
-          </button>
+    <Spin spinning={loading}>
+      <div className="p-5 max-w-3xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <Title level={3} className="!mb-0">
+            {id ? '编辑' : '新建'}写作
+          </Title>
+          <Space>
+            <Button onClick={() => navigate('/tool/writing')}>取消</Button>
+            <Button type="primary" onClick={handleSave}>
+              保存
+            </Button>
+          </Space>
         </div>
-      </div>
 
-      <div className="editor-content">
-        {error && <div className="error">{error}</div>}
+        {error && <Alert type="error" message={error} className="mb-4" />}
 
         {validationErrors.length > 0 && (
-          <div className="validation-errors">
-            {validationErrors.map((error, index) => (
-              <div key={index} className="error-item">
-                {error}
-              </div>
-            ))}
-          </div>
+          <Alert
+            type="warning"
+            className="mb-4"
+            message={
+              <ul className="m-0 pl-4">
+                {validationErrors.map((e, i) => (
+                  <li key={i}>{e}</li>
+                ))}
+              </ul>
+            }
+          />
         )}
 
-        <div className="form-group">
-          <label htmlFor="title">标题</label>
-          <input
-            id="title"
-            type="text"
-            value={formData.title}
-            onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            placeholder="输入标题..."
-          />
-        </div>
-
-        <div className="form-group">
-          <label>标签</label>
-          <div className="tags-input">
-            <input
-              type="text"
-              value={tagInput}
-              onChange={e => setTagInput(e.target.value)}
-              onKeyPress={handleTagInputKeyPress}
-              placeholder="输入标签，按回车添加..."
+        <Form layout="vertical" className="flex flex-col gap-2">
+          <Form.Item label="标题">
+            <Input
+              value={formData.title}
+              onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="输入标题..."
             />
-            <button onClick={handleAddTag} type="button">
-              添加
-            </button>
-          </div>
-          <div className="tags-list">
-            {formData.tags.map(tag => (
-              <span key={tag} className="tag">
-                #{tag}
-                <button onClick={() => handleRemoveTag(tag)} type="button">
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-        </div>
+          </Form.Item>
 
-        <div className="form-group">
-          <label htmlFor="content">内容</label>
-          <textarea
-            id="content"
-            value={formData.content}
-            onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
-            placeholder="开始写作..."
-            rows={20}
-          />
-        </div>
+          <Form.Item label="标签">
+            <Space.Compact className="w-full">
+              <Input
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onPressEnter={handleAddTag}
+                placeholder="输入标签，按回车或点击添加..."
+              />
+              <Button onClick={handleAddTag}>添加</Button>
+            </Space.Compact>
+            {formData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {formData.tags.map(tag => (
+                  <Tag
+                    key={tag}
+                    closable
+                    onClose={() => setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}
+                  >
+                    #{tag}
+                  </Tag>
+                ))}
+              </div>
+            )}
+          </Form.Item>
+
+          <Form.Item label="内容">
+            <TextArea
+              value={formData.content}
+              onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
+              placeholder="开始写作..."
+              rows={20}
+            />
+          </Form.Item>
+        </Form>
       </div>
-    </div>
+    </Spin>
   )
 }
 

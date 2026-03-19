@@ -14,8 +14,13 @@ export interface WritingFilters {
   search?: string
 }
 
+export interface WritingListEntry extends WritingBase {
+  type?: WritingType
+  description?: string
+}
+
 export interface WritingState {
-  items: Array<WritingBase & { type?: WritingType }>
+  items: WritingListEntry[]
   currentItem: WritingItem | null
   loading: boolean
   error: string | null
@@ -26,6 +31,7 @@ export interface WritingListItem {
   id: string
   title: string
   type: WritingType
+  description?: string
   tags: string[]
   createdAt: string
   updatedAt: string
