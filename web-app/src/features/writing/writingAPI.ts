@@ -1,4 +1,10 @@
-import type { WritingItem, WritingType, WritingBase, WritingExportData } from '@shared/types/writing'
+import type {
+  WritingItem,
+  WritingType,
+  WritingBase,
+  WritingExportData,
+  WritingSaveRequest,
+} from '@shared/types/writing'
 const { ipcRenderer, IPC_ACTIONS } = window.electron || ({} as any)
 
 const invokeWriting = ipcRenderer.invoke as <T>(channel: string, ...args: any[]) => Promise<T>
@@ -11,9 +17,7 @@ export const writingAPI = {
   },
 
   // Save writing content
-  saveWriting: async (
-    data: Omit<WritingItem, 'id' | 'createdAt' | 'updatedAt'>,
-  ): Promise<{ success: boolean; id?: string; error?: string }> => {
+  saveWriting: async (data: WritingSaveRequest): Promise<{ success: boolean; id?: string; error?: string }> => {
     return await invokeWriting<{ success: boolean; id?: string; error?: string }>(IPC_ACTIONS.WRITING_SAVE, data)
   },
 

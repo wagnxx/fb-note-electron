@@ -1,9 +1,34 @@
 // Writing utility functions
 import type { WritingType } from '@shared/types/writing'
+import type { WritingChapter, WritingVolume } from '@/features/writing/types'
 
 export const CHAPTERED_TYPES: WritingType[] = ['novel', 'short_story', 'video_script']
+export const VOLUME_TYPES: WritingType[] = ['novel']
 
 export const hasChapters = (type: WritingType): boolean => CHAPTERED_TYPES.includes(type)
+export const hasVolumes = (type: WritingType): boolean => VOLUME_TYPES.includes(type)
+
+export const getEntryLabel = (type: WritingType): string => {
+  if (type === 'video_script') return '节'
+  return '章'
+}
+
+export const getHierarchyLabel = (type: WritingType): string => {
+  if (type === 'novel') return '卷 / 章'
+  if (type === 'video_script') return '节'
+  return '章节'
+}
+
+export const getAllNestedChapters = (
+  type: WritingType,
+  volumes?: WritingVolume[],
+  chapters?: WritingChapter[],
+): WritingChapter[] => {
+  if (hasVolumes(type)) {
+    return (volumes ?? []).flatMap(volume => volume.chapters ?? [])
+  }
+  return chapters ?? []
+}
 
 export const WRITING_TYPES: { value: WritingType; label: string; description: string }[] = [
   {
@@ -52,6 +77,7 @@ export const validateWritingData = (data: {
   type: WritingType
   title: string
   content: string
+  volumes?: Array<{ chapters: Array<{ content: string }> }>
   chapters?: Array<{ content: string }>
 }): { isValid: boolean; errors: string[] } => {
   const errors: string[] = []
@@ -64,10 +90,27 @@ export const validateWritingData = (data: {
     errors.push('标题不能为空')
   }
 
-  if (hasChapters(data.type)) {
+  if (hasVolumes(data.type)) {
+    const volumes = data.volumes ?? []
+    const hasVolume = volumes.length > 0
+    const hasChapter = volumes.some(volume => (volume.chapters ?? []).length > 0)
+    const hasAnyContent = volumes.some(volume =>
+      (volume.chapters ?? []).some(chapter => chapter.content.trim().length > 0),
+    )
+
+    if (!hasVolume) {
+      errors.push('至少需要一个卷')
+    }
+    if (!hasChapter) {
+      errors.push('至少需要一个章节')
+    }
+    if (!hasAnyContent) {
+      errors.push('章节内容不能为空')
+    }
+  } else if (hasChapters(data.type)) {
     const hasAnyChapterContent = (data.chapters ?? []).some(chapter => chapter.content.trim().length > 0)
     if (!hasAnyChapterContent) {
-      errors.push('章节内容不能为空')
+      errors.push(data.type === 'video_script' ? '分节内容不能为空' : '章节内容不能为空')
     }
   } else if (!data.content || data.content.trim().length === 0) {
     errors.push('内容不能为空')

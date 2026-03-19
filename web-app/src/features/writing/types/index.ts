@@ -1,12 +1,29 @@
-import type { WritingBase, WritingItem, WritingType, WritingChapter } from '@shared/types/writing'
+import type { WritingBase, WritingItem, WritingType } from '@shared/types/writing'
+
+export interface WritingChapter {
+  id: string
+  title: string
+  content: string
+  order: number
+}
+
+export interface WritingVolume {
+  id: string
+  title: string
+  order: number
+  chapters: WritingChapter[]
+}
 
 // Frontend types for writing module
 export interface WritingFormData {
+  id?: string
   type: WritingType
   title: string
   /** 文章类型使用；章节类型此字段忽略 */
   content: string
   tags: string[]
+  /** 小说使用（卷 -> 章） */
+  volumes?: WritingVolume[]
   /** 章节类型使用（novel/short_story/video_script） */
   chapters?: WritingChapter[]
 }
@@ -40,4 +57,4 @@ export interface WritingListItem {
   updatedAt: string
 }
 
-export type { WritingBase, WritingItem, WritingType, WritingChapter }
+export type { WritingBase, WritingItem, WritingType }

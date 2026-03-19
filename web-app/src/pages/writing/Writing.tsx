@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button, Card, Empty, Space, Spin, Tag, Typography, Alert } from 'antd'
-import { PlusOutlined, EditOutlined, CopyOutlined, EyeOutlined } from '@ant-design/icons'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Alert, Button, Card, Empty, Popconfirm, Space, Spin, Tag, Typography } from 'antd'
+import { CopyOutlined, DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import { useNotification } from '@/hooks/useNotification'
 import { hasChapters, WRITING_TYPES } from '@/features/writing/utils/helpers'
@@ -12,20 +12,47 @@ const { Title, Text, Paragraph } = Typography
 const { ipcRenderer, IPC_ACTIONS } = window.electron || ({} as any)
 const invokeWriting = ipcRenderer.invoke as <T>(channel: string, ...args: any[]) => Promise<T>
 
+const resolveWritingType = (value: string | null): WritingType => {
+  const matched = WRITING_TYPES.find(item => item.value === value)
+  return matched?.value ?? 'article'
+}
+
 const WritingPage: React.FC = () => {
   const { message } = useNotification()
   const navigate = useNavigate()
-  const { items, loading, error, fetchWritings, initializeDirectories } = useWriting()
-  const [selectedType, setSelectedType] = useState<WritingType>('article')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { items, loading, error, fetchWritings, initializeDirectories, removeWriting } = useWriting()
+  const [selectedType, setSelectedType] = useState<WritingType>(() => resolveWritingType(searchParams.get('type')))
   const [copyLoadingId, setCopyLoadingId] = useState<string | null>(null)
+  const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null)
 
   useEffect(() => {
     initializeDirectories()
   }, [initializeDirectories])
 
   useEffect(() => {
+    const queryType = resolveWritingType(searchParams.get('type'))
+    setSelectedType(prev => (prev === queryType ? prev : queryType))
+
+    if (searchParams.get('type') !== queryType) {
+      const nextParams = new URLSearchParams(searchParams)
+      nextParams.set('type', queryType)
+      setSearchParams(nextParams, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
+
+  useEffect(() => {
     fetchWritings(selectedType)
   }, [selectedType, fetchWritings])
+
+  const handleSelectType = (nextType: WritingType) => {
+    if (nextType === selectedType) return
+    setSelectedType(nextType)
+
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.set('type', nextType)
+    setSearchParams(nextParams, { replace: true })
+  }
 
   const handleCreateNew = () => navigate(`/tool/writing/editor?type=${selectedType}`)
   const handleView = (id: string) => navigate(`/tool/writing/view?id=${id}&type=${selectedType}`)
@@ -62,6 +89,18 @@ const WritingPage: React.FC = () => {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    setDeleteLoadingId(id)
+    try {
+      await removeWriting(selectedType, id)
+      message.success('删除成功')
+    } catch {
+      message.error('删除失败')
+    } finally {
+      setDeleteLoadingId(null)
+    }
+  }
+
   const selectedLabel = WRITING_TYPES.find(t => t.value === selectedType)?.label
 
   return (
@@ -81,7 +120,7 @@ const WritingPage: React.FC = () => {
           {WRITING_TYPES.map(type => (
             <div
               key={type.value}
-              onClick={() => setSelectedType(type.value)}
+              onClick={() => handleSelectType(type.value)}
               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 selectedType === type.value
                   ? 'border-blue-500 bg-blue-50'
@@ -144,6 +183,26 @@ const WritingPage: React.FC = () => {
                       >
                         编辑
                       </Button>,
+                      <Popconfirm
+                        key="delete"
+                        title="确认删除"
+                        description="删除后不可恢复，确定继续吗？"
+                        okText="删除"
+                        cancelText="取消"
+                        okButtonProps={{ danger: true, loading: deleteLoadingId === item.id }}
+                        onConfirm={() => handleDelete(item.id)}
+                      >
+                        <Button
+                          type="text"
+                          danger
+                          size="small"
+                          icon={<DeleteOutlined />}
+                          loading={deleteLoadingId === item.id}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          删除
+                        </Button>
+                      </Popconfirm>,
                     ]}
                   >
                     <Card.Meta

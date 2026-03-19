@@ -8,12 +8,26 @@ export interface WritingChapter {
   order: number
 }
 
+export interface WritingVolume {
+  id: string
+  title: string
+  order: number
+  chapters: WritingChapter[]
+}
+
 /** 需要分章节的写作类型 */
 export const CHAPTERED_TYPES: WritingType[] = ['novel', 'short_story', 'video_script']
+
+/** 需要分卷的写作类型 */
+export const VOLUME_TYPES: WritingType[] = ['novel']
 
 /** 判断某类型是否为分章节类型 */
 export function hasChapters(type: WritingType): boolean {
   return CHAPTERED_TYPES.includes(type)
+}
+
+export function hasVolumes(type: WritingType): boolean {
+  return VOLUME_TYPES.includes(type)
 }
 
 export interface WritingItem {
@@ -22,6 +36,8 @@ export interface WritingItem {
   title: string
   /** 文章类型使用 content；章节类型此字段为空或第一章摘要 */
   content: string
+  /** 分卷结构，仅小说使用 */
+  volumes?: WritingVolume[]
   /** 章节列表，仅章节类型（novel/short_story/video_script）使用 */
   chapters?: WritingChapter[]
   tags: string[]
@@ -45,9 +61,12 @@ export interface WritingListResponse {
 }
 
 export interface WritingSaveRequest {
+  id?: string
   type: WritingType
   title: string
   content: string
+  volumes?: WritingVolume[]
+  chapters?: WritingChapter[]
   tags?: string[]
   metadata?: Record<string, any>
 }

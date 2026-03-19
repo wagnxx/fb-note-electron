@@ -4,8 +4,16 @@ import { ipcMain } from 'electron'
 import { logger } from '@/utils/logger'
 import { getSupportPath } from '@/config/basic'
 import { IPC_ACTIONS } from '@shared/ipcActions'
-import type { WritingItem, WritingType, WritingBase, WritingExportData, WritingChapter } from '@shared/types/writing'
-import { hasChapters } from '@shared/types/writing'
+import type {
+  WritingItem,
+  WritingType,
+  WritingBase,
+  WritingExportData,
+  WritingChapter,
+  WritingVolume,
+  WritingSaveRequest,
+} from '@shared/types/writing'
+import { hasChapters, hasVolumes } from '@shared/types/writing'
 
 // 获取写作目录路径
 function getWritingDir(): string {
@@ -35,13 +43,72 @@ function generateChapterId(): string {
   return 'ch_' + generateId()
 }
 
+function generateVolumeId(): string {
+  return 'vol_' + generateId()
+}
+
 // 初始化章节类型的默认章节
 function buildInitialChapters(type: WritingType, content: string): WritingChapter[] {
   // 如果已有内容，作为第一章
+  const defaultTitle = type === 'video_script' ? '第一节' : '第一章'
   if (content && content.trim()) {
-    return [{ id: generateChapterId(), title: '第一章', content, order: 0 }]
+    return [{ id: generateChapterId(), title: defaultTitle, content, order: 0 }]
   }
-  return [{ id: generateChapterId(), title: '第一章', content: '', order: 0 }]
+  return [{ id: generateChapterId(), title: defaultTitle, content: '', order: 0 }]
+}
+
+function buildInitialVolumes(content: string): WritingVolume[] {
+  return [
+    {
+      id: generateVolumeId(),
+      title: '第一卷',
+      order: 0,
+      chapters: buildInitialChapters('novel', content),
+    },
+  ]
+}
+
+function normalizeVolumes(volumes: WritingVolume[] = []): WritingVolume[] {
+  return volumes.map((volume, volumeIndex) => ({
+    ...volume,
+    order: volumeIndex,
+    chapters: (volume.chapters ?? []).map((chapter, chapterIndex) => ({
+      ...chapter,
+      order: chapterIndex,
+    })),
+  }))
+}
+
+function normalizeChapters(chapters: WritingChapter[] = []): WritingChapter[] {
+  return chapters.map((chapter, chapterIndex) => ({
+    ...chapter,
+    order: chapterIndex,
+  }))
+}
+
+function getSummaryFromWriting(writing: WritingItem): string {
+  if (hasVolumes(writing.type) && writing.volumes && writing.volumes.length > 0) {
+    const sortedVolumes = [...writing.volumes].sort((a, b) => a.order - b.order)
+    const firstVolume = sortedVolumes[0]
+    const sortedChapters = [...(firstVolume.chapters ?? [])].sort((a, b) => a.order - b.order)
+    const firstChapter = sortedChapters[0]
+
+    if (firstChapter) {
+      const firstContent = firstChapter.content.replace(/\s+/g, ' ').trim().slice(0, 80)
+      const chapterCount = sortedVolumes.reduce((total, volume) => total + (volume.chapters?.length ?? 0), 0)
+      return `共 ${sortedVolumes.length} 卷 / ${chapterCount} 章 · ${firstContent}`
+    }
+  }
+
+  if (hasChapters(writing.type) && writing.chapters && writing.chapters.length > 0) {
+    const sortedChapters = [...writing.chapters].sort((a, b) => a.order - b.order)
+    const firstChapter = sortedChapters[0]
+    const label = writing.type === 'video_script' ? '节' : '章'
+    const firstContent = firstChapter.content.replace(/\s+/g, ' ').trim().slice(0, 80)
+    return `共 ${sortedChapters.length} ${label} · ${firstContent}`
+  }
+
+  return writing.content.replace(/\s+/g, ' ').trim().slice(0, 120)
 }
 
 // 初始化写作目录结构
@@ -58,25 +125,39 @@ function initWritingDirectories(): void {
 }
 
 // 保存写作内容
-async function saveWriting(data: Omit<WritingItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+async function saveWriting(data: WritingSaveRequest): Promise<string> {
   const typeDir = getWritingTypeDir(data.type)
   ensureDir(typeDir)
 
-  const id = generateId()
+  const id = data.id || generateId()
   const now = new Date().toISOString()
+  const existingWriting = data.id ? loadWriting(data.type, data.id) : null
 
-  // 章节类型自动初始化 chapters
+  let volumes = data.volumes
   let chapters = data.chapters
-  if (hasChapters(data.type) && (!chapters || chapters.length === 0)) {
-    chapters = buildInitialChapters(data.type, data.content)
+
+  if (hasVolumes(data.type)) {
+    if (!volumes || volumes.length === 0) {
+      volumes = buildInitialVolumes(data.content)
+    }
+    volumes = normalizeVolumes(volumes)
+    chapters = undefined
+  } else if (hasChapters(data.type)) {
+    if (!chapters || chapters.length === 0) {
+      chapters = buildInitialChapters(data.type, data.content)
+    }
+    chapters = normalizeChapters(chapters)
+    volumes = undefined
   }
 
   const writingItem: WritingItem = {
     ...data,
     id,
-    createdAt: now,
+    createdAt: existingWriting?.createdAt || now,
     updatedAt: now,
-    ...(hasChapters(data.type) ? { chapters, content: '' } : {}),
+    tags: data.tags ?? existingWriting?.tags ?? [],
+    ...(hasVolumes(data.type) ? { volumes, chapters: undefined, content: '' } : {}),
+    ...(hasChapters(data.type) && !hasVolumes(data.type) ? { chapters, volumes: undefined, content: '' } : {}),
   }
 
   const filePath = path.join(typeDir, `${id}.json`)
@@ -125,16 +206,7 @@ function listWritings(type: WritingType): WritingBase[] {
         const writing: WritingItem = JSON.parse(content)
         const descriptionFromMetadata = writing.metadata?.description
 
-        // 章节类型：取第一章内容作为摘要；文章类型：取 content 摘要
-        let contentSummary: string
-        if (hasChapters(writing.type) && writing.chapters && writing.chapters.length > 0) {
-          const firstChapter = writing.chapters.sort((a, b) => a.order - b.order)[0]
-          const chapterCount = writing.chapters.length
-          const firstContent = firstChapter.content.replace(/\s+/g, ' ').trim().slice(0, 80)
-          contentSummary = `共 ${chapterCount} 章 · ${firstContent}`
-        } else {
-          contentSummary = writing.content.replace(/\s+/g, ' ').trim().slice(0, 120)
-        }
+        const contentSummary = getSummaryFromWriting(writing)
 
         const description =
           typeof descriptionFromMetadata === 'string' && descriptionFromMetadata.trim().length > 0
@@ -244,7 +316,7 @@ export function setupWritingHandler(): void {
   })
 
   // 保存写作内容
-  ipcMain.handle(IPC_ACTIONS.WRITING_SAVE, async (event, data: Omit<WritingItem, 'id' | 'createdAt' | 'updatedAt'>) => {
+  ipcMain.handle(IPC_ACTIONS.WRITING_SAVE, async (event, data: WritingSaveRequest) => {
     try {
       const id = await saveWriting(data)
       return { success: true, id }
