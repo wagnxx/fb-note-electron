@@ -15,6 +15,14 @@ import type {
 } from '@shared/types/writing'
 import { hasChapters, hasVolumes } from '@shared/types/writing'
 
+type WritingChapterMeta = Omit<WritingChapter, 'content'>
+type WritingVolumeMeta = Omit<WritingVolume, 'chapters'> & { chapters: WritingChapterMeta[] }
+
+type WritingItemMeta = Omit<WritingItem, 'content' | 'chapters' | 'volumes'> & {
+  chapters?: WritingChapterMeta[]
+  volumes?: WritingVolumeMeta[]
+}
+
 // 获取写作目录路径
 function getWritingDir(): string {
   return getSupportPath('writing')
@@ -23,6 +31,26 @@ function getWritingDir(): string {
 // 获取特定类型的写作目录
 function getWritingTypeDir(type: WritingType): string {
   return path.join(getWritingDir(), type)
+}
+
+function getArticleMetaPath(id: string): string {
+  return path.join(getWritingTypeDir('article'), `${id}.meta.json`)
+}
+
+function getArticleMarkdownPath(id: string): string {
+  return path.join(getWritingTypeDir('article'), `${id}.md`)
+}
+
+function getChapteredEntryDir(type: WritingType, id: string): string {
+  return path.join(getWritingTypeDir(type), id)
+}
+
+function getChapteredMetaPath(type: WritingType, id: string): string {
+  return path.join(getChapteredEntryDir(type, id), 'meta.json')
+}
+
+function getChapterMarkdownPath(type: WritingType, id: string, chapterId: string): string {
+  return path.join(getChapteredEntryDir(type, id), `${chapterId}.md`)
 }
 
 // 确保目录存在
@@ -45,6 +73,63 @@ function generateChapterId(): string {
 
 function generateVolumeId(): string {
   return 'vol_' + generateId()
+}
+
+function writeMarkdownWithH1(filePath: string, title: string, content: string): void {
+  const normalizedTitle = (title || '未命名章节').trim() || '未命名章节'
+  const normalizedContent = content || ''
+  const markdown = `# ${normalizedTitle}\n\n${normalizedContent}`
+  fs.writeFileSync(filePath, markdown, 'utf-8')
+}
+
+function parseMarkdownWithH1(markdown: string): { title: string; content: string } {
+  const normalized = markdown.replace(/^\uFEFF/, '')
+  const lines = normalized.split(/\r?\n/)
+  const firstLine = lines[0] ?? ''
+
+  if (/^#\s+/.test(firstLine)) {
+    const title = firstLine.replace(/^#\s+/, '').trim()
+    const content = lines
+      .slice(1)
+      .join('\n')
+      .replace(/^\s*\n/, '')
+    return {
+      title: title || '未命名章节',
+      content,
+    }
+  }
+
+  return {
+    title: '未命名章节',
+    content: normalized,
+  }
+}
+
+function loadMarkdownWithFallback(filePath: string, fallbackTitle: string): { title: string; content: string } {
+  if (!fs.existsSync(filePath)) {
+    return { title: fallbackTitle, content: '' }
+  }
+
+  const raw = fs.readFileSync(filePath, 'utf-8')
+  const parsed = parseMarkdownWithH1(raw)
+  if (parsed.title === '未命名章节' && fallbackTitle.trim()) {
+    return { title: fallbackTitle, content: parsed.content }
+  }
+  return parsed
+}
+
+function removeDirRecursive(dirPath: string): void {
+  if (fs.existsSync(dirPath)) {
+    fs.rmSync(dirPath, { recursive: true, force: true })
+  }
+}
+
+function toChapterMeta(chapter: WritingChapter, chapterIndex: number): WritingChapterMeta {
+  return {
+    id: chapter.id,
+    title: chapter.title,
+    order: chapterIndex,
+  }
 }
 
 // 初始化章节类型的默认章节
@@ -86,6 +171,21 @@ function normalizeChapters(chapters: WritingChapter[] = []): WritingChapter[] {
   }))
 }
 
+function normalizeChapterMeta(chapters: WritingChapterMeta[] = []): WritingChapterMeta[] {
+  return chapters.map((chapter, chapterIndex) => ({
+    ...chapter,
+    order: chapterIndex,
+  }))
+}
+
+function normalizeVolumeMeta(volumes: WritingVolumeMeta[] = []): WritingVolumeMeta[] {
+  return volumes.map((volume, volumeIndex) => ({
+    ...volume,
+    order: volumeIndex,
+    chapters: normalizeChapterMeta(volume.chapters ?? []),
+  }))
+}
+
 function getSummaryFromWriting(writing: WritingItem): string {
   if (hasVolumes(writing.type) && writing.volumes && writing.volumes.length > 0) {
     const sortedVolumes = [...writing.volumes].sort((a, b) => a.order - b.order)
@@ -109,6 +209,69 @@ function getSummaryFromWriting(writing: WritingItem): string {
   }
 
   return writing.content.replace(/\s+/g, ' ').trim().slice(0, 120)
+}
+
+function buildWritingItemFromMeta(meta: WritingItemMeta): WritingItem {
+  if (hasVolumes(meta.type)) {
+    const volumes: WritingVolume[] = (meta.volumes ?? []).map(volume => ({
+      id: volume.id,
+      title: volume.title,
+      order: volume.order,
+      chapters: (volume.chapters ?? []).map(chapter => {
+        const chapterPath = getChapterMarkdownPath(meta.type, meta.id, chapter.id)
+        const md = loadMarkdownWithFallback(chapterPath, chapter.title)
+        return {
+          id: chapter.id,
+          title: md.title,
+          content: md.content,
+          order: chapter.order,
+        }
+      }),
+    }))
+
+    return {
+      ...meta,
+      content: '',
+      volumes,
+      chapters: undefined,
+    }
+  }
+
+  if (hasChapters(meta.type)) {
+    const chapters: WritingChapter[] = (meta.chapters ?? []).map(chapter => {
+      const chapterPath = getChapterMarkdownPath(meta.type, meta.id, chapter.id)
+      const md = loadMarkdownWithFallback(chapterPath, chapter.title)
+      return {
+        id: chapter.id,
+        title: md.title,
+        content: md.content,
+        order: chapter.order,
+      }
+    })
+
+    return {
+      ...meta,
+      content: '',
+      chapters,
+      volumes: undefined,
+    }
+  }
+
+  const articleMarkdownPath = getArticleMarkdownPath(meta.id)
+  const articleRaw = fs.existsSync(articleMarkdownPath) ? fs.readFileSync(articleMarkdownPath, 'utf-8') : ''
+  const articleParsed = parseMarkdownWithH1(articleRaw)
+
+  return {
+    ...meta,
+    content: articleParsed.content,
+    chapters: undefined,
+    volumes: undefined,
+  }
+}
+
+function saveChapterMarkdown(type: WritingType, writingId: string, chapter: WritingChapter): void {
+  const chapterPath = getChapterMarkdownPath(type, writingId, chapter.id)
+  writeMarkdownWithH1(chapterPath, chapter.title, chapter.content)
 }
 
 // 初始化写作目录结构
@@ -150,18 +313,74 @@ async function saveWriting(data: WritingSaveRequest): Promise<string> {
     volumes = undefined
   }
 
-  const writingItem: WritingItem = {
-    ...data,
-    id,
-    createdAt: existingWriting?.createdAt || now,
-    updatedAt: now,
-    tags: data.tags ?? existingWriting?.tags ?? [],
-    ...(hasVolumes(data.type) ? { volumes, chapters: undefined, content: '' } : {}),
-    ...(hasChapters(data.type) && !hasVolumes(data.type) ? { chapters, volumes: undefined, content: '' } : {}),
+  if (data.type === 'article') {
+    const articleMeta: WritingItemMeta = {
+      id,
+      type: 'article',
+      title: data.title,
+      createdAt: existingWriting?.createdAt || now,
+      updatedAt: now,
+      tags: data.tags ?? existingWriting?.tags ?? [],
+      metadata: data.metadata ?? existingWriting?.metadata,
+    }
+
+    fs.writeFileSync(getArticleMetaPath(id), JSON.stringify(articleMeta, null, 2), 'utf-8')
+    writeMarkdownWithH1(getArticleMarkdownPath(id), data.title, data.content || '')
+    logger.info(`Saved writing: ${data.title} (${id})`)
+    return id
   }
 
-  const filePath = path.join(typeDir, `${id}.json`)
-  fs.writeFileSync(filePath, JSON.stringify(writingItem, null, 2), 'utf-8')
+  const entryDir = getChapteredEntryDir(data.type, id)
+  ensureDir(entryDir)
+
+  if (hasVolumes(data.type)) {
+    const normalizedVolumes = normalizeVolumes(volumes ?? [])
+    const volumesMeta: WritingVolumeMeta[] = normalizeVolumes(normalizedVolumes).map((volume, volumeIndex) => ({
+      id: volume.id,
+      title: volume.title,
+      order: volumeIndex,
+      chapters: (volume.chapters ?? []).map((chapter, chapterIndex) => {
+        saveChapterMarkdown(data.type, id, chapter)
+        return toChapterMeta(chapter, chapterIndex)
+      }),
+    }))
+
+    const writingMeta: WritingItemMeta = {
+      id,
+      type: data.type,
+      title: data.title,
+      createdAt: existingWriting?.createdAt || now,
+      updatedAt: now,
+      tags: data.tags ?? existingWriting?.tags ?? [],
+      metadata: data.metadata ?? existingWriting?.metadata,
+      volumes: normalizeVolumeMeta(volumesMeta),
+      chapters: undefined,
+    }
+
+    fs.writeFileSync(getChapteredMetaPath(data.type, id), JSON.stringify(writingMeta, null, 2), 'utf-8')
+  } else if (hasChapters(data.type)) {
+    const normalized = normalizeChapters(chapters ?? [])
+    const chapterMeta = normalizeChapterMeta(
+      normalized.map((chapter, chapterIndex) => {
+        saveChapterMarkdown(data.type, id, chapter)
+        return toChapterMeta(chapter, chapterIndex)
+      }),
+    )
+
+    const writingMeta: WritingItemMeta = {
+      id,
+      type: data.type,
+      title: data.title,
+      createdAt: existingWriting?.createdAt || now,
+      updatedAt: now,
+      tags: data.tags ?? existingWriting?.tags ?? [],
+      metadata: data.metadata ?? existingWriting?.metadata,
+      chapters: chapterMeta,
+      volumes: undefined,
+    }
+
+    fs.writeFileSync(getChapteredMetaPath(data.type, id), JSON.stringify(writingMeta, null, 2), 'utf-8')
+  }
 
   logger.info(`Saved writing: ${data.title} (${id})`)
   return id
@@ -169,15 +388,22 @@ async function saveWriting(data: WritingSaveRequest): Promise<string> {
 
 // 加载写作内容
 function loadWriting(type: WritingType, id: string): WritingItem | null {
-  const filePath = path.join(getWritingTypeDir(type), `${id}.json`)
-
-  if (!fs.existsSync(filePath)) {
-    return null
-  }
-
   try {
-    const content = fs.readFileSync(filePath, 'utf-8')
-    return JSON.parse(content) as WritingItem
+    if (type === 'article') {
+      const metaPath = getArticleMetaPath(id)
+      if (!fs.existsSync(metaPath)) {
+        return null
+      }
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WritingItemMeta
+      return buildWritingItemFromMeta(meta)
+    }
+
+    const metaPath = getChapteredMetaPath(type, id)
+    if (!fs.existsSync(metaPath)) {
+      return null
+    }
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WritingItemMeta
+    return buildWritingItemFromMeta(meta)
   } catch (error) {
     logger.error(`Failed to load writing ${id}:`, error)
     return null
@@ -193,40 +419,73 @@ function listWritings(type: WritingType): WritingBase[] {
   }
 
   try {
-    const files = fs
-      .readdirSync(typeDir)
-      .filter(file => file.endsWith('.json'))
-      .map(file => path.join(typeDir, file))
-
     const writings: WritingBase[] = []
 
-    for (const filePath of files) {
-      try {
-        const content = fs.readFileSync(filePath, 'utf-8')
-        const writing: WritingItem = JSON.parse(content)
-        const descriptionFromMetadata = writing.metadata?.description
+    if (type === 'article') {
+      const metaFiles = fs
+        .readdirSync(typeDir)
+        .filter(file => file.endsWith('.meta.json'))
+        .map(file => path.join(typeDir, file))
 
-        const contentSummary = getSummaryFromWriting(writing)
+      for (const filePath of metaFiles) {
+        try {
+          const meta = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as WritingItemMeta
+          const writing = buildWritingItemFromMeta(meta)
+          const descriptionFromMetadata = writing.metadata?.description
+          const contentSummary = getSummaryFromWriting(writing)
+          const description =
+            typeof descriptionFromMetadata === 'string' && descriptionFromMetadata.trim().length > 0
+              ? descriptionFromMetadata
+              : contentSummary || '暂无描述'
 
-        const description =
-          typeof descriptionFromMetadata === 'string' && descriptionFromMetadata.trim().length > 0
-            ? descriptionFromMetadata
-            : contentSummary || '暂无描述'
+          writings.push({
+            id: writing.id,
+            title: writing.title,
+            description,
+            createdAt: writing.createdAt,
+            updatedAt: writing.updatedAt,
+            tags: writing.tags,
+          })
+        } catch (error) {
+          logger.error(`Failed to parse writing file ${filePath}:`, error)
+        }
+      }
+    } else {
+      const entryDirs = fs
+        .readdirSync(typeDir)
+        .map(name => path.join(typeDir, name))
+        .filter(entryPath => fs.existsSync(entryPath) && fs.statSync(entryPath).isDirectory())
 
-        writings.push({
-          id: writing.id,
-          title: writing.title,
-          description,
-          createdAt: writing.createdAt,
-          updatedAt: writing.updatedAt,
-          tags: writing.tags,
-        })
-      } catch (error) {
-        logger.error(`Failed to parse writing file ${filePath}:`, error)
+      for (const entryDir of entryDirs) {
+        const metaPath = path.join(entryDir, 'meta.json')
+        if (!fs.existsSync(metaPath)) {
+          continue
+        }
+
+        try {
+          const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WritingItemMeta
+          const writing = buildWritingItemFromMeta(meta)
+          const descriptionFromMetadata = writing.metadata?.description
+          const contentSummary = getSummaryFromWriting(writing)
+          const description =
+            typeof descriptionFromMetadata === 'string' && descriptionFromMetadata.trim().length > 0
+              ? descriptionFromMetadata
+              : contentSummary || '暂无描述'
+
+          writings.push({
+            id: writing.id,
+            title: writing.title,
+            description,
+            createdAt: writing.createdAt,
+            updatedAt: writing.updatedAt,
+            tags: writing.tags,
+          })
+        } catch (error) {
+          logger.error(`Failed to parse writing file ${metaPath}:`, error)
+        }
       }
     }
 
-    // 按更新时间倒序排序
     return writings.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
   } catch (error) {
     logger.error(`Failed to list writings for type ${type}:`, error)
@@ -234,20 +493,126 @@ function listWritings(type: WritingType): WritingBase[] {
   }
 }
 
-// 删除写作内容
 function deleteWriting(type: WritingType, id: string): boolean {
-  const filePath = path.join(getWritingTypeDir(type), `${id}.json`)
-
-  if (!fs.existsSync(filePath)) {
-    return false
-  }
-
   try {
-    fs.unlinkSync(filePath)
+    if (type === 'article') {
+      const metaPath = getArticleMetaPath(id)
+      const markdownPath = getArticleMarkdownPath(id)
+      if (fs.existsSync(metaPath)) {
+        fs.unlinkSync(metaPath)
+      }
+      if (fs.existsSync(markdownPath)) {
+        fs.unlinkSync(markdownPath)
+      }
+      logger.info(`Deleted writing: ${type}/${id}`)
+      return true
+    }
+
+    const entryDir = getChapteredEntryDir(type, id)
+    if (!fs.existsSync(entryDir)) {
+      return false
+    }
+
+    removeDirRecursive(entryDir)
     logger.info(`Deleted writing: ${type}/${id}`)
     return true
   } catch (error) {
     logger.error(`Failed to delete writing ${id}:`, error)
+    return false
+  }
+}
+
+function loadChapterContent(
+  type: WritingType,
+  writingId: string,
+  chapterId: string,
+): { title: string; content: string } | null {
+  if (!hasChapters(type)) {
+    return null
+  }
+
+  const writing = loadWriting(type, writingId)
+  if (!writing) {
+    return null
+  }
+
+  if (hasVolumes(type)) {
+    for (const volume of writing.volumes ?? []) {
+      const chapter = (volume.chapters ?? []).find(item => item.id === chapterId)
+      if (chapter) {
+        return { title: chapter.title, content: chapter.content }
+      }
+    }
+    return null
+  }
+
+  const chapter = (writing.chapters ?? []).find(item => item.id === chapterId)
+  if (!chapter) {
+    return null
+  }
+
+  return { title: chapter.title, content: chapter.content }
+}
+
+function saveChapterContent(
+  type: WritingType,
+  writingId: string,
+  chapterId: string,
+  payload: { title: string; content: string },
+): boolean {
+  if (!hasChapters(type)) {
+    return false
+  }
+
+  const metaPath = getChapteredMetaPath(type, writingId)
+  if (!fs.existsSync(metaPath)) {
+    return false
+  }
+
+  try {
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WritingItemMeta
+
+    let found = false
+    if (hasVolumes(type)) {
+      meta.volumes = (meta.volumes ?? []).map(volume => ({
+        ...volume,
+        chapters: (volume.chapters ?? []).map(chapter => {
+          if (chapter.id !== chapterId) {
+            return chapter
+          }
+          found = true
+          return {
+            ...chapter,
+            title: payload.title,
+          }
+        }),
+      }))
+    } else {
+      meta.chapters = (meta.chapters ?? []).map(chapter => {
+        if (chapter.id !== chapterId) {
+          return chapter
+        }
+        found = true
+        return {
+          ...chapter,
+          title: payload.title,
+        }
+      })
+    }
+
+    if (!found) {
+      return false
+    }
+
+    meta.updatedAt = new Date().toISOString()
+    fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2), 'utf-8')
+
+    const chapterPath = getChapterMarkdownPath(type, writingId, chapterId)
+    writeMarkdownWithH1(chapterPath, payload.title, payload.content)
+
+    return true
+  } catch (error) {
+    logger.error(`Failed to save chapter content ${writingId}/${chapterId}:`, error)
     return false
   }
 }
@@ -258,21 +623,11 @@ function exportWritingData(): WritingExportData {
   const items: WritingItem[] = []
 
   for (const type of types) {
-    const typeDir = getWritingTypeDir(type)
-    if (!fs.existsSync(typeDir)) continue
-
-    const files = fs
-      .readdirSync(typeDir)
-      .filter(file => file.endsWith('.json'))
-      .map(file => path.join(typeDir, file))
-
-    for (const filePath of files) {
-      try {
-        const content = fs.readFileSync(filePath, 'utf-8')
-        const writing: WritingItem = JSON.parse(content)
+    const list = listWritings(type)
+    for (const baseItem of list) {
+      const writing = loadWriting(type, baseItem.id)
+      if (writing) {
         items.push(writing)
-      } catch (error) {
-        logger.error(`Failed to export writing file ${filePath}:`, error)
       }
     }
   }
@@ -291,11 +646,16 @@ function importWritingData(data: WritingExportData): { success: number; failed: 
 
   for (const item of data.items) {
     try {
-      const typeDir = getWritingTypeDir(item.type)
-      ensureDir(typeDir)
-
-      const filePath = path.join(typeDir, `${item.id}.json`)
-      fs.writeFileSync(filePath, JSON.stringify(item, null, 2), 'utf-8')
+      saveWriting({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        content: item.content,
+        tags: item.tags,
+        metadata: item.metadata,
+        chapters: item.chapters,
+        volumes: item.volumes,
+      })
       success++
     } catch (error) {
       logger.error(`Failed to import writing ${item.id}:`, error)
@@ -350,6 +710,17 @@ export function setupWritingHandler(): void {
   ipcMain.handle(IPC_ACTIONS.WRITING_IMPORT_DATA, (event, data: WritingExportData) => {
     return importWritingData(data)
   })
+
+  ipcMain.handle(IPC_ACTIONS.WRITING_LOAD_CHAPTER, (event, type: WritingType, writingId: string, chapterId: string) => {
+    return loadChapterContent(type, writingId, chapterId)
+  })
+
+  ipcMain.handle(
+    IPC_ACTIONS.WRITING_SAVE_CHAPTER,
+    (event, type: WritingType, writingId: string, chapterId: string, payload: { title: string; content: string }) => {
+      return saveChapterContent(type, writingId, chapterId, payload)
+    },
+  )
 
   logger.info('Writing IPC handlers registered')
 }

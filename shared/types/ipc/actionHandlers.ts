@@ -82,6 +82,17 @@ type IpcActionHandlers = {
   WRITING_LOAD: (type: string, id: string) => any | null
   WRITING_LIST: (type: string) => any[]
   WRITING_DELETE: (type: string, id: string) => boolean
+  WRITING_LOAD_CHAPTER: (
+    type: string,
+    writingId: string,
+    chapterId: string,
+  ) => { title: string; content: string } | null
+  WRITING_SAVE_CHAPTER: (
+    type: string,
+    writingId: string,
+    chapterId: string,
+    payload: { title: string; content: string },
+  ) => boolean
   WRITING_EXPORT_DATA: () => any
   WRITING_IMPORT_DATA: (data: any) => { success: number; failed: number }
 }
