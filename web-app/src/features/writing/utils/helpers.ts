@@ -1,6 +1,10 @@
 // Writing utility functions
 import type { WritingType } from '@shared/types/writing'
 
+export const CHAPTERED_TYPES: WritingType[] = ['novel', 'short_story', 'video_script']
+
+export const hasChapters = (type: WritingType): boolean => CHAPTERED_TYPES.includes(type)
+
 export const WRITING_TYPES: { value: WritingType; label: string; description: string }[] = [
   {
     value: 'article',
@@ -48,6 +52,7 @@ export const validateWritingData = (data: {
   type: WritingType
   title: string
   content: string
+  chapters?: Array<{ content: string }>
 }): { isValid: boolean; errors: string[] } => {
   const errors: string[] = []
 
@@ -59,7 +64,12 @@ export const validateWritingData = (data: {
     errors.push('标题不能为空')
   }
 
-  if (!data.content || data.content.trim().length === 0) {
+  if (hasChapters(data.type)) {
+    const hasAnyChapterContent = (data.chapters ?? []).some(chapter => chapter.content.trim().length > 0)
+    if (!hasAnyChapterContent) {
+      errors.push('章节内容不能为空')
+    }
+  } else if (!data.content || data.content.trim().length === 0) {
     errors.push('内容不能为空')
   }
 

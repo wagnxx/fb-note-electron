@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Card, Empty, Space, Spin, Tag, Typography, Alert } from 'antd'
 import { PlusOutlined, EditOutlined, CopyOutlined, EyeOutlined } from '@ant-design/icons'
-import { useWriting } from '../../features/writing/hooks/useWriting'
-import { useNotification } from '../../hooks/useNotification'
-import { WRITING_TYPES } from '../../features/writing/utils/helpers'
+import { useWriting } from '@/features/writing/hooks/useWriting'
+import { useNotification } from '@/hooks/useNotification'
+import { hasChapters, WRITING_TYPES } from '@/features/writing/utils/helpers'
 import type { WritingItem, WritingType } from '@shared/types/writing'
 
 const { Title, Text, Paragraph } = Typography
@@ -40,8 +40,17 @@ const WritingPage: React.FC = () => {
     try {
       const writing = await invokeWriting<WritingItem | null>(IPC_ACTIONS.WRITING_LOAD, selectedType, id)
       if (!writing) return
+      const chapterSummary =
+        hasChapters(writing.type) && writing.chapters && writing.chapters.length > 0
+          ? writing.chapters
+              .sort((a, b) => a.order - b.order)[0]
+              ?.content.replace(/\s+/g, ' ')
+              .trim()
+              .slice(0, 120) || ''
+          : ''
       const desc =
         (typeof writing.metadata?.description === 'string' && writing.metadata.description.trim()) ||
+        chapterSummary ||
         writing.content.replace(/\s+/g, ' ').trim().slice(0, 120) ||
         '暂无描述'
       await navigator.clipboard.writeText(`标题：${writing.title}\n描述：${desc}`)

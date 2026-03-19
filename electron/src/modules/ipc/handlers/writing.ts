@@ -4,7 +4,8 @@ import { ipcMain } from 'electron'
 import { logger } from '@/utils/logger'
 import { getSupportPath } from '@/config/basic'
 import { IPC_ACTIONS } from '@shared/ipcActions'
-import type { WritingItem, WritingType, WritingBase, WritingExportData } from '@shared/types/writing'
+import type { WritingItem, WritingType, WritingBase, WritingExportData, WritingChapter } from '@shared/types/writing'
+import { hasChapters } from '@shared/types/writing'
 
 // 获取写作目录路径
 function getWritingDir(): string {
@@ -29,6 +30,20 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2)
 }
 
+// 生成章节ID
+function generateChapterId(): string {
+  return 'ch_' + generateId()
+}
+
+// 初始化章节类型的默认章节
+function buildInitialChapters(type: WritingType, content: string): WritingChapter[] {
+  // 如果已有内容，作为第一章
+  if (content && content.trim()) {
+    return [{ id: generateChapterId(), title: '第一章', content, order: 0 }]
+  }
+  return [{ id: generateChapterId(), title: '第一章', content: '', order: 0 }]
+}
+
 // 初始化写作目录结构
 function initWritingDirectories(): void {
   const writingDir = getWritingDir()
@@ -50,11 +65,18 @@ async function saveWriting(data: Omit<WritingItem, 'id' | 'createdAt' | 'updated
   const id = generateId()
   const now = new Date().toISOString()
 
+  // 章节类型自动初始化 chapters
+  let chapters = data.chapters
+  if (hasChapters(data.type) && (!chapters || chapters.length === 0)) {
+    chapters = buildInitialChapters(data.type, data.content)
+  }
+
   const writingItem: WritingItem = {
     ...data,
     id,
     createdAt: now,
     updatedAt: now,
+    ...(hasChapters(data.type) ? { chapters, content: '' } : {}),
   }
 
   const filePath = path.join(typeDir, `${id}.json`)
@@ -102,7 +124,18 @@ function listWritings(type: WritingType): WritingBase[] {
         const content = fs.readFileSync(filePath, 'utf-8')
         const writing: WritingItem = JSON.parse(content)
         const descriptionFromMetadata = writing.metadata?.description
-        const contentSummary = writing.content.replace(/\s+/g, ' ').trim().slice(0, 120)
+
+        // 章节类型：取第一章内容作为摘要；文章类型：取 content 摘要
+        let contentSummary: string
+        if (hasChapters(writing.type) && writing.chapters && writing.chapters.length > 0) {
+          const firstChapter = writing.chapters.sort((a, b) => a.order - b.order)[0]
+          const chapterCount = writing.chapters.length
+          const firstContent = firstChapter.content.replace(/\s+/g, ' ').trim().slice(0, 80)
+          contentSummary = `共 ${chapterCount} 章 · ${firstContent}`
+        } else {
+          contentSummary = writing.content.replace(/\s+/g, ' ').trim().slice(0, 120)
+        }
+
         const description =
           typeof descriptionFromMetadata === 'string' && descriptionFromMetadata.trim().length > 0
             ? descriptionFromMetadata
