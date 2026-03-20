@@ -1,6 +1,6 @@
 /**
- * Author: You + AI(Nova)
- * Contributors: You, AI(Nova)
+ * Author: Mr WANG + AI(Nova)
+ * Contributors: Mr WANG, AI(Nova)
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -11,9 +11,13 @@ import {
   CaretRightOutlined,
   DeleteOutlined,
   FolderAddOutlined,
+  HolderOutlined,
   PlusOutlined,
   SaveOutlined,
 } from '@ant-design/icons'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import { useNotification } from '@/hooks/useNotification'
 import { generateWritingTitle, validateWritingData } from '@/features/writing/utils/helpers'
@@ -97,9 +101,7 @@ const NovelEditor: React.FC = () => {
   }
 
   const toggleVolumeCollapse = (volumeId: string) => {
-    setCollapsedVolumeIds(prev =>
-      prev.includes(volumeId) ? prev.filter(id => id !== volumeId) : [...prev, volumeId],
-    )
+    setCollapsedVolumeIds(prev => (prev.includes(volumeId) ? prev.filter(id => id !== volumeId) : [...prev, volumeId]))
   }
 
   useEffect(() => {
@@ -286,6 +288,24 @@ const NovelEditor: React.FC = () => {
     navigate('/tool/writing?type=novel')
   }
 
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  const handleReorderChapters = (volumeId: string, event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    setFormData(prev => {
+      const nextVolumes = (prev.volumes ?? []).map(volume => {
+        if (volume.id !== volumeId) return volume
+        const oldIndex = volume.chapters.findIndex(ch => ch.id === active.id)
+        const newIndex = volume.chapters.findIndex(ch => ch.id === over.id)
+        if (oldIndex === -1 || newIndex === -1) return volume
+        const reordered = arrayMove(volume.chapters, oldIndex, newIndex).map((ch, i) => ({ ...ch, order: i }))
+        return { ...volume, chapters: reordered }
+      })
+      return { ...prev, volumes: nextVolumes }
+    })
+  }
+
   // 字数统计
   const wordCount = useMemo(() => {
     const text = activeChapter?.content ?? ''
@@ -293,7 +313,10 @@ const NovelEditor: React.FC = () => {
   }, [activeChapter?.content])
 
   const totalWordCount = useMemo(
-    () => (formData.volumes ?? []).flatMap(volume => volume.chapters).reduce((sum, chapter) => sum + chapter.content.replace(/\s/g, '').length, 0),
+    () =>
+      (formData.volumes ?? [])
+        .flatMap(volume => volume.chapters)
+        .reduce((sum, chapter) => sum + chapter.content.replace(/\s/g, '').length, 0),
     [formData.volumes],
   )
   const canSave = totalWordCount > 0
@@ -322,15 +345,15 @@ const NovelEditor: React.FC = () => {
 
           {/* 右侧操作区 */}
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-400">总 {totalWordCount} 字 | 本章 {wordCount} 字</span>
+            <span className="text-xs text-gray-400">
+              总 {totalWordCount} 字 | 本章 {wordCount} 字
+            </span>
             <button
               type="button"
               onClick={handleSave}
               disabled={!canSave}
               className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                canSave
-                  ? 'bg-[#e8673c] text-white hover:bg-[#d45a30]'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                canSave ? 'bg-[#e8673c] text-white hover:bg-[#d45a30]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
             >
               <SaveOutlined />
@@ -398,87 +421,72 @@ const NovelEditor: React.FC = () => {
                   const isCollapsed = collapsedVolumeIds.includes(volume.id)
 
                   return (
-                  <div key={volume.id}>
-                    {/* 卷标题行 */}
-                    <div
-                      className={`flex items-center justify-between px-3 py-1.5 group ${
-                        activeVolumeId === volume.id ? 'bg-black/10' : 'hover:bg-black/5'
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        className="mr-1 text-[10px] text-gray-400 hover:text-gray-600"
-                        onClick={() => toggleVolumeCollapse(volume.id)}
-                        title={isCollapsed ? '展开卷' : '折叠卷'}
+                    <div key={volume.id}>
+                      {/* 卷标题行 */}
+                      <div
+                        className={`flex items-center justify-between px-3 py-1.5 group ${
+                          activeVolumeId === volume.id ? 'bg-black/10' : 'hover:bg-black/5'
+                        }`}
                       >
-                        {isCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
-                      </button>
-                      <button
-                        type="button"
-                        className="text-left flex-1 min-w-0"
-                        onClick={() => selectNovelTarget(formData.volumes ?? [], volume.id, volume.chapters[0]?.id)}
-                      >
-                        <div className="text-xs font-semibold text-gray-700 truncate">{volume.title || `第${volume.order + 1}卷`}</div>
-                        <div className="text-[10px] text-gray-400">{volumeWordCount} 字</div>
-                      </button>
-                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Popconfirm
-                          title="确认删除卷"
-                          description="删除卷会同时删除该卷下所有章节，确定继续吗？"
-                          okText="删除"
-                          cancelText="取消"
-                          onConfirm={() => handleDeleteVolume(volume.id)}
+                        <button
+                          type="button"
+                          className="mr-1 text-[10px] text-gray-400 hover:text-gray-600"
+                          onClick={() => toggleVolumeCollapse(volume.id)}
+                          title={isCollapsed ? '展开卷' : '折叠卷'}
                         >
-                          <button
-                            type="button"
-                            title="删除卷"
-                            className="text-gray-400 hover:text-red-500 px-1"
-                          >
-                            <DeleteOutlined style={{ fontSize: 10 }} />
-                          </button>
-                        </Popconfirm>
-                      </div>
-                    </div>
-
-                    {/* 章节列表 */}
-                    {!isCollapsed && volume.chapters.map(chapter => {
-                      const chWc = chapter.content.replace(/\s/g, '').length
-                      return (
-                        <div
-                          key={chapter.id}
-                          className={`flex items-center justify-between pl-6 pr-2 py-1 group cursor-pointer ${
-                            activeChapterId === chapter.id
-                              ? 'text-[#e8673c]'
-                              : 'hover:bg-black/5 text-gray-600'
-                          }`}
-                          onClick={() => selectNovelTarget(formData.volumes ?? [], volume.id, chapter.id)}
+                          {isCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
+                        </button>
+                        <button
+                          type="button"
+                          className="text-left flex-1 min-w-0"
+                          onClick={() => selectNovelTarget(formData.volumes ?? [], volume.id, volume.chapters[0]?.id)}
                         >
-                          <div className="flex flex-col flex-1 min-w-0">
-                            <span className="text-xs truncate">
-                              {chapter.title || `第${chapter.order + 1}章`}
-                            </span>
-                            <span className="text-[10px] text-gray-400">{chWc} 字</span>
+                          <div className="text-xs font-semibold text-gray-700 truncate">
+                            {volume.title || `第${volume.order + 1}卷`}
                           </div>
+                          <div className="text-[10px] text-gray-400">{volumeWordCount} 字</div>
+                        </button>
+                        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Popconfirm
-                            title="确认删除章节"
-                            description="删除后不可恢复，确定继续吗？"
+                            title="确认删除卷"
+                            description="删除卷会同时删除该卷下所有章节，确定继续吗？"
                             okText="删除"
                             cancelText="取消"
-                            onConfirm={() => handleDeleteNovelChapter(volume.id, chapter.id)}
+                            onConfirm={() => handleDeleteVolume(volume.id)}
                           >
-                            <button
-                              type="button"
-                              onClick={e => e.stopPropagation()}
-                              className="text-gray-400 hover:text-red-500 transition-all shrink-0"
-                            >
+                            <button type="button" title="删除卷" className="text-gray-400 hover:text-red-500 px-1">
                               <DeleteOutlined style={{ fontSize: 10 }} />
                             </button>
                           </Popconfirm>
                         </div>
-                      )
-                    })}
-                  </div>
-                )})
+                      </div>
+
+                      {/* 章节列表（可拖拽排序） */}
+                      {!isCollapsed && (
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragEnd={e => handleReorderChapters(volume.id, e)}
+                        >
+                          <SortableContext
+                            items={volume.chapters.map(ch => ch.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            {volume.chapters.map(chapter => (
+                              <SortableChapterItem
+                                key={chapter.id}
+                                chapter={chapter}
+                                isActive={activeChapterId === chapter.id}
+                                onSelect={() => selectNovelTarget(formData.volumes ?? [], volume.id, chapter.id)}
+                                onDelete={() => handleDeleteNovelChapter(volume.id, chapter.id)}
+                              />
+                            ))}
+                          </SortableContext>
+                        </DndContext>
+                      )}
+                    </div>
+                  )
+                })
               )}
             </div>
           </div>
@@ -526,7 +534,12 @@ const NovelEditor: React.FC = () => {
                       placeholder="+ 添加标签"
                       value={tagInput}
                       onChange={e => setTagInput(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag() } }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddTag()
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -552,6 +565,69 @@ const NovelEditor: React.FC = () => {
         </div>
       </div>
     </Spin>
+  )
+}
+
+// ─── 可拖拽章节条目 ────────────────────────────────────────────────────────────
+interface SortableChapterItemProps {
+  chapter: WritingChapter
+  isActive: boolean
+  onSelect: () => void
+  onDelete: () => void
+}
+
+const SortableChapterItem: React.FC<SortableChapterItemProps> = ({ chapter, isActive, onSelect, onDelete }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: chapter.id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  }
+
+  const chWc = chapter.content.replace(/\s/g, '').length
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center justify-between pl-3 pr-2 py-1 group cursor-pointer ${
+        isActive ? 'text-[#e8673c]' : 'hover:bg-black/5 text-gray-600'
+      }`}
+      onClick={onSelect}
+    >
+      {/* 拖拽把手 */}
+      <span
+        {...attributes}
+        {...listeners}
+        onClick={e => e.stopPropagation()}
+        className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing mr-1 shrink-0"
+      >
+        <HolderOutlined style={{ fontSize: 10 }} />
+      </span>
+
+      <div className="flex flex-col flex-1 min-w-0">
+        <span className="text-xs truncate">{chapter.title || `第${chapter.order + 1}章`}</span>
+        <span className="text-[10px] text-gray-400">{chWc} 字</span>
+      </div>
+
+      <Popconfirm
+        title="确认删除章节"
+        description="删除后不可恢复，确定继续吗？"
+        okText="删除"
+        cancelText="取消"
+        onConfirm={onDelete}
+      >
+        <button
+          type="button"
+          onClick={e => e.stopPropagation()}
+          className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all shrink-0"
+        >
+          <DeleteOutlined style={{ fontSize: 10 }} />
+        </button>
+      </Popconfirm>
+    </div>
   )
 }
 
