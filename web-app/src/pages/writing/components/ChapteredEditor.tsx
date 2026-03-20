@@ -154,6 +154,12 @@ const ChapteredEditor: React.FC = () => {
     return text.replace(/\s/g, '').length
   }, [activeChapter?.content])
 
+  const totalWordCount = useMemo(
+    () => (formData.chapters ?? []).reduce((sum, chapter) => sum + chapter.content.replace(/\s/g, '').length, 0),
+    [formData.chapters],
+  )
+  const canSave = totalWordCount > 0
+
   const typeLabel = type === 'video_script' ? '视频剧本' : '短篇故事'
 
   return (
@@ -182,7 +188,12 @@ const ChapteredEditor: React.FC = () => {
             <button
               type="button"
               onClick={handleSave}
-              className="flex items-center gap-1 px-4 py-1.5 bg-[#e8673c] text-white rounded-full text-sm font-medium hover:bg-[#d45a30] transition-colors"
+              disabled={!canSave}
+              className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                canSave
+                  ? 'bg-[#e8673c] text-white hover:bg-[#d45a30]'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
             >
               <SaveOutlined />
               保存

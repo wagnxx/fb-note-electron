@@ -5,7 +5,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, Empty, Input, Popconfirm, Spin, Tag } from 'antd'
-import { ArrowLeftOutlined, DeleteOutlined, FolderAddOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
+import {
+  ArrowLeftOutlined,
+  CaretDownOutlined,
+  CaretRightOutlined,
+  DeleteOutlined,
+  FolderAddOutlined,
+  PlusOutlined,
+  SaveOutlined,
+} from '@ant-design/icons'
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import { useNotification } from '@/hooks/useNotification'
 import { generateWritingTitle, validateWritingData } from '@/features/writing/utils/helpers'
@@ -30,6 +38,7 @@ const NovelEditor: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [activeVolumeId, setActiveVolumeId] = useState<string | null>(null)
   const [activeChapterId, setActiveChapterId] = useState<string | null>(null)
+  const [collapsedVolumeIds, setCollapsedVolumeIds] = useState<string[]>([])
   const [formData, setFormData] = useState<WritingFormData>({
     type: 'novel',
     title: '',
@@ -82,6 +91,15 @@ const NovelEditor: React.FC = () => {
       (chapterId && nextVolume?.chapters.find(chapter => chapter.id === chapterId)) || nextVolume?.chapters[0] || null
     setActiveVolumeId(nextVolume?.id ?? null)
     setActiveChapterId(nextChapter?.id ?? null)
+    if (nextVolume?.id) {
+      setCollapsedVolumeIds(prev => prev.filter(id => id !== nextVolume.id))
+    }
+  }
+
+  const toggleVolumeCollapse = (volumeId: string) => {
+    setCollapsedVolumeIds(prev =>
+      prev.includes(volumeId) ? prev.filter(id => id !== volumeId) : [...prev, volumeId],
+    )
   }
 
   useEffect(() => {
@@ -144,6 +162,11 @@ const NovelEditor: React.FC = () => {
     }
   }, [action, buildChapter, buildVolume, currentItem, id, normalizeVolumes, targetChapterId, targetVolumeId])
 
+  useEffect(() => {
+    const volumeIds = new Set((formData.volumes ?? []).map(volume => volume.id))
+    setCollapsedVolumeIds(prev => prev.filter(id => volumeIds.has(id)))
+  }, [formData.volumes])
+
   const activeVolume = useMemo(
     () => formData.volumes?.find(volume => volume.id === activeVolumeId) ?? formData.volumes?.[0] ?? null,
     [activeVolumeId, formData.volumes],
@@ -166,6 +189,7 @@ const NovelEditor: React.FC = () => {
     setFormData(prev => ({ ...prev, volumes: [...(prev.volumes ?? []), nextVolume] }))
     setActiveVolumeId(nextVolume.id)
     setActiveChapterId(nextVolume.chapters[0]?.id ?? null)
+    setCollapsedVolumeIds(prev => prev.filter(id => id !== nextVolume.id))
   }
 
   const handleDeleteVolume = (volumeId: string) => {
@@ -176,6 +200,7 @@ const NovelEditor: React.FC = () => {
       setActiveChapterId(nextVolume?.chapters[0]?.id ?? null)
       return { ...prev, volumes: nextVolumes }
     })
+    setCollapsedVolumeIds(prev => prev.filter(id => id !== volumeId))
   }
 
   const handleAddNovelChapter = (volumeId: string) => {
@@ -271,6 +296,7 @@ const NovelEditor: React.FC = () => {
     () => (formData.volumes ?? []).flatMap(volume => volume.chapters).reduce((sum, chapter) => sum + chapter.content.replace(/\s/g, '').length, 0),
     [formData.volumes],
   )
+  const canSave = totalWordCount > 0
 
   return (
     <Spin spinning={loading} className="h-full">
@@ -300,7 +326,12 @@ const NovelEditor: React.FC = () => {
             <button
               type="button"
               onClick={handleSave}
-              className="flex items-center gap-1 px-4 py-1.5 bg-[#e8673c] text-white rounded-full text-sm font-medium hover:bg-[#d45a30] transition-colors"
+              disabled={!canSave}
+              className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                canSave
+                  ? 'bg-[#e8673c] text-white hover:bg-[#d45a30]'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
             >
               <SaveOutlined />
               保存
@@ -364,6 +395,7 @@ const NovelEditor: React.FC = () => {
                     (sum, chapter) => sum + chapter.content.replace(/\s/g, '').length,
                     0,
                   )
+                  const isCollapsed = collapsedVolumeIds.includes(volume.id)
 
                   return (
                   <div key={volume.id}>
@@ -373,6 +405,14 @@ const NovelEditor: React.FC = () => {
                         activeVolumeId === volume.id ? 'bg-black/10' : 'hover:bg-black/5'
                       }`}
                     >
+                      <button
+                        type="button"
+                        className="mr-1 text-[10px] text-gray-400 hover:text-gray-600"
+                        onClick={() => toggleVolumeCollapse(volume.id)}
+                        title={isCollapsed ? '展开卷' : '折叠卷'}
+                      >
+                        {isCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
+                      </button>
                       <button
                         type="button"
                         className="text-left flex-1 min-w-0"
@@ -401,14 +441,14 @@ const NovelEditor: React.FC = () => {
                     </div>
 
                     {/* 章节列表 */}
-                    {volume.chapters.map(chapter => {
+                    {!isCollapsed && volume.chapters.map(chapter => {
                       const chWc = chapter.content.replace(/\s/g, '').length
                       return (
                         <div
                           key={chapter.id}
                           className={`flex items-center justify-between pl-6 pr-2 py-1 group cursor-pointer ${
                             activeChapterId === chapter.id
-                              ? 'bg-white/60 text-[#e8673c]'
+                              ? 'text-[#e8673c]'
                               : 'hover:bg-black/5 text-gray-600'
                           }`}
                           onClick={() => selectNovelTarget(formData.volumes ?? [], volume.id, chapter.id)}

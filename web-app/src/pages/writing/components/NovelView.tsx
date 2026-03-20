@@ -5,7 +5,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, Empty, Spin, Tag } from 'antd'
-import { ArrowLeftOutlined, CopyOutlined, EditOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, CaretDownOutlined, CaretRightOutlined, CopyOutlined, EditOutlined } from '@ant-design/icons'
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import { useNotification } from '@/hooks/useNotification'
 import type { WritingVolume } from '@/features/writing/types'
@@ -21,6 +21,7 @@ const NovelView: React.FC = () => {
   const queryChapterId = searchParams.get('chapterId')
   const [activeVolumeId, setActiveVolumeId] = useState<string | null>(null)
   const [activeChapterId, setActiveChapterId] = useState<string | null>(null)
+  const [collapsedVolumeIds, setCollapsedVolumeIds] = useState<string[]>([])
 
   useEffect(() => {
     if (id) fetchWriting('novel', id)
@@ -34,6 +35,17 @@ const NovelView: React.FC = () => {
     () => [...(currentItemWithHierarchy?.volumes ?? [])].sort((a, b) => a.order - b.order),
     [currentItemWithHierarchy?.volumes],
   )
+
+  const toggleVolumeCollapse = (volumeId: string) => {
+    setCollapsedVolumeIds(prev =>
+      prev.includes(volumeId) ? prev.filter(id => id !== volumeId) : [...prev, volumeId],
+    )
+  }
+
+  useEffect(() => {
+    const volumeIds = new Set(sortedVolumes.map(volume => volume.id))
+    setCollapsedVolumeIds(prev => prev.filter(id => volumeIds.has(id)))
+  }, [sortedVolumes])
 
   // 总字数
   const totalWordCount = useMemo(
@@ -172,23 +184,59 @@ const NovelView: React.FC = () => {
                       (sum, chapter) => sum + chapter.content.replace(/\s/g, '').length,
                       0,
                     )
+                    const isCollapsed = collapsedVolumeIds.includes(volume.id)
+                    const isVolumeActive = activeVolumeId === volume.id
 
                     return (
                     <div key={volume.id}>
                       {/* 卷标题 */}
-                      <div className="px-3 py-1.5 bg-black/5">
-                        <div className="text-xs font-semibold text-gray-600">{volume.title || `第${volume.order + 1}卷`}</div>
-                        <div className="text-[10px] text-gray-400">{volumeWordCount} 字</div>
+                      <div
+                        className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${
+                          isVolumeActive
+                            ? 'bg-black/10'
+                            : 'bg-transparent hover:bg-black/5'
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          className={`text-[10px] transition-colors ${
+                            isVolumeActive ? 'text-gray-600' : 'text-gray-400 hover:text-gray-600'
+                          }`}
+                          onClick={() => toggleVolumeCollapse(volume.id)}
+                          title={isCollapsed ? '展开卷' : '折叠卷'}
+                        >
+                          {isCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
+                        </button>
+                        <button
+                          type="button"
+                          className="text-left flex-1 min-w-0"
+                          onClick={() => {
+                            setCollapsedVolumeIds(prev => prev.filter(id => id !== volume.id))
+                            setActiveVolumeId(volume.id)
+                            setActiveChapterId(volume.chapters?.[0]?.id ?? null)
+                          }}
+                        >
+                          <div
+                            className={`text-xs font-semibold truncate ${
+                              isVolumeActive ? 'text-gray-700' : 'text-gray-600'
+                            }`}
+                          >
+                            {volume.title || `第${volume.order + 1}卷`}
+                          </div>
+                          <div className={`text-[10px] ${isVolumeActive ? 'text-gray-500' : 'text-gray-400'}`}>
+                            {volumeWordCount} 字
+                          </div>
+                        </button>
                       </div>
                       {/* 章节列表 */}
-                      {[...(volume.chapters ?? [])].sort((a, b) => a.order - b.order).map(chapter => {
+                      {!isCollapsed && [...(volume.chapters ?? [])].sort((a, b) => a.order - b.order).map(chapter => {
                         const chWc = chapter.content.replace(/\s/g, '').length
                         const isActive = activeChapterId === chapter.id
                         return (
                           <div
                             key={chapter.id}
                             className={`flex items-center justify-between pl-5 pr-2 py-1.5 group cursor-pointer ${
-                              isActive ? 'bg-white/60 text-[#e8673c]' : 'hover:bg-black/5 text-gray-600'
+                              isActive ? 'text-[#e8673c]' : 'hover:bg-black/5 text-gray-600'
                             }`}
                             onClick={() => { setActiveVolumeId(volume.id); setActiveChapterId(chapter.id) }}
                           >

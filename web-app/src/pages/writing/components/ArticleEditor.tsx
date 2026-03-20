@@ -80,6 +80,7 @@ const ArticleEditor: React.FC = () => {
   }
 
   const wordCount = useMemo(() => formData.content.replace(/\s/g, '').length, [formData.content])
+  const canSave = wordCount > 0
 
   const typeConfig = {
     article:      { titlePlaceholder: '请输入文章标题', contentPlaceholder: '开始写作...' },
@@ -107,7 +108,12 @@ const ArticleEditor: React.FC = () => {
             <button
               type="button"
               onClick={handleSave}
-              className="flex items-center gap-1 px-4 py-1.5 bg-[#e8673c] text-white rounded-full text-sm font-medium hover:bg-[#d45a30] transition-colors"
+              disabled={!canSave}
+              className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                canSave
+                  ? 'bg-[#e8673c] text-white hover:bg-[#d45a30]'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
             >
               <SaveOutlined />
               保存
