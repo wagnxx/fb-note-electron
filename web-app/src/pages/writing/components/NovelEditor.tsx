@@ -4,7 +4,7 @@
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Alert, Empty, Input, Popconfirm, Spin, Tag } from 'antd'
+import { Alert, Empty, Input, InputNumber, Modal, Popconfirm, Spin, Tag } from 'antd'
 import {
   ArrowLeftOutlined,
   CaretDownOutlined,
@@ -14,6 +14,7 @@ import {
   HolderOutlined,
   PlusOutlined,
   SaveOutlined,
+  UploadOutlined,
 } from '@ant-design/icons'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
@@ -43,6 +44,10 @@ const NovelEditor: React.FC = () => {
   const [activeVolumeId, setActiveVolumeId] = useState<string | null>(null)
   const [activeChapterId, setActiveChapterId] = useState<string | null>(null)
   const [collapsedVolumeIds, setCollapsedVolumeIds] = useState<string[]>([])
+  const [importModalOpen, setImportModalOpen] = useState(false)
+  const [importChapters, setImportChapters] = useState<ImportChapterDraft[]>([])
+  const [importStartIndex, setImportStartIndex] = useState(1)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState<WritingFormData>({
     type: 'novel',
     title: '',
@@ -290,6 +295,13 @@ const NovelEditor: React.FC = () => {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
+  const disableSelect = () => {
+    document.body.style.userSelect = 'none'
+  }
+  const enableSelect = () => {
+    document.body.style.userSelect = ''
+  }
+
   const handleReorderChapters = (volumeId: string, event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -304,6 +316,92 @@ const NovelEditor: React.FC = () => {
       })
       return { ...prev, volumes: nextVolumes }
     })
+  }
+
+  // 解析文件内容为章节列表
+  const parseFileToChapters = (fileName: string, content: string): ImportChapterDraft[] => {
+    const lines = content.split(/\r?\n/)
+    const headingIndices: number[] = []
+    lines.forEach((line, i) => {
+      if (/^#{1,3}\s+/.test(line)) headingIndices.push(i)
+    })
+
+    if (headingIndices.length === 0) {
+      // 无标题，整个文件为一章
+      const baseName = fileName.replace(/\.(md|txt)$/i, '')
+      return [{ draftId: `imp_${Date.now()}_0`, title: baseName, content: content.trim(), sourceFile: fileName }]
+    }
+
+    return headingIndices.map((lineIdx, i) => {
+      const titleLine = lines[lineIdx]
+      const title = titleLine.replace(/^#{1,3}\s+/, '').trim()
+      const nextIdx = headingIndices[i + 1] ?? lines.length
+      const chapterContent = lines
+        .slice(lineIdx + 1, nextIdx)
+        .join('\n')
+        .trim()
+      return {
+        draftId: `imp_${Date.now()}_${i}`,
+        title,
+        content: chapterContent,
+        sourceFile: fileName,
+      }
+    })
+  }
+
+  const handleImportFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
+
+    const drafts: ImportChapterDraft[] = []
+    let pending = files.length
+
+    files.forEach(file => {
+      const reader = new FileReader()
+      reader.onload = ev => {
+        const content = (ev.target?.result as string) ?? ''
+        const parsed = parseFileToChapters(file.name, content)
+        drafts.push(...parsed)
+        pending--
+        if (pending === 0) {
+          const currentVolume = (formData.volumes ?? []).find(v => v.id === activeVolumeId)
+          const nextStart = (currentVolume?.chapters.length ?? 0) + 1
+          setImportStartIndex(nextStart)
+          setImportChapters(drafts.map((d, i) => ({ ...d, draftId: `imp_${Date.now()}_${i}` })))
+          setImportModalOpen(true)
+        }
+      }
+      reader.readAsText(file, 'utf-8')
+    })
+
+    // 清空 input，允许重复选文件
+    e.target.value = ''
+  }
+
+  const handleConfirmImport = () => {
+    const targetVolId = activeVolumeId ?? (formData.volumes ?? [])[0]?.id
+    if (!targetVolId) return
+
+    setFormData(prev => {
+      const currentVolume = (prev.volumes ?? []).find(v => v.id === targetVolId)
+      const existingCount = currentVolume?.chapters.length ?? 0
+
+      const newChapters: WritingChapter[] = importChapters.map((draft, i) => ({
+        id: generateChapterId(),
+        title: draft.title,
+        content: draft.content,
+        order: existingCount + i,
+      }))
+
+      const nextVolumes = (prev.volumes ?? []).map(volume =>
+        volume.id === targetVolId ? { ...volume, chapters: [...volume.chapters, ...newChapters] } : volume,
+      )
+      return { ...prev, volumes: nextVolumes }
+    })
+
+    setImportModalOpen(false)
+    setImportChapters([])
+    message.success(`已导入 ${importChapters.length} 个章节`)
   }
 
   // 字数统计
@@ -390,6 +488,22 @@ const NovelEditor: React.FC = () => {
             <div className="flex items-center justify-between px-3 py-2 border-b border-black/10">
               <span className="text-xs font-medium text-gray-500">目录</span>
               <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".md,.txt"
+                  multiple
+                  className="hidden"
+                  onChange={handleImportFiles}
+                />
+                <button
+                  type="button"
+                  title="导入文件到当前卷"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-gray-400 hover:text-[#e8673c] transition-colors"
+                >
+                  <UploadOutlined />
+                </button>
                 <button
                   type="button"
                   title="向当前卷新增章节"
@@ -466,7 +580,12 @@ const NovelEditor: React.FC = () => {
                         <DndContext
                           sensors={sensors}
                           collisionDetection={closestCenter}
-                          onDragEnd={e => handleReorderChapters(volume.id, e)}
+                          onDragStart={disableSelect}
+                          onDragEnd={e => {
+                            enableSelect()
+                            handleReorderChapters(volume.id, e)
+                          }}
+                          onDragCancel={enableSelect}
                         >
                           <SortableContext
                             items={volume.chapters.map(ch => ch.id)}
@@ -564,7 +683,164 @@ const NovelEditor: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* 导入文件预览弹窗 */}
+      <ImportChaptersModal
+        open={importModalOpen}
+        chapters={importChapters}
+        startIndex={importStartIndex}
+        targetVolTitle={
+          (formData.volumes ?? []).find(v => v.id === activeVolumeId)?.title ??
+          (formData.volumes ?? [])[0]?.title ??
+          '当前卷'
+        }
+        onStartIndexChange={setImportStartIndex}
+        onChaptersChange={setImportChapters}
+        onConfirm={handleConfirmImport}
+        onCancel={() => setImportModalOpen(false)}
+      />
     </Spin>
+  )
+}
+
+// ─── 导入章节草稿类型 ─────────────────────────────────────────────────────────
+interface ImportChapterDraft {
+  draftId: string
+  title: string
+  content: string
+  sourceFile: string
+}
+
+// ─── 导入预览弹窗 ────────────────────────────────────────────────────────────
+interface ImportChaptersModalProps {
+  open: boolean
+  chapters: ImportChapterDraft[]
+  startIndex: number
+  targetVolTitle: string
+  onStartIndexChange: (v: number) => void
+  onChaptersChange: (chapters: ImportChapterDraft[]) => void
+  onConfirm: () => void
+  onCancel: () => void
+}
+
+const ImportChaptersModal: React.FC<ImportChaptersModalProps> = ({
+  open,
+  chapters,
+  startIndex,
+  targetVolTitle,
+  onStartIndexChange,
+  onChaptersChange,
+  onConfirm,
+  onCancel,
+}) => {
+  const modalSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  const disableSelect = () => {
+    document.body.style.userSelect = 'none'
+  }
+  const enableSelect = () => {
+    document.body.style.userSelect = ''
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = chapters.findIndex(c => c.draftId === active.id)
+    const newIndex = chapters.findIndex(c => c.draftId === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+    onChaptersChange(arrayMove(chapters, oldIndex, newIndex))
+  }
+
+  const updateTitle = (draftId: string, title: string) => {
+    onChaptersChange(chapters.map(c => (c.draftId === draftId ? { ...c, title } : c)))
+  }
+
+  return (
+    <Modal
+      open={open}
+      title={`导入文件预览 — 追加到「${targetVolTitle}」`}
+      okText="确认追加"
+      cancelText="取消"
+      onOk={onConfirm}
+      onCancel={onCancel}
+      width={560}
+      styles={{ body: { maxHeight: '60vh', overflowY: 'auto' } }}
+    >
+      <div className="mb-3 flex items-center gap-2 text-sm text-gray-600">
+        <span>
+          已解析 <strong>{chapters.length}</strong> 章，起始编号：
+        </span>
+        <InputNumber
+          min={1}
+          value={startIndex}
+          onChange={v => onStartIndexChange(v ?? 1)}
+          size="small"
+          style={{ width: 72 }}
+        />
+        <span>章（后续递增）</span>
+      </div>
+
+      <DndContext
+        sensors={modalSensors}
+        collisionDetection={closestCenter}
+        onDragStart={disableSelect}
+        onDragEnd={e => {
+          enableSelect()
+          handleDragEnd(e)
+        }}
+        onDragCancel={enableSelect}
+      >
+        <SortableContext items={chapters.map(c => c.draftId)} strategy={verticalListSortingStrategy}>
+          {chapters.map((chapter, i) => (
+            <SortableImportItem
+              key={chapter.draftId}
+              chapter={chapter}
+              displayIndex={startIndex + i}
+              onTitleChange={title => updateTitle(chapter.draftId, title)}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+    </Modal>
+  )
+}
+
+interface SortableImportItemProps {
+  chapter: ImportChapterDraft
+  displayIndex: number
+  onTitleChange: (title: string) => void
+}
+
+const SortableImportItem: React.FC<SortableImportItemProps> = ({ chapter, displayIndex, onTitleChange }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: chapter.draftId,
+  })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2 py-1.5 border-b border-black/5 group">
+      <span
+        {...attributes}
+        {...listeners}
+        className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing shrink-0"
+      >
+        <HolderOutlined />
+      </span>
+      <span className="text-xs text-gray-400 w-14 shrink-0">第 {displayIndex} 章</span>
+      <input
+        className="flex-1 text-sm border border-black/10 rounded px-2 py-0.5 bg-transparent outline-none focus:border-[#e8673c]"
+        value={chapter.title}
+        onChange={e => onTitleChange(e.target.value)}
+      />
+      <span className="text-[10px] text-gray-400 shrink-0 max-w-[72px] truncate" title={chapter.sourceFile}>
+        {chapter.sourceFile}
+      </span>
+    </div>
   )
 }
 
