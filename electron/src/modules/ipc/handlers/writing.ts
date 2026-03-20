@@ -15,10 +15,17 @@ import type {
 } from '@shared/types/writing'
 import { hasChapters, hasVolumes } from '@shared/types/writing'
 
-type WritingChapterMeta = Omit<WritingChapter, 'content'>
-type WritingVolumeMeta = Omit<WritingVolume, 'chapters'> & { chapters: WritingChapterMeta[] }
+type WritingChapterMeta = Omit<WritingChapter, 'content'> & {
+  wordCount?: number
+}
+type WritingVolumeMeta = Omit<WritingVolume, 'chapters'> & {
+  wordCount?: number
+  chapters: WritingChapterMeta[]
+}
 
 type WritingItemMeta = Omit<WritingItem, 'content' | 'chapters' | 'volumes'> & {
+  wordCount?: number
+  chapterCount?: number
   chapters?: WritingChapterMeta[]
   volumes?: WritingVolumeMeta[]
 }
@@ -124,11 +131,16 @@ function removeDirRecursive(dirPath: string): void {
   }
 }
 
+function getWordCount(content: string): number {
+  return (content || '').replace(/\s/g, '').length
+}
+
 function toChapterMeta(chapter: WritingChapter, chapterIndex: number): WritingChapterMeta {
   return {
     id: chapter.id,
     title: chapter.title,
     order: chapterIndex,
+    wordCount: getWordCount(chapter.content),
   }
 }
 
@@ -186,7 +198,7 @@ function normalizeVolumeMeta(volumes: WritingVolumeMeta[] = []): WritingVolumeMe
   }))
 }
 
-function getSummaryFromWriting(writing: WritingItem): string {
+function _getSummaryFromWriting(writing: WritingItem): string {
   if (hasVolumes(writing.type) && writing.volumes && writing.volumes.length > 0) {
     const sortedVolumes = [...writing.volumes].sort((a, b) => a.order - b.order)
     const firstVolume = sortedVolumes[0]
@@ -314,6 +326,7 @@ async function saveWriting(data: WritingSaveRequest): Promise<string> {
   }
 
   if (data.type === 'article') {
+    const wordCount = getWordCount(data.content || '')
     const articleMeta: WritingItemMeta = {
       id,
       type: 'article',
@@ -322,6 +335,8 @@ async function saveWriting(data: WritingSaveRequest): Promise<string> {
       updatedAt: now,
       tags: data.tags ?? existingWriting?.tags ?? [],
       metadata: data.metadata ?? existingWriting?.metadata,
+      wordCount,
+      chapterCount: 0,
     }
 
     fs.writeFileSync(getArticleMetaPath(id), JSON.stringify(articleMeta, null, 2), 'utf-8')
@@ -335,15 +350,24 @@ async function saveWriting(data: WritingSaveRequest): Promise<string> {
 
   if (hasVolumes(data.type)) {
     const normalizedVolumes = normalizeVolumes(volumes ?? [])
-    const volumesMeta: WritingVolumeMeta[] = normalizeVolumes(normalizedVolumes).map((volume, volumeIndex) => ({
-      id: volume.id,
-      title: volume.title,
-      order: volumeIndex,
-      chapters: (volume.chapters ?? []).map((chapter, chapterIndex) => {
+    const volumesMeta: WritingVolumeMeta[] = normalizeVolumes(normalizedVolumes).map((volume, volumeIndex) => {
+      const chaptersMeta = (volume.chapters ?? []).map((chapter, chapterIndex) => {
         saveChapterMarkdown(data.type, id, chapter)
         return toChapterMeta(chapter, chapterIndex)
-      }),
-    }))
+      })
+
+      const volumeWordCount = chaptersMeta.reduce((sum, chapter) => sum + (chapter.wordCount ?? 0), 0)
+
+      return {
+        id: volume.id,
+        title: volume.title,
+        order: volumeIndex,
+        wordCount: volumeWordCount,
+        chapters: chaptersMeta,
+      }
+    })
+
+    const chapterCount = volumesMeta.reduce((sum, volume) => sum + (volume.chapters?.length ?? 0), 0)
 
     const writingMeta: WritingItemMeta = {
       id,
@@ -353,6 +377,7 @@ async function saveWriting(data: WritingSaveRequest): Promise<string> {
       updatedAt: now,
       tags: data.tags ?? existingWriting?.tags ?? [],
       metadata: data.metadata ?? existingWriting?.metadata,
+      chapterCount,
       volumes: normalizeVolumeMeta(volumesMeta),
       chapters: undefined,
     }
@@ -367,6 +392,8 @@ async function saveWriting(data: WritingSaveRequest): Promise<string> {
       }),
     )
 
+    const chapterCount = chapterMeta.length
+
     const writingMeta: WritingItemMeta = {
       id,
       type: data.type,
@@ -375,6 +402,7 @@ async function saveWriting(data: WritingSaveRequest): Promise<string> {
       updatedAt: now,
       tags: data.tags ?? existingWriting?.tags ?? [],
       metadata: data.metadata ?? existingWriting?.metadata,
+      chapterCount,
       chapters: chapterMeta,
       volumes: undefined,
     }
@@ -430,21 +458,38 @@ function listWritings(type: WritingType): WritingBase[] {
       for (const filePath of metaFiles) {
         try {
           const meta = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as WritingItemMeta
-          const writing = buildWritingItemFromMeta(meta)
-          const descriptionFromMetadata = writing.metadata?.description
-          const contentSummary = getSummaryFromWriting(writing)
+          const descriptionFromMetadata = meta.metadata?.description
           const description =
             typeof descriptionFromMetadata === 'string' && descriptionFromMetadata.trim().length > 0
               ? descriptionFromMetadata
-              : contentSummary || '暂无描述'
+              : '暂无描述'
 
+          let wordCount = meta.wordCount ?? 0
+          if (typeof meta.wordCount !== 'number') {
+            // 旧数据没有 wordCount，从 .md 文件读取并写回
+            const mdPath = getArticleMarkdownPath(meta.id)
+            const raw = fs.existsSync(mdPath) ? fs.readFileSync(mdPath, 'utf-8') : ''
+            const parsed = parseMarkdownWithH1(raw)
+            wordCount = getWordCount(parsed.content)
+            meta.wordCount = wordCount
+            fs.writeFileSync(filePath, JSON.stringify(meta, null, 2), 'utf-8')
+            logger.info(`Migrated wordCount for article ${meta.id}`)
+          }
+          const chapterCount =
+            typeof meta.chapterCount === 'number'
+              ? meta.chapterCount
+              : hasVolumes(meta.type)
+                ? (meta.volumes ?? []).reduce((sum, volume) => sum + (volume.chapters?.length ?? 0), 0)
+                : (meta.chapters ?? []).length
           writings.push({
-            id: writing.id,
-            title: writing.title,
+            id: meta.id,
+            title: meta.title,
             description,
-            createdAt: writing.createdAt,
-            updatedAt: writing.updatedAt,
-            tags: writing.tags,
+            createdAt: meta.createdAt,
+            updatedAt: meta.updatedAt,
+            tags: meta.tags,
+            wordCount,
+            chapterCount,
           })
         } catch (error) {
           logger.error(`Failed to parse writing file ${filePath}:`, error)
@@ -463,22 +508,86 @@ function listWritings(type: WritingType): WritingBase[] {
         }
 
         try {
-          const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WritingItemMeta
-          const writing = buildWritingItemFromMeta(meta)
-          const descriptionFromMetadata = writing.metadata?.description
-          const contentSummary = getSummaryFromWriting(writing)
+          let meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WritingItemMeta
+          const descriptionFromMetadata = meta.metadata?.description
           const description =
             typeof descriptionFromMetadata === 'string' && descriptionFromMetadata.trim().length > 0
               ? descriptionFromMetadata
-              : contentSummary || '暂无描述'
+              : '暂无描述'
+
+          // 检测旧数据：章节没有 wordCount 字段，需要从 .md 文件读取并写回 meta（一次性迁移）
+          const needsMigration = hasVolumes(meta.type)
+            ? (meta.volumes ?? []).some(volume =>
+                (volume.chapters ?? []).some(chapter => typeof chapter.wordCount !== 'number'),
+              )
+            : (meta.chapters ?? []).some(chapter => typeof chapter.wordCount !== 'number')
+
+          if (needsMigration) {
+            let metaDirty = false
+            if (hasVolumes(meta.type)) {
+              meta.volumes = (meta.volumes ?? []).map(volume => {
+                const updatedChapters = (volume.chapters ?? []).map(chapter => {
+                  if (typeof chapter.wordCount === 'number') return chapter
+                  const mdPath = getChapterMarkdownPath(meta.type, meta.id, chapter.id)
+                  const raw = fs.existsSync(mdPath) ? fs.readFileSync(mdPath, 'utf-8') : ''
+                  const parsed = parseMarkdownWithH1(raw)
+                  metaDirty = true
+                  return { ...chapter, wordCount: getWordCount(parsed.content) }
+                })
+                const volumeWordCount = updatedChapters.reduce((s, c) => s + (c.wordCount ?? 0), 0)
+                return { ...volume, wordCount: volumeWordCount, chapters: updatedChapters }
+              })
+            } else {
+              meta.chapters = (meta.chapters ?? []).map(chapter => {
+                if (typeof chapter.wordCount === 'number') return chapter
+                const mdPath = getChapterMarkdownPath(meta.type, meta.id, chapter.id)
+                const raw = fs.existsSync(mdPath) ? fs.readFileSync(mdPath, 'utf-8') : ''
+                const parsed = parseMarkdownWithH1(raw)
+                metaDirty = true
+                return { ...chapter, wordCount: getWordCount(parsed.content) }
+              })
+            }
+            if (metaDirty) {
+              meta.wordCount = hasVolumes(meta.type)
+                ? (meta.volumes ?? []).reduce(
+                    (s, v) => s + (v.chapters ?? []).reduce((cs, c) => cs + (c.wordCount ?? 0), 0),
+                    0,
+                  )
+                : (meta.chapters ?? []).reduce((s, c) => s + (c.wordCount ?? 0), 0)
+              meta.chapterCount = hasVolumes(meta.type)
+                ? (meta.volumes ?? []).reduce((s, v) => s + (v.chapters?.length ?? 0), 0)
+                : (meta.chapters ?? []).length
+              fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2), 'utf-8')
+              logger.info(`Migrated wordCount for writing ${meta.id}`)
+            }
+          }
+
+          const metaChapterCount =
+            typeof meta.chapterCount === 'number'
+              ? meta.chapterCount
+              : hasVolumes(meta.type)
+                ? (meta.volumes ?? []).reduce((sum, volume) => sum + (volume.chapters?.length ?? 0), 0)
+                : (meta.chapters ?? []).length
+
+          const chapterSumWordCount = hasVolumes(meta.type)
+            ? (meta.volumes ?? []).reduce(
+                (sum, volume) =>
+                  sum + (volume.chapters ?? []).reduce((cs, chapter) => cs + (chapter.wordCount ?? 0), 0),
+                0,
+              )
+            : (meta.chapters ?? []).reduce((sum, chapter) => sum + (chapter.wordCount ?? 0), 0)
+
+          const metaWordCount = chapterSumWordCount > 0 ? chapterSumWordCount : (meta.wordCount ?? 0)
 
           writings.push({
-            id: writing.id,
-            title: writing.title,
+            id: meta.id,
+            title: meta.title,
             description,
-            createdAt: writing.createdAt,
-            updatedAt: writing.updatedAt,
-            tags: writing.tags,
+            createdAt: meta.createdAt,
+            updatedAt: meta.updatedAt,
+            tags: meta.tags,
+            wordCount: metaWordCount,
+            chapterCount: metaChapterCount,
           })
         } catch (error) {
           logger.error(`Failed to parse writing file ${metaPath}:`, error)
@@ -571,31 +680,43 @@ function saveChapterContent(
 
   try {
     const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WritingItemMeta
+    const nextWordCount = getWordCount(payload.content)
 
     let found = false
     if (hasVolumes(type)) {
-      meta.volumes = (meta.volumes ?? []).map(volume => ({
-        ...volume,
-        chapters: (volume.chapters ?? []).map(chapter => {
+      meta.volumes = (meta.volumes ?? []).map(volume => {
+        const nextChapters = (volume.chapters ?? []).map(chapter => {
           if (chapter.id !== chapterId) {
             return chapter
           }
+
           found = true
           return {
             ...chapter,
             title: payload.title,
+            wordCount: nextWordCount,
           }
-        }),
-      }))
+        })
+
+        const nextVolumeWordCount = nextChapters.reduce((sum, chapter) => sum + (chapter.wordCount ?? 0), 0)
+
+        return {
+          ...volume,
+          wordCount: nextVolumeWordCount,
+          chapters: nextChapters,
+        }
+      })
     } else {
       meta.chapters = (meta.chapters ?? []).map(chapter => {
         if (chapter.id !== chapterId) {
           return chapter
         }
+
         found = true
         return {
           ...chapter,
           title: payload.title,
+          wordCount: nextWordCount,
         }
       })
     }
@@ -603,6 +724,18 @@ function saveChapterContent(
     if (!found) {
       return false
     }
+
+    meta.wordCount = hasVolumes(type)
+      ? (meta.volumes ?? []).reduce(
+          (sum, volume) =>
+            sum + (volume.chapters ?? []).reduce((chapterSum, chapter) => chapterSum + (chapter.wordCount ?? 0), 0),
+          0,
+        )
+      : (meta.chapters ?? []).reduce((sum, chapter) => sum + (chapter.wordCount ?? 0), 0)
+
+    meta.chapterCount = hasVolumes(type)
+      ? (meta.volumes ?? []).reduce((sum, volume) => sum + (volume.chapters?.length ?? 0), 0)
+      : (meta.chapters ?? []).length
 
     meta.updatedAt = new Date().toISOString()
     fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2), 'utf-8')

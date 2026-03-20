@@ -53,6 +53,10 @@ export interface WritingBase {
   createdAt: string
   updatedAt: string
   tags: string[]
+  /** 总字数（不含空白） */
+  wordCount?: number
+  /** 总章节数（小说/短故事等） */
+  chapterCount?: number
 }
 
 export interface WritingListResponse {

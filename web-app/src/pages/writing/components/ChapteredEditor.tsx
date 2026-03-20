@@ -1,18 +1,20 @@
+/**
+ * Author: You + AI(Nova)
+ * Contributors: You, AI(Nova)
+ */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Alert, Button, Empty, Form, Input, List, Space, Spin, Tag, Typography } from 'antd'
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { Alert, Empty, Input, Spin, Tag } from 'antd'
+import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import {
   generateWritingTitle,
   getEntryLabel,
-  getHierarchyLabel,
   validateWritingData,
 } from '@/features/writing/utils/helpers'
 import type { WritingChapter, WritingFormData } from '@/features/writing/types'
 import type { WritingType } from '@shared/types/writing'
 
-const { Title, Text } = Typography
 const { TextArea } = Input
 
 const ChapteredEditor: React.FC = () => {
@@ -25,7 +27,6 @@ const ChapteredEditor: React.FC = () => {
   const targetChapterId = searchParams.get('chapterId')
   const action = searchParams.get('action')
   const entryLabel = getEntryLabel(type)
-  const hierarchyLabel = getHierarchyLabel(type)
   const chapterIdCounter = useRef(0)
 
   const [tagInput, setTagInput] = useState('')
@@ -147,143 +148,180 @@ const ChapteredEditor: React.FC = () => {
     navigate(`/tool/writing?type=${type}`)
   }
 
+  // 字数统计
+  const wordCount = useMemo(() => {
+    const text = activeChapter?.content ?? ''
+    return text.replace(/\s/g, '').length
+  }, [activeChapter?.content])
+
+  const typeLabel = type === 'video_script' ? '视频剧本' : '短篇故事'
+
   return (
-    <Spin spinning={loading}>
-      <div className="p-5 max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <Title level={3} className="!mb-0">
-            {id ? '编辑' : '新建'}
-            {type === 'video_script' ? '视频剧本' : '短篇故事'}
-          </Title>
-          <Space>
-            <Button onClick={() => navigate(`/tool/writing?type=${type}`)}>取消</Button>
-            <Button type="primary" onClick={handleSave}>
+    <Spin spinning={loading} className="h-full">
+      <div className="flex flex-col h-screen bg-[#f5f0e8]">
+        {/* 顶部导航栏 */}
+        <div className="flex items-center justify-between px-4 py-2 bg-[#f5f0e8] border-b border-black/10 shrink-0">
+          <button
+            type="button"
+            onClick={() => navigate(`/tool/writing?type=${type}`)}
+            className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm transition-colors"
+          >
+            <ArrowLeftOutlined />
+            <span>返回</span>
+          </button>
+
+          <input
+            className="flex-1 mx-6 bg-transparent text-center text-base font-semibold text-gray-800 outline-none border-none placeholder-gray-400"
+            placeholder={`请输入${typeLabel}名称`}
+            value={formData.title}
+            onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          />
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-400">已保存 | {wordCount} 字</span>
+            <button
+              type="button"
+              onClick={handleSave}
+              className="flex items-center gap-1 px-4 py-1.5 bg-[#e8673c] text-white rounded-full text-sm font-medium hover:bg-[#d45a30] transition-colors"
+            >
+              <SaveOutlined />
               保存
-            </Button>
-          </Space>
+            </button>
+          </div>
         </div>
 
-        {error && <Alert type="error" message={error} className="mb-4" />}
-        {validationErrors.length > 0 && (
-          <Alert
-            type="warning"
-            className="mb-4"
-            message={
-              <ul className="m-0 pl-4">
-                {validationErrors.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            }
-          />
+        {/* 错误提示 */}
+        {(error || validationErrors.length > 0) && (
+          <div className="px-4 pt-2 shrink-0">
+            {error && <Alert type="error" message={error} className="mb-2" />}
+            {validationErrors.length > 0 && (
+              <Alert
+                type="warning"
+                className="mb-2"
+                message={
+                  <ul className="m-0 pl-4">
+                    {validationErrors.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                }
+              />
+            )}
+          </div>
         )}
 
-        <Form layout="vertical" className="flex flex-col gap-2">
-          <Form.Item label="标题">
-            <Input
-              value={formData.title}
-              onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="输入标题..."
-            />
-          </Form.Item>
-
-          <Form.Item label="标签">
-            <Space.Compact className="w-full">
-              <Input
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
-                onPressEnter={handleAddTag}
-                placeholder="输入标签，按回车或点击添加..."
-              />
-              <Button onClick={handleAddTag}>添加</Button>
-            </Space.Compact>
-            {formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {formData.tags.map(tag => (
-                  <Tag
-                    key={tag}
-                    closable
-                    onClose={() => setFormData(prev => ({ ...prev, tags: prev.tags.filter(item => item !== tag) }))}
-                  >
-                    #{tag}
-                  </Tag>
-                ))}
-              </div>
-            )}
-          </Form.Item>
-
-          <Form.Item label={hierarchyLabel}>
-            <div className="flex gap-4" style={{ minHeight: 520 }}>
-              <div className="w-56 shrink-0 border border-gray-200 rounded-lg overflow-hidden flex flex-col bg-white">
-                <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-200">
-                  <Text className="text-xs text-gray-500">{type === 'video_script' ? '分节列表' : '章节目录'}</Text>
-                  <Button type="text" size="small" icon={<PlusOutlined />} onClick={handleAddChapter} />
-                </div>
-                {!formData.chapters || formData.chapters.length === 0 ? (
-                  <Empty description={`暂无${entryLabel}`} className="my-4" imageStyle={{ height: 40 }} />
-                ) : (
-                  <List
-                    size="small"
-                    className="flex-1 overflow-y-auto"
-                    dataSource={formData.chapters}
-                    renderItem={chapter => (
-                      <List.Item
-                        className={`cursor-pointer px-3 !py-2 hover:bg-blue-50 transition-colors ${activeChapterId === chapter.id ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''}`}
-                        onClick={() => setActiveChapterId(chapter.id)}
-                        actions={[
-                          <Button
-                            key="del"
-                            type="text"
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined />}
-                            onClick={e => {
-                              e.stopPropagation()
-                              handleDeleteChapter(chapter.id)
-                            }}
-                          />,
-                        ]}
-                      >
-                        <span className="text-xs truncate w-full">
-                          {chapter.title || `第${chapter.order + 1}${entryLabel}`}
-                        </span>
-                      </List.Item>
-                    )}
-                  />
-                )}
-                <div className="px-3 py-2 border-t border-gray-200 bg-gray-50">
-                  <Button block size="small" icon={<PlusOutlined />} onClick={handleAddChapter}>
-                    新增{entryLabel}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex-1 border border-gray-200 rounded-lg p-4 bg-white flex flex-col gap-3">
-                {activeChapter ? (
-                  <>
-                    <Input
-                      value={activeChapter.title}
-                      onChange={e => updateActiveChapter('title', e.target.value)}
-                      placeholder={`${entryLabel}标题...`}
-                      className="font-medium"
-                    />
-                    <TextArea
-                      value={activeChapter.content}
-                      onChange={e => updateActiveChapter('content', e.target.value)}
-                      placeholder={type === 'video_script' ? '开始写这一节...' : '开始写这一章...'}
-                      rows={20}
-                    />
-                  </>
-                ) : (
-                  <Empty description={`请选择或新建${entryLabel}`} className="mt-16" />
-                )}
-              </div>
+        {/* 主体：左侧目录 + 右侧编辑 */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* 左侧章节目录 */}
+          <div className="w-52 shrink-0 border-r border-black/10 flex flex-col bg-[#ede8df] overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-black/10">
+              <span className="text-xs font-medium text-gray-500">{type === 'video_script' ? '分节列表' : '章节目录'}</span>
+              <button
+                type="button"
+                title={`新增${entryLabel}`}
+                onClick={handleAddChapter}
+                className="text-gray-400 hover:text-[#e8673c] transition-colors"
+              >
+                <PlusOutlined />
+              </button>
             </div>
-          </Form.Item>
-        </Form>
+
+            <div className="flex-1 overflow-y-auto py-1">
+              {!formData.chapters || formData.chapters.length === 0 ? (
+                <Empty description={`暂无${entryLabel}`} imageStyle={{ height: 36 }} className="mt-6" />
+              ) : (
+                formData.chapters.map(chapter => (
+                  <div
+                    key={chapter.id}
+                    className={`flex items-center justify-between px-3 py-2 group cursor-pointer ${
+                      activeChapterId === chapter.id
+                        ? 'bg-white/60 text-[#e8673c]'
+                        : 'hover:bg-black/5 text-gray-600'
+                    }`}
+                    onClick={() => setActiveChapterId(chapter.id)}
+                  >
+                    <span className="text-xs truncate flex-1">
+                      {chapter.title || `第${chapter.order + 1}${entryLabel}`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={e => { e.stopPropagation(); handleDeleteChapter(chapter.id) }}
+                      className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all"
+                    >
+                      <DeleteOutlined style={{ fontSize: 10 }} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddChapter}
+              className="shrink-0 flex items-center justify-center gap-1 py-2 border-t border-black/10 text-xs text-gray-500 hover:text-[#e8673c] hover:bg-black/5 transition-colors"
+            >
+              <PlusOutlined /> 新增{entryLabel}
+            </button>
+          </div>
+
+          {/* 右侧编辑区 */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-[#f5f0e8]">
+            {activeChapter ? (
+              <>
+                {/* 章节标题 */}
+                <div className="px-8 pt-6 pb-2 shrink-0">
+                  <input
+                    className="w-full bg-transparent text-2xl font-semibold text-gray-800 outline-none border-none placeholder-gray-300"
+                    value={activeChapter.title}
+                    onChange={e => updateActiveChapter('title', e.target.value)}
+                    placeholder="请输入标题"
+                  />
+                </div>
+
+                {/* 标签 */}
+                <div className="px-8 pb-3 shrink-0">
+                  <div className="flex flex-wrap items-center gap-1">
+                    {formData.tags.map(tag => (
+                      <Tag
+                        key={tag}
+                        closable
+                        onClose={() => setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}
+                        style={{ borderRadius: 999 }}
+                      >
+                        #{tag}
+                      </Tag>
+                    ))}
+                    <input
+                      className="text-xs text-gray-400 bg-transparent outline-none border-none w-24 placeholder-gray-300"
+                      placeholder="+ 添加标签"
+                      value={tagInput}
+                      onChange={e => setTagInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag() } }}
+                    />
+                  </div>
+                </div>
+
+                {/* 正文 */}
+                <div className="flex-1 overflow-auto px-8 pb-8">
+                  <TextArea
+                    value={activeChapter.content}
+                    onChange={e => updateActiveChapter('content', e.target.value)}
+                    placeholder={type === 'video_script' ? '请输入正文' : '· 发布超6000字，即有机会签约\n· 多使用分段或换行，更方便阅读'}
+                    autoSize={{ minRows: 20 }}
+                    variant="borderless"
+                    style={{ background: 'transparent', fontSize: 15, lineHeight: '1.9', padding: 0, resize: 'none' }}
+                  />
+                </div>
+              </>
+            ) : (
+              <Empty description={`请选择或新建${entryLabel}`} className="mt-24" />
+            )}
+          </div>
+        </div>
       </div>
     </Spin>
   )
 }
 
 export default ChapteredEditor
+

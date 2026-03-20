@@ -2,7 +2,6 @@ import React from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { WritingType } from '@shared/types/writing'
 import ArticleEditor from './components/ArticleEditor'
-import ChapteredEditor from './components/ChapteredEditor'
 import NovelEditor from './components/NovelEditor'
 
 const WritingEditorPage: React.FC = () => {
@@ -13,10 +12,7 @@ const WritingEditorPage: React.FC = () => {
     return <NovelEditor />
   }
 
-  if (type === 'short_story' || type === 'video_script') {
-    return <ChapteredEditor />
-  }
-
+  // article / short_story / video_script 都是单篇内容，用同一个编辑器
   return <ArticleEditor />
 }
 

@@ -91,6 +91,7 @@ export const validateWritingData = (data: {
   }
 
   if (hasVolumes(data.type)) {
+    // 小说：卷 → 章 结构
     const volumes = data.volumes ?? []
     const hasVolume = volumes.length > 0
     const hasChapter = volumes.some(volume => (volume.chapters ?? []).length > 0)
@@ -107,13 +108,11 @@ export const validateWritingData = (data: {
     if (!hasAnyContent) {
       errors.push('章节内容不能为空')
     }
-  } else if (hasChapters(data.type)) {
-    const hasAnyChapterContent = (data.chapters ?? []).some(chapter => chapter.content.trim().length > 0)
-    if (!hasAnyChapterContent) {
-      errors.push(data.type === 'video_script' ? '分节内容不能为空' : '章节内容不能为空')
+  } else {
+    // article / short_story / video_script 统一走单篇内容校验
+    if (!data.content || data.content.trim().length === 0) {
+      errors.push('内容不能为空')
     }
-  } else if (!data.content || data.content.trim().length === 0) {
-    errors.push('内容不能为空')
   }
 
   return {

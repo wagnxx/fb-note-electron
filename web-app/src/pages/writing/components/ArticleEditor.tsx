@@ -1,12 +1,16 @@
-import React, { useEffect, useState } from 'react'
+/**
+ * Author: You + AI(Nova)
+ * Contributors: You, AI(Nova)
+ */
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Alert, Button, Form, Input, Space, Spin, Tag, Typography } from 'antd'
+import { Alert, Input, Spin, Tag } from 'antd'
+import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons'
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import { generateWritingTitle, validateWritingData } from '@/features/writing/utils/helpers'
 import type { WritingFormData } from '@/features/writing/types'
 import type { WritingType } from '@shared/types/writing'
 
-const { Title } = Typography
 const { TextArea } = Input
 
 const ArticleEditor: React.FC = () => {
@@ -14,7 +18,7 @@ const ArticleEditor: React.FC = () => {
   const [searchParams] = useSearchParams()
   const { currentItem, loading, error, createWriting, fetchWriting } = useWriting()
 
-  const type = ((searchParams.get('type') as WritingType) || 'article') as 'article'
+  const type = ((searchParams.get('type') as WritingType) || 'article') as 'article' | 'short_story' | 'video_script'
   const id = searchParams.get('id')
   const [tagInput, setTagInput] = useState('')
   const [validationErrors, setValidationErrors] = useState<string[]>([])
@@ -40,15 +44,18 @@ const ArticleEditor: React.FC = () => {
   }, [fetchWriting, id, type])
 
   useEffect(() => {
-    if (!currentItem || !id || currentItem.type !== 'article') {
-      return
-    }
+    if (!currentItem || !id) return
+    const singleTypes: WritingType[] = ['article', 'short_story', 'video_script']
+    if (!singleTypes.includes(currentItem.type)) return
+
+    const chapterFallback =
+      ((currentItem.chapters as Array<{ content?: string }> | undefined) ?? [])[0]?.content ?? ''
 
     setFormData({
       id: currentItem.id,
-      type: 'article',
+      type: currentItem.type as typeof type,
       title: currentItem.title,
-      content: currentItem.content,
+      content: currentItem.content || chapterFallback,
       tags: currentItem.tags,
     })
   }, [currentItem, id])
@@ -72,79 +79,103 @@ const ArticleEditor: React.FC = () => {
     navigate(`/tool/writing?type=${type}`)
   }
 
+  const wordCount = useMemo(() => formData.content.replace(/\s/g, '').length, [formData.content])
+
+  const typeConfig = {
+    article:      { titlePlaceholder: '请输入文章标题', contentPlaceholder: '开始写作...' },
+    short_story:  { titlePlaceholder: '请输入短故事名称', contentPlaceholder: '· 发布超6000字，即有机会签约\n· 多使用分段或换行，更方便阅读\n· 剧情完整的内容，更容易获得点赞和关注' },
+    video_script: { titlePlaceholder: '请输入视频剧本名称', contentPlaceholder: '请输入正文' },
+  } as const
+  const { titlePlaceholder, contentPlaceholder } = typeConfig[type] ?? typeConfig.article
+
   return (
-    <Spin spinning={loading}>
-      <div className="p-5 max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <Title level={3} className="!mb-0">
-            {id ? '编辑文章' : '新建文章'}
-          </Title>
-          <Space>
-            <Button onClick={() => navigate(`/tool/writing?type=${type}`)}>取消</Button>
-            <Button type="primary" onClick={handleSave}>
+    <Spin spinning={loading} className="h-full">
+      <div className="flex flex-col h-screen bg-[#f5f0e8]">
+        {/* 顶部导航 */}
+        <div className="flex items-center justify-between px-4 py-2 bg-[#f5f0e8] border-b border-black/10 shrink-0">
+          <button
+            type="button"
+            onClick={() => navigate(`/tool/writing?type=${type}`)}
+            className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm transition-colors"
+          >
+            <ArrowLeftOutlined />
+            <span>返回</span>
+          </button>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-400">已保存 | {wordCount} 字</span>
+            <button
+              type="button"
+              onClick={handleSave}
+              className="flex items-center gap-1 px-4 py-1.5 bg-[#e8673c] text-white rounded-full text-sm font-medium hover:bg-[#d45a30] transition-colors"
+            >
+              <SaveOutlined />
               保存
-            </Button>
-          </Space>
+            </button>
+          </div>
         </div>
 
-        {error && <Alert type="error" message={error} className="mb-4" />}
-        {validationErrors.length > 0 && (
-          <Alert
-            type="warning"
-            className="mb-4"
-            message={
-              <ul className="m-0 pl-4">
-                {validationErrors.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            }
-          />
+        {/* 错误提示 */}
+        {(error || validationErrors.length > 0) && (
+          <div className="px-8 pt-3 shrink-0">
+            {error && <Alert type="error" message={error} className="mb-2" />}
+            {validationErrors.length > 0 && (
+              <Alert
+                type="warning"
+                className="mb-2"
+                message={
+                  <ul className="m-0 pl-4">
+                    {validationErrors.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                }
+              />
+            )}
+          </div>
         )}
 
-        <Form layout="vertical" className="flex flex-col gap-2">
-          <Form.Item label="标题">
-            <Input
-              value={formData.title}
-              onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="输入标题..."
-            />
-          </Form.Item>
+        {/* 编辑主体 */}
+        <div className="flex-1 overflow-auto flex flex-col px-8 py-6">
+          {/* 标题 */}
+          <input
+            className="w-full bg-transparent text-2xl font-semibold text-gray-800 outline-none border-none placeholder-gray-300 mb-3"
+            placeholder={titlePlaceholder}
+            value={formData.title}
+            onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          />
 
-          <Form.Item label="标签">
-            <Space.Compact className="w-full">
-              <Input
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
-                onPressEnter={handleAddTag}
-                placeholder="输入标签，按回车或点击添加..."
-              />
-              <Button onClick={handleAddTag}>添加</Button>
-            </Space.Compact>
-            {formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {formData.tags.map(tag => (
-                  <Tag
-                    key={tag}
-                    closable
-                    onClose={() => setFormData(prev => ({ ...prev, tags: prev.tags.filter(item => item !== tag) }))}
-                  >
-                    #{tag}
-                  </Tag>
-                ))}
-              </div>
-            )}
-          </Form.Item>
-
-          <Form.Item label="内容">
-            <TextArea
-              value={formData.content}
-              onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              placeholder="开始写作..."
-              rows={24}
+          {/* 标签 */}
+          <div className="flex flex-wrap items-center gap-1 mb-4">
+            {formData.tags.map(tag => (
+              <Tag
+                key={tag}
+                closable
+                onClose={() => setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}
+                style={{ borderRadius: 999 }}
+              >
+                #{tag}
+              </Tag>
+            ))}
+            <input
+              className="text-xs text-gray-400 bg-transparent outline-none border-none w-28 placeholder-gray-300"
+              placeholder="+ 添加标签，回车确认"
+              value={tagInput}
+              onChange={e => setTagInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag() } }}
             />
-          </Form.Item>
-        </Form>
+          </div>
+
+          {/* 提示文字 */}
+          <TextArea
+            value={formData.content}
+            onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
+            placeholder={contentPlaceholder}
+            autoSize={{ minRows: 22 }}
+            variant="borderless"
+            style={{ background: 'transparent', fontSize: 15, lineHeight: '1.9', padding: 0, resize: 'none' }}
+          />
+        </div>
       </div>
     </Spin>
   )
