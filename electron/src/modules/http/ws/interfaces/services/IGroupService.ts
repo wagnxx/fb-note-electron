@@ -7,6 +7,7 @@ export interface IGroupService {
   setGroup(params: { id: string; name?: string; admin?: string }): void
   getOrCreateGroup(id: string): Promise<Group>
   addMember(groupId: string, userId: string): void
+  removeMember(groupId: string, userId: string): void
   broadcast(groupId: string, message: ServerToClientMessage): void
   getGroup(id: string): Promise<Group | null>
   getGroups(ids: string[]): Promise<Group[]>

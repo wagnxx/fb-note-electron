@@ -10,6 +10,7 @@ import { routesSystem } from './config/system'
 import { routesTest } from './config/test'
 import { routesRole } from './config/role'
 import ChatRoomWeb from '@/pages/tools/chat/web'
+import RelayWebConnectPage from '@/pages/tools/relay/web'
 
 export interface RouteConfig {
   path: string
@@ -60,6 +61,12 @@ export const standaloneRoutes: RouteConfig[] = [
     path: '/tool/chat/web/',
     name: 'ChatRoomWeb',
     component: ChatRoomWeb,
+    requiresAuth: false,
+  },
+  {
+    path: '/tool/relay/web/',
+    name: 'RelayWebConnect',
+    component: RelayWebConnectPage,
     requiresAuth: false,
   },
   // 其他独立页面路由

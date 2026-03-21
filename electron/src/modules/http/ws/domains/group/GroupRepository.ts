@@ -35,6 +35,17 @@ export class GroupRepository {
     })
   }
 
+  async removeUserFromGroup(userId: string, groupId: string) {
+    return await prisma.group.update({
+      where: { id: groupId },
+      data: {
+        members: {
+          disconnect: { id: userId },
+        },
+      },
+    })
+  }
+
   exists(id: string) {
     // return this.groups.has(id)
     return prisma.group.findUnique({ where: { id } })

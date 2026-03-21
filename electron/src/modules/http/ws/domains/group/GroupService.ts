@@ -7,6 +7,9 @@ import { IGroupService } from '../../interfaces/services/IGroupService'
 import { IUserService } from '../../interfaces/services/IUserService'
 import { WebSocketManager } from '../../core/WebSocketManager'
 
+const RELAY_STATION_GROUP_ID = 'relay-station'
+const RELAY_STATION_GROUP_NAME = 'Relay Station'
+
 @provide(TYPES.GroupService)
 export class GroupService implements IGroupService {
   private inited = false
@@ -21,7 +24,9 @@ export class GroupService implements IGroupService {
     this.repo = new GroupRepository()
 
     const systemGroup = new Group('sys', 'SystemGroup')
+    const relayGroup = new Group(RELAY_STATION_GROUP_ID, RELAY_STATION_GROUP_NAME)
     this.repo.save(systemGroup)
+    this.repo.save(relayGroup)
   }
   getAllGroups(): Promise<Group[]> {
     throw new Error('Method not implemented.')
@@ -51,6 +56,10 @@ export class GroupService implements IGroupService {
   addMember(groupId: string, userId: string) {
     // this.userGroupService.addUserToGroup(userId, groupId)
     return this.repo.addUserToGroup(userId, groupId)
+  }
+
+  removeMember(groupId: string, userId: string) {
+    return this.repo.removeUserFromGroup(userId, groupId)
   }
 
   async broadcast(groupId: string, message: ServerToClientMessage) {

@@ -16,6 +16,8 @@ export const createApp = () => {
   const app = express()
   app.use(morgan('dev'))
   app.use(cors())
+  app.use(express.json({ limit: '3mb' }))
+  app.use(express.urlencoded({ extended: true }))
 
   // 请求路径重定向
   app.use(createPortalRedirectMiddleware({ portals: ['/ulogi'] }))

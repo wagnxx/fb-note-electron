@@ -10,6 +10,7 @@ import MindMap from '@/pages/mindmap/MindMap'
 import IconGenerator from '@/pages/tools/image/IconGenerator'
 import Books from '@/pages/tools/books'
 import ChatRoomInner from '@/pages/tools/chat/inner'
+import RelayStation from '@/pages/tools/relay'
 import CoordinateDebugger from '@/pages/tools/image/CoordinateDebugger'
 import Locator from '@/pages/tools/locator/Locator'
 import WritingPage from '@/pages/writing/Writing'
@@ -98,6 +99,13 @@ export const routesTool: RouteConfig = {
       path: 'chat',
       name: 'ChatRoom',
       component: ChatRoomInner,
+      requiresAuth: false,
+      isDesktop: true,
+    },
+    {
+      path: 'relay',
+      name: 'RelayStation',
+      component: RelayStation,
       requiresAuth: false,
       isDesktop: true,
     },

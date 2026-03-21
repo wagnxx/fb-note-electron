@@ -23,6 +23,26 @@ export class WebSocketManager {
     return this.userConnections.has(userId)
   }
 
+  getOnlineCount() {
+    return this.userConnections.size
+  }
+
+  getOnlineUserIds() {
+    return Array.from(this.userConnections.keys())
+  }
+
+  disconnectUser(userId: string, code = 4001, reason = 'kicked by host') {
+    const ws = this.userConnections.get(userId)
+    if (!ws) return false
+    try {
+      ws.close(code, reason)
+      return true
+    } catch (error) {
+      console.warn('[WebSocket] disconnect user failed:', error)
+      return false
+    }
+  }
+
   /**
    * 将用户加入群组
    */
