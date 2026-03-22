@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DesktopOnly from '@/components/platform/DesktopOnly'
 import { getWifi } from '@/utils/utilsIpc'
-import { copyText } from '@/utils/utilsClipboard'
 import { App, Avatar, Badge, Button, Card, Empty, Input, List, Space, Tag, Tooltip, Typography, Upload } from 'antd'
 import {
   CloudUploadOutlined,
-  CopyOutlined,
   DeleteOutlined,
   DeploymentUnitOutlined,
   DownloadOutlined,
@@ -403,30 +401,23 @@ const RelayStationPage: React.FC = () => {
     anchor.click()
   }
 
-  const copyWsEndpoint = async () => {
-    const ok = await copyText(wsEndpoint)
-    if (ok) {
-      message.success('WS 地址已复制')
-    } else {
-      message.error('复制失败')
-    }
-  }
-
-  const copyHealthURL = async () => {
-    const ok = await copyText(healthURL)
-    if (ok) {
-      message.success('API 探活地址已复制')
-    } else {
-      message.error('复制失败')
-    }
-  }
-
   const memberMap = useMemo(() => {
     return members.reduce<Record<string, RelayMember>>((acc, item) => {
       acc[item.id] = item
       return acc
     }, {})
   }, [members])
+
+  const memberStatus = useMemo(() => {
+    const online = members.filter(item => item.online || (item.id === selfId && connected)).length
+    const total = members.length
+    const offline = Math.max(total - online, 0)
+    return {
+      online,
+      total,
+      offline,
+    }
+  }, [connected, members, selfId])
 
   return (
     <div className="h-[calc(100vh-30px)] w-full p-4 box-border overflow-hidden bg-gradient-to-br from-slate-100 via-cyan-50 to-indigo-100">
@@ -455,9 +446,6 @@ const RelayStationPage: React.FC = () => {
               <Button icon={<ReloadOutlined />} onClick={bootstrap} loading={connecting}>
                 Reconnect
               </Button>
-              <Button icon={<CopyOutlined />} onClick={copyWsEndpoint}>
-                Copy WS
-              </Button>
               <Button icon={<QrcodeOutlined />} onClick={() => setShowQRCode(true)}>
                 扫码连接
               </Button>
@@ -471,15 +459,24 @@ const RelayStationPage: React.FC = () => {
                 <Typography.Text type="secondary">4) 使用 `WS /chat` 建连并 `join relay-station`</Typography.Text>
                 <Typography.Text code>{healthURL}</Typography.Text>
                 <Typography.Text code>{wsEndpoint}</Typography.Text>
-                <Space>
-                  <Button size="small" icon={<CopyOutlined />} onClick={copyHealthURL}>
-                    Copy Health
-                  </Button>
-                  <Button size="small" icon={<CopyOutlined />} onClick={copyWsEndpoint}>
-                    Copy WS
-                  </Button>
-                </Space>
               </Space>
+            </Card>
+
+            <Card className="mt-3" size="small" title="已接入成员">
+              <div className="grid grid-cols-3 gap-2">
+                <div className="rounded bg-slate-100 px-2 py-2 text-center">
+                  <div className="text-xs text-slate-500">总数</div>
+                  <div className="text-base font-semibold text-slate-900">{memberStatus.total}</div>
+                </div>
+                <div className="rounded bg-emerald-50 px-2 py-2 text-center">
+                  <div className="text-xs text-emerald-600">在线</div>
+                  <div className="text-base font-semibold text-emerald-700">{memberStatus.online}</div>
+                </div>
+                <div className="rounded bg-slate-100 px-2 py-2 text-center">
+                  <div className="text-xs text-slate-500">离线</div>
+                  <div className="text-base font-semibold text-slate-700">{memberStatus.offline}</div>
+                </div>
+              </div>
             </Card>
 
             <div className="mt-4 flex-1 min-h-0 overflow-auto">
@@ -524,7 +521,7 @@ const RelayStationPage: React.FC = () => {
                           <Space size={6}>
                             <span>{item.name || item.id}</span>
                             {isSelf && <Tag color="green">Desktop</Tag>}
-                            {item.online && <Tag color="blue">Online</Tag>}
+                            {item.online || (isSelf && connected) ? <Tag color="blue">Online</Tag> : <Tag>Offline</Tag>}
                           </Space>
                         }
                         description={<Typography.Text type="secondary">{item.id}</Typography.Text>}
@@ -643,9 +640,6 @@ const RelayStationPage: React.FC = () => {
                 扫码后先探活，成功后由设备端自行进入聊天室。
               </Typography.Text>
               <Space>
-                <Button icon={<CopyOutlined />} onClick={copyHealthURL}>
-                  复制 API 地址
-                </Button>
                 <Button onClick={() => setShowQRCode(false)}>关闭</Button>
               </Space>
             </Space>
