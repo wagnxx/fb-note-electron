@@ -1,7 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DesktopOnly from '@/components/platform/DesktopOnly'
 import { getWifi } from '@/utils/utilsIpc'
-import { App, Avatar, Badge, Button, Card, Empty, Input, List, Space, Tag, Tooltip, Typography, Upload } from 'antd'
+import {
+  App,
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Drawer,
+  Empty,
+  Input,
+  List,
+  Modal,
+  Space,
+  Tabs,
+  Tag,
+  Tooltip,
+  Typography,
+  Upload,
+} from 'antd'
 import {
   CloudUploadOutlined,
   DeleteOutlined,
@@ -12,6 +29,7 @@ import {
   QrcodeOutlined,
   ReloadOutlined,
   SendOutlined,
+  SettingOutlined,
 } from '@ant-design/icons'
 import { QRCodeSVG } from 'qrcode.react'
 
@@ -48,6 +66,15 @@ type ChatFileMessage = {
   content: string
 }
 
+type ChatImageMessage = {
+  type: 'image'
+  id: string
+  sender: string
+  groupId: string
+  timestamp: number
+  content: string
+}
+
 type ChatSystemMessage = {
   type: 'system'
   payload: {
@@ -59,7 +86,7 @@ type HistoryResponse = {
   type: 'message-history-res'
   payload: {
     groupId: string
-    messages: (ChatTextMessage | ChatFileMessage)[]
+    messages: (ChatTextMessage | ChatImageMessage | ChatFileMessage)[]
   }
 }
 
@@ -70,7 +97,13 @@ type GroupsResponse = {
   }
 }
 
-type ChatWSMessage = ChatTextMessage | ChatFileMessage | ChatSystemMessage | HistoryResponse | GroupsResponse
+type ChatWSMessage =
+  | ChatTextMessage
+  | ChatImageMessage
+  | ChatFileMessage
+  | ChatSystemMessage
+  | HistoryResponse
+  | GroupsResponse
 
 // 临时方案备注：当前 relay 通过过渡接口接入。
 // 后续并入统一架构时，请评估并按需还原/收敛以下文件：
@@ -89,6 +122,11 @@ const AUTO_RECONNECT_LIMIT = 10
 const RECONNECT_INTERVAL_MS = 30000
 const HEARTBEAT_INTERVAL_MS = 30000
 
+const extractRelayCode = (content: string) => {
+  const matched = content.match(/Relay Pair Code(?: Updated)?:\s*(\d{6})/)
+  return matched?.[1] || ''
+}
+
 const RelayStationPage: React.FC = () => {
   const { message } = App.useApp()
 
@@ -97,13 +135,21 @@ const RelayStationPage: React.FC = () => {
   const [selfName] = useState('Desktop Relay')
   const [text, setText] = useState('')
   const [messages, setMessages] = useState<
-    (ChatTextMessage | ChatFileMessage | { type: 'system'; text: string; id: string })[]
+    (ChatTextMessage | ChatImageMessage | ChatFileMessage | { type: 'system'; text: string; id: string })[]
   >([])
   const [members, setMembers] = useState<RelayMember[]>([])
   const [connecting, setConnecting] = useState(false)
   const [connected, setConnected] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [showQRCode, setShowQRCode] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [relayCode, setRelayCode] = useState('')
+  const [relayCodeLoading, setRelayCodeLoading] = useState(false)
+  const [previewMedia, setPreviewMedia] = useState<{
+    type: 'image' | 'video'
+    src: string
+    fileName: string
+  } | null>(null)
 
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimerRef = useRef<number | null>(null)
@@ -218,6 +264,10 @@ const RelayStationPage: React.FC = () => {
 
       if (parsedData.type === 'text' && parsedData.groupId === RELAY_GROUP_ID) {
         const textMessage: ChatTextMessage = parsedData
+        const nextRelayCode = extractRelayCode(textMessage.content)
+        if (nextRelayCode) {
+          setRelayCode(nextRelayCode)
+        }
         setMessages(prev => [...prev, textMessage])
         return
       }
@@ -228,8 +278,18 @@ const RelayStationPage: React.FC = () => {
         return
       }
 
+      if (parsedData.type === 'image' && parsedData.groupId === RELAY_GROUP_ID) {
+        const imageMessage: ChatImageMessage = parsedData
+        setMessages(prev => [...prev, imageMessage])
+        return
+      }
+
       if (parsedData.type === 'system') {
         const systemText = parsedData.payload.message
+        const nextRelayCode = extractRelayCode(systemText)
+        if (nextRelayCode) {
+          setRelayCode(nextRelayCode)
+        }
         setMessages(prev => [
           ...prev,
           {
@@ -245,7 +305,7 @@ const RelayStationPage: React.FC = () => {
       if (parsedData.type === 'message-history-res' && parsedData.payload.groupId === RELAY_GROUP_ID) {
         setMessages(
           parsedData.payload.messages.map(item => {
-            if (item.type === 'text' || item.type === 'file') {
+            if (item.type === 'text' || item.type === 'file' || item.type === 'image') {
               return item
             }
             return {
@@ -271,6 +331,39 @@ const RelayStationPage: React.FC = () => {
     setSelfId(userId)
   }, [userId])
 
+  const refreshRelayCode = useCallback(async () => {
+    setRelayCodeLoading(true)
+    try {
+      const res = await fetch(`${baseURL}/api/hub/code/refresh`, { method: 'POST' })
+      const data = await res.json()
+      if (data?.ok) {
+        setRelayCode(data.code)
+        message.success('配对码已刷新')
+      } else {
+        message.error('刷新配对码失败')
+      }
+    } catch {
+      message.error('请求失败，请检查服务连接')
+    } finally {
+      setRelayCodeLoading(false)
+    }
+  }, [baseURL, message])
+
+  const fetchRelayCode = useCallback(async () => {
+    setRelayCodeLoading(true)
+    try {
+      const res = await fetch(`${baseURL}/api/hub/code`)
+      const data = await res.json()
+      if (data?.ok) {
+        setRelayCode(data.code)
+      }
+    } catch {
+      // 忽略初始化错误
+    } finally {
+      setRelayCodeLoading(false)
+    }
+  }, [baseURL])
+
   const bootstrap = useCallback(() => {
     reconnectAttemptsRef.current = 0
     connectChatSocket()
@@ -284,6 +377,11 @@ const RelayStationPage: React.FC = () => {
     if (!host) return
     bootstrap()
   }, [bootstrap, host])
+
+  useEffect(() => {
+    if (!host) return
+    fetchRelayCode()
+  }, [fetchRelayCode, host])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -394,11 +492,42 @@ const RelayStationPage: React.FC = () => {
     }
   }
 
-  const handleDownload = (file: ChatFileMessage) => {
+  const handleDownload = (file: ChatFileMessage | ChatImageMessage) => {
     const anchor = document.createElement('a')
     anchor.href = file.content
-    anchor.download = file.fileName
+    anchor.download = file.type === 'file' ? file.fileName : `image-${file.id}.png`
     anchor.click()
+  }
+
+  const isImageFile = (fileType: string) => fileType.startsWith('image/')
+  const isVideoFile = (fileType: string) => fileType.startsWith('video/')
+
+  const handlePreviewMedia = (file: ChatFileMessage | ChatImageMessage) => {
+    if (file.type === 'image') {
+      setPreviewMedia({
+        type: 'image',
+        src: file.content,
+        fileName: `image-${file.id}`,
+      })
+      return
+    }
+
+    if (isImageFile(file.fileType)) {
+      setPreviewMedia({
+        type: 'image',
+        src: file.content,
+        fileName: file.fileName,
+      })
+      return
+    }
+
+    if (isVideoFile(file.fileType)) {
+      setPreviewMedia({
+        type: 'video',
+        src: file.content,
+        fileName: file.fileName,
+      })
+    }
   }
 
   const memberMap = useMemo(() => {
@@ -427,42 +556,8 @@ const RelayStationPage: React.FC = () => {
         bodyStyle={{ height: '100%', padding: 0, overflow: 'hidden' }}
       >
         <div className="h-full flex">
-          <div className="w-[300px] border-r border-slate-200 bg-white/80 backdrop-blur-md p-3 flex flex-col">
-            <Space direction="vertical" size={4}>
-              <Typography.Title level={4} style={{ margin: 0 }}>
-                <DeploymentUnitOutlined /> Relay Station Group
-              </Typography.Title>
-              <Space>
-                <Badge status={connected ? 'success' : connecting ? 'processing' : 'error'} />
-                <Typography.Text type="secondary">
-                  {connected ? 'Connected' : connecting ? 'Connecting' : 'Disconnected'}
-                </Typography.Text>
-              </Space>
-              <Typography.Text type="secondary">Host: {host}:4000</Typography.Text>
-              <Tag color="blue">Group: {RELAY_GROUP_ID}</Tag>
-            </Space>
-
-            <Space className="mt-3" wrap>
-              <Button icon={<ReloadOutlined />} onClick={bootstrap} loading={connecting}>
-                Reconnect
-              </Button>
-              <Button icon={<QrcodeOutlined />} onClick={() => setShowQRCode(true)}>
-                扫码连接
-              </Button>
-            </Space>
-
-            <Card className="mt-3" size="small" title="设备接入说明（API模式）">
-              <Space direction="vertical" size={4}>
-                <Typography.Text type="secondary">1) 扫码拿到电脑端 API 地址（不是 Web 页面）</Typography.Text>
-                <Typography.Text type="secondary">2) 先调用 `GET /api/hub/health` 验证可达</Typography.Text>
-                <Typography.Text type="secondary">3) 再走 `POST /api/hub/pair` 获取用户标识</Typography.Text>
-                <Typography.Text type="secondary">4) 使用 `WS /chat` 建连并 `join relay-station`</Typography.Text>
-                <Typography.Text code>{healthURL}</Typography.Text>
-                <Typography.Text code>{wsEndpoint}</Typography.Text>
-              </Space>
-            </Card>
-
-            <Card className="mt-3" size="small" title="已接入成员">
+          <div className="w-[280px] border-r border-slate-200 bg-white/80 backdrop-blur-md p-3 flex flex-col">
+            <Card size="small" title="已接入成员">
               <div className="grid grid-cols-3 gap-2">
                 <div className="rounded bg-slate-100 px-2 py-2 text-center">
                   <div className="text-xs text-slate-500">总数</div>
@@ -536,11 +631,17 @@ const RelayStationPage: React.FC = () => {
           <div className="flex-1 h-full flex flex-col bg-slate-50">
             <div className="h-14 px-4 border-b border-slate-200 bg-white flex items-center justify-between">
               <Typography.Title level={5} style={{ margin: 0 }}>
-                中转站群聊（与 ChatRoom 同群）
+                <DeploymentUnitOutlined /> 中转站群聊（与 ChatRoom 同群）
               </Typography.Title>
-              <Tag icon={<LinkOutlined />} color={connected ? 'blue' : 'default'}>
-                {connected ? 'Live sync with ChatRoom' : 'Waiting connection'}
-              </Tag>
+              <Space wrap>
+                <Badge status={connected ? 'success' : connecting ? 'processing' : 'error'} />
+                <Typography.Text type="secondary">
+                  {connected ? 'Connected' : connecting ? 'Connecting' : 'Disconnected'}
+                </Typography.Text>
+                <Button size="small" icon={<SettingOutlined />} onClick={() => setShowSettings(true)}>
+                  配置
+                </Button>
+              </Space>
             </div>
 
             <div className="flex-1 overflow-auto p-4 space-y-3">
@@ -575,16 +676,59 @@ const RelayStationPage: React.FC = () => {
                           <Typography.Text style={{ color: isSelf ? '#fff' : undefined }}>
                             {item.content}
                           </Typography.Text>
-                        ) : (
+                        ) : item.type === 'image' ? (
                           <div>
-                            {item.fileType.startsWith('image/') ? (
+                            <button
+                              type="button"
+                              className="block"
+                              onClick={() => handlePreviewMedia(item)}
+                              title="点击全屏预览"
+                            >
                               <img
                                 src={item.content}
-                                alt={item.fileName}
+                                alt={`image-${item.id}`}
                                 className="max-h-64 rounded-md border border-slate-200"
                               />
+                            </button>
+                            <div className="mb-2 text-xs text-slate-500">点击媒体可全屏预览</div>
+                            <Button size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(item)}>
+                              下载
+                            </Button>
+                          </div>
+                        ) : (
+                          <div>
+                            {isImageFile(item.fileType) ? (
+                              <button
+                                type="button"
+                                className="block"
+                                onClick={() => handlePreviewMedia(item)}
+                                title="点击全屏预览"
+                              >
+                                <img
+                                  src={item.content}
+                                  alt={item.fileName}
+                                  className="max-h-64 rounded-md border border-slate-200"
+                                />
+                              </button>
+                            ) : isVideoFile(item.fileType) ? (
+                              <button
+                                type="button"
+                                className="block"
+                                onClick={() => handlePreviewMedia(item)}
+                                title="点击全屏预览"
+                              >
+                                <video
+                                  src={item.content}
+                                  className="max-h-64 rounded-md border border-slate-200"
+                                  muted
+                                  playsInline
+                                />
+                              </button>
                             ) : (
                               <div className="text-sm mb-2">📎 {item.fileName}</div>
+                            )}
+                            {(isImageFile(item.fileType) || isVideoFile(item.fileType)) && (
+                              <div className="mb-2 text-xs text-slate-500">点击媒体可全屏预览</div>
                             )}
                             <Button size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(item)}>
                               下载
@@ -646,6 +790,169 @@ const RelayStationPage: React.FC = () => {
           </Card>
         </div>
       )}
+
+      <Drawer
+        title="配置"
+        onClose={() => setShowSettings(false)}
+        open={showSettings}
+        width={400}
+        bodyStyle={{ paddingBottom: '80px' }}
+      >
+        <Tabs
+          defaultActiveKey="pair"
+          items={[
+            {
+              key: 'control',
+              label: '控制',
+              children: (
+                <Space direction="vertical" className="w-full" size={12}>
+                  <Card size="small" title="会话状态">
+                    <Space direction="vertical" size={8}>
+                      <Space>
+                        <Badge status={connected ? 'success' : connecting ? 'processing' : 'error'} />
+                        <Typography.Text type="secondary">
+                          {connected ? 'Connected' : connecting ? 'Connecting' : 'Disconnected'}
+                        </Typography.Text>
+                      </Space>
+                      <Tag icon={<LinkOutlined />} color={connected ? 'blue' : 'default'}>
+                        {connected ? 'Live sync with ChatRoom' : 'Waiting connection'}
+                      </Tag>
+                    </Space>
+                  </Card>
+
+                  <Card size="small" title="快捷操作">
+                    <Space wrap>
+                      <Button icon={<ReloadOutlined />} onClick={bootstrap} loading={connecting}>
+                        Reconnect
+                      </Button>
+                      <Button icon={<QrcodeOutlined />} onClick={() => setShowQRCode(true)}>
+                        扫码连接
+                      </Button>
+                    </Space>
+                  </Card>
+                </Space>
+              ),
+            },
+            {
+              key: 'pair',
+              label: '配对',
+              children: (
+                <Space direction="vertical" className="w-full" size={16}>
+                  <div>
+                    <Typography.Text strong>配对码</Typography.Text>
+                    <Typography.Paragraph type="secondary" style={{ marginTop: '8px', marginBottom: '12px' }}>
+                      对方设备通过此码进行配对，每 5 分钟自动刷新；输入 `@getRelayCode` 也可重新查看当前码。
+                    </Typography.Paragraph>
+                    <div className="flex items-center gap-2">
+                      <Typography.Title
+                        level={2}
+                        code
+                        style={{
+                          margin: 0,
+                          fontFamily: 'monospace',
+                          letterSpacing: '8px',
+                          flex: 1,
+                          textAlign: 'center',
+                          padding: '12px',
+                          backgroundColor: '#f5f5f5',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        {relayCode || '---'}
+                      </Typography.Title>
+                      <Button
+                        icon={<ReloadOutlined />}
+                        onClick={refreshRelayCode}
+                        loading={relayCodeLoading}
+                        type="primary"
+                      >
+                        刷新
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Card size="small" title="当前会话">
+                    <Space direction="vertical" size={6}>
+                      <Typography.Text type="secondary">Host: {host}:4000</Typography.Text>
+                      <Typography.Text type="secondary">Group: {RELAY_GROUP_ID}</Typography.Text>
+                      <Typography.Text type="secondary">Token 有效期: 12 小时</Typography.Text>
+                    </Space>
+                  </Card>
+                </Space>
+              ),
+            },
+            {
+              key: 'guide',
+              label: '接入',
+              children: (
+                <Space direction="vertical" className="w-full" size={12}>
+                  <Card size="small" title="设备接入说明（API 模式）">
+                    <Space direction="vertical" size={4}>
+                      <Typography.Text type="secondary">1) 扫码拿到电脑端 API 地址（不是 Web 页面）</Typography.Text>
+                      <Typography.Text type="secondary">2) 先调用 `GET /api/hub/health` 验证可达</Typography.Text>
+                      <Typography.Text type="secondary">3) 再走 `POST /api/hub/pair`，并带上当前配对码</Typography.Text>
+                      <Typography.Text type="secondary">4) 使用 `WS /chat` 建连并 `join relay-station`</Typography.Text>
+                    </Space>
+                  </Card>
+                  <Card size="small" title="连接地址">
+                    <Space direction="vertical" size={8} className="w-full">
+                      <Typography.Text code>{healthURL}</Typography.Text>
+                      <Typography.Text code>{wsEndpoint}</Typography.Text>
+                    </Space>
+                  </Card>
+                </Space>
+              ),
+            },
+            {
+              key: 'command',
+              label: '命令',
+              children: (
+                <Space direction="vertical" className="w-full" size={12}>
+                  <Card size="small" title="快速命令">
+                    <Space direction="vertical" className="w-full">
+                      <div className="flex items-center gap-2 rounded bg-slate-100 p-2">
+                        <Tag color="blue">@getRelayCode</Tag>
+                        <Typography.Text type="secondary" className="flex-1">
+                          显示当前配对码
+                        </Typography.Text>
+                      </div>
+                      <div className="flex items-center gap-2 rounded bg-slate-100 p-2">
+                        <Tag color="green">@getWifiIp</Tag>
+                        <Typography.Text type="secondary" className="flex-1">
+                          显示设备 IP 信息
+                        </Typography.Text>
+                      </div>
+                    </Space>
+                  </Card>
+                  <Card size="small" title="技术细节">
+                    <Space direction="vertical" size={6}>
+                      <Typography.Text type="secondary">API 基础 URL: {baseURL}</Typography.Text>
+                      <Typography.Text type="secondary">WebSocket 端点: {wsEndpoint}</Typography.Text>
+                      <Typography.Text type="secondary">配对需要正确的配对码</Typography.Text>
+                    </Space>
+                  </Card>
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </Drawer>
+
+      <Modal
+        open={!!previewMedia}
+        title={previewMedia?.fileName || '媒体预览'}
+        onCancel={() => setPreviewMedia(null)}
+        footer={null}
+        width="92vw"
+        centered
+        destroyOnClose
+      >
+        {previewMedia?.type === 'image' ? (
+          <img src={previewMedia.src} alt={previewMedia.fileName} className="mx-auto max-h-[78vh] max-w-full" />
+        ) : previewMedia?.type === 'video' ? (
+          <video src={previewMedia.src} controls autoPlay className="mx-auto max-h-[78vh] max-w-full" />
+        ) : null}
+      </Modal>
     </div>
   )
 }

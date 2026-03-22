@@ -45,5 +45,26 @@ export async function kickFromRelayGroupInternal(userId: string) {
   } as const
 }
 
+export async function broadcastRelaySystemMessageInternal(message: string) {
+  const relayGroup = await groupService.getGroup(RELAY_STATION_GROUP_ID)
+  if (!relayGroup) {
+    return {
+      ok: false,
+      reason: 'GROUP_NOT_FOUND',
+    } as const
+  }
+
+  await groupService.broadcast(RELAY_STATION_GROUP_ID, {
+    type: 'system',
+    payload: {
+      message,
+    },
+  })
+
+  return {
+    ok: true,
+  } as const
+}
+
 // 导出dispatcher
 export const dispatcher = groupController.getDispatcher()

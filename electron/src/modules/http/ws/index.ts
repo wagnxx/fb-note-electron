@@ -1,6 +1,11 @@
 import { bindServer } from './server'
 import { Server as HTTPServer } from 'http'
-import { getRelayGroupInternal, kickFromRelayGroupInternal, wsManager } from './manages/ctx'
+import {
+  broadcastRelaySystemMessageInternal,
+  getRelayGroupInternal,
+  kickFromRelayGroupInternal,
+  wsManager,
+} from './manages/ctx'
 
 export function bindWSServer(httpServer: HTTPServer) {
   bindServer(httpServer)
@@ -19,5 +24,8 @@ export const wsPublicApi = {
   },
   async kickFromRelayGroup(userId: string) {
     return kickFromRelayGroupInternal(userId)
+  },
+  async broadcastRelaySystemMessage(message: string) {
+    return broadcastRelaySystemMessageInternal(message)
   },
 }

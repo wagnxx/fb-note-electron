@@ -13,6 +13,7 @@ import { IUserService } from '../../interfaces/services/IUserService'
 const FUNCTION_COMMANDS = {
   getWifiIp: '@getWifiIp',
   getUsers: '@getUsers',
+  getRelayCode: '@getRelayCode',
 }
 @provide(TYPES.MessageService)
 export class MessageService implements IMessageService {
@@ -79,6 +80,28 @@ export class MessageService implements IMessageService {
         `Your IP Address: ${ip || 'Unknown'}\n` +
         `Router Address: ${gateway || 'Unknown'}\n` +
         `Make sure other devices are connected to the same network segment.`
+
+      const funcMessage = new TextMessage(`${id}-sys-resp`, groupId, systemId, Date.now(), resContent)
+
+      this.messageRepository.add(funcMessage)
+      const funcMessage2Client: ServerToClientMessage = {
+        type,
+        payload: funcMessage,
+      }
+      this?.groupService?.broadcast(groupId, funcMessage2Client)
+    }
+
+    if (type === 'text' && content === FUNCTION_COMMANDS.getRelayCode) {
+      const senderUser = await this.userService.getUser(sender)
+      if (!senderUser) return
+
+      const systemId = this?.groupService?.getSystemId()
+      if (!systemId) return
+
+      const { relayDiscovery } = await import('@/modules/http/relay/discoveryService')
+      const pairCode = relayDiscovery.getCode()
+
+      const resContent = `@${senderUser.name}\nRelay Pair Code: ${pairCode}\n(Refresh in 5 min)`
 
       const funcMessage = new TextMessage(`${id}-sys-resp`, groupId, systemId, Date.now(), resContent)
 

@@ -1,6 +1,7 @@
 import { getNetworkInfo } from '@/utils/netUtils'
 import { Request, Response, Router } from 'express'
 import { relaySessionManager } from '../../relay/sessionManager'
+import { relayDiscovery } from '../../relay/discoveryService'
 // relay 相关公共接口当前为临时过渡方案，后续会整体融入正式架构。
 import { wsPublicApi } from '../../ws'
 
@@ -34,7 +35,27 @@ router.get('/health', async (_request: Request, response: Response) => {
 })
 
 router.post('/pair', (request: Request, response: Response) => {
-  const { deviceId, deviceName } = request.body || {}
+  const { pairCode, deviceId, deviceName } = request.body || {}
+
+  // 校验 pairCode
+  if (!pairCode || typeof pairCode !== 'string') {
+    response.status(400).json({
+      ok: false,
+      code: 'INVALID_PAIR_CODE',
+      message: 'pairCode is required',
+    })
+    return
+  }
+
+  if (pairCode !== relayDiscovery.getCode()) {
+    response.status(403).json({
+      ok: false,
+      code: 'PAIR_CODE_MISMATCH',
+      message: 'pairCode is invalid',
+    })
+    return
+  }
+
   if (!deviceId || typeof deviceId !== 'string') {
     response.status(400).json({
       ok: false,
@@ -141,6 +162,21 @@ router.post('/kick', async (request: Request, response: Response) => {
   response.status(200).json({
     ok: true,
     userId,
+  })
+})
+
+router.get('/code', (_request: Request, response: Response) => {
+  response.status(200).json({
+    ok: true,
+    code: relayDiscovery.getCode(),
+  })
+})
+
+router.post('/code/refresh', (_request: Request, response: Response) => {
+  const newCode = relayDiscovery.refreshCode()
+  response.status(200).json({
+    ok: true,
+    code: newCode,
   })
 })
 

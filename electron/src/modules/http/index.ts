@@ -21,6 +21,11 @@ export class HttpModule extends BaseModule {
     const app = createApp()
     const server = app.listen(4000, () => {
       console.log('🚀 Server running at http://localhost:4000')
+
+      // 启动中继发现服务
+      const { relayDiscovery } = require('./relay/discoveryService')
+      const { wsPublicApi } = require('./ws')
+      relayDiscovery.publish(4000, wsPublicApi)
     })
 
     const { bindWSServer } = await import('./ws')
@@ -32,6 +37,10 @@ export class HttpModule extends BaseModule {
 
   async stop(): Promise<void> {
     if (!this.server) return
+
+    // 停止中继发现服务
+    const { relayDiscovery } = require('./relay/discoveryService')
+    relayDiscovery.unpublish()
 
     console.log('🛑 Closing HTTP server...')
     await new Promise<void>((resolve, reject) => {
