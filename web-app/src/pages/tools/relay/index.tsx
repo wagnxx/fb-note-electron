@@ -149,7 +149,9 @@ const RelayStationPage: React.FC = () => {
     type: 'image' | 'video'
     src: string
     fileName: string
+    fileRef: ChatFileMessage | ChatImageMessage
   } | null>(null)
+  const [previewScale, setPreviewScale] = useState(1)
 
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimerRef = useRef<number | null>(null)
@@ -503,11 +505,13 @@ const RelayStationPage: React.FC = () => {
   const isVideoFile = (fileType: string) => fileType.startsWith('video/')
 
   const handlePreviewMedia = (file: ChatFileMessage | ChatImageMessage) => {
+    setPreviewScale(1)
     if (file.type === 'image') {
       setPreviewMedia({
         type: 'image',
         src: file.content,
         fileName: `image-${file.id}`,
+        fileRef: file,
       })
       return
     }
@@ -517,6 +521,7 @@ const RelayStationPage: React.FC = () => {
         type: 'image',
         src: file.content,
         fileName: file.fileName,
+        fileRef: file,
       })
       return
     }
@@ -526,6 +531,7 @@ const RelayStationPage: React.FC = () => {
         type: 'video',
         src: file.content,
         fileName: file.fileName,
+        fileRef: file,
       })
     }
   }
@@ -677,7 +683,7 @@ const RelayStationPage: React.FC = () => {
                             {item.content}
                           </Typography.Text>
                         ) : item.type === 'image' ? (
-                          <div>
+                          <div className="group relative inline-block">
                             <button
                               type="button"
                               className="block"
@@ -690,49 +696,77 @@ const RelayStationPage: React.FC = () => {
                                 className="max-h-64 rounded-md border border-slate-200"
                               />
                             </button>
-                            <div className="mb-2 text-xs text-slate-500">点击媒体可全屏预览</div>
-                            <Button size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(item)}>
-                              下载
-                            </Button>
+                            <button
+                              type="button"
+                              className="absolute bottom-1 right-1 bg-black/40 hover:bg-black/60 text-white rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => handleDownload(item)}
+                              title="下载"
+                            >
+                              <DownloadOutlined style={{ fontSize: 14 }} />
+                            </button>
                           </div>
                         ) : (
                           <div>
                             {isImageFile(item.fileType) ? (
-                              <button
-                                type="button"
-                                className="block"
-                                onClick={() => handlePreviewMedia(item)}
-                                title="点击全屏预览"
-                              >
-                                <img
-                                  src={item.content}
-                                  alt={item.fileName}
-                                  className="max-h-64 rounded-md border border-slate-200"
-                                />
-                              </button>
+                              <div className="group relative inline-block">
+                                <button
+                                  type="button"
+                                  className="block"
+                                  onClick={() => handlePreviewMedia(item)}
+                                  title="点击全屏预览"
+                                >
+                                  <img
+                                    src={item.content}
+                                    alt={item.fileName}
+                                    className="max-h-64 rounded-md border border-slate-200"
+                                  />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="absolute bottom-1 right-1 bg-black/40 hover:bg-black/60 text-white rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => handleDownload(item)}
+                                  title="下载"
+                                >
+                                  <DownloadOutlined style={{ fontSize: 14 }} />
+                                </button>
+                              </div>
                             ) : isVideoFile(item.fileType) ? (
-                              <button
-                                type="button"
-                                className="block"
-                                onClick={() => handlePreviewMedia(item)}
-                                title="点击全屏预览"
-                              >
-                                <video
-                                  src={item.content}
-                                  className="max-h-64 rounded-md border border-slate-200"
-                                  muted
-                                  playsInline
-                                />
-                              </button>
+                              <div className="group relative inline-block">
+                                <button
+                                  type="button"
+                                  className="block"
+                                  onClick={() => handlePreviewMedia(item)}
+                                  title="点击全屏预览"
+                                >
+                                  <video
+                                    src={item.content}
+                                    className="max-h-64 rounded-md border border-slate-200"
+                                    muted
+                                    playsInline
+                                  />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="absolute bottom-1 right-1 bg-black/40 hover:bg-black/60 text-white rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => handleDownload(item)}
+                                  title="下载"
+                                >
+                                  <DownloadOutlined style={{ fontSize: 14 }} />
+                                </button>
+                              </div>
                             ) : (
-                              <div className="text-sm mb-2">📎 {item.fileName}</div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span>📎 {item.fileName}</span>
+                                <button
+                                  type="button"
+                                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                                  onClick={() => handleDownload(item)}
+                                  title="下载"
+                                >
+                                  <DownloadOutlined style={{ fontSize: 14 }} />
+                                </button>
+                              </div>
                             )}
-                            {(isImageFile(item.fileType) || isVideoFile(item.fileType)) && (
-                              <div className="mb-2 text-xs text-slate-500">点击媒体可全屏预览</div>
-                            )}
-                            <Button size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(item)}>
-                              下载
-                            </Button>
                           </div>
                         )}
 
@@ -940,15 +974,73 @@ const RelayStationPage: React.FC = () => {
 
       <Modal
         open={!!previewMedia}
-        title={previewMedia?.fileName || '媒体预览'}
-        onCancel={() => setPreviewMedia(null)}
-        footer={null}
+        title={
+          <div className="flex items-center gap-2">
+            <span>{previewMedia?.fileName || '媒体预览'}</span>
+            {previewMedia?.type === 'image' && (
+              <div className="flex items-center gap-1 ml-2">
+                <button
+                  type="button"
+                  className="text-xs px-2 py-0.5 rounded border border-gray-300 hover:bg-gray-100 transition-colors"
+                  onClick={() => setPreviewScale(s => Math.max(0.2, +(s - 0.25).toFixed(2)))}
+                >
+                  −
+                </button>
+                <span className="text-xs text-gray-500 min-w-[40px] text-center">
+                  {Math.round(previewScale * 100)}%
+                </span>
+                <button
+                  type="button"
+                  className="text-xs px-2 py-0.5 rounded border border-gray-300 hover:bg-gray-100 transition-colors"
+                  onClick={() => setPreviewScale(s => Math.min(5, +(s + 0.25).toFixed(2)))}
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  className="text-xs px-2 py-0.5 rounded border border-gray-300 hover:bg-gray-100 transition-colors ml-1"
+                  onClick={() => setPreviewScale(1)}
+                >
+                  1:1
+                </button>
+              </div>
+            )}
+          </div>
+        }
+        onCancel={() => {
+          setPreviewMedia(null)
+          setPreviewScale(1)
+        }}
+        footer={
+          <Button icon={<DownloadOutlined />} onClick={() => previewMedia && handleDownload(previewMedia.fileRef)}>
+            下载
+          </Button>
+        }
         width="92vw"
         centered
         destroyOnClose
       >
         {previewMedia?.type === 'image' ? (
-          <img src={previewMedia.src} alt={previewMedia.fileName} className="mx-auto max-h-[78vh] max-w-full" />
+          <div
+            className="overflow-auto flex items-center justify-center"
+            style={{ maxHeight: '78vh', cursor: previewScale > 1 ? 'grab' : 'default' }}
+            onWheel={e => {
+              e.preventDefault()
+              const delta = e.deltaY > 0 ? -0.1 : 0.1
+              setPreviewScale(s => Math.min(5, Math.max(0.2, +(s + delta).toFixed(2))))
+            }}
+          >
+            <img
+              src={previewMedia.src}
+              alt={previewMedia.fileName}
+              style={{
+                transform: `scale(${previewScale})`,
+                transformOrigin: 'center center',
+                transition: 'transform 0.15s ease',
+                maxWidth: previewScale <= 1 ? '100%' : 'none',
+              }}
+            />
+          </div>
         ) : previewMedia?.type === 'video' ? (
           <video src={previewMedia.src} controls autoPlay className="mx-auto max-h-[78vh] max-w-full" />
         ) : null}
