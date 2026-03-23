@@ -32,6 +32,14 @@ import {
   SettingOutlined,
 } from '@ant-design/icons'
 import { QRCodeSVG } from 'qrcode.react'
+import {
+  ChatFileMessage,
+  ChatImageMessage,
+  ChatTextMessage,
+  ClientMessagePayloadMap,
+  ServerMessagePayloadMap,
+  ServerToClientMessage,
+} from '@shared/types'
 
 type RelayMember = {
   id: string
@@ -46,35 +54,6 @@ type RelayGroup = {
   members: RelayMember[]
 }
 
-type ChatTextMessage = {
-  type: 'text'
-  id: string
-  sender: string
-  groupId: string
-  timestamp: number
-  content: string
-}
-
-type ChatFileMessage = {
-  type: 'file'
-  id: string
-  sender: string
-  groupId: string
-  timestamp: number
-  fileName: string
-  fileType: string
-  content: string
-}
-
-type ChatImageMessage = {
-  type: 'image'
-  id: string
-  sender: string
-  groupId: string
-  timestamp: number
-  content: string
-}
-
 type ChatSystemMessage = {
   type: 'system'
   payload: {
@@ -84,10 +63,7 @@ type ChatSystemMessage = {
 
 type HistoryResponse = {
   type: 'message-history-res'
-  payload: {
-    groupId: string
-    messages: (ChatTextMessage | ChatImageMessage | ChatFileMessage)[]
-  }
+  payload: ServerMessagePayloadMap['message-history-res']
 }
 
 type GroupsResponse = {
@@ -104,6 +80,15 @@ type ChatWSMessage =
   | ChatSystemMessage
   | HistoryResponse
   | GroupsResponse
+
+type RelayInboundMessage =
+  | ChatWSMessage
+  | ServerToClientMessage<'text'>
+  | ServerToClientMessage<'image'>
+  | ServerToClientMessage<'file'>
+  | ServerToClientMessage<'system'>
+  | ServerToClientMessage<'message-history-res'>
+  | ServerToClientMessage<'groups-res'>
 
 // 临时方案备注：当前 relay 通过过渡接口接入。
 // 后续并入统一架构时，请评估并按需还原/收敛以下文件：
@@ -125,6 +110,41 @@ const HEARTBEAT_INTERVAL_MS = 30000
 const extractRelayCode = (content: string) => {
   const matched = content.match(/Relay Pair Code(?: Updated)?:\s*(\d{6})/)
   return matched?.[1] || ''
+}
+
+const unwrapInboundMessage = (message: RelayInboundMessage): ChatWSMessage => {
+  if ('payload' in message) {
+    if (message.type === 'text' || message.type === 'image' || message.type === 'file') {
+      return message.payload as ChatTextMessage | ChatImageMessage | ChatFileMessage
+    }
+
+    if (message.type === 'message-history-res') {
+      return {
+        type: 'message-history-res',
+        payload: message.payload,
+      }
+    }
+
+    if (message.type === 'system') {
+      return {
+        type: 'system',
+        payload: {
+          message: message.payload.message,
+        },
+      }
+    }
+
+    if (message.type === 'groups-res') {
+      return {
+        type: 'groups-res',
+        payload: {
+          groups: message.payload.groups as RelayGroup[],
+        },
+      }
+    }
+  }
+
+  return message as ChatWSMessage
 }
 
 const RelayStationPage: React.FC = () => {
@@ -172,24 +192,23 @@ const RelayStationPage: React.FC = () => {
     return next
   }, [])
 
+  const sendPayload = useCallback(
+    <T extends keyof ClientMessagePayloadMap>(type: T, payload: ClientMessagePayloadMap[T]) => {
+      const ws = wsRef.current
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        message.warning('连接未就绪')
+        return false
+      }
+      ws.send(JSON.stringify({ type, payload }))
+      return true
+    },
+    [message],
+  )
+
   const requestRelayGroupData = useCallback(() => {
-    const ws = wsRef.current
-    if (!ws || ws.readyState !== WebSocket.OPEN) return
-
-    ws.send(
-      JSON.stringify({
-        type: 'groups-req',
-        payload: {},
-      }),
-    )
-
-    ws.send(
-      JSON.stringify({
-        type: 'message-history-req',
-        payload: { groupId: RELAY_GROUP_ID },
-      }),
-    )
-  }, [])
+    sendPayload('groups-req', {})
+    sendPayload('message-history-req', { groupId: RELAY_GROUP_ID })
+  }, [sendPayload])
 
   const connectChatSocket = useCallback(() => {
     if (!host) return
@@ -209,26 +228,16 @@ const RelayStationPage: React.FC = () => {
       setConnecting(false)
       reconnectAttemptsRef.current = 0
 
-      ws.send(
-        JSON.stringify({
-          type: 'init-req',
-          payload: {
-            id: userId,
-            name: selfName,
-          },
-        }),
-      )
+      sendPayload('init-req', {
+        id: userId,
+        name: selfName,
+      })
 
-      ws.send(
-        JSON.stringify({
-          type: 'join',
-          payload: {
-            username: selfName,
-            userId,
-            groupId: RELAY_GROUP_ID,
-          },
-        }),
-      )
+      sendPayload('join', {
+        username: selfName,
+        userId,
+        groupId: RELAY_GROUP_ID,
+      })
 
       requestRelayGroupData()
     }
@@ -257,15 +266,17 @@ const RelayStationPage: React.FC = () => {
 
     ws.onmessage = event => {
       const rawData = event.data
-      let parsedData: ChatWSMessage
+      let parsedData: RelayInboundMessage
       try {
-        parsedData = JSON.parse(rawData) as ChatWSMessage
+        parsedData = JSON.parse(rawData) as RelayInboundMessage
       } catch {
         return
       }
 
-      if (parsedData.type === 'text' && parsedData.groupId === RELAY_GROUP_ID) {
-        const textMessage: ChatTextMessage = parsedData
+      const normalizedData = unwrapInboundMessage(parsedData)
+
+      if (normalizedData.type === 'text' && normalizedData.groupId === RELAY_GROUP_ID) {
+        const textMessage: ChatTextMessage = normalizedData
         const nextRelayCode = extractRelayCode(textMessage.content)
         if (nextRelayCode) {
           setRelayCode(nextRelayCode)
@@ -274,20 +285,20 @@ const RelayStationPage: React.FC = () => {
         return
       }
 
-      if (parsedData.type === 'file' && parsedData.groupId === RELAY_GROUP_ID) {
-        const fileMessage: ChatFileMessage = parsedData
+      if (normalizedData.type === 'file' && normalizedData.groupId === RELAY_GROUP_ID) {
+        const fileMessage: ChatFileMessage = normalizedData
         setMessages(prev => [...prev, fileMessage])
         return
       }
 
-      if (parsedData.type === 'image' && parsedData.groupId === RELAY_GROUP_ID) {
-        const imageMessage: ChatImageMessage = parsedData
+      if (normalizedData.type === 'image' && normalizedData.groupId === RELAY_GROUP_ID) {
+        const imageMessage: ChatImageMessage = normalizedData
         setMessages(prev => [...prev, imageMessage])
         return
       }
 
-      if (parsedData.type === 'system') {
-        const systemText = parsedData.payload.message
+      if (normalizedData.type === 'system') {
+        const systemText = normalizedData.payload.message
         const nextRelayCode = extractRelayCode(systemText)
         if (nextRelayCode) {
           setRelayCode(nextRelayCode)
@@ -304,9 +315,9 @@ const RelayStationPage: React.FC = () => {
         return
       }
 
-      if (parsedData.type === 'message-history-res' && parsedData.payload.groupId === RELAY_GROUP_ID) {
+      if (normalizedData.type === 'message-history-res' && normalizedData.payload.groupId === RELAY_GROUP_ID) {
         setMessages(
-          parsedData.payload.messages.map(item => {
+          normalizedData.payload.messages.map(item => {
             if (item.type === 'text' || item.type === 'file' || item.type === 'image') {
               return item
             }
@@ -320,12 +331,12 @@ const RelayStationPage: React.FC = () => {
         return
       }
 
-      if (parsedData.type === 'groups-res') {
-        const relayGroup = parsedData.payload.groups.find(group => group.id === RELAY_GROUP_ID)
+      if (normalizedData.type === 'groups-res') {
+        const relayGroup = normalizedData.payload.groups.find(group => group.id === RELAY_GROUP_ID)
         setMembers(relayGroup?.members || [])
       }
     }
-  }, [host, message, requestRelayGroupData, selfName, userId])
+  }, [host, message, requestRelayGroupData, selfName, sendPayload, userId])
 
   const init = useCallback(async () => {
     const ip = await getWifi().catch(() => '')
@@ -415,28 +426,18 @@ const RelayStationPage: React.FC = () => {
     }
   }, [])
 
-  const sendPayload = (payload: any) => {
-    const ws = wsRef.current
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      message.warning('连接未就绪')
-      return
-    }
-    ws.send(JSON.stringify(payload))
-  }
-
   const handleSendText = () => {
     if (!text.trim()) return
-    sendPayload({
+    const sent = sendPayload('text', {
       type: 'text',
-      payload: {
-        type: 'text',
-        id: `txt_${Date.now()}`,
-        groupId: RELAY_GROUP_ID,
-        sender: userId,
-        content: text,
-        timestamp: Date.now(),
-      },
+      id: `txt_${Date.now()}`,
+      groupId: RELAY_GROUP_ID,
+      sender: userId,
+      content: text,
+      timestamp: Date.now(),
     })
+    if (!sent) return
+
     setText('')
   }
 
@@ -452,18 +453,15 @@ const RelayStationPage: React.FC = () => {
     setUploading(true)
     try {
       const content = await fileToDataURL(file)
-      sendPayload({
+      sendPayload('file', {
+        id: `file_${Date.now()}`,
+        groupId: RELAY_GROUP_ID,
+        sender: userId,
         type: 'file',
-        payload: {
-          id: `file_${Date.now()}`,
-          groupId: RELAY_GROUP_ID,
-          sender: userId,
-          type: 'file',
-          content,
-          fileName: file.name,
-          fileType: file.type || 'application/octet-stream',
-          timestamp: Date.now(),
-        },
+        content,
+        fileName: file.name,
+        fileType: file.type || 'application/octet-stream',
+        timestamp: Date.now(),
       })
     } catch {
       message.error('文件读取失败')

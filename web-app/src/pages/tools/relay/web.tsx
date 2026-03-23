@@ -1,35 +1,19 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { App, Button, Card, Empty, Input, Space, Tag, Typography } from 'antd'
 import { CopyOutlined, SendOutlined } from '@ant-design/icons'
 import { copyText } from '@/utils/utilsClipboard'
-
-type ChatTextMessage = {
-  type: 'text'
-  id: string
-  sender: string
-  groupId: string
-  timestamp: number
-  content: string
-}
-
-type ChatFileMessage = {
-  type: 'file'
-  id: string
-  sender: string
-  groupId: string
-  timestamp: number
-  fileName: string
-  fileType: string
-  content: string
-}
+import {
+  ChatFileMessage,
+  ChatTextMessage,
+  ClientMessagePayloadMap,
+  ServerMessagePayloadMap,
+  ServerToClientMessage,
+} from '@shared/types'
 
 type MessageHistoryResponse = {
   type: 'message-history-res'
-  payload: {
-    groupId: string
-    messages: (ChatTextMessage | ChatFileMessage)[]
-  }
+  payload: ServerMessagePayloadMap['message-history-res']
 }
 
 type SystemMessage = {
@@ -40,6 +24,13 @@ type SystemMessage = {
 }
 
 type WsMessage = ChatTextMessage | ChatFileMessage | MessageHistoryResponse | SystemMessage
+
+type RelayInboundMessage =
+  | WsMessage
+  | ServerToClientMessage<'text'>
+  | ServerToClientMessage<'file'>
+  | ServerToClientMessage<'message-history-res'>
+  | ServerToClientMessage<'system'>
 
 const RELAY_GROUP_ID = 'relay-station'
 const MOBILE_RELAY_USER_ID_KEY = 'relay.mobile.web.user.id'
@@ -64,6 +55,46 @@ const RelayWebConnectPage: React.FC = () => {
     return next
   }, [])
 
+  const sendPayload = useCallback(
+    <T extends keyof ClientMessagePayloadMap>(type: T, payload: ClientMessagePayloadMap[T]) => {
+      const ws = wsRef.current
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        message.warning('连接未就绪')
+        return false
+      }
+
+      ws.send(JSON.stringify({ type, payload }))
+      return true
+    },
+    [message],
+  )
+
+  const unwrapInbound = (message: RelayInboundMessage): WsMessage | null => {
+    if ('payload' in message) {
+      if (message.type === 'text' || message.type === 'file') {
+        return message.payload as ChatTextMessage | ChatFileMessage
+      }
+
+      if (message.type === 'message-history-res') {
+        return {
+          type: 'message-history-res',
+          payload: message.payload,
+        }
+      }
+
+      if (message.type === 'system') {
+        return {
+          type: 'system',
+          payload: {
+            message: message.payload.message,
+          },
+        }
+      }
+    }
+
+    return message as WsMessage
+  }
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages])
@@ -77,35 +108,20 @@ const RelayWebConnectPage: React.FC = () => {
     ws.onopen = () => {
       setConnected(true)
 
-      ws.send(
-        JSON.stringify({
-          type: 'init-req',
-          payload: {
-            id: userId,
-            name: 'Mobile Web',
-          },
-        }),
-      )
+      sendPayload('init-req', {
+        id: userId,
+        name: 'Mobile Web',
+      })
 
-      ws.send(
-        JSON.stringify({
-          type: 'join',
-          payload: {
-            username: 'Mobile Web',
-            userId,
-            groupId: RELAY_GROUP_ID,
-          },
-        }),
-      )
+      sendPayload('join', {
+        username: 'Mobile Web',
+        userId,
+        groupId: RELAY_GROUP_ID,
+      })
 
-      ws.send(
-        JSON.stringify({
-          type: 'message-history-req',
-          payload: {
-            groupId: RELAY_GROUP_ID,
-          },
-        }),
-      )
+      sendPayload('message-history-req', {
+        groupId: RELAY_GROUP_ID,
+      })
     }
 
     ws.onclose = () => {
@@ -117,21 +133,24 @@ const RelayWebConnectPage: React.FC = () => {
     }
 
     ws.onmessage = event => {
-      let parsed: WsMessage
+      let parsed: RelayInboundMessage
       try {
-        parsed = JSON.parse(event.data) as WsMessage
+        parsed = JSON.parse(event.data) as RelayInboundMessage
       } catch {
         return
       }
 
-      if (parsed.type === 'text' && parsed.groupId === RELAY_GROUP_ID) {
-        const textMessage: ChatTextMessage = parsed
+      const normalized = unwrapInbound(parsed)
+      if (!normalized) return
+
+      if (normalized.type === 'text' && normalized.groupId === RELAY_GROUP_ID) {
+        const textMessage: ChatTextMessage = normalized
         setMessages(prev => [...prev, textMessage])
         return
       }
 
-      if (parsed.type === 'system') {
-        const systemText = parsed.payload.message
+      if (normalized.type === 'system') {
+        const systemText = normalized.payload.message
         setMessages(prev => [
           ...prev,
           {
@@ -143,37 +162,28 @@ const RelayWebConnectPage: React.FC = () => {
         return
       }
 
-      if (parsed.type === 'message-history-res' && parsed.payload.groupId === RELAY_GROUP_ID) {
-        setMessages(parsed.payload.messages.filter((item): item is ChatTextMessage => item.type === 'text'))
+      if (normalized.type === 'message-history-res' && normalized.payload.groupId === RELAY_GROUP_ID) {
+        setMessages(normalized.payload.messages.filter((item): item is ChatTextMessage => item.type === 'text'))
       }
     }
 
     return () => {
       ws.close()
     }
-  }, [host, userId, wsURL])
+  }, [host, sendPayload, userId, wsURL])
 
   const sendText = () => {
     if (!input.trim()) return
-    const ws = wsRef.current
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      message.warning('连接未就绪')
-      return
-    }
+    const ok = sendPayload('text', {
+      type: 'text',
+      id: `txt-${Date.now()}`,
+      groupId: RELAY_GROUP_ID,
+      sender: userId,
+      content: input,
+      timestamp: Date.now(),
+    })
+    if (!ok) return
 
-    ws.send(
-      JSON.stringify({
-        type: 'text',
-        payload: {
-          type: 'text',
-          id: `txt-${Date.now()}`,
-          groupId: RELAY_GROUP_ID,
-          sender: userId,
-          content: input,
-          timestamp: Date.now(),
-        },
-      }),
-    )
     setInput('')
   }
 
