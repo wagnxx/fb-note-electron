@@ -33,6 +33,10 @@ export interface ChatFileMessage extends ChatBaseMessage {
   fileName: string
   fileType: string
   content: string
+  transferMode?: 'inline' | 'remote'
+  fileId?: string
+  size?: number
+  downloadUrl?: string
 }
 
 export type ChatMessage = ChatTextMessage | ChatImageMessage | ChatFileMessage

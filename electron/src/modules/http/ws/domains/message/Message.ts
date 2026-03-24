@@ -25,6 +25,10 @@ export class FileMessage extends Message {
     content: string,
     public fileName: string,
     public fileType: string,
+    public transferMode?: 'inline' | 'remote',
+    public fileId?: string,
+    public size?: number,
+    public downloadUrl?: string,
   ) {
     super(id, groupId, sender, timestamp, 'file', content)
   }

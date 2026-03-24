@@ -1,7 +1,8 @@
 import { getNetworkInfo } from '@/utils/netUtils'
-import { Request, Response, Router } from 'express'
+import express, { Request, Response, Router } from 'express'
 import { relaySessionManager } from '../../relay/sessionManager'
 import { relayDiscovery } from '../../relay/discoveryService'
+import { relayFileStore } from '../../relay/fileStore'
 // relay 相关公共接口当前为临时过渡方案，后续会整体融入正式架构。
 import { wsPublicApi } from '../../ws'
 
@@ -178,6 +179,93 @@ router.post('/code/refresh', (_request: Request, response: Response) => {
     ok: true,
     code: newCode,
   })
+})
+
+router.post('/files', express.raw({ type: 'application/octet-stream', limit: '512mb' }), async (request, response) => {
+  const fileNameHeader = String(request.headers['x-relay-file-name'] || '').trim()
+  const fileType = String(request.headers['x-relay-file-type'] || 'application/octet-stream').trim()
+  const uploadedBy = String(request.headers['x-relay-user-id'] || '').trim() || undefined
+
+  if (!fileNameHeader) {
+    response.status(400).json({
+      ok: false,
+      code: 'INVALID_FILE_NAME',
+      message: 'x-relay-file-name is required',
+    })
+    return
+  }
+
+  const body = request.body
+  if (!Buffer.isBuffer(body) || body.length === 0) {
+    response.status(400).json({
+      ok: false,
+      code: 'INVALID_FILE_BODY',
+      message: 'file binary body is required',
+    })
+    return
+  }
+
+  let fileName = fileNameHeader
+  try {
+    fileName = decodeURIComponent(fileNameHeader)
+  } catch {
+    // ignore decode error, fallback to header raw value
+  }
+
+  try {
+    const stored = await relayFileStore.saveBuffer({
+      fileName,
+      fileType,
+      buffer: body,
+      uploadedBy,
+    })
+
+    const host = request.get('host') || '<LAN_IP>:4000'
+    const protocol = request.protocol || 'http'
+    const downloadUrl = `${protocol}://${host}/api/hub/files/${stored.id}/download`
+
+    response.status(200).json({
+      ok: true,
+      file: {
+        fileId: stored.id,
+        fileName: stored.fileName,
+        fileType: stored.fileType,
+        size: stored.size,
+        transferMode: 'remote',
+        downloadUrl,
+      },
+    })
+  } catch {
+    response.status(500).json({
+      ok: false,
+      code: 'FILE_STORE_FAILED',
+      message: 'failed to store relay file',
+    })
+  }
+})
+
+router.get('/files/:fileId/download', async (request: Request, response: Response) => {
+  const fileId = String(request.params.fileId || '').trim()
+  if (!fileId) {
+    response.status(400).json({
+      ok: false,
+      code: 'INVALID_FILE_ID',
+      message: 'fileId is required',
+    })
+    return
+  }
+
+  const file = await relayFileStore.getFile(fileId)
+  if (!file) {
+    response.status(404).json({
+      ok: false,
+      code: 'FILE_NOT_FOUND',
+      message: 'file not found',
+    })
+    return
+  }
+
+  response.download(file.storagePath, file.fileName)
 })
 
 export default router

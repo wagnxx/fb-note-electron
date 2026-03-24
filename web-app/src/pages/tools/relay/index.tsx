@@ -73,6 +73,13 @@ type GroupsResponse = {
   }
 }
 
+type RelayFileMessage = ChatFileMessage & {
+  transferMode?: 'inline' | 'remote'
+  fileId?: string
+  size?: number
+  downloadUrl?: string
+}
+
 type ChatWSMessage =
   | ChatTextMessage
   | ChatImageMessage
@@ -441,30 +448,58 @@ const RelayStationPage: React.FC = () => {
     setText('')
   }
 
-  const fileToDataURL = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(String(reader.result || ''))
-      reader.onerror = reject
-      reader.readAsDataURL(file)
+  const uploadRelayFile = async (file: File) => {
+    const response = await fetch(`${baseURL}/api/hub/files`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'x-relay-file-name': encodeURIComponent(file.name),
+        'x-relay-file-type': file.type || 'application/octet-stream',
+        'x-relay-user-id': userId,
+      },
+      body: file,
     })
+
+    const result = await response.json()
+    if (!response.ok || !result?.ok || !result?.file) {
+      throw new Error(result?.message || '文件上传失败')
+    }
+
+    return result.file as {
+      fileId: string
+      fileName: string
+      fileType: string
+      size: number
+      transferMode: 'remote'
+      downloadUrl: string
+    }
+  }
 
   const handleUploadFile = async (file: File) => {
     setUploading(true)
     try {
-      const content = await fileToDataURL(file)
-      sendPayload('file', {
+      const uploaded = await uploadRelayFile(file)
+      const filePayload: RelayFileMessage = {
         id: `file_${Date.now()}`,
         groupId: RELAY_GROUP_ID,
         sender: userId,
         type: 'file',
-        content,
-        fileName: file.name,
-        fileType: file.type || 'application/octet-stream',
+        content: uploaded.downloadUrl,
+        fileName: uploaded.fileName,
+        fileType: uploaded.fileType,
+        transferMode: uploaded.transferMode,
+        fileId: uploaded.fileId,
+        size: uploaded.size,
+        downloadUrl: uploaded.downloadUrl,
         timestamp: Date.now(),
-      })
+      }
+
+      const sent = sendPayload('file', filePayload)
+      if (!sent) {
+        message.warning('消息发送失败，请重试')
+      }
     } catch {
-      message.error('文件读取失败')
+      message.error('文件上传失败')
     } finally {
       setUploading(false)
     }
@@ -492,9 +527,20 @@ const RelayStationPage: React.FC = () => {
     }
   }
 
+  const getDownloadUrl = (file: RelayFileMessage | ChatImageMessage) => {
+    if (file.type === 'image') return file.content
+
+    if (file.transferMode === 'remote') {
+      if (file.downloadUrl) return file.downloadUrl
+      if (file.fileId) return `${baseURL}/api/hub/files/${file.fileId}/download`
+    }
+
+    return file.content
+  }
+
   const handleDownload = (file: ChatFileMessage | ChatImageMessage) => {
     const anchor = document.createElement('a')
-    anchor.href = file.content
+    anchor.href = getDownloadUrl(file)
     anchor.download = file.type === 'file' ? file.fileName : `image-${file.id}.png`
     anchor.click()
   }
@@ -507,7 +553,7 @@ const RelayStationPage: React.FC = () => {
     if (file.type === 'image') {
       setPreviewMedia({
         type: 'image',
-        src: file.content,
+        src: getDownloadUrl(file),
         fileName: `image-${file.id}`,
         fileRef: file,
       })
@@ -517,7 +563,7 @@ const RelayStationPage: React.FC = () => {
     if (isImageFile(file.fileType)) {
       setPreviewMedia({
         type: 'image',
-        src: file.content,
+        src: getDownloadUrl(file),
         fileName: file.fileName,
         fileRef: file,
       })
@@ -527,7 +573,7 @@ const RelayStationPage: React.FC = () => {
     if (isVideoFile(file.fileType)) {
       setPreviewMedia({
         type: 'video',
-        src: file.content,
+        src: getDownloadUrl(file),
         fileName: file.fileName,
         fileRef: file,
       })

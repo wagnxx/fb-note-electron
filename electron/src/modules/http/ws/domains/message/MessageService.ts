@@ -40,9 +40,26 @@ export class MessageService implements IMessageService {
       timestamp?: number
       fileName?: string
       fileType?: string
+      transferMode?: 'inline' | 'remote'
+      fileId?: string
+      size?: number
+      downloadUrl?: string
     }
   }): Promise<void> {
-    const { id, groupId, sender, content, type, timestamp = Date.now(), fileName, fileType } = payload
+    const {
+      id,
+      groupId,
+      sender,
+      content,
+      type,
+      timestamp = Date.now(),
+      fileName,
+      fileType,
+      transferMode,
+      fileId,
+      size,
+      downloadUrl,
+    } = payload
     const group = await this?.groupService?.getGroup(groupId)
     if (!group) return
 
@@ -50,7 +67,19 @@ export class MessageService implements IMessageService {
     switch (type) {
       case 'file':
         if (!fileName || !fileType) return
-        message = new FileMessage(id, groupId, sender, timestamp, content, fileName, fileType)
+        message = new FileMessage(
+          id,
+          groupId,
+          sender,
+          timestamp,
+          content,
+          fileName,
+          fileType,
+          transferMode,
+          fileId,
+          size,
+          downloadUrl,
+        )
         break
       case 'image':
         message = new ImageMessage(id, groupId, sender, timestamp, content)
