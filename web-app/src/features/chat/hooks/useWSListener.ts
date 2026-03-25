@@ -10,7 +10,7 @@ import {
   updateUsers,
   updateJoinedGroups,
 } from '../chatSlice'
-import { getWSClientInstance, WSClient } from '../service/wsClient'
+import { getChatTransportClient, type ChatTransportClient } from '../service/chatService'
 import { useNotification } from '@/hooks/useNotification'
 import { getValidObject } from '@/utils/utillsObject'
 import { ChatGroupWithMember, ChatMessage, ServerMessagePayloadMap, ServerToClientMessage, User } from '@shared/types'
@@ -21,13 +21,12 @@ export function useWSListener(lanIp: string) {
 
   useEffect(() => {
     let socket: WebSocket | null = null
-    let wsClient: WSClient | null = null
+    let wsClient: ChatTransportClient | null = null
     const unsubs: Array<() => void> = []
 
     const initWebSocket = async () => {
       try {
-        // const client = await getWSClient(lanIp)
-        wsClient = await getWSClientInstance(lanIp)
+        wsClient = await getChatTransportClient(lanIp)
         if (!wsClient) return
 
         // const { socket: ws, id: userId } = client || {}

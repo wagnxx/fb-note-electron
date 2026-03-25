@@ -3,7 +3,7 @@ import { Button, Popconfirm, Space } from 'antd'
 import JoinGroupModal from './JoinGroupModal'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { updateWebSocketState } from '@/features/chat/chatSlice'
-import { sendMessage } from '@/features/chat/service/chatService'
+import { send, sendWithRes } from '@/features/chat/service/chatService'
 import CreateGroupModal from './CreateGroupModal'
 import { cn } from '@/lib/utils'
 import { PlusOutlined } from '@ant-design/icons'
@@ -23,17 +23,14 @@ const ChatGroupList: React.FC<{
   const [joinTargetGroup, setJoinTargetGroup] = useState<Omit<Group, 'messages'> | null>(null)
 
   const refreshGroups = () => {
-    sendMessage({ type: 'groups-req', payload: {} })
+    sendWithRes('groups-req', {})
   }
 
   const applyJoinGroup = (username: string, group: Group) => {
-    sendMessage({
-      type: 'join',
-      payload: {
-        username,
-        userId: wsState.id,
-        groupId: group.id,
-      },
+    send('join', {
+      username,
+      userId: wsState.id,
+      groupId: group.id,
     })
 
     onJoined()

@@ -3,7 +3,7 @@ import { AutoComplete, Button, Input, Upload } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { ClientToServerMessage } from '@shared/types'
 import { useAppSelector } from '@/store/hooks'
-import { sendMessage } from '@/features/chat/service/chatService'
+import { send, sendWithRes } from '@/features/chat/service/chatService'
 import { cn } from '@/lib/utils'
 import FileMessageItem from './FileMessageItem'
 import Avatar from './Avatar'
@@ -15,7 +15,7 @@ const FUNCTION_COMMANDS = ['@getWifiIp', '@getUsers']
 
 const ChatWindow: React.FC<
   React.HTMLAttributes<HTMLDivElement> & { groupId: string; isMobile: boolean; onBack: () => void }
-> = ({ groupId, isMobile, onBack, className, style, ...rest }) => {
+> = ({ groupId, isMobile, onBack, className, style }) => {
   const [input, setInput] = useState('')
   const [options, setOptions] = useState<{ value: string }[]>([])
 
@@ -42,7 +42,7 @@ const ChatWindow: React.FC<
         timestamp: Date.now(),
       },
     }
-    sendMessage(msg)
+    send(msg.type, msg.payload)
     setInput('')
   }
 
@@ -62,17 +62,13 @@ const ChatWindow: React.FC<
           timestamp: Date.now(),
         },
       }
-      sendMessage(msg)
+      send(msg.type, msg.payload)
     })
     return false
   }
 
   const fetchInitialHistory = () => {
-    const msg = {
-      type: 'message-history-req',
-      payload: { groupId },
-    } as ClientToServerMessage
-    return sendMessage(msg)
+    return sendWithRes('message-history-req', { groupId })
   }
 
   useEffect(() => {

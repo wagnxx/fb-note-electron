@@ -1,4 +1,4 @@
-import { getWSClient } from './baseWSClient'
+import { BaseClientGetOptions, RawWSClient } from './baseClient'
 
 type PendingRequest = {
   resolve: (res: any) => void
@@ -25,19 +25,34 @@ type HeartbeatOptions = {
   timeoutMs: number
 }
 
+type SocketFactory = (options?: BaseClientGetOptions) => Promise<RawWSClient | null>
+
+type CoreWSClientOptions = {
+  initialClient: RawWSClient
+  endpointKey: string
+  socketFactory: SocketFactory
+  requestTimeoutMs?: number
+  reconnectOptions?: Partial<ReconnectOptions>
+  heartbeatOptions?: Partial<HeartbeatOptions>
+}
+
 const DEFAULT_REQUEST_TIMEOUT_MS = 10_000
 const DEFAULT_HEARTBEAT_INTERVAL_MS = 15_000
 const DEFAULT_HEARTBEAT_TIMEOUT_MS = 45_000
 
-export class WSClient {
+export class CoreWSClient {
   socket: WebSocket
   userId: string
-  private lanIp: string
+
+  private endpointKey: string
+  private socketFactory: SocketFactory
   private manualClosed = false
   private reconnectAttempts = 0
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null
   private lastPongAt = Date.now()
+  private requestTimeoutMs: number
+
   private reconnectOptions: ReconnectOptions = {
     enabled: true,
     maxRetries: 8,
@@ -46,6 +61,7 @@ export class WSClient {
     factor: 2,
     jitter: 0.2,
   }
+
   private heartbeatOptions: HeartbeatOptions = {
     enabled: true,
     intervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
@@ -59,11 +75,25 @@ export class WSClient {
   private closeListeners = new Set<() => void>()
   private errorListeners = new Set<(err: Event) => void>()
 
-  constructor(socket: WebSocket, userId: string, lanIp: string) {
-    this.socket = socket
-    this.userId = userId
-    this.lanIp = lanIp
-    this.bindSocket(socket)
+  constructor(options: CoreWSClientOptions) {
+    this.socket = options.initialClient.socket
+    this.userId = options.initialClient.id
+    this.endpointKey = options.endpointKey
+    this.socketFactory = options.socketFactory
+    this.requestTimeoutMs = options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS
+
+    if (options.reconnectOptions) {
+      this.reconnectOptions = { ...this.reconnectOptions, ...options.reconnectOptions }
+    }
+    if (options.heartbeatOptions) {
+      this.heartbeatOptions = { ...this.heartbeatOptions, ...options.heartbeatOptions }
+    }
+
+    this.bindSocket(options.initialClient.socket)
+  }
+
+  isForEndpoint(endpointKey: string) {
+    return this.endpointKey === endpointKey
   }
 
   private bindSocket(socket: WebSocket) {
@@ -130,7 +160,7 @@ export class WSClient {
 
   private async reconnectNow() {
     try {
-      const raw = await getWSClient(this.lanIp, { forceNew: true })
+      const raw = await this.socketFactory({ forceNew: true })
       if (!raw) return
       this.bindSocket(raw.socket)
     } catch (error) {
@@ -181,7 +211,7 @@ export class WSClient {
 
     const requestId = this.generateRequestId()
     const message = { type, payload, requestId }
-    const timeoutMs = options?.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS
+    const timeoutMs = options?.timeoutMs ?? this.requestTimeoutMs
 
     return new Promise<R>((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -201,10 +231,6 @@ export class WSClient {
     })
   }
 
-  isForLanIp(lanIp: string) {
-    return this.lanIp === lanIp
-  }
-
   send<T = any>(type: string, payload: T): void {
     if (this.socket.readyState !== WebSocket.OPEN) {
       throw new Error('WebSocket is not connected')
@@ -221,11 +247,6 @@ export class WSClient {
     }
   }
 
-  private generateRequestId(): string {
-    return Math.random().toString(36).slice(2) + Date.now()
-  }
-
-  // 连接状态监听
   onOpen(fn: () => void) {
     this.openListeners.add(fn)
     return () => {
@@ -245,6 +266,10 @@ export class WSClient {
     return () => {
       this.errorListeners.delete(fn)
     }
+  }
+
+  private generateRequestId(): string {
+    return Math.random().toString(36).slice(2) + Date.now()
   }
 
   private clearPendingRequests(reason: string) {
@@ -268,26 +293,4 @@ export class WSClient {
       this.socket.close()
     }
   }
-}
-
-// 工厂函数，构建带 userId 的 WSClient 实例
-
-let instance: WSClient | null = null
-
-export async function getWSClientInstance(lanIp?: string): Promise<WSClient | null> {
-  if (instance) {
-    if (!lanIp) return instance
-    if (instance.isForLanIp(lanIp) && instance.socket.readyState !== WebSocket.CLOSED) return instance
-    instance.close(true)
-    instance = null
-  }
-
-  if (!lanIp) return null // 无法创建，只能获取
-
-  const raw = await getWSClient(lanIp)
-  if (!raw) return null
-
-  instance = new WSClient(raw.socket, raw.id, lanIp)
-
-  return instance
 }

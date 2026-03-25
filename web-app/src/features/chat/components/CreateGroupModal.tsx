@@ -1,7 +1,7 @@
 // 📁 src/pages/chat/components/CreateGroupModal.tsx
 import React, { useState } from 'react'
 import { Modal, Input } from 'antd'
-import { sendMessage } from '@/features/chat/service/chatService'
+import { send } from '@/features/chat/service/chatService'
 
 const CreateGroupModal: React.FC<{
   open: boolean
@@ -11,16 +11,13 @@ const CreateGroupModal: React.FC<{
 
   const handleCreate = () => {
     // message.success(`创建群组成功：${groupName}`)
-    sendMessage({
-      type: 'group-create',
-      payload: {
-        group: {
-          id: groupName,
-          name: groupName,
-          // members: [],
-          admin: '',
-          // messages: [],
-        },
+    send('group-create', {
+      group: {
+        id: groupName,
+        name: groupName,
+        // members: [],
+        admin: '',
+        // messages: [],
       },
     })
     setGroupName('')

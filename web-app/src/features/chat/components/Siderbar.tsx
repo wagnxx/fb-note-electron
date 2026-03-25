@@ -3,7 +3,7 @@ import ChatGroupList from './ChatGroupList'
 import { Avatar, Descriptions, DescriptionsProps, Flex, Input, List, Tabs, TabsProps } from 'antd'
 import { useAppSelector } from '@/store/hooks'
 import { cn } from '@/lib/utils'
-import { sendMessage } from '@/features/chat/service/chatService'
+import { send, sendWithRes } from '@/features/chat/service/chatService'
 import AvatarUploader from './AvatarUploader'
 import UserListItem from './UserListItem'
 import { ChatGroupWithMember } from '@shared/types'
@@ -43,14 +43,14 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
 
   useEffect(() => {
     delayFor(500).then(() => {
-      sendMessage({ type: 'users-req', payload: {} })
+      sendWithRes('users-req', {})
     })
 
     if (activeTabKey === TAB_KEYS.CHAT_LIST) {
-      sendMessage({ type: 'joined-groups-req', payload: { id: wsState.id } })
+      sendWithRes('joined-groups-req', { id: wsState.id })
     }
     if (activeTabKey === TAB_KEYS.ALL_GROUPS) {
-      sendMessage({ type: 'groups-req', payload: {} })
+      sendWithRes('groups-req', {})
     }
   }, [activeTabKey, wsState.id])
 
@@ -62,7 +62,7 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
   }
 
   const handleUpdateAvatar = (avatar: string) => {
-    sendMessage({ type: 'reset-user', payload: { avatar, id: wsState.id } })
+    send('reset-user', { avatar, id: wsState.id })
   }
 
   useImperativeHandle(
