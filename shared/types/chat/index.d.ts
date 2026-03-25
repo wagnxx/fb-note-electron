@@ -83,6 +83,7 @@ export type RawClientToServerMessage =
   | { type: 'join'; username: string; groupId: string; userId: string }
   | { type: 'group-init'; groups: ChatGroup[] }
   | { type: 'group-create'; group: ChatGroup }
+  | { type: 'ping'; timestamp: number }
   | { type: 'groups-req' }
   | { type: 'message-history-req'; groupId: string }
   | ({ type: 'reset-user' } & User)
@@ -95,6 +96,7 @@ export interface ClientMessagePayloadMap {
   image: ChatImageMessage
   file: ChatFileMessage
 
+  ping: { timestamp: number }
   join: { username: string; groupId: string; userId: string }
   'group-init': { groups: ChatGroup[] }
   'group-create': { group: ChatGroup }
@@ -117,6 +119,7 @@ export interface ClientToServerMessage<T extends keyof ClientMessagePayloadMap =
 
 export type RawServerToClientMessage =
   | ChatMessage // 聊天内容推送
+  | { type: 'pong'; timestamp: number }
   | { type: 'system'; message: string }
   | { type: 'groups-res'; groups: ChatGroupWithMember[]; timestamp: number }
   | { type: 'message-history-res'; groupId: string; messages: ChatMessage[] }
@@ -135,6 +138,7 @@ export interface ServerMessagePayloadMap {
   text: ChatTextMessage
   image: ChatImageMessage
   file: ChatFileMessage
+  pong: { timestamp: number }
   system: { message: string }
   'groups-res': { groups: ChatGroupWithMember[]; timestamp: number }
   'message-history-res': { groupId: string; messages: ChatMessage[] }

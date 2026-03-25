@@ -22,6 +22,7 @@ export function useWSListener(lanIp: string) {
   useEffect(() => {
     let socket: WebSocket | null = null
     let wsClient: WSClient | null = null
+    const unsubs: Array<() => void> = []
 
     const initWebSocket = async () => {
       try {
@@ -46,7 +47,7 @@ export function useWSListener(lanIp: string) {
         }
 
         // 监听消息
-        wsClient.onPush((msg: ServerToClientMessage) => {
+        const offPush = wsClient.onPush((msg: ServerToClientMessage) => {
           try {
             // const data = wrapperData.payload
             const { type, payload: data } = msg
@@ -110,23 +111,29 @@ export function useWSListener(lanIp: string) {
             console.error('Invalid message received:', err)
           }
         })
+        unsubs.push(offPush)
 
-        wsClient.onOpen(() => {
+        const offOpen = wsClient.onOpen(() => {
           console.log('WebSocket connection opened')
+          socket = wsClient?.socket ?? socket
           updateConnectionState(true)
 
           wsClient?.send('init-req', { id: wsClient.userId }) // 注意：userId 可封装在 wsClient 内部暴露
         })
+        unsubs.push(offOpen)
 
-        wsClient.onClose(() => {
+        const offClose = wsClient.onClose(() => {
+          socket = wsClient?.socket ?? socket
           updateConnectionState(false)
           console.log('WebSocket connection closed')
         })
+        unsubs.push(offClose)
 
-        wsClient.onError(err => {
+        const offError = wsClient.onError(err => {
           updateConnectionState(false, 'WebSocket error')
           console.error('WebSocket error:', err)
         })
+        unsubs.push(offError)
       } catch (err) {
         console.error('Failed to initialize WebSocket:', err)
       }
@@ -136,6 +143,7 @@ export function useWSListener(lanIp: string) {
 
     // 清理逻辑
     return () => {
+      unsubs.forEach(unsub => unsub())
       wsClient?.close()
     }
   }, [dispatch, lanIp, showNotification])

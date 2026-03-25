@@ -139,6 +139,19 @@ export class GroupController extends BaseWsController {
     this.wsManager.sendToUser({ ws }, message)
   }
 
+  @action('ping')
+  public handlePing(ws: WebSocket, { requestId }: ClientToServerMessage<'ping'>) {
+    const message: ServerToClientMessage<'pong'> = {
+      type: 'pong',
+      requestId,
+      payload: {
+        timestamp: Date.now(),
+      },
+    }
+
+    this.wsManager.sendToUser({ ws }, message)
+  }
+
   // =============================================  user group     ==============================================
   @action('reset-user')
   public async handleResetUser(ws: WebSocket, { payload: data, requestId }: ClientToServerMessage<'reset-user'>) {
