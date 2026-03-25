@@ -32,7 +32,7 @@ const GuidePage: React.FC = () => {
       title: '爱好写作人员',
       summary: '记录与整理想法。',
       detail: '适合偏写作、内容沉淀、灵感记录和输出整理场景。',
-      onClick: () => handleSelection('writer'),
+      onClick: () => navigate('/tool/writing'),
     },
     {
       key: 'relay',
@@ -46,7 +46,7 @@ const GuidePage: React.FC = () => {
   return (
     <div className="guide-page">
       <h1 className="guide-title">欢迎！请选择您的身份</h1>
-      <Row gutter={[16, 16]} justify="center">
+      <Row gutter={[16, 16]} justify="start">
         {cards.map(item => (
           <Col key={item.key} xs={24} sm={12} lg={8} xl={6}>
             <Card

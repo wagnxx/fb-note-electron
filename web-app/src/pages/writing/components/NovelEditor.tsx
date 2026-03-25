@@ -23,10 +23,12 @@ import { useWriting } from '@/features/writing/hooks/useWriting'
 import { useNotification } from '@/hooks/useNotification'
 import { generateWritingTitle, validateWritingData } from '@/features/writing/utils/helpers'
 import type { WritingChapter, WritingFormData, WritingVolume } from '@/features/writing/types'
+import { useTranslation } from 'react-i18next'
 
 const { TextArea } = Input
 
 const NovelEditor: React.FC = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { currentItem, loading, error, createWriting, fetchWriting } = useWriting()
@@ -62,21 +64,21 @@ const NovelEditor: React.FC = () => {
   const buildChapter = useCallback(
     (order: number): WritingChapter => ({
       id: generateChapterId(),
-      title: `第${order + 1}章`,
+      title: t('writing.common.defaultChapterTitle', { index: order + 1 }),
       content: '',
       order,
     }),
-    [],
+    [t],
   )
 
   const buildVolume = useCallback(
     (order: number): WritingVolume => ({
       id: generateVolumeId(),
-      title: `第${order + 1}卷`,
+      title: t('writing.common.defaultVolumeTitle', { index: order + 1 }),
       order,
-      chapters: [{ id: generateChapterId(), title: '第一章', content: '', order: 0 }],
+      chapters: [{ id: generateChapterId(), title: t('writing.common.defaultChapterTitle', { index: 1 }), content: '', order: 0 }],
     }),
-    [],
+    [t],
   )
 
   const normalizeChapters = useCallback(
@@ -232,7 +234,7 @@ const NovelEditor: React.FC = () => {
     const targetVolumeId = activeVolumeId ?? volumes[0]?.id
 
     if (!targetVolumeId) {
-      message.warning('请先创建并选择一个卷')
+      message.warning(t('writing.messages.selectOrCreateVolumeFirst'))
       return
     }
 
@@ -401,7 +403,7 @@ const NovelEditor: React.FC = () => {
 
     setImportModalOpen(false)
     setImportChapters([])
-    message.success(`已导入 ${importChapters.length} 个章节`)
+    message.success(t('writing.messages.importChapterCountSuccess', { count: importChapters.length }))
   }
 
   // 字数统计
@@ -430,13 +432,13 @@ const NovelEditor: React.FC = () => {
             className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm transition-colors"
           >
             <ArrowLeftOutlined />
-            <span>返回</span>
+            <span>{t('writing.actions.back')}</span>
           </button>
 
           {/* 标题输入 */}
           <input
             className="flex-1 mx-6 bg-transparent text-center text-base font-semibold text-gray-800 outline-none border-none placeholder-gray-400"
-            placeholder="请输入小说标题"
+            placeholder={t('writing.editor.novel.titlePlaceholder')}
             value={formData.title}
             onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
           />
@@ -444,7 +446,7 @@ const NovelEditor: React.FC = () => {
           {/* 右侧操作区 */}
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-400">
-              总 {totalWordCount} 字 | 本章 {wordCount} 字
+              {t('writing.editor.novel.totalAndCurrentWordCount', { total: totalWordCount, current: wordCount })}
             </span>
             <button
               type="button"
@@ -455,7 +457,7 @@ const NovelEditor: React.FC = () => {
               }`}
             >
               <SaveOutlined />
-              保存
+              {t('writing.actions.save')}
             </button>
           </div>
         </div>
@@ -486,7 +488,7 @@ const NovelEditor: React.FC = () => {
           <div className="w-56 shrink-0 border-r border-black/10 flex flex-col bg-[#ede8df] overflow-hidden">
             {/* 第一卷标签栏 + 新增卷 */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-black/10">
-              <span className="text-xs font-medium text-gray-500">目录</span>
+              <span className="text-xs font-medium text-gray-500">{t('writing.common.catalog')}</span>
               <div className="flex items-center gap-2">
                 <input
                   ref={fileInputRef}
@@ -498,7 +500,7 @@ const NovelEditor: React.FC = () => {
                 />
                 <button
                   type="button"
-                  title="导入文件到当前卷"
+                  title={t('writing.actions.importToCurrentVolume')}
                   onClick={() => fileInputRef.current?.click()}
                   className="text-gray-400 hover:text-[#e8673c] transition-colors"
                 >
@@ -506,7 +508,7 @@ const NovelEditor: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  title="向当前卷新增章节"
+                  title={t('writing.actions.addChapterToCurrentVolume')}
                   onClick={handleAddChapterToActiveVolume}
                   className="text-gray-400 hover:text-[#e8673c] transition-colors"
                 >
@@ -514,7 +516,7 @@ const NovelEditor: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  title="新增卷"
+                  title={t('writing.actions.addVolume')}
                   onClick={handleAddVolume}
                   className="text-gray-400 hover:text-[#e8673c] transition-colors"
                 >
@@ -525,7 +527,7 @@ const NovelEditor: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto py-1">
               {!formData.volumes || formData.volumes.length === 0 ? (
-                <Empty description="暂无卷" imageStyle={{ height: 36 }} className="mt-6" />
+                <Empty description={t('writing.editor.novel.emptyVolume')} imageStyle={{ height: 36 }} className="mt-6" />
               ) : (
                 formData.volumes.map(volume => {
                   const volumeWordCount = (volume.chapters ?? []).reduce(
@@ -546,7 +548,7 @@ const NovelEditor: React.FC = () => {
                           type="button"
                           className="mr-1 text-[10px] text-gray-400 hover:text-gray-600"
                           onClick={() => toggleVolumeCollapse(volume.id)}
-                          title={isCollapsed ? '展开卷' : '折叠卷'}
+                          title={isCollapsed ? t('writing.actions.expandVolume') : t('writing.actions.collapseVolume')}
                         >
                           {isCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
                         </button>
@@ -556,19 +558,19 @@ const NovelEditor: React.FC = () => {
                           onClick={() => selectNovelTarget(formData.volumes ?? [], volume.id, volume.chapters[0]?.id)}
                         >
                           <div className="text-xs font-semibold text-gray-700 truncate">
-                            {volume.title || `第${volume.order + 1}卷`}
+                            {volume.title || t('writing.common.defaultVolumeTitle', { index: volume.order + 1 })}
                           </div>
-                          <div className="text-[10px] text-gray-400">{volumeWordCount} 字</div>
+                          <div className="text-[10px] text-gray-400">{t('writing.common.wordCount', { value: volumeWordCount })}</div>
                         </button>
                         <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Popconfirm
-                            title="确认删除卷"
-                            description="删除卷会同时删除该卷下所有章节，确定继续吗？"
-                            okText="删除"
-                            cancelText="取消"
+                            title={t('writing.confirm.deleteVolumeTitle')}
+                            description={t('writing.confirm.deleteVolumeDescription')}
+                            okText={t('writing.actions.delete')}
+                            cancelText={t('writing.actions.cancel')}
                             onConfirm={() => handleDeleteVolume(volume.id)}
                           >
-                            <button type="button" title="删除卷" className="text-gray-400 hover:text-red-500 px-1">
+                            <button type="button" title={t('writing.actions.deleteVolume')} className="text-gray-400 hover:text-red-500 px-1">
                               <DeleteOutlined style={{ fontSize: 10 }} />
                             </button>
                           </Popconfirm>
@@ -616,12 +618,12 @@ const NovelEditor: React.FC = () => {
               <>
                 {/* 卷标题行 */}
                 <div className="flex items-center gap-3 px-8 pt-4 pb-1 shrink-0">
-                  <span className="text-xs text-gray-400">卷：</span>
+                  <span className="text-xs text-gray-400">{t('writing.common.volumeLabel')}</span>
                   <input
                     className="flex-1 bg-transparent text-sm text-gray-600 outline-none border-none border-b border-black/10 pb-0.5 focus:border-[#e8673c] transition-colors"
                     value={activeVolume.title}
                     onChange={e => updateVolumeTitle(e.target.value)}
-                    placeholder="卷标题..."
+                    placeholder={t('writing.editor.novel.volumeTitlePlaceholder')}
                   />
                 </div>
 
@@ -631,7 +633,7 @@ const NovelEditor: React.FC = () => {
                     className="w-full bg-transparent text-2xl font-semibold text-gray-800 outline-none border-none placeholder-gray-300"
                     value={activeChapter.title}
                     onChange={e => updateActiveNovelChapter('title', e.target.value)}
-                    placeholder="请输入标题"
+                    placeholder={t('writing.editor.inputTitle')}
                   />
                 </div>
 
@@ -650,7 +652,7 @@ const NovelEditor: React.FC = () => {
                     ))}
                     <input
                       className="text-xs text-gray-400 bg-transparent outline-none border-none w-24 placeholder-gray-300"
-                      placeholder="+ 添加标签"
+                      placeholder={t('writing.editor.addTagShort')}
                       value={tagInput}
                       onChange={e => setTagInput(e.target.value)}
                       onKeyDown={e => {
@@ -668,9 +670,7 @@ const NovelEditor: React.FC = () => {
                   <TextArea
                     value={activeChapter.content}
                     onChange={e => updateActiveNovelChapter('content', e.target.value)}
-                    placeholder="· 先写清主线冲突与人物目标，便于长篇推进
-· 每章结尾保留悬念，提升追读
-· 建议固定更新节奏，持续积累读者"
+                    placeholder={t('writing.editor.novel.contentPlaceholder')}
                     autoSize={{ minRows: 20 }}
                     variant="borderless"
                     style={{ background: 'transparent', fontSize: 15, lineHeight: '1.9', padding: 0, resize: 'none' }}
@@ -678,7 +678,7 @@ const NovelEditor: React.FC = () => {
                 </div>
               </>
             ) : (
-              <Empty description="请选择章节，或创建新的卷和章节" className="mt-24" />
+              <Empty description={t('writing.editor.novel.selectChapterOrCreateHint')} className="mt-24" />
             )}
           </div>
         </div>
@@ -692,7 +692,7 @@ const NovelEditor: React.FC = () => {
         targetVolTitle={
           (formData.volumes ?? []).find(v => v.id === activeVolumeId)?.title ??
           (formData.volumes ?? [])[0]?.title ??
-          '当前卷'
+          t('writing.common.currentVolume')
         }
         onStartIndexChange={setImportStartIndex}
         onChaptersChange={setImportChapters}
@@ -733,6 +733,7 @@ const ImportChaptersModal: React.FC<ImportChaptersModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  const { t } = useTranslation()
   const modalSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const disableSelect = () => {
@@ -758,9 +759,9 @@ const ImportChaptersModal: React.FC<ImportChaptersModalProps> = ({
   return (
     <Modal
       open={open}
-      title={`导入文件预览 — 追加到「${targetVolTitle}」`}
-      okText="确认追加"
-      cancelText="取消"
+      title={t('writing.editor.novel.importPreviewTitle', { targetVolTitle })}
+      okText={t('writing.actions.confirmAppend')}
+      cancelText={t('writing.actions.cancel')}
       onOk={onConfirm}
       onCancel={onCancel}
       width={560}
@@ -768,7 +769,7 @@ const ImportChaptersModal: React.FC<ImportChaptersModalProps> = ({
     >
       <div className="mb-3 flex items-center gap-2 text-sm text-gray-600">
         <span>
-          已解析 <strong>{chapters.length}</strong> 章，起始编号：
+          {t('writing.editor.novel.parsedChaptersWithStartIndex', { count: chapters.length })}
         </span>
         <InputNumber
           min={1}
@@ -777,7 +778,7 @@ const ImportChaptersModal: React.FC<ImportChaptersModalProps> = ({
           size="small"
           style={{ width: 72 }}
         />
-        <span>章（后续递增）</span>
+        <span>{t('writing.editor.novel.chapterSuffixIncremental')}</span>
       </div>
 
       <DndContext
@@ -812,6 +813,7 @@ interface SortableImportItemProps {
 }
 
 const SortableImportItem: React.FC<SortableImportItemProps> = ({ chapter, displayIndex, onTitleChange }) => {
+  const { t } = useTranslation()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: chapter.draftId,
   })
@@ -831,7 +833,7 @@ const SortableImportItem: React.FC<SortableImportItemProps> = ({ chapter, displa
       >
         <HolderOutlined />
       </span>
-      <span className="text-xs text-gray-400 w-14 shrink-0">第 {displayIndex} 章</span>
+      <span className="text-xs text-gray-400 w-14 shrink-0">{t('writing.common.importChapterIndex', { index: displayIndex })}</span>
       <input
         className="flex-1 text-sm border border-black/10 rounded px-2 py-0.5 bg-transparent outline-none focus:border-[#e8673c]"
         value={chapter.title}
@@ -853,6 +855,7 @@ interface SortableChapterItemProps {
 }
 
 const SortableChapterItem: React.FC<SortableChapterItemProps> = ({ chapter, isActive, onSelect, onDelete }) => {
+  const { t } = useTranslation()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: chapter.id })
 
   const style: React.CSSProperties = {
@@ -884,15 +887,15 @@ const SortableChapterItem: React.FC<SortableChapterItemProps> = ({ chapter, isAc
       </span>
 
       <div className="flex flex-col flex-1 min-w-0">
-        <span className="text-xs truncate">{chapter.title || `第${chapter.order + 1}章`}</span>
-        <span className="text-[10px] text-gray-400">{chWc} 字</span>
+        <span className="text-xs truncate">{chapter.title || t('writing.common.defaultChapterTitle', { index: chapter.order + 1 })}</span>
+        <span className="text-[10px] text-gray-400">{t('writing.common.wordCount', { value: chWc })}</span>
       </div>
 
       <Popconfirm
-        title="确认删除章节"
-        description="删除后不可恢复，确定继续吗？"
-        okText="删除"
-        cancelText="取消"
+        title={t('writing.confirm.deleteChapterTitle')}
+        description={t('writing.confirm.deleteChapterDescription')}
+        okText={t('writing.actions.delete')}
+        cancelText={t('writing.actions.cancel')}
         onConfirm={onDelete}
       >
         <button

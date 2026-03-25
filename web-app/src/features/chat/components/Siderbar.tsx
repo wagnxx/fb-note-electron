@@ -7,7 +7,6 @@ import { ChatGroupWithMember } from '@shared/types'
 import { mergeBase64Avatars } from '@/utils/utilsImage'
 import useFirstRender from '@/hooks/useFirstRender'
 import { getMessagePreviewType } from '@/utils/utilsString'
-import { delayFor } from '@/utils/utilsAsyncFunc'
 
 export const BLACK_PLACEHOLDER =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAEklEQVR4nO3BMQEAAAgCoNm/9F3hAAcAqCwR+AIAAAAASUVORK5CYII='
@@ -29,15 +28,25 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
 
   const isFirstRender = useFirstRender()
 
+  // avoid repeatedly requesting users when wsState.id toggles rapidly
+  const lastUsersReqIdRef = React.useRef<string | null>(null)
   useEffect(() => {
-    delayFor(500).then(() => {
+    if (!wsState.id || !wsState.isConnected) return
+    if (lastUsersReqIdRef.current === wsState.id) return
+    lastUsersReqIdRef.current = wsState.id
+    const timer = setTimeout(() => {
       void sendWithRes('users-req', {}).catch(() => undefined)
-    })
-  }, [wsState.id])
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [wsState.id, wsState.isConnected])
 
+  const lastJoinedGroupsReqIdRef = React.useRef<string | null>(null)
   useEffect(() => {
+    if (!wsState.id || !wsState.isConnected) return
+    if (lastJoinedGroupsReqIdRef.current === wsState.id) return
+    lastJoinedGroupsReqIdRef.current = wsState.id
     void sendWithRes('joined-groups-req', { id: wsState.id }).catch(() => undefined)
-  }, [wsState.id])
+  }, [wsState.id, wsState.isConnected])
 
   const handleSelectGroupItem = (id: string) => {
     onSelectGroup(id)
@@ -130,9 +139,17 @@ const Siderbar = ({ isMobile, onSelectGroup }: SiderbarProps, ref: React.Ref<Sid
             style={{ borderBottom: 'none' }}
           >
             <List.Item.Meta
-              avatar={<Avatar src={group.avatar} className="!bg-slate-200" />}
-              title={<span className="font-medium text-slate-800">{group.name}</span>}
-              description={<span className="text-xs text-slate-500">{group.lastMsg || '暂无消息'}</span>}
+              avatar={<Avatar src={group.avatar} className="!bg-slate-200" size={isMobile ? 44 : 36} />}
+              title={
+                <span className={cn('font-medium text-slate-800', isMobile ? 'text-base' : 'text-sm')}>
+                  {group.name}
+                </span>
+              }
+              description={
+                <span className={cn('text-slate-500', isMobile ? 'text-sm' : 'text-xs')}>
+                  {group.lastMsg || '暂无消息'}
+                </span>
+              }
             />
           </List.Item>
         )}

@@ -1,6 +1,7 @@
 // Writing utility functions
 import type { WritingType } from '@shared/types/writing'
 import type { WritingChapter, WritingVolume } from '@/features/writing/types'
+import i18n from '@/i18n'
 
 export const CHAPTERED_TYPES: WritingType[] = ['novel', 'short_story', 'video_script']
 export const VOLUME_TYPES: WritingType[] = ['novel']
@@ -8,15 +9,36 @@ export const VOLUME_TYPES: WritingType[] = ['novel']
 export const hasChapters = (type: WritingType): boolean => CHAPTERED_TYPES.includes(type)
 export const hasVolumes = (type: WritingType): boolean => VOLUME_TYPES.includes(type)
 
+const getCurrentLocale = () => (i18n.language?.startsWith('zh') ? 'zh-CN' : 'en-US')
+
+const WRITING_TYPE_I18N_KEYS: Record<WritingType, { label: string; description: string }> = {
+  article: {
+    label: 'writing.types.article.label',
+    description: 'writing.types.article.description',
+  },
+  short_story: {
+    label: 'writing.types.short_story.label',
+    description: 'writing.types.short_story.description',
+  },
+  video_script: {
+    label: 'writing.types.video_script.label',
+    description: 'writing.types.video_script.description',
+  },
+  novel: {
+    label: 'writing.types.novel.label',
+    description: 'writing.types.novel.description',
+  },
+}
+
 export const getEntryLabel = (type: WritingType): string => {
-  if (type === 'video_script') return '节'
-  return '章'
+  if (type === 'video_script') return i18n.t('writing.common.section')
+  return i18n.t('writing.common.chapter')
 }
 
 export const getHierarchyLabel = (type: WritingType): string => {
-  if (type === 'novel') return '卷 / 章'
-  if (type === 'video_script') return '节'
-  return '章节'
+  if (type === 'novel') return i18n.t('writing.common.volumeAndChapter')
+  if (type === 'video_script') return i18n.t('writing.common.section')
+  return i18n.t('writing.common.chapters')
 }
 
 export const getAllNestedChapters = (
@@ -33,44 +55,46 @@ export const getAllNestedChapters = (
 export const WRITING_TYPES: { value: WritingType; label: string; description: string }[] = [
   {
     value: 'article',
-    label: '文章',
-    description: '博客文章、技术文档等',
+    label: 'writing.types.article.label',
+    description: 'writing.types.article.description',
   },
   {
     value: 'short_story',
-    label: '短篇故事',
-    description: '短篇小说、微小说等',
+    label: 'writing.types.short_story.label',
+    description: 'writing.types.short_story.description',
   },
   {
     value: 'video_script',
-    label: '视频剧本',
-    description: '视频脚本、广告脚本等',
+    label: 'writing.types.video_script.label',
+    description: 'writing.types.video_script.description',
   },
   {
     value: 'novel',
-    label: '小说',
-    description: '长篇小说、系列小说等',
+    label: 'writing.types.novel.label',
+    description: 'writing.types.novel.description',
   },
 ]
 
 export const getWritingTypeLabel = (type: WritingType): string => {
-  const typeInfo = WRITING_TYPES.find(t => t.value === type)
-  return typeInfo?.label || type
+  const keys = WRITING_TYPE_I18N_KEYS[type]
+  if (!keys) return type
+  return i18n.t(keys.label)
 }
 
 export const getWritingTypeDescription = (type: WritingType): string => {
-  const typeInfo = WRITING_TYPES.find(t => t.value === type)
-  return typeInfo?.description || ''
+  const keys = WRITING_TYPE_I18N_KEYS[type]
+  if (!keys) return ''
+  return i18n.t(keys.description)
 }
 
 export const generateWritingTitle = (type: WritingType, customTitle?: string): string => {
   if (customTitle) return customTitle
 
   const now = new Date()
-  const dateStr = now.toLocaleDateString('zh-CN')
+  const dateStr = now.toLocaleDateString(getCurrentLocale())
   const typeLabel = getWritingTypeLabel(type)
 
-  return `${typeLabel} - ${dateStr}`
+  return i18n.t('writing.common.generatedTitle', { typeLabel, date: dateStr })
 }
 
 export const validateWritingData = (data: {
@@ -83,11 +107,11 @@ export const validateWritingData = (data: {
   const errors: string[] = []
 
   if (!data.type) {
-    errors.push('类型不能为空')
+    errors.push(i18n.t('writing.validation.typeRequired'))
   }
 
   if (!data.title || data.title.trim().length === 0) {
-    errors.push('标题不能为空')
+    errors.push(i18n.t('writing.validation.titleRequired'))
   }
 
   if (hasVolumes(data.type)) {
@@ -100,18 +124,18 @@ export const validateWritingData = (data: {
     )
 
     if (!hasVolume) {
-      errors.push('至少需要一个卷')
+      errors.push(i18n.t('writing.validation.atLeastOneVolume'))
     }
     if (!hasChapter) {
-      errors.push('至少需要一个章节')
+      errors.push(i18n.t('writing.validation.atLeastOneChapter'))
     }
     if (!hasAnyContent) {
-      errors.push('章节内容不能为空')
+      errors.push(i18n.t('writing.validation.chapterContentRequired'))
     }
   } else {
     // article / short_story / video_script 统一走单篇内容校验
     if (!data.content || data.content.trim().length === 0) {
-      errors.push('内容不能为空')
+      errors.push(i18n.t('writing.validation.contentRequired'))
     }
   }
 
@@ -123,7 +147,7 @@ export const validateWritingData = (data: {
 
 export const formatWritingDate = (dateString: string): string => {
   const date = new Date(dateString)
-  return date.toLocaleString('zh-CN', {
+  return date.toLocaleString(getCurrentLocale(), {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

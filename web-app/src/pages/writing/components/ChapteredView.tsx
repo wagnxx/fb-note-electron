@@ -6,10 +6,12 @@ import type { WritingType } from '@shared/types/writing'
 import { getEntryLabel } from '@/features/writing/utils/helpers'
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import type { WritingChapter } from '@/features/writing/types'
+import { useTranslation } from 'react-i18next'
 
 const { Title, Paragraph, Text } = Typography
 
 const ChapteredView: React.FC = () => {
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { currentItem, loading, error, fetchWriting } = useWriting()
@@ -52,7 +54,7 @@ const ChapteredView: React.FC = () => {
   const actions = (
     <Space>
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(`/tool/writing?type=${type}`)}>
-        返回
+        {t('writing.actions.back')}
       </Button>
       {id && (
         <Button
@@ -64,7 +66,7 @@ const ChapteredView: React.FC = () => {
             navigate(`/tool/writing/editor?${params.toString()}`)
           }}
         >
-          编辑
+          {t('writing.actions.edit')}
         </Button>
       )}
     </Space>
@@ -73,7 +75,7 @@ const ChapteredView: React.FC = () => {
   if (!id) {
     return (
       <div className="p-5">
-        <Alert type="error" message="缺少文章 ID，无法查看内容" className="mb-4" />
+        <Alert type="error" message={t('writing.view.missingArticleId')} className="mb-4" />
         {actions}
       </div>
     )
@@ -93,17 +95,23 @@ const ChapteredView: React.FC = () => {
       <div className="p-5 max-w-5xl mx-auto">
         <div className="flex justify-between items-start mb-6">
           <Title level={2} className="!mb-0 flex-1 mr-4">
-            {currentItem?.title ?? '加载中...'}
+            {currentItem?.title ?? t('writing.common.loading')}
           </Title>
           {actions}
         </div>
 
         {!loading && !currentItem ? (
-          <Empty description="内容不存在或已被删除" />
+          <Empty description={t('writing.view.contentMissing')} />
         ) : currentItem ? (
           <>
             <div className="flex flex-wrap items-center gap-3 mb-4 text-gray-500 text-sm">
-              <Text type="secondary">更新时间：{new Date(currentItem.updatedAt).toLocaleString('zh-CN')}</Text>
+              <Text type="secondary">
+                {t('writing.common.updatedAt', {
+                  date: new Date(currentItem.updatedAt).toLocaleString(
+                    i18n.language?.startsWith('zh') ? 'zh-CN' : 'en-US',
+                  ),
+                })}
+              </Text>
               {currentItem.tags.length > 0 && (
                 <Space size={4} wrap>
                   {currentItem.tags.map(tag => (
@@ -135,14 +143,14 @@ const ChapteredView: React.FC = () => {
                   {activeChapter ? (
                     <>
                       <Title level={5} className="!mb-2">
-                        {activeChapter.title || `未命名${entryLabel}`}
+                        {activeChapter.title || t('writing.view.untitledEntry', { entryLabel })}
                       </Title>
                       <Paragraph className="!mb-0 text-gray-600 leading-relaxed whitespace-pre-wrap">
-                        {activeChapter.content || `（本${entryLabel}暂无内容）`}
+                        {activeChapter.content || t('writing.view.emptyEntryContent', { entryLabel })}
                       </Paragraph>
                     </>
                   ) : (
-                    <Empty description={`暂无${entryLabel}内容`} />
+                    <Empty description={t('writing.view.emptyEntryListContent', { entryLabel })} />
                   )}
                 </div>
               </div>

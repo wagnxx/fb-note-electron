@@ -10,10 +10,12 @@ import { useWriting } from '@/features/writing/hooks/useWriting'
 import { generateWritingTitle, validateWritingData } from '@/features/writing/utils/helpers'
 import type { WritingFormData } from '@/features/writing/types'
 import type { WritingType } from '@shared/types/writing'
+import { useTranslation } from 'react-i18next'
 
 const { TextArea } = Input
 
 const ArticleEditor: React.FC = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { currentItem, loading, error, createWriting, fetchWriting } = useWriting()
@@ -48,8 +50,7 @@ const ArticleEditor: React.FC = () => {
     const singleTypes: WritingType[] = ['article', 'short_story', 'video_script']
     if (!singleTypes.includes(currentItem.type)) return
 
-    const chapterFallback =
-      ((currentItem.chapters as Array<{ content?: string }> | undefined) ?? [])[0]?.content ?? ''
+    const chapterFallback = ((currentItem.chapters as Array<{ content?: string }> | undefined) ?? [])[0]?.content ?? ''
 
     setFormData({
       id: currentItem.id,
@@ -83,9 +84,18 @@ const ArticleEditor: React.FC = () => {
   const canSave = wordCount > 0
 
   const typeConfig = {
-    article:      { titlePlaceholder: '请输入文章标题', contentPlaceholder: '开始写作...' },
-    short_story:  { titlePlaceholder: '请输入短故事名称', contentPlaceholder: '· 发布超6000字，即有机会签约\n· 多使用分段或换行，更方便阅读\n· 剧情完整的内容，更容易获得点赞和关注' },
-    video_script: { titlePlaceholder: '请输入视频剧本名称', contentPlaceholder: '请输入正文' },
+    article: {
+      titlePlaceholder: t('writing.editor.article.titlePlaceholder'),
+      contentPlaceholder: t('writing.editor.article.contentPlaceholder'),
+    },
+    short_story: {
+      titlePlaceholder: t('writing.editor.shortStory.titlePlaceholder'),
+      contentPlaceholder: t('writing.editor.shortStory.contentPlaceholder'),
+    },
+    video_script: {
+      titlePlaceholder: t('writing.editor.videoScript.titlePlaceholder'),
+      contentPlaceholder: t('writing.editor.videoScript.contentPlaceholder'),
+    },
   } as const
   const { titlePlaceholder, contentPlaceholder } = typeConfig[type] ?? typeConfig.article
 
@@ -100,23 +110,21 @@ const ArticleEditor: React.FC = () => {
             className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm transition-colors"
           >
             <ArrowLeftOutlined />
-            <span>返回</span>
+            <span>{t('writing.actions.back')}</span>
           </button>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-400">已保存 | {wordCount} 字</span>
+            <span className="text-xs text-gray-400">{t('writing.editor.savedWordCount', { count: wordCount })}</span>
             <button
               type="button"
               onClick={handleSave}
               disabled={!canSave}
               className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                canSave
-                  ? 'bg-[#e8673c] text-white hover:bg-[#d45a30]'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                canSave ? 'bg-[#e8673c] text-white hover:bg-[#d45a30]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
             >
               <SaveOutlined />
-              保存
+              {t('writing.actions.save')}
             </button>
           </div>
         </div>
@@ -165,10 +173,15 @@ const ArticleEditor: React.FC = () => {
             ))}
             <input
               className="text-xs text-gray-400 bg-transparent outline-none border-none w-28 placeholder-gray-300"
-              placeholder="+ 添加标签，回车确认"
+              placeholder={t('writing.editor.tagInputPlaceholder')}
               value={tagInput}
               onChange={e => setTagInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag() } }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleAddTag()
+                }
+              }}
             />
           </div>
 

@@ -16,11 +16,18 @@ type ChatSettingsPanelProps = {
 const ChatSettingsPanel: React.FC<ChatSettingsPanelProps> = ({ open, onClose, onSelectGroup }) => {
   const { wsState, users } = useAppSelector(state => state.chat)
 
+  // avoid repeated requests when panel rapidly re-renders; only request when opened and WS connected
+  const lastSettingsReqRef = React.useRef<number | null>(null)
   useEffect(() => {
     if (!open) return
+    if (!wsState.isConnected) return
+    const now = Date.now()
+    // throttle to 3s between requests from this panel
+    if (lastSettingsReqRef.current && now - lastSettingsReqRef.current < 3000) return
+    lastSettingsReqRef.current = now
     void sendWithRes('users-req', {}).catch(() => undefined)
     void sendWithRes('groups-req', {}).catch(() => undefined)
-  }, [open])
+  }, [open, wsState.isConnected])
 
   const handleUpdateAvatar = (avatar: string) => {
     send('reset-user', { avatar, id: wsState.id })

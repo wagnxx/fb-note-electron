@@ -9,8 +9,10 @@ import { ArrowLeftOutlined, CaretDownOutlined, CaretRightOutlined, CopyOutlined,
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import { useNotification } from '@/hooks/useNotification'
 import type { WritingVolume } from '@/features/writing/types'
+import { useTranslation } from 'react-i18next'
 
 const NovelView: React.FC = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { currentItem, loading, error, fetchWriting } = useWriting()
@@ -88,17 +90,19 @@ const NovelView: React.FC = () => {
     if (!chapter) return
     try {
       await navigator.clipboard.writeText(`${chapter.title}\n\n${chapter.content}`)
-      message.success('已复制')
+      message.success(t('writing.messages.copySuccess'))
     } catch {
-      message.error('复制失败')
+      message.error(t('writing.messages.copyFailed'))
     }
   }
 
   if (!id) {
     return (
       <div className="p-5">
-        <Alert type="error" message="缺少文章 ID，无法查看内容" className="mb-4" />
-        <button onClick={() => navigate('/tool/writing?type=novel')} className="text-sm text-gray-500">返回</button>
+        <Alert type="error" message={t('writing.view.missingArticleId')} className="mb-4" />
+        <button onClick={() => navigate('/tool/writing?type=novel')} className="text-sm text-gray-500">
+          {t('writing.actions.back')}
+        </button>
       </div>
     )
   }
@@ -107,7 +111,9 @@ const NovelView: React.FC = () => {
     return (
       <div className="p-5">
         <Alert type="error" message={error} className="mb-4" />
-        <button onClick={() => navigate('/tool/writing?type=novel')} className="text-sm text-gray-500">返回</button>
+        <button onClick={() => navigate('/tool/writing?type=novel')} className="text-sm text-gray-500">
+          {t('writing.actions.back')}
+        </button>
       </div>
     )
   }
@@ -123,16 +129,16 @@ const NovelView: React.FC = () => {
             className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm transition-colors"
           >
             <ArrowLeftOutlined />
-            <span>返回</span>
+            <span>{t('writing.actions.back')}</span>
           </button>
 
           {/* 标题 + 总字数 */}
           <div className="flex flex-col items-center">
-            <span className="text-base font-semibold text-gray-800">{currentItem?.title ?? '加载中...'}</span>
+            <span className="text-base font-semibold text-gray-800">{currentItem?.title ?? t('writing.common.loading')}</span>
             <span className="text-xs text-gray-400">
               {totalWordCount >= 10000
-                ? `${(totalWordCount / 10000).toFixed(1)}万字`
-                : `${totalWordCount}字`}
+                ? t('writing.common.wordCountWan', { value: (totalWordCount / 10000).toFixed(1) })
+                : t('writing.common.wordCount', { value: totalWordCount })}
             </span>
           </div>
 
@@ -149,7 +155,7 @@ const NovelView: React.FC = () => {
               className="flex items-center gap-1 px-4 py-1.5 bg-[#e8673c] text-white rounded-full text-sm font-medium hover:bg-[#d45a30] transition-colors"
             >
               <EditOutlined />
-              编辑
+              {t('writing.actions.edit')}
             </button>
           )}
         </div>
@@ -165,19 +171,19 @@ const NovelView: React.FC = () => {
 
         {/* 主体：左侧目录 + 右侧正文 */}
         {!loading && !currentItem ? (
-          <Empty description="内容不存在或已被删除" className="mt-24" />
+          <Empty description={t('writing.view.contentMissing')} className="mt-24" />
         ) : (
           <div className="flex flex-1 overflow-hidden">
             {/* 左侧目录 */}
             <div className="w-56 shrink-0 border-r border-black/10 flex flex-col bg-[#ede8df] overflow-hidden">
               <div className="flex items-center justify-between px-3 py-2 border-b border-black/10">
-                <span className="text-xs font-medium text-gray-500">目录</span>
-                <span className="text-xs text-gray-400">{sortedVolumes.length} 卷</span>
+                <span className="text-xs font-medium text-gray-500">{t('writing.common.catalog')}</span>
+                <span className="text-xs text-gray-400">{t('writing.common.volumeCount', { count: sortedVolumes.length })}</span>
               </div>
 
               <div className="flex-1 overflow-y-auto py-1">
                 {sortedVolumes.length === 0 ? (
-                  <Empty description="暂无目录" imageStyle={{ height: 36 }} className="mt-6" />
+                  <Empty description={t('writing.common.emptyCatalog')} imageStyle={{ height: 36 }} className="mt-6" />
                 ) : (
                   sortedVolumes.map(volume => {
                     const volumeWordCount = (volume.chapters ?? []).reduce(
@@ -203,7 +209,7 @@ const NovelView: React.FC = () => {
                             isVolumeActive ? 'text-gray-600' : 'text-gray-400 hover:text-gray-600'
                           }`}
                           onClick={() => toggleVolumeCollapse(volume.id)}
-                          title={isCollapsed ? '展开卷' : '折叠卷'}
+                          title={isCollapsed ? t('writing.actions.expandVolume') : t('writing.actions.collapseVolume')}
                         >
                           {isCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
                         </button>
@@ -221,10 +227,10 @@ const NovelView: React.FC = () => {
                               isVolumeActive ? 'text-gray-700' : 'text-gray-600'
                             }`}
                           >
-                            {volume.title || `第${volume.order + 1}卷`}
+                            {volume.title || t('writing.common.defaultVolumeTitle', { index: volume.order + 1 })}
                           </div>
                           <div className={`text-[10px] ${isVolumeActive ? 'text-gray-500' : 'text-gray-400'}`}>
-                            {volumeWordCount} 字
+                            {t('writing.common.wordCount', { value: volumeWordCount })}
                           </div>
                         </button>
                       </div>
@@ -242,14 +248,14 @@ const NovelView: React.FC = () => {
                           >
                             <div className="flex flex-col flex-1 min-w-0">
                               <span className="text-xs truncate">
-                                {chapter.title || `第${chapter.order + 1}章`}
+                                {chapter.title || t('writing.common.defaultChapterTitle', { index: chapter.order + 1 })}
                               </span>
-                              <span className="text-[10px] text-gray-400">{chWc} 字</span>
+                              <span className="text-[10px] text-gray-400">{t('writing.common.wordCount', { value: chWc })}</span>
                             </div>
                             {/* 复制本章，hover 显示 */}
                             <button
                               type="button"
-                              title="复制本章"
+                              title={t('writing.actions.copyCurrentChapter')}
                               onClick={e => { e.stopPropagation(); handleCopyChapter(chapter.id) }}
                               className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-[#e8673c] transition-all shrink-0 ml-1"
                             >
@@ -270,16 +276,16 @@ const NovelView: React.FC = () => {
                 <>
                   <div className="flex items-baseline gap-3 mb-4">
                     <h2 className="text-2xl font-semibold text-gray-800">
-                      {activeChapter.title || '未命名章节'}
+                      {activeChapter.title || t('writing.view.untitledChapter')}
                     </h2>
-                    <span className="text-sm text-gray-400">{activeChapterWordCount} 字</span>
+                    <span className="text-sm text-gray-400">{t('writing.common.wordCount', { value: activeChapterWordCount })}</span>
                   </div>
                   <p className="text-gray-700 leading-[1.9] text-[15px] whitespace-pre-wrap">
-                    {activeChapter.content || '（本章暂无内容）'}
+                    {activeChapter.content || t('writing.view.emptyCurrentChapter')}
                   </p>
                 </>
               ) : (
-                <Empty description="暂无章节内容" className="mt-24" />
+                <Empty description={t('writing.view.emptyChapterContent')} className="mt-24" />
               )}
             </div>
           </div>

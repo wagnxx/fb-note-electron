@@ -11,9 +11,18 @@ import { useNotification } from '@/hooks/useNotification'
 import { hasChapters, WRITING_TYPES } from '@/features/writing/utils/helpers'
 import type { WritingItem, WritingType } from '@shared/types/writing'
 import type { WritingListEntry } from '@/features/writing/types'
+import { useTranslation } from 'react-i18next'
 
-const { ipcRenderer, IPC_ACTIONS } = window.electron || ({} as any)
-const invokeWriting = ipcRenderer.invoke as <T>(channel: string, ...args: any[]) => Promise<T>
+const electronApi = (window as any).electron || ({} as any)
+const ipcRenderer = electronApi.ipcRenderer
+const IPC_ACTIONS = electronApi.IPC_ACTIONS
+
+const invokeWriting = async <T,>(channel: string, ...args: any[]): Promise<T> => {
+  if (!ipcRenderer || typeof ipcRenderer.invoke !== 'function') {
+    return Promise.reject(new Error('ipcRenderer.invoke is not available in this environment'))
+  }
+  return (ipcRenderer.invoke as <T>(channel: string, ...args: any[]) => Promise<T>)(channel, ...args)
+}
 
 const resolveWritingType = (value: string | null): WritingType => {
   const matched = WRITING_TYPES.find(item => item.value === value)
@@ -22,15 +31,16 @@ const resolveWritingType = (value: string | null): WritingType => {
 
 // 类型 → 标签颜色映射
 const TYPE_COLOR: Record<string, { bg: string; text: string }> = {
-  novel:        { bg: '#fef3c7', text: '#d97706' },
-  short_story:  { bg: '#e0f2fe', text: '#0284c7' },
+  novel: { bg: '#fef3c7', text: '#d97706' },
+  short_story: { bg: '#e0f2fe', text: '#0284c7' },
   video_script: { bg: '#f3e8ff', text: '#9333ea' },
-  article:      { bg: '#dcfce7', text: '#16a34a' },
+  article: { bg: '#dcfce7', text: '#16a34a' },
 }
 
 const DISPLAY_TYPES = WRITING_TYPES.filter(item => item.value !== 'article')
 
 const WritingPage: React.FC = () => {
+  const { t } = useTranslation()
   const { message } = useNotification()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -87,11 +97,13 @@ const WritingPage: React.FC = () => {
         (typeof writing.metadata?.description === 'string' && writing.metadata.description.trim()) ||
         chapterSummary ||
         writing.content.replace(/\s+/g, ' ').trim().slice(0, 120) ||
-        '暂无描述'
-      await navigator.clipboard.writeText(`标题：${writing.title}\n描述：${desc}`)
-      message.success('已复制')
+        t('writing.common.noDescription')
+      await navigator.clipboard.writeText(
+        `${t('writing.common.copyTitlePrefix')}${writing.title}\n${t('writing.common.copyDescriptionPrefix')}${desc}`,
+      )
+      message.success(t('writing.messages.copySuccess'))
     } catch {
-      message.error('复制失败')
+      message.error(t('writing.messages.copyFailed'))
     } finally {
       setCopyLoadingId(null)
     }
@@ -101,31 +113,31 @@ const WritingPage: React.FC = () => {
     setDeleteLoadingId(id)
     try {
       await removeWriting(selectedType, id)
-      message.success('删除成功')
+      message.success(t('writing.messages.deleteSuccess'))
     } catch {
-      message.error('删除失败')
+      message.error(t('writing.messages.deleteFailed'))
     } finally {
       setDeleteLoadingId(null)
     }
   }
 
-  const selectedLabel = WRITING_TYPES.find(t => t.value === selectedType)?.label ?? ''
+  const selectedLabel = t(WRITING_TYPES.find(typeItem => typeItem.value === selectedType)?.label ?? '')
 
   return (
     <div className="flex flex-col h-full bg-[#f5f0e8] min-h-screen">
       {/* 顶部 tab 栏 */}
-      <div className="flex items-center justify-center pt-4 pb-0 gap-1 shrink-0">
+      <div className="flex items-center overflow-x-auto gap-2 pt-3 pb-0 shrink-0 px-4 sm:justify-center sm:px-0">
         {DISPLAY_TYPES.map(tab => (
           <button
             key={tab.value}
             onClick={() => handleSelectType(tab.value)}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+            className={`flex-none whitespace-nowrap px-4 sm:px-6 py-2 rounded-full text-sm font-medium transition-all ${
               selectedType === tab.value
                 ? 'bg-[#e8673c] text-white shadow'
                 : 'bg-transparent text-gray-500 hover:text-gray-800'
             }`}
           >
-            {tab.label}
+            {t(tab.label)}
           </button>
         ))}
       </div>
@@ -136,16 +148,16 @@ const WritingPage: React.FC = () => {
 
         <Spin spinning={loading}>
           {items.length === 0 && !loading ? (
-            <Empty description={`还没有${selectedLabel}`} className="mt-20">
+            <Empty description={t('writing.list.emptyByType', { typeLabel: selectedLabel })} className="mt-20">
               <button
                 onClick={handleCreateNew}
                 className="mt-2 px-6 py-2 bg-[#e8673c] text-white rounded-full text-sm font-medium hover:bg-[#d45a30] transition-colors"
               >
-                创建第一个
+                {t('writing.actions.createFirst')}
               </button>
             </Empty>
           ) : (
-            <div className="flex flex-col gap-0 max-w-2xl mx-auto">
+            <div className="flex flex-col gap-0 max-w-2xl w-full mx-auto px-2 sm:px-0">
               {items.map((item, idx) => (
                 <WritingListItem
                   key={item.id}
@@ -171,7 +183,7 @@ const WritingPage: React.FC = () => {
           className="flex items-center gap-2 px-8 py-3 bg-[#e8673c] text-white rounded-full shadow-xl text-sm font-medium hover:bg-[#d45a30] active:scale-95 transition-all"
         >
           <PlusOutlined />
-          新建
+          {t('writing.actions.create')}
         </button>
       </div>
     </div>
@@ -200,19 +212,26 @@ const WritingListItem: React.FC<WritingListItemProps> = ({
   onCopy,
   onDelete,
 }) => {
+  const { t, i18n } = useTranslation()
   const color = TYPE_COLOR[type] ?? TYPE_COLOR.article
   // 字数、章节数信息
   const wordCount = (item as any).wordCount ?? 0
   const chapterCount = (item as any).chapterCount ?? (item as any).chapters?.length ?? 0
 
-  const wordCountStr = wordCount >= 10000 ? `${(wordCount / 10000).toFixed(1)}万字` : `${wordCount}字`
+  const wordCountStr =
+    wordCount >= 10000
+      ? t('writing.common.wordCountWan', { value: (wordCount / 10000).toFixed(1) })
+      : t('writing.common.wordCount', { value: wordCount })
 
-  const chapterStr = chapterCount > 0 ? `${chapterCount} 章` : ''
-  const updatedStr = new Date(item.updatedAt).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })
+  const chapterStr = chapterCount > 0 ? t('writing.common.chapterCount', { count: chapterCount }) : ''
+  const updatedStr = new Date(item.updatedAt).toLocaleDateString(i18n.language?.startsWith('zh') ? 'zh-CN' : 'en-US', {
+    month: '2-digit',
+    day: '2-digit',
+  })
 
   return (
     <div
-      className={`flex items-center gap-4 py-4 px-2 cursor-pointer hover:bg-black/5 rounded-xl transition-colors group ${!isLast ? 'border-b border-black/5' : ''}`}
+      className={`flex items-center gap-4 py-4 px-4 sm:px-2 cursor-pointer hover:bg-black/5 rounded-xl transition-colors group ${!isLast ? 'border-b border-black/5' : ''}`}
       onClick={onView}
     >
       {/* 封面占位（若有封面则显示图片，否则显示色块） */}
@@ -231,7 +250,7 @@ const WritingListItem: React.FC<WritingListItemProps> = ({
           {wordCountStr && chapterStr && <span>｜</span>}
           {chapterStr && <span>{chapterStr}</span>}
           {(wordCountStr || chapterStr) && <span>｜</span>}
-          <span>连载中</span>
+          <span>{t('writing.common.serializing')}</span>
         </div>
         {item.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
@@ -246,25 +265,28 @@ const WritingListItem: React.FC<WritingListItemProps> = ({
             ))}
           </div>
         )}
-        <div className="text-xs text-gray-400 mt-1">最近更新：{updatedStr}</div>
+        <div className="text-xs text-gray-400 mt-1">{t('writing.common.lastUpdated', { date: updatedStr })}</div>
       </div>
 
       {/* 操作按钮 — hover 才完全显示 */}
-      <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+      <div
+        className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={e => e.stopPropagation()}
+      >
         {type !== 'novel' && (
           <button
             className={`flex items-center gap-1 text-xs text-gray-500 hover:text-purple-600 px-2 py-1 rounded hover:bg-purple-50 transition-colors ${copyLoading ? 'opacity-50' : ''}`}
             onClick={onCopy}
             disabled={copyLoading}
           >
-            <CopyOutlined /> 复制
+            <CopyOutlined /> {t('writing.actions.copy')}
           </button>
         )}
         <Popconfirm
-          title="确认删除"
-          description="删除后不可恢复，确定继续吗？"
-          okText="删除"
-          cancelText="取消"
+          title={t('writing.confirm.deleteTitle')}
+          description={t('writing.confirm.deleteDescription')}
+          okText={t('writing.actions.delete')}
+          cancelText={t('writing.actions.cancel')}
           okButtonProps={{ danger: true, loading: deleteLoading }}
           onConfirm={onDelete}
         >
@@ -272,7 +294,7 @@ const WritingListItem: React.FC<WritingListItemProps> = ({
             className={`flex items-center gap-1 text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50 transition-colors ${deleteLoading ? 'opacity-50' : ''}`}
             disabled={deleteLoading}
           >
-            <DeleteOutlined /> 删除
+            <DeleteOutlined /> {t('writing.actions.delete')}
           </button>
         </Popconfirm>
       </div>

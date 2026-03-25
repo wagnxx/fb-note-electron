@@ -1,4 +1,146 @@
 {
   "welcome": "Welcome to our app",
-  "description": "This is an example of internationalization."
+  "description": "This is an example of internationalization.",
+  "writing": {
+    "actions": {
+      "back": "Back",
+      "edit": "Edit",
+      "save": "Save",
+      "create": "Create",
+      "createFirst": "Create First",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "copy": "Copy",
+      "copyCurrentSection": "Copy Section",
+      "copyCurrentChapter": "Copy Chapter",
+      "addEntry": "Add {{entryLabel}}",
+      "expandVolume": "Expand volume",
+      "collapseVolume": "Collapse volume",
+      "importToCurrentVolume": "Import files to current volume",
+      "addChapterToCurrentVolume": "Add chapter to current volume",
+      "addVolume": "Add volume",
+      "deleteVolume": "Delete volume",
+      "confirmAppend": "Confirm append"
+    },
+    "messages": {
+      "copySuccess": "Copied",
+      "copyFailed": "Copy failed",
+      "deleteSuccess": "Deleted successfully",
+      "deleteFailed": "Delete failed",
+      "selectOrCreateVolumeFirst": "Please create and select a volume first",
+      "importChapterCountSuccess": "Imported {{count}} chapters"
+    },
+    "confirm": {
+      "deleteTitle": "Confirm delete",
+      "deleteDescription": "This action cannot be undone. Continue?",
+      "deleteVolumeTitle": "Confirm delete volume",
+      "deleteVolumeDescription": "Deleting this volume will also remove all chapters in it. Continue?",
+      "deleteChapterTitle": "Confirm delete chapter",
+      "deleteChapterDescription": "This action cannot be undone. Continue?"
+    },
+    "common": {
+      "loading": "Loading...",
+      "noDescription": "No description",
+      "copyTitlePrefix": "Title: ",
+      "copyDescriptionPrefix": "Description: ",
+      "serializing": "Serializing",
+      "lastUpdated": "Last updated: {{date}}",
+      "updatedAt": "Updated at: {{date}}",
+      "totalWordCount": "Total words: {{count}}",
+      "wordCount": "{{value}} words",
+      "wordCountWan": "{{value}}w words",
+      "chapterCount": "{{count}} chapters",
+      "emptyContentWrapped": "(No content)",
+      "section": "Section",
+      "chapter": "Chapter",
+      "chapters": "Chapters",
+      "volumeAndChapter": "Volume/Chapter",
+      "generatedTitle": "{{typeLabel}} {{date}}",
+      "catalog": "Catalog",
+      "volumeLabel": "Volume:",
+      "volumeCount": "{{count}} volumes",
+      "emptyCatalog": "No catalog",
+      "defaultVolumeTitle": "Volume {{index}}",
+      "defaultChapterTitle": "Chapter {{index}}",
+      "currentVolume": "Current volume",
+      "importChapterIndex": "Chapter {{index}}"
+    },
+    "list": {
+      "emptyByType": "No {{typeLabel}} yet"
+    },
+    "view": {
+      "missingContentId": "Missing content ID, unable to view",
+      "missingArticleId": "Missing article ID, unable to view content",
+      "contentMissing": "Content does not exist or was deleted",
+      "copySectionSuccess": "Section {{index}} copied",
+      "untitledEntry": "Untitled {{entryLabel}}",
+      "emptyEntryContent": "(No content in this {{entryLabel}})",
+      "emptyEntryListContent": "No {{entryLabel}} content",
+      "untitledChapter": "Untitled chapter",
+      "emptyCurrentChapter": "(This chapter has no content)",
+      "emptyChapterContent": "No chapter content"
+    },
+    "editor": {
+      "savedWordCount": "Saved | {{count}} words",
+      "typeNamePlaceholder": "Enter {{typeLabel}} name",
+      "tagInputPlaceholder": "+ Add tag and press Enter",
+      "addTagShort": "+ Add tag",
+      "inputTitle": "Enter title",
+      "sectionList": "Section list",
+      "chapterCatalog": "Chapter catalog",
+      "emptyEntry": "No {{entryLabel}}",
+      "selectOrCreateEntry": "Select or create a {{entryLabel}}",
+      "article": {
+        "titlePlaceholder": "Enter article title",
+        "contentPlaceholder": "Enter content"
+      },
+      "shortStory": {
+        "titlePlaceholder": "Enter short story title",
+        "contentPlaceholder": "• Publish over 6000 words for contract opportunities\n• Use paragraphs or line breaks for readability",
+        "contentPlaceholderSimple": "• Publish over 6000 words for contract opportunities\n• Use paragraphs or line breaks for readability"
+      },
+      "videoScript": {
+        "titlePlaceholder": "Enter video script title",
+        "contentPlaceholder": "Enter script content"
+      },
+      "novel": {
+        "titlePlaceholder": "Enter novel title",
+        "volumeTitlePlaceholder": "Volume title...",
+        "totalAndCurrentWordCount": "Total {{total}} words | Current chapter {{current}} words",
+        "contentPlaceholder": "• Clarify core conflict and character goals for long-form progression\n• Leave suspense at chapter endings to improve retention\n• Keep a steady update cadence to build readership",
+        "emptyVolume": "No volumes",
+        "selectChapterOrCreateHint": "Select a chapter, or create a new volume and chapter",
+        "importPreviewTitle": "Import preview — append to '{{targetVolTitle}}'",
+        "parsedChaptersWithStartIndex": "Parsed {{count}} chapters, start index:",
+        "chapterSuffixIncremental": "chapter (auto increment)"
+      }
+      }
+    },
+    "validation": {
+      "typeRequired": "Please select a writing type",
+      "titleRequired": "Title is required",
+      "contentRequired": "Content is required",
+      "atLeastOneVolume": "At least one volume is required",
+      "atLeastOneChapter": "At least one chapter is required",
+      "chapterContentRequired": "At least one chapter must have content"
+    },
+    "types": {
+      "article": {
+        "label": "Article",
+        "description": "Free-form article writing"
+      },
+      "short_story": {
+        "label": "Short Story",
+        "description": "Single or chaptered short stories"
+      },
+      "video_script": {
+        "label": "Video Script",
+        "description": "Scripts for narration and storyboard scenes"
+      },
+      "novel": {
+        "label": "Novel",
+        "description": "Long-form writing with volumes and chapters"
+      }
+    }
+  }
 }

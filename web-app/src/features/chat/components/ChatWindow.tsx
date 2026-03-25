@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { AutoComplete, Badge, Button, Input, Tooltip, Upload } from 'antd'
-import { ArrowLeftOutlined, HistoryOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, HistoryOutlined, SettingOutlined } from '@ant-design/icons'
 import { ClientToServerMessage } from '@shared/types'
 import { useAppSelector } from '@/store/hooks'
 import { send, sendWithRes } from '@/features/chat/service/chatService'
@@ -14,8 +14,13 @@ import TextMessageItem from './TextMessageItem'
 const FUNCTION_COMMANDS = ['@getWifiIp', '@getUsers']
 
 const ChatWindow: React.FC<
-  React.HTMLAttributes<HTMLDivElement> & { groupId: string; isMobile: boolean; onBack: () => void }
-> = ({ groupId, isMobile, onBack, className, style }) => {
+  React.HTMLAttributes<HTMLDivElement> & {
+    groupId: string
+    isMobile: boolean
+    onBack: () => void
+    onShowSettings?: () => void
+  }
+> = ({ groupId, isMobile, onBack, className, style, onShowSettings }) => {
   const [input, setInput] = useState('')
   const [options, setOptions] = useState<{ value: string }[]>([])
 
@@ -112,11 +117,19 @@ const ChatWindow: React.FC<
 
   return (
     <div className={cn('flex flex-col gap-2 p-2', className)} style={style}>
-      <div className="h-12 px-2 flex items-center rounded-xl bg-white border border-slate-200">
+      <div className="h-12 px-2 flex items-center rounded-xl bg-white border border-slate-200 relative">
         {isMobile && (
-          <Button icon={<ArrowLeftOutlined />} type="link" className="-ml-2" onClick={onBack}>
-            返回
-          </Button>
+          <>
+            <Button icon={<ArrowLeftOutlined />} type="link" className="-ml-2" onClick={onBack}>
+              返回
+            </Button>
+            <Button
+              icon={<SettingOutlined />}
+              type="text"
+              className="!absolute right-2 top-1 z-10"
+              onClick={onShowSettings}
+            />
+          </>
         )}
         <div className="mx-auto flex items-center gap-2">
           <span className="font-semibold text-slate-800">{group?.name}</span>
@@ -128,6 +141,7 @@ const ChatWindow: React.FC<
             icon={<HistoryOutlined />}
             type="text"
             onClick={() => void fetchInitialHistory().catch(() => undefined)}
+            className={isMobile ? '!absolute right-12 top-1 z-10' : ''}
           />
         </Tooltip>
       </div>

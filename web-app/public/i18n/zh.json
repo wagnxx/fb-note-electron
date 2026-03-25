@@ -1,4 +1,206 @@
 {
   "welcome": "欢迎使用我们的应用",
-  "description": "这是一个国际化的例子。"
+  "description": "这是一个国际化的例子。",
+    "actions": {
+      "back": "返回",
+      "edit": "编辑",
+      "save": "保存",
+      "create": "创建",
+      "createFirst": "创建第一篇",
+      "delete": "删除",
+      "cancel": "取消",
+      "copy": "复制",
+      "copyCurrentSection": "复制当前分节",
+      "copyCurrentChapter": "复制本章",
+      "addEntry": "新增{{entryLabel}}",
+      "expandVolume": "展开卷",
+      "collapseVolume": "折叠卷",
+      "importToCurrentVolume": "导入文件到当前卷",
+      "addChapterToCurrentVolume": "向当前卷新增章节",
+      "addVolume": "新增卷",
+      "deleteVolume": "删除卷",
+      "confirmAppend": "确认追加"
+    },
+    "messages": {
+      "copySuccess": "已复制",
+      "copyFailed": "复制失败",
+      "deleteSuccess": "删除成功",
+      "deleteFailed": "删除失败",
+      "selectOrCreateVolumeFirst": "请先创建并选择一个卷",
+      "importChapterCountSuccess": "已导入 {{count}} 个章节"
+    },
+    "confirm": {
+      "deleteTitle": "确认删除",
+      "deleteDescription": "删除后无法恢复，是否继续？",
+      "deleteVolumeTitle": "确认删除卷",
+      "deleteVolumeDescription": "删除卷会同时删除该卷下所有章节，确定继续吗？",
+      "deleteChapterTitle": "确认删除章节",
+      "deleteChapterDescription": "删除后不可恢复，确定继续吗？"
+    },
+    "common": {
+      "loading": "加载中...",
+      "noDescription": "暂无描述",
+      "copyTitlePrefix": "标题：",
+      "copyDescriptionPrefix": "描述：",
+      "serializing": "连载中",
+      "lastUpdated": "最后更新：{{date}}",
+      "updatedAt": "更新时间：{{date}}",
+      "totalWordCount": "总字数：{{count}}",
+      "wordCount": "{{value}} 字",
+      "wordCountWan": "{{value}} 万字",
+      "chapterCount": "{{count}} 章",
+      "emptyContentWrapped": "（暂无内容）",
+      "section": "分节",
+      "chapter": "章",
+      "chapters": "章节",
+      "volumeAndChapter": "卷/章",
+      "generatedTitle": "{{date}} {{typeLabel}}",
+      "catalog": "目录",
+      "volumeLabel": "卷：",
+  "writing": {
+    "types": {
+      "short_story": { "label": "短篇故事" },
+      "video_script": { "label": "视频剧本" },
+      "novel": { "label": "长篇小说" }
+    },
+    "actions": {
+      "back": "返回",
+      "edit": "编辑",
+      "save": "保存",
+      "create": "新建写作",
+      "createFirst": "新建第一个写作",
+      "delete": "删除",
+      "cancel": "取消",
+      "copy": "复制简介",
+      "copyCurrentSection": "复制当前分节",
+      "copyCurrentChapter": "复制本章",
+      "addEntry": "新增{{entryLabel}}",
+      "expandVolume": "展开卷",
+      "collapseVolume": "折叠卷",
+      "importToCurrentVolume": "导入文件到当前卷",
+      "addChapterToCurrentVolume": "向当前卷新增章节",
+      "addVolume": "新增卷",
+      "deleteVolume": "删除卷",
+      "confirmAppend": "确认追加"
+    },
+    "messages": {
+      "copySuccess": "已复制简介",
+      "copyFailed": "复制失败",
+      "deleteSuccess": "删除成功",
+      "deleteFailed": "删除失败",
+      "selectOrCreateVolumeFirst": "请先创建并选择一个卷",
+      "importChapterCountSuccess": "已导入 {{count}} 个章节"
+    },
+    "confirm": {
+      "deleteTitle": "确认删除？",
+      "deleteDescription": "删除后无法恢复，确定要删除吗？",
+      "deleteVolumeTitle": "确认删除卷",
+      "deleteVolumeDescription": "删除卷会同时删除该卷下所有章节，确定继续吗？",
+      "deleteChapterTitle": "确认删除章节",
+      "deleteChapterDescription": "删除后不可恢复，确定继续吗？"
+    },
+    "common": {
+      "loading": "加载中...",
+      "noDescription": "暂无简介",
+      "copyTitlePrefix": "标题：",
+      "copyDescriptionPrefix": "简介：",
+      "serializing": "连载中",
+      "lastUpdated": "最后更新：{{date}}",
+      "updatedAt": "更新时间：{{date}}",
+      "totalWordCount": "总字数：{{count}}",
+      "wordCount": "{{value}}字",
+      "wordCountWan": "{{value}}万字",
+      "chapterCount": "{{count}}章",
+      "emptyContentWrapped": "（暂无内容）",
+      "section": "分节",
+      "chapter": "章",
+      "chapters": "章节",
+      "volumeAndChapter": "卷/章",
+      "generatedTitle": "{{date}} {{typeLabel}}",
+      "catalog": "目录",
+      "volumeLabel": "卷：",
+      "volumeCount": "{{count}} 卷",
+      "emptyCatalog": "暂无目录",
+      "defaultVolumeTitle": "第{{index}}卷",
+      "defaultChapterTitle": "第{{index}}章",
+      "currentVolume": "当前卷",
+      "importChapterIndex": "第 {{index}} 章"
+    },
+    "list": {
+      "emptyByType": "暂无{{typeLabel}}内容"
+    },
+    "view": {
+      "missingContentId": "缺少内容 ID，无法查看",
+      "missingArticleId": "缺少文章 ID，无法查看内容",
+      "contentMissing": "内容不存在或已被删除",
+      "copySectionSuccess": "已复制第 {{index}} 节",
+      "untitledEntry": "未命名{{entryLabel}}",
+      "emptyEntryContent": "（本{{entryLabel}}暂无内容）",
+      "emptyEntryListContent": "暂无{{entryLabel}}内容",
+      "untitledChapter": "未命名章节",
+      "emptyCurrentChapter": "（本章暂无内容）",
+      "emptyChapterContent": "暂无章节内容"
+    },
+    "editor": {
+      "savedWordCount": "已保存 | {{count}} 字",
+      "typeNamePlaceholder": "请输入{{typeLabel}}名称",
+      "tagInputPlaceholder": "+ 添加标签并回车",
+      "addTagShort": "+ 添加标签",
+      "inputTitle": "请输入标题",
+      "sectionList": "分节列表",
+      "chapterCatalog": "章节目录",
+      "emptyEntry": "暂无{{entryLabel}}",
+      "selectOrCreateEntry": "请选择或新建{{entryLabel}}",
+      "article": {
+        "titlePlaceholder": "请输入文章标题",
+        "contentPlaceholder": "请输入正文内容"
+      },
+      "shortStory": {
+        "titlePlaceholder": "请输入短篇故事标题",
+        "contentPlaceholder": "· 发布超6000字，即有机会签约\n· 多使用分段或换行，更方便阅读",
+        "contentPlaceholderSimple": "· 发布超6000字，即有机会签约\n· 多使用分段或换行，更方便阅读"
+      },
+      "videoScript": {
+        "titlePlaceholder": "请输入视频剧本标题",
+        "contentPlaceholder": "请输入正文"
+      },
+      "novel": {
+        "titlePlaceholder": "请输入小说标题",
+        "volumeTitlePlaceholder": "卷标题...",
+        "totalAndCurrentWordCount": "总 {{total}} 字 | 本章 {{current}} 字",
+        "contentPlaceholder": "· 先写清主线冲突与人物目标，便于长篇推进\n· 每章结尾保留悬念，提升追读\n· 建议固定更新节奏，持续积累读者",
+        "emptyVolume": "暂无卷",
+        "selectChapterOrCreateHint": "请选择章节，或创建新的卷和章节",
+        "importPreviewTitle": "导入文件预览 — 追加到「{{targetVolTitle}}」",
+        "parsedChaptersWithStartIndex": "已解析 {{count}} 章，起始编号：",
+        "chapterSuffixIncremental": "章（后续递增）"
+      }
+    },
+    "validation": {
+      "typeRequired": "请选择创作类型",
+      "titleRequired": "标题不能为空",
+      "contentRequired": "正文不能为空",
+      "atLeastOneVolume": "至少需要一个卷",
+      "atLeastOneChapter": "至少需要一个章节",
+      "chapterContentRequired": "至少有一个章节需要填写内容"
+    },
+    "types": {
+      "article": {
+        "label": "文章",
+        "description": "自由写作的文章内容"
+      },
+      "short_story": {
+        "label": "短篇故事",
+        "description": "单篇或分章的短篇故事"
+      },
+      "video_script": {
+        "label": "视频剧本",
+        "description": "适用于视频解说与分镜脚本"
+      },
+      "novel": {
+        "label": "小说",
+        "description": "支持卷章结构的长篇创作"
+      }
+    }
+  }
 }

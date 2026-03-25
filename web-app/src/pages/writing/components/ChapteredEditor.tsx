@@ -10,14 +10,17 @@ import { useWriting } from '@/features/writing/hooks/useWriting'
 import {
   generateWritingTitle,
   getEntryLabel,
+  getWritingTypeLabel,
   validateWritingData,
 } from '@/features/writing/utils/helpers'
 import type { WritingChapter, WritingFormData } from '@/features/writing/types'
 import type { WritingType } from '@shared/types/writing'
+import { useTranslation } from 'react-i18next'
 
 const { TextArea } = Input
 
 const ChapteredEditor: React.FC = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { currentItem, loading, error, createWriting, fetchWriting } = useWriting()
@@ -160,7 +163,7 @@ const ChapteredEditor: React.FC = () => {
   )
   const canSave = totalWordCount > 0
 
-  const typeLabel = type === 'video_script' ? '视频剧本' : '短篇故事'
+  const typeLabel = getWritingTypeLabel(type)
 
   return (
     <Spin spinning={loading} className="h-full">
@@ -173,30 +176,28 @@ const ChapteredEditor: React.FC = () => {
             className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm transition-colors"
           >
             <ArrowLeftOutlined />
-            <span>返回</span>
+            <span>{t('writing.actions.back')}</span>
           </button>
 
           <input
             className="flex-1 mx-6 bg-transparent text-center text-base font-semibold text-gray-800 outline-none border-none placeholder-gray-400"
-            placeholder={`请输入${typeLabel}名称`}
+            placeholder={t('writing.editor.typeNamePlaceholder', { typeLabel })}
             value={formData.title}
             onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
           />
 
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-400">已保存 | {wordCount} 字</span>
+            <span className="text-xs text-gray-400">{t('writing.editor.savedWordCount', { count: wordCount })}</span>
             <button
               type="button"
               onClick={handleSave}
               disabled={!canSave}
               className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                canSave
-                  ? 'bg-[#e8673c] text-white hover:bg-[#d45a30]'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                canSave ? 'bg-[#e8673c] text-white hover:bg-[#d45a30]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
             >
               <SaveOutlined />
-              保存
+              {t('writing.actions.save')}
             </button>
           </div>
         </div>
@@ -226,10 +227,12 @@ const ChapteredEditor: React.FC = () => {
           {/* 左侧章节目录 */}
           <div className="w-52 shrink-0 border-r border-black/10 flex flex-col bg-[#ede8df] overflow-hidden">
             <div className="flex items-center justify-between px-3 py-2 border-b border-black/10">
-              <span className="text-xs font-medium text-gray-500">{type === 'video_script' ? '分节列表' : '章节目录'}</span>
+              <span className="text-xs font-medium text-gray-500">
+                {type === 'video_script' ? t('writing.editor.sectionList') : t('writing.editor.chapterCatalog')}
+              </span>
               <button
                 type="button"
-                title={`新增${entryLabel}`}
+                title={t('writing.actions.addEntry', { entryLabel })}
                 onClick={handleAddChapter}
                 className="text-gray-400 hover:text-[#e8673c] transition-colors"
               >
@@ -239,15 +242,17 @@ const ChapteredEditor: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto py-1">
               {!formData.chapters || formData.chapters.length === 0 ? (
-                <Empty description={`暂无${entryLabel}`} imageStyle={{ height: 36 }} className="mt-6" />
+                <Empty
+                  description={t('writing.editor.emptyEntry', { entryLabel })}
+                  imageStyle={{ height: 36 }}
+                  className="mt-6"
+                />
               ) : (
                 formData.chapters.map(chapter => (
                   <div
                     key={chapter.id}
                     className={`flex items-center justify-between px-3 py-2 group cursor-pointer ${
-                      activeChapterId === chapter.id
-                        ? 'bg-white/60 text-[#e8673c]'
-                        : 'hover:bg-black/5 text-gray-600'
+                      activeChapterId === chapter.id ? 'bg-white/60 text-[#e8673c]' : 'hover:bg-black/5 text-gray-600'
                     }`}
                     onClick={() => setActiveChapterId(chapter.id)}
                   >
@@ -256,7 +261,10 @@ const ChapteredEditor: React.FC = () => {
                     </span>
                     <button
                       type="button"
-                      onClick={e => { e.stopPropagation(); handleDeleteChapter(chapter.id) }}
+                      onClick={e => {
+                        e.stopPropagation()
+                        handleDeleteChapter(chapter.id)
+                      }}
                       className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all"
                     >
                       <DeleteOutlined style={{ fontSize: 10 }} />
@@ -271,7 +279,7 @@ const ChapteredEditor: React.FC = () => {
               onClick={handleAddChapter}
               className="shrink-0 flex items-center justify-center gap-1 py-2 border-t border-black/10 text-xs text-gray-500 hover:text-[#e8673c] hover:bg-black/5 transition-colors"
             >
-              <PlusOutlined /> 新增{entryLabel}
+              <PlusOutlined /> {t('writing.actions.addEntry', { entryLabel })}
             </button>
           </div>
 
@@ -285,7 +293,7 @@ const ChapteredEditor: React.FC = () => {
                     className="w-full bg-transparent text-2xl font-semibold text-gray-800 outline-none border-none placeholder-gray-300"
                     value={activeChapter.title}
                     onChange={e => updateActiveChapter('title', e.target.value)}
-                    placeholder="请输入标题"
+                    placeholder={t('writing.editor.inputTitle')}
                   />
                 </div>
 
@@ -304,10 +312,15 @@ const ChapteredEditor: React.FC = () => {
                     ))}
                     <input
                       className="text-xs text-gray-400 bg-transparent outline-none border-none w-24 placeholder-gray-300"
-                      placeholder="+ 添加标签"
+                      placeholder={t('writing.editor.addTagShort')}
                       value={tagInput}
                       onChange={e => setTagInput(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag() } }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddTag()
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -317,7 +330,11 @@ const ChapteredEditor: React.FC = () => {
                   <TextArea
                     value={activeChapter.content}
                     onChange={e => updateActiveChapter('content', e.target.value)}
-                    placeholder={type === 'video_script' ? '请输入正文' : '· 发布超6000字，即有机会签约\n· 多使用分段或换行，更方便阅读'}
+                    placeholder={
+                      type === 'video_script'
+                        ? t('writing.editor.videoScript.contentPlaceholder')
+                        : t('writing.editor.shortStory.contentPlaceholderSimple')
+                    }
                     autoSize={{ minRows: 20 }}
                     variant="borderless"
                     style={{ background: 'transparent', fontSize: 15, lineHeight: '1.9', padding: 0, resize: 'none' }}
@@ -325,7 +342,7 @@ const ChapteredEditor: React.FC = () => {
                 </div>
               </>
             ) : (
-              <Empty description={`请选择或新建${entryLabel}`} className="mt-24" />
+              <Empty description={t('writing.editor.selectOrCreateEntry', { entryLabel })} className="mt-24" />
             )}
           </div>
         </div>
@@ -335,4 +352,3 @@ const ChapteredEditor: React.FC = () => {
 }
 
 export default ChapteredEditor
-

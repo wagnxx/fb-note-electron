@@ -2,9 +2,16 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import type { WritingItem, WritingType } from '@shared/types/writing'
 import type { WritingState, WritingFormData, WritingFilters, WritingListEntry } from './types'
 
-const { ipcRenderer, IPC_ACTIONS } = window.electron || ({} as any)
+const electronApi = (window as any).electron || ({} as any)
+const ipcRenderer = electronApi.ipcRenderer
+const IPC_ACTIONS = electronApi.IPC_ACTIONS
 
-const invokeWriting = ipcRenderer.invoke as <T>(channel: string, ...args: any[]) => Promise<T>
+const invokeWriting = async <T>(channel: string, ...args: any[]): Promise<T> => {
+  if (!ipcRenderer || typeof ipcRenderer.invoke !== 'function') {
+    return Promise.reject(new Error('ipcRenderer.invoke is not available in this environment'))
+  }
+  return (ipcRenderer.invoke as <T>(channel: string, ...args: any[]) => Promise<T>)(channel, ...args)
+}
 
 // Async thunks
 export const initWritingDirectories = createAsyncThunk('writing/initDirectories', async () => {

@@ -6,11 +6,10 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { selectGroup } from '@/features/chat/chatSlice'
 import Siderbar, { SiderbarRef } from './Siderbar'
 import { afterRaf } from '@/utils/utilsAsyncFunc'
-import { Badge, Button, Empty, Popover } from 'antd'
+import { Button, Empty } from 'antd'
 import { useDraggable } from '@/hooks/useDraggable'
 import { useIsMobile } from '@/hooks/useIsMobile'
-import { LinkOutlined, MessageOutlined, SettingOutlined } from '@ant-design/icons'
-import QRCode from './QRCode'
+import { SettingOutlined } from '@ant-design/icons'
 import ChatSettingsPanel from './ChatSettingsPanel'
 import { reconnectChatTransport } from '@/features/chat/service/chatService'
 
@@ -23,9 +22,33 @@ const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
 
   const { wsState } = useAppSelector(state => state.chat)
 
+  // Stabilize online state to prevent UI flicker when WS flaps briefly
+  const [stableOnline, setStableOnline] = useState<boolean>(wsState.isConnected || false)
+  const stableTimerRef = useRef<number | null>(null)
+
+  React.useEffect(() => {
+    if (stableTimerRef.current) {
+      window.clearTimeout(stableTimerRef.current)
+      stableTimerRef.current = null
+    }
+
+    // Wait a short period before committing the new isConnected value
+    stableTimerRef.current = window.setTimeout(() => {
+      setStableOnline(!!wsState.isConnected)
+      stableTimerRef.current = null
+    }, 700)
+
+    return () => {
+      if (stableTimerRef.current) {
+        window.clearTimeout(stableTimerRef.current)
+        stableTimerRef.current = null
+      }
+    }
+  }, [wsState.isConnected])
+
   const { resetPosition } = useDraggable({ ref: wrapperRef })
 
-  const isOnline = useMemo(() => wsState.isConnected || false, [wsState.isConnected])
+  const isOnline = useMemo(() => stableOnline, [stableOnline])
 
   const isMobile = useIsMobile({
     onChange: isM => {
@@ -71,7 +94,7 @@ const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
       ref={wrapperRef}
       style={{
         zIndex: 1000,
-        height: 'calc(100vh - 28px)',
+        height: '100vh',
         ...(isMobile
           ? { position: 'static', width: '100%' }
           : {
@@ -93,45 +116,28 @@ const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
           : 'flex-row rounded-2xl overflow-hidden border border-slate-200/80 backdrop-blur-sm',
       )}
     >
+      {/* 移动端右上角设置按钮，始终可见且不与其它按钮重叠 */}
       {isMobile && (
         <Button
           type="text"
           icon={<SettingOutlined />}
-          className="!absolute top-1 right-1 z-20"
+          className="!fixed right-3 top-3 z-30 bg-white/80 !rounded-full shadow border border-slate-200"
+          style={{ width: 38, height: 38 }}
           onClick={() => setShowSettingsPanel(true)}
         />
       )}
-
+      {/* 移动端设置按钮已移入 ChatWindow header，外层不再渲染 */}
+      {/* Desktop: show a settings button at top-right so user can open settings
+          even when the chat area is empty/offline. */}
       {!isMobile && (
-        <div className="drag-header w-full h-10 bg-slate-800/95 cursor-move absolute top-0 left-0 z-10 rounded-t-2xl flex items-center px-3">
-          <div className="flex items-center gap-2 text-slate-100 text-sm font-medium">
-            <MessageOutlined />
-            <span>Chat Room</span>
-            <Badge status={isOnline ? 'success' : 'error'} />
-          </div>
-          <Button
-            icon={<SettingOutlined />}
-            type="link"
-            className="ml-auto !text-slate-200"
-            onClick={() => setShowSettingsPanel(true)}
-          >
-            配置
-          </Button>
-          <Popover
-            trigger="click"
-            placement="bottomRight"
-            content={<QRCode ip={ip} />}
-            overlayClassName="chat-qr-popover"
-            overlayStyle={{ zIndex: 2500 }}
-            getPopupContainer={() => document.body}
-          >
-            <Button icon={<LinkOutlined />} type="link" className="!text-slate-200">
-              Web Link
-            </Button>
-          </Popover>
-        </div>
+        <Button
+          type="text"
+          icon={<SettingOutlined />}
+          className="!fixed right-6 top-6 z-30 bg-white/90 !rounded-full shadow border border-slate-200"
+          style={{ width: 38, height: 38 }}
+          onClick={() => setShowSettingsPanel(true)}
+        />
       )}
-
       <div className={cn('flex w-full h-full', isMobile ? '' : 'pt-10')}>
         {(!isMobile || stage === 'siderbar') && (
           <div
@@ -147,7 +153,13 @@ const ChatView: React.FC<{ ip: string }> = ({ ip }) => {
 
         <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-gradient-to-br from-slate-50 to-slate-100">
           {stage === 'chat' && selectedGroupId && isOnline ? (
-            <ChatWindow className="flex-1 min-h-0" groupId={selectedGroupId} isMobile={isMobile} onBack={handleBack} />
+            <ChatWindow
+              className="flex-1 min-h-0"
+              groupId={selectedGroupId}
+              isMobile={isMobile}
+              onBack={handleBack}
+              onShowSettings={() => setShowSettingsPanel(true)}
+            />
           ) : (
             !isMobile && (
               <Empty
