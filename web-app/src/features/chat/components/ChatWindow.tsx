@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { AutoComplete, Button, Input, Upload } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { AutoComplete, Badge, Button, Input, Tooltip, Upload } from 'antd'
+import { ArrowLeftOutlined, HistoryOutlined } from '@ant-design/icons'
 import { ClientToServerMessage } from '@shared/types'
 import { useAppSelector } from '@/store/hooks'
 import { send, sendWithRes } from '@/features/chat/service/chatService'
@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import FileMessageItem from './FileMessageItem'
 import Avatar from './Avatar'
 import { readFileAsBase64 } from '@/utils/utilsFile'
-import { FileUpIcon, MoreHorizontal, RotateCwIcon, SendIcon } from 'lucide-react'
+import { FileUpIcon, SendIcon } from 'lucide-react'
 import TextMessageItem from './TextMessageItem'
 
 const FUNCTION_COMMANDS = ['@getWifiIp', '@getUsers']
@@ -72,6 +72,11 @@ const ChatWindow: React.FC<
   }
 
   useEffect(() => {
+    if (!wsState.isConnected || !groupId) return
+    void sendWithRes('message-history-req', { groupId }).catch(() => undefined)
+  }, [groupId, wsState.isConnected])
+
+  useEffect(() => {
     const timeout = setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
     }, 100)
@@ -106,40 +111,47 @@ const ChatWindow: React.FC<
   }
 
   return (
-    <div className={cn('flex flex-col  gap-2', className)} style={style}>
-      <div className="h-max flex  items-center">
+    <div className={cn('flex flex-col gap-2 p-2', className)} style={style}>
+      <div className="h-12 px-2 flex items-center rounded-xl bg-white border border-slate-200">
         {isMobile && (
           <Button icon={<ArrowLeftOutlined />} type="link" className="-ml-2" onClick={onBack}>
             返回
           </Button>
         )}
-        <span className=" mx-auto">
-          {group?.name}({group?.members.length})
-        </span>
-        <Button icon={<MoreHorizontal color="#333" size="16" />} type="link" disabled></Button>
+        <div className="mx-auto flex items-center gap-2">
+          <span className="font-semibold text-slate-800">{group?.name}</span>
+          <span className="text-xs text-slate-500">({group?.members.length || 0})</span>
+          <Badge status={wsState.isConnected ? 'success' : 'error'} />
+        </div>
+        <Tooltip title="刷新当前群消息">
+          <Button
+            icon={<HistoryOutlined />}
+            type="text"
+            onClick={() => void fetchInitialHistory().catch(() => undefined)}
+          />
+        </Tooltip>
       </div>
-      {/* 中间内容区 */}
 
-      <div className="flex-1 bg-slate-50 min-h-0" ref={containerRef}>
-        <div className="h-full space-y-2 overflow-auto px-1 py-2">
+      <div className="flex-1 min-h-0 rounded-xl border border-slate-200 bg-white/75" ref={containerRef}>
+        <div className="h-full space-y-3 overflow-auto p-3">
           {messages.map(msg => {
             const sender = getUser(msg.sender)
             const isSender = sender?.isSelef
             return (
               <div key={`${msg.id}-${msg.groupId}`} className={cn('flex', isSender ? 'justify-end' : 'justify-start')}>
                 <div
-                  className={cn('flex items-start gap-2 ', isSender ? 'flex-row-reverse' : 'flex-row')}
+                  className={cn('flex items-start gap-2 max-w-[80%]', isSender ? 'flex-row-reverse' : 'flex-row')}
                   style={{ minWidth: 0 }}
                 >
                   <Avatar
                     userName={isSender ? 'M' : sender?.name}
                     src={sender?.avatar}
-                    style={{ width: 40, height: 40, flexShrink: 0 }}
+                    style={{ width: 34, height: 34, flexShrink: 0 }}
                   />
                   <div
                     className={cn(
-                      'rounded-xl px-3 py-2 whitespace-pre-line break-words',
-                      isSender ? 'bg-blue-100 text-black' : 'bg-gray-100 text-black',
+                      'rounded-2xl px-3 py-2 whitespace-pre-line break-words shadow-sm border',
+                      isSender ? 'bg-blue-500 text-white border-blue-400' : 'bg-white text-slate-800 border-slate-200',
                     )}
                     style={{ flexGrow: 1, minWidth: 0 }}
                   >
@@ -157,8 +169,7 @@ const ChatWindow: React.FC<
         </div>
       </div>
 
-      {/* 输入区域 */}
-      <div className="border-t py-2 px-1  flex gap-2  h-max pr-1">
+      <div className="rounded-xl border border-slate-200 bg-white p-2 flex gap-2 items-center">
         <AutoComplete
           value={input}
           options={options}
@@ -169,13 +180,16 @@ const ChatWindow: React.FC<
           }}
           style={{ flex: 1 }}
         >
-          <Input className="ant-input" placeholder="输入消息..." />
+          <Input className="ant-input" placeholder="输入消息，支持 @ 快捷命令" />
         </AutoComplete>
         <Upload beforeUpload={sendFile} showUploadList={false}>
-          <Button icon={<FileUpIcon />}></Button>
+          <Tooltip title="发送文件">
+            <Button icon={<FileUpIcon size={16} />} />
+          </Tooltip>
         </Upload>
-        <Button icon={<RotateCwIcon />} onClick={fetchInitialHistory}></Button>
-        <Button icon={<SendIcon />} onClick={sendMessageText}></Button>
+        <Tooltip title="发送">
+          <Button type="primary" icon={<SendIcon size={16} />} onClick={sendMessageText} />
+        </Tooltip>
       </div>
     </div>
   )

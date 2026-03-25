@@ -24,7 +24,11 @@ export class GroupController extends BaseWsController {
 
   // =============================================  init     ==============================================
   @action('init-req')
-  public async handleInitRequest(ws: WebSocket, { payload: data, requestId }: ClientToServerMessage<'init-req'>) {
+  public async handleInitRequest(ws: WebSocket, message: ClientToServerMessage<'init-req'>) {
+    const requestId = message?.requestId
+    const data = message?.payload
+    if (!data?.id) return
+
     const userId = data.id
     this.updateUser(ws, userId, data)
 
@@ -60,7 +64,11 @@ export class GroupController extends BaseWsController {
   }
 
   @action('join')
-  public async handleJoinGroup(ws: WebSocket, { payload: data, requestId }: ClientToServerMessage<'join'>) {
+  public async handleJoinGroup(ws: WebSocket, message: ClientToServerMessage<'join'>) {
+    const requestId = message?.requestId
+    const data = message?.payload
+    if (!data) return
+
     const groupService = this.groupService
     const userService = this.userService
     // const userGroupService = this.userGroupService
@@ -154,7 +162,10 @@ export class GroupController extends BaseWsController {
 
   // =============================================  user group     ==============================================
   @action('reset-user')
-  public async handleResetUser(ws: WebSocket, { payload: data, requestId }: ClientToServerMessage<'reset-user'>) {
+  public async handleResetUser(ws: WebSocket, message: ClientToServerMessage<'reset-user'>) {
+    const data = message?.payload
+    if (!data?.id) return
+
     const userId = data.id
     await this.updateUser(ws, userId, data)
 
@@ -163,7 +174,7 @@ export class GroupController extends BaseWsController {
   }
 
   @action('users-req')
-  public async handleGetUsers(ws: WebSocket, { payload, requestId }: ClientToServerMessage<'users-req'>) {
+  public async handleGetUsers(ws: WebSocket, { requestId }: ClientToServerMessage<'users-req'>) {
     const users = await this.userService.getAllUsers()
     const message: ServerToClientMessage = {
       type: 'users-res',
@@ -174,28 +185,28 @@ export class GroupController extends BaseWsController {
   }
 
   @action('joined-groups-req')
-  public async handleGetJoindGroups(
-    ws: WebSocket,
-    { payload: data, requestId }: ClientToServerMessage<'joined-groups-req'>,
-  ) {
+  public async handleGetJoindGroups(ws: WebSocket, requestMessage: ClientToServerMessage<'joined-groups-req'>) {
+    const requestId = requestMessage?.requestId
+    const data = requestMessage?.payload
+    if (!data?.id) return
+
     const userId = data.id
     const joinedGroups = await this.coordinatorService.getJoinedGroupsWithLatestMessage(userId)
-    const message: ServerToClientMessage = {
+    const responseMessage: ServerToClientMessage = {
       type: 'joined-groups-res',
       requestId,
       payload: {
         joinedGroups,
       },
     }
-    this.wsManager.sendToUser({ userId }, message)
+    this.wsManager.sendToUser({ userId }, responseMessage)
   }
   // =============================================   chat message     ==============================================
   @action('message-history-req')
-  public handleGetGroupMessages(
-    ws: WebSocket,
-    { payload: data, requestId }: ClientToServerMessage<'message-history-req'>,
-  ) {
-    const { groupId } = data
+  public handleGetGroupMessages(ws: WebSocket, message: ClientToServerMessage<'message-history-req'>) {
+    const requestId = message?.requestId
+    const data = message?.payload
+    const groupId = data?.groupId
     if (!groupId) return
 
     const group = this.groupService.getGroup(groupId)

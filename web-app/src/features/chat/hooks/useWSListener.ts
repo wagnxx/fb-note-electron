@@ -15,6 +15,16 @@ import { useNotification } from '@/hooks/useNotification'
 import { getValidObject } from '@/utils/utillsObject'
 import { ChatGroupWithMember, ChatMessage, ServerMessagePayloadMap, ServerToClientMessage, User } from '@shared/types'
 
+type ServerErrorMessage = {
+  type: 'error'
+  requestId?: string
+  payload?: {
+    requestId?: string
+    sourceType?: string
+    reason?: string
+  }
+}
+
 export function useWSListener(lanIp: string) {
   const dispatch = useDispatch()
   const { showNotification } = useNotification()
@@ -46,7 +56,7 @@ export function useWSListener(lanIp: string) {
         }
 
         // 监听消息
-        const offPush = wsClient.onPush((msg: ServerToClientMessage) => {
+        const offPush = wsClient.onPush((msg: ServerToClientMessage | ServerErrorMessage) => {
           try {
             // const data = wrapperData.payload
             const { type, payload: data } = msg
@@ -101,6 +111,14 @@ export function useWSListener(lanIp: string) {
                 const message = (data as { message: string }).message
                 dispatch(systemNotify(message))
                 showNotification('success', message, 'message')
+                break
+              }
+              case 'error': {
+                const { reason, sourceType } = (data as ServerErrorMessage['payload']) || {}
+                const errorMessage = reason || 'Server message handling failed'
+                const title = sourceType ? `[${sourceType}] ${errorMessage}` : errorMessage
+                showNotification('error', title, 'message')
+                console.error('Server error message:', msg)
                 break
               }
               default:

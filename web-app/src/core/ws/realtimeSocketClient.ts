@@ -39,6 +39,7 @@ type RealtimeSocketClientOptions = {
 const DEFAULT_REQUEST_TIMEOUT_MS = 10_000
 const DEFAULT_HEARTBEAT_INTERVAL_MS = 15_000
 const DEFAULT_HEARTBEAT_TIMEOUT_MS = 45_000
+const DEFAULT_WAIT_OPEN_TIMEOUT_MS = 8_000
 
 export class RealtimeSocketClient {
   socket: WebSocket
@@ -153,14 +154,16 @@ export class RealtimeSocketClient {
     return Math.max(100, Math.floor(baseDelay * randomRatio))
   }
 
-  private async reconnectNow() {
+  private async reconnectNow(): Promise<boolean> {
     try {
       const raw = await this.acquireSocket({ forceNew: true })
-      if (!raw) return
+      if (!raw) return false
       this.bindSocket(raw.socket)
+      return true
     } catch (error) {
       console.error('WebSocket reconnect failed:', error)
       this.tryReconnect()
+      return false
     }
   }
 
@@ -191,17 +194,61 @@ export class RealtimeSocketClient {
           pending.resolve(msg.payload)
           this.pendingRequests.delete(msg.requestId)
         }
-      } else {
-        this.pushHandlers.forEach(handler => handler(msg))
       }
+
+      this.pushHandlers.forEach(handler => handler(msg))
     } catch (error) {
       console.error('Invalid WebSocket message:', error)
     }
   }
 
-  request<T = any, R = any>(type: string, payload: T, options?: RequestOptions): Promise<R> {
-    if (this.socket.readyState !== WebSocket.OPEN) {
-      return Promise.reject(new Error('WebSocket is not connected'))
+  private waitForOpen(timeoutMs = DEFAULT_WAIT_OPEN_TIMEOUT_MS): Promise<boolean> {
+    if (this.socket.readyState === WebSocket.OPEN) {
+      return Promise.resolve(true)
+    }
+
+    return new Promise(resolve => {
+      const timer = setTimeout(() => {
+        offOpen()
+        offError()
+        resolve(this.socket.readyState === WebSocket.OPEN)
+      }, timeoutMs)
+
+      const finalize = (ok: boolean) => {
+        clearTimeout(timer)
+        offOpen()
+        offError()
+        resolve(ok)
+      }
+
+      const offOpen = this.onOpen(() => finalize(true))
+      const offError = this.onError(() => finalize(false))
+    })
+  }
+
+  async ensureConnected(timeoutMs = DEFAULT_WAIT_OPEN_TIMEOUT_MS): Promise<boolean> {
+    if (this.socket.readyState === WebSocket.OPEN) {
+      return true
+    }
+
+    if (this.socket.readyState === WebSocket.CLOSED) {
+      const triggered = await this.reconnect()
+      if (!triggered) {
+        return false
+      }
+    }
+
+    if (this.socket.readyState === WebSocket.CLOSING) {
+      return false
+    }
+
+    return this.waitForOpen(timeoutMs)
+  }
+
+  async request<T = any, R = any>(type: string, payload: T, options?: RequestOptions): Promise<R> {
+    const isConnected = await this.ensureConnected()
+    if (!isConnected || this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('WebSocket is not connected')
     }
 
     const requestId = this.generateRequestId()
@@ -295,5 +342,11 @@ export class RealtimeSocketClient {
 
   close(force = false) {
     this.disconnect(force)
+  }
+
+  async reconnect(): Promise<boolean> {
+    this.manuallyClosed = false
+    this.clearReconnectTimer()
+    return this.reconnectNow()
   }
 }

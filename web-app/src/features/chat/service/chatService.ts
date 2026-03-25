@@ -38,6 +38,14 @@ export async function getChatTransportClient(lanIp?: string): Promise<ChatTransp
   return chatRealtimeClient
 }
 
+export async function reconnectChatTransport(lanIp?: string): Promise<boolean> {
+  const client = await getChatTransportClient(lanIp)
+  if (!client) {
+    throw new Error('WebSocket client not available')
+  }
+  return client.reconnect()
+}
+
 export const getWSClientInstance = getChatTransportClient
 export type WSClient = ChatTransportClient
 
@@ -59,6 +67,10 @@ const getConnectedClient = async (): Promise<ChatTransportClient> => {
   const client = await getChatTransportClient()
   if (!client) {
     throw new Error('WebSocket client not available')
+  }
+  const isConnected = await client.ensureConnected()
+  if (!isConnected) {
+    throw new Error('WebSocket is not connected')
   }
   return client
 }
