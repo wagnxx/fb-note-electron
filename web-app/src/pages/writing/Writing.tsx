@@ -40,7 +40,7 @@ const TYPE_COLOR: Record<string, { bg: string; text: string }> = {
 const DISPLAY_TYPES = WRITING_TYPES.filter(item => item.value !== 'article')
 
 const WritingPage: React.FC = () => {
-  const { t } = useTranslation()
+  const { t, ready } = useTranslation()
   const { message } = useNotification()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -122,6 +122,14 @@ const WritingPage: React.FC = () => {
   }
 
   const selectedLabel = t(WRITING_TYPES.find(typeItem => typeItem.value === selectedType)?.label ?? '')
+
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spin />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-full bg-[#f5f0e8] min-h-screen">
