@@ -7,6 +7,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, Button, Empty, Space, Spin, Tag, Typography } from 'antd'
 import { ArrowLeftOutlined, CopyOutlined, EditOutlined } from '@ant-design/icons'
 import { useWriting } from '@/features/writing/hooks/useWriting'
+import parseScriptIntoSections from '@/features/writing/utils/parseScript'
+import stripMarkdown from '@/features/writing/utils/stripMarkdown'
 import { useNotification } from '@/hooks/useNotification'
 import type { WritingType } from '@shared/types/writing'
 import { useTranslation } from 'react-i18next'
@@ -45,6 +47,14 @@ const ArticleView: React.FC = () => {
     </Space>
   )
 
+  const fallbackContent = ((currentItem?.chapters as Array<{ content?: string }> | undefined) ?? [])[0]?.content ?? ''
+  const displayContent = currentItem?.content || fallbackContent
+  const totalWordCount = displayContent.replace(/\s/g, '').length
+  const scriptSections = useMemo(() => {
+    if (type !== 'video_script') return []
+    return parseScriptIntoSections(displayContent, { blankLineThreshold: 2 })
+  }, [displayContent, type])
+
   if (!id) {
     return (
       <div className="p-5">
@@ -63,17 +73,6 @@ const ArticleView: React.FC = () => {
     )
   }
 
-  const fallbackContent = ((currentItem?.chapters as Array<{ content?: string }> | undefined) ?? [])[0]?.content ?? ''
-  const displayContent = currentItem?.content || fallbackContent
-  const totalWordCount = displayContent.replace(/\s/g, '').length
-  const scriptSections = useMemo(() => {
-    if (type !== 'video_script') return []
-    return displayContent
-      .split(/\r?\n\s*\r?\n\s*\r?\n+/)
-      .map(section => section.trim())
-      .filter(Boolean)
-  }, [displayContent, type])
-
   const handleCopySection = async (section: string, index: number) => {
     try {
       await navigator.clipboard.writeText(section)
@@ -88,7 +87,7 @@ const ArticleView: React.FC = () => {
       <div className="p-5 max-w-3xl mx-auto">
         <div className="flex justify-between items-start mb-6">
           <Title level={2} className="!mb-0 flex-1 mr-4">
-            {currentItem?.title ?? t('writing.common.loading')}
+            {currentItem?.title ? stripMarkdown(currentItem.title) : t('writing.common.loading')}
           </Title>
           {actions}
         </div>
@@ -121,10 +120,11 @@ const ArticleView: React.FC = () => {
               {type === 'video_script' && scriptSections.length > 0 ? (
                 <div className="space-y-6">
                   {scriptSections.map((section, index) => {
-                    const sectionWordCount = section.replace(/\s/g, '').length
+                    const plain = stripMarkdown(section)
+                    const sectionWordCount = plain.replace(/\s/g, '').length
                     return (
                       <div
-                        key={`${index}-${section.slice(0, 12)}`}
+                        key={`${index}-${plain.slice(0, 12)}`}
                         className="rounded-md border border-gray-200 bg-white p-3"
                       >
                         <div className="flex items-center justify-end mb-2">
@@ -136,14 +136,14 @@ const ArticleView: React.FC = () => {
                               size="small"
                               type="text"
                               icon={<CopyOutlined />}
-                              onClick={() => handleCopySection(section, index)}
+                              onClick={() => handleCopySection(plain, index)}
                             >
                               {t('writing.actions.copyCurrentSection')}
                             </Button>
                           </Space>
                         </div>
                         <Paragraph className="!mb-0 text-gray-600 leading-relaxed whitespace-pre-wrap">
-                          {section}
+                          {plain}
                         </Paragraph>
                       </div>
                     )
