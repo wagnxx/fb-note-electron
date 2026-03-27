@@ -40,8 +40,8 @@ const TYPE_COLOR: Record<string, { bg: string; text: string }> = {
 const DISPLAY_TYPES = WRITING_TYPES.filter(item => item.value !== 'article')
 
 const WritingPage: React.FC = () => {
-  const { t, ready } = useTranslation()
   const { message } = useNotification()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { items, loading, error, fetchWritings, initializeDirectories, removeWriting } = useWriting()
@@ -123,79 +123,83 @@ const WritingPage: React.FC = () => {
 
   const selectedLabel = t(WRITING_TYPES.find(typeItem => typeItem.value === selectedType)?.label ?? '')
 
-  if (!ready) {
+  try {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Spin />
+      <div className="flex flex-col h-full bg-[#f5f0e8] min-h-screen">
+        {/* 顶部 tab 栏 */}
+        <div className="flex items-center overflow-x-auto gap-2 pt-3 pb-0 shrink-0 px-4 sm:justify-center sm:px-0">
+          {DISPLAY_TYPES.map(tab => (
+            <button
+              key={tab.value}
+              onClick={() => handleSelectType(tab.value)}
+              className={`flex-none whitespace-nowrap px-4 sm:px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                selectedType === tab.value
+                  ? 'bg-[#e8673c] text-white shadow'
+                  : 'bg-transparent text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              {t(tab.label)}
+            </button>
+          ))}
+        </div>
+
+        {/* 列表区 */}
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          {error && <Alert type="error" message={error} className="mb-4" />}
+
+          <Spin spinning={loading}>
+            {items.length === 0 && !loading ? (
+              <Empty description={t('writing.list.emptyByType', { typeLabel: selectedLabel })} className="mt-20">
+                <button
+                  onClick={handleCreateNew}
+                  className="mt-2 px-6 py-2 bg-[#e8673c] text-white rounded-full text-sm font-medium hover:bg-[#d45a30] transition-colors"
+                >
+                  {t('writing.actions.createFirst')}
+                </button>
+              </Empty>
+            ) : (
+              <div className="flex flex-col gap-0 max-w-2xl w-full mx-auto px-2 sm:px-0">
+                {items.map((item, idx) => (
+                  <WritingListItem
+                    key={item.id}
+                    item={item}
+                    type={selectedType}
+                    isLast={idx === items.length - 1}
+                    copyLoading={copyLoadingId === item.id}
+                    deleteLoading={deleteLoadingId === item.id}
+                    onView={() => handleView(item.id)}
+                    onCopy={e => handleCopy(item.id, e)}
+                    onDelete={() => handleDelete(item.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </Spin>
+        </div>
+
+        {/* 悬浮写作按钮 */}
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
+          <button
+            onClick={handleCreateNew}
+            className="flex items-center gap-2 px-8 py-3 bg-[#e8673c] text-white rounded-full shadow-xl text-sm font-medium hover:bg-[#d45a30] active:scale-95 transition-all"
+          >
+            <PlusOutlined />
+            {t('writing.actions.create')}
+          </button>
+        </div>
+      </div>
+    )
+  } catch (err) {
+    // Log and show a readable error message so we can debug rendering failures
+    // eslint-disable-next-line no-console
+    console.error('WritingPage render error:', err)
+    return (
+      <div className="p-6">
+        <h3 className="text-red-600">渲染错误 (WritingPage)</h3>
+        <pre className="whitespace-pre-wrap text-sm text-red-500">{String(err)}</pre>
       </div>
     )
   }
-
-  return (
-    <div className="flex flex-col h-full bg-[#f5f0e8] min-h-screen">
-      {/* 顶部 tab 栏 */}
-      <div className="flex items-center overflow-x-auto gap-2 pt-3 pb-0 shrink-0 px-4 sm:justify-center sm:px-0">
-        {DISPLAY_TYPES.map(tab => (
-          <button
-            key={tab.value}
-            onClick={() => handleSelectType(tab.value)}
-            className={`flex-none whitespace-nowrap px-4 sm:px-6 py-2 rounded-full text-sm font-medium transition-all ${
-              selectedType === tab.value
-                ? 'bg-[#e8673c] text-white shadow'
-                : 'bg-transparent text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            {t(tab.label)}
-          </button>
-        ))}
-      </div>
-
-      {/* 列表区 */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        {error && <Alert type="error" message={error} className="mb-4" />}
-
-        <Spin spinning={loading}>
-          {items.length === 0 && !loading ? (
-            <Empty description={t('writing.list.emptyByType', { typeLabel: selectedLabel })} className="mt-20">
-              <button
-                onClick={handleCreateNew}
-                className="mt-2 px-6 py-2 bg-[#e8673c] text-white rounded-full text-sm font-medium hover:bg-[#d45a30] transition-colors"
-              >
-                {t('writing.actions.createFirst')}
-              </button>
-            </Empty>
-          ) : (
-            <div className="flex flex-col gap-0 max-w-2xl w-full mx-auto px-2 sm:px-0">
-              {items.map((item, idx) => (
-                <WritingListItem
-                  key={item.id}
-                  item={item}
-                  type={selectedType}
-                  isLast={idx === items.length - 1}
-                  copyLoading={copyLoadingId === item.id}
-                  deleteLoading={deleteLoadingId === item.id}
-                  onView={() => handleView(item.id)}
-                  onCopy={e => handleCopy(item.id, e)}
-                  onDelete={() => handleDelete(item.id)}
-                />
-              ))}
-            </div>
-          )}
-        </Spin>
-      </div>
-
-      {/* 悬浮写作按钮 */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
-        <button
-          onClick={handleCreateNew}
-          className="flex items-center gap-2 px-8 py-3 bg-[#e8673c] text-white rounded-full shadow-xl text-sm font-medium hover:bg-[#d45a30] active:scale-95 transition-all"
-        >
-          <PlusOutlined />
-          {t('writing.actions.create')}
-        </button>
-      </div>
-    </div>
-  )
 }
 
 // ─── 列表行 ────────────────────────────────────────────────────────────────────

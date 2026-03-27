@@ -114,7 +114,6 @@
         "parsedChaptersWithStartIndex": "Parsed {{count}} chapters, start index:",
         "chapterSuffixIncremental": "chapter (auto increment)"
       }
-      }
     },
     "validation": {
       "typeRequired": "Please select a writing type",

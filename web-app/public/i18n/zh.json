@@ -56,13 +56,9 @@
       "volumeAndChapter": "卷/章",
       "generatedTitle": "{{date}} {{typeLabel}}",
       "catalog": "目录",
-      "volumeLabel": "卷：",
-  "writing": {
-    "types": {
-      "short_story": { "label": "短篇故事" },
-      "video_script": { "label": "视频剧本" },
-      "novel": { "label": "长篇小说" }
+      "volumeLabel": "卷："
     },
+  "writing": {
     "actions": {
       "back": "返回",
       "edit": "编辑",

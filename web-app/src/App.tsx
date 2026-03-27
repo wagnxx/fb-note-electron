@@ -6,7 +6,9 @@ import { Provider } from 'react-redux'
 import { store, persistor } from '@/store/store' // 确保你导入了 Redux store
 import AppRoutes from './routes/AppRoutes'
 import './App.css'
-import './i18n'
+import i18n from './i18n'
+import { Spin } from 'antd'
+import { useEffect, useState } from 'react'
 
 const config: ThemeConfig = {
   token: {
@@ -36,12 +38,71 @@ const App: React.FC = () => {
         <ConfigProvider theme={config}>
           <AntdApp>
             <div className="app-root">
-              <AppRoutes />
+              <AppContent />
             </div>
           </AntdApp>
         </ConfigProvider>
       </PersistGate>
     </Provider>
+  )
+}
+
+const AppContent: React.FC = () => {
+  const [ready, setReady] = useState<boolean>(i18n.isInitialized ?? false)
+
+  useEffect(() => {
+    if (i18n.isInitialized) {
+      setReady(true)
+      return
+    }
+    const onInit = () => setReady(true)
+    i18n.on && i18n.on('initialized', onInit)
+    return () => {
+      i18n.off && i18n.off('initialized', onInit)
+    }
+  }, [])
+
+  // In dev, print loaded resource summary to help debugging missing keys
+  useEffect(() => {
+    // eslint-disable-next-line no-undef
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        // i18n.store?.data structure: { en: { translation: { ... } } }
+        // Print languages and namespaces loaded
+        // eslint-disable-next-line no-console
+        console.debug('i18n initialized:', i18n.isInitialized)
+        // eslint-disable-next-line no-console
+        console.debug(
+          'i18n store snapshot:',
+          Object.keys((i18n as any).store?.data || {}).map(lng => ({
+            lng,
+            namespaces: Object.keys(((i18n as any).store?.data || {})[lng] || {}),
+          })),
+        )
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [ready])
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
+
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Spin size="large" />
+        </div>
+      }
+    >
+      <AppRoutes />
+    </React.Suspense>
   )
 }
 

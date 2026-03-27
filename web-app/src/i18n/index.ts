@@ -1,8 +1,14 @@
+/* eslint-disable no-undef */
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import HttpBackend from 'i18next-http-backend'
 import store from '@/store/store'
+
+const publicBase =
+  process.env.PUBLIC_URL && process.env.PUBLIC_URL !== '' ? process.env.PUBLIC_URL.replace(/\/$/, '') : ''
+
+const loadPath = `${publicBase}/i18n/{{lng}}.json`.replace(/\/\/+/g, '/')
 
 i18n
   .use(HttpBackend) // 用于加载语言文件
@@ -15,8 +21,7 @@ i18n
       escapeValue: false, // 避免 XSS 攻击
     },
     backend: {
-      // eslint-disable-next-line no-undef
-      loadPath: process.env.NODE_ENV === 'production' ? '/ulogi/i18n/{{lng}}.json' : '/i18n/{{lng}}.json', // 开发环境是 /i18n
+      loadPath, // 语言文件路径
     },
   })
 // 监听 Redux 的语言状态变化
