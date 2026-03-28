@@ -5,6 +5,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, Input, Spin, Tag } from 'antd'
+import RelatedArticleSelector from '@/features/writing/components/RelatedArticleSelector'
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons'
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import { generateWritingTitle, validateWritingData } from '@/features/writing/utils/helpers'
@@ -58,6 +59,7 @@ const ArticleEditor: React.FC = () => {
       title: currentItem.title,
       content: currentItem.content || chapterFallback,
       tags: currentItem.tags,
+      metadata: currentItem.metadata || {},
     })
   }, [currentItem, id])
 
@@ -182,6 +184,16 @@ const ArticleEditor: React.FC = () => {
                   handleAddTag()
                 }
               }}
+            />
+          </div>
+
+          {/* 关联文章选择 */}
+          <div className="mb-4">
+            <label className="text-sm text-gray-500 mr-3">关联文章：</label>
+            <RelatedArticleSelector
+              value={formData.metadata?.relatedArticleId || null}
+              onChange={id => setFormData(prev => ({ ...prev, metadata: { ...(prev.metadata || {}), relatedArticleId: id } }))}
+              restrictType={null}
             />
           </div>
 

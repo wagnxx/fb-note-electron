@@ -59,6 +59,9 @@ const initialState: WritingState = {
   loading: false,
   error: null,
   filters: {},
+  // UI preferences persisted via redux-persist
+  displayMode: 'normal',
+  activeTagFilter: null,
 }
 
 const writingSlice = createSlice({
@@ -67,6 +70,12 @@ const writingSlice = createSlice({
   reducers: {
     setFilters: (state, action: PayloadAction<WritingFilters>) => {
       state.filters = action.payload
+    },
+    setDisplayMode: (state, action: PayloadAction<'normal' | 'compact'>) => {
+      state.displayMode = action.payload
+    },
+    setActiveTagFilter: (state, action: PayloadAction<string | null>) => {
+      state.activeTagFilter = action.payload
     },
     clearCurrentItem: state => {
       state.currentItem = null
@@ -151,5 +160,5 @@ const writingSlice = createSlice({
   },
 })
 
-export const { setFilters, clearCurrentItem, clearError } = writingSlice.actions
+export const { setFilters, setDisplayMode, setActiveTagFilter, clearCurrentItem, clearError } = writingSlice.actions
 export default writingSlice.reducer

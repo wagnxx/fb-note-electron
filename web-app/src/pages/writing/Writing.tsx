@@ -10,6 +10,7 @@ import { useWriting } from '@/features/writing/hooks/useWriting'
 import { useNotification } from '@/hooks/useNotification'
 import { hasChapters, WRITING_TYPES } from '@/features/writing/utils/helpers'
 import type { WritingItem, WritingType } from '@shared/types/writing'
+import stripMarkdown from '@/features/writing/utils/stripMarkdown'
 import type { WritingListEntry } from '@/features/writing/types'
 import { useTranslation } from 'react-i18next'
 
@@ -251,12 +252,12 @@ const WritingListItem: React.FC<WritingListItemProps> = ({
         className="w-14 h-20 rounded-lg shrink-0 flex items-center justify-center text-white font-bold text-lg shadow"
         style={{ background: 'linear-gradient(135deg, #c9a96e 0%, #a07850 100%)' }}
       >
-        {item.title.slice(0, 1)}
+        {stripMarkdown(item.title).slice(0, 1)}
       </div>
 
       {/* 正文 */}
       <div className="flex-1 min-w-0">
-        <div className="font-semibold text-gray-900 text-base truncate">{item.title}</div>
+        <div className="font-semibold text-gray-900 text-base truncate">{stripMarkdown(item.title)}</div>
         <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
           {wordCountStr && <span>{wordCountStr}</span>}
           {wordCountStr && chapterStr && <span>｜</span>}

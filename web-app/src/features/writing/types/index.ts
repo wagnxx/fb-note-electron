@@ -22,6 +22,8 @@ export interface WritingFormData {
   /** 文章类型使用；章节类型此字段忽略 */
   content: string
   tags: string[]
+  /** 可选元数据，如 { relatedArticleId: string } */
+  metadata?: Record<string, any>
   /** 小说使用（卷 -> 章） */
   volumes?: WritingVolume[]
   /** 章节类型使用（novel/short_story/video_script） */
@@ -45,6 +47,8 @@ export interface WritingState {
   loading: boolean
   error: string | null
   filters: WritingFilters
+  displayMode?: 'normal' | 'compact'
+  activeTagFilter?: string | null
 }
 
 export interface WritingListItem {

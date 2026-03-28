@@ -19,7 +19,7 @@ const ArticleView: React.FC = () => {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { currentItem, loading, error, fetchWriting } = useWriting()
+  const { currentItem, loading, error, fetchWriting, items } = useWriting()
   const { message } = useNotification()
   const id = searchParams.get('id')
   const type = ((searchParams.get('type') as WritingType) || 'article') as 'article' | 'short_story' | 'video_script'
@@ -54,6 +54,9 @@ const ArticleView: React.FC = () => {
     if (type !== 'video_script') return []
     return parseScriptIntoSections(displayContent, { blankLineThreshold: 2 })
   }, [displayContent, type])
+
+  const relatedId = currentItem?.metadata?.relatedArticleId
+  const relatedArticle = relatedId ? items.find(it => it.id === relatedId) || null : null
 
   if (!id) {
     return (
@@ -91,6 +94,20 @@ const ArticleView: React.FC = () => {
           </Title>
           {actions}
         </div>
+
+        {/* 关联文章展示（如果有） */}
+        {relatedArticle && (
+          <div className="mb-4">
+            <a
+              className="text-sm text-blue-600 hover:underline"
+              onClick={() =>
+                navigate(`/tool/writing/view?id=${relatedArticle.id}&type=${relatedArticle.type || 'article'}`)
+              }
+            >
+              {stripMarkdown(relatedArticle.title)}
+            </a>
+          </div>
+        )}
 
         {!loading && !currentItem ? (
           <Empty description={t('writing.view.contentMissing')} />
