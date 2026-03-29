@@ -127,7 +127,6 @@ const WritingPage: React.FC = () => {
   }
   return (
     <div className="flex flex-col h-full bg-[#f5f0e8] min-h-screen">
-      <SettingsButton />
       {/* Article type selector (top). No background, underline indicates selected. */}
       <div className="flex items-center overflow-x-auto gap-2 pt-3 pb-0 shrink-0">
         <div className="max-w-md w-full mx-auto px-4">
@@ -468,6 +467,10 @@ const WritingPage: React.FC = () => {
                 >
                   <PlusOutlined />
                 </button>
+                {/* Settings button placed inside the toolbar, below create */}
+                <div className="mt-2">
+                  <SettingsButton />
+                </div>
               </div>
 
               {items.filter((it: any) => (it as any).metadata?.cover).length > 3 && !toolbarExpanded && (
