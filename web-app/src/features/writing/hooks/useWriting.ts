@@ -59,6 +59,20 @@ export const useWriting = () => {
     [dispatch],
   )
 
+  const setMode = useCallback(
+    (mode: 'normal' | 'compact') => {
+      dispatch({ type: 'writing/setDisplayMode', payload: mode })
+    },
+    [dispatch],
+  )
+
+  const setActiveTag = useCallback(
+    (tag: string | null) => {
+      dispatch({ type: 'writing/setActiveTagFilter', payload: tag })
+    },
+    [dispatch],
+  )
+
   return {
     // State
     writingState,
@@ -75,5 +89,7 @@ export const useWriting = () => {
     fetchWriting,
     fetchWritings,
     removeWriting,
+    setMode,
+    setActiveTag,
   }
 }

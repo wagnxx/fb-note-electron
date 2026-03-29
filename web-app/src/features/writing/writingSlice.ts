@@ -132,7 +132,10 @@ const writingSlice = createSlice({
       })
       .addCase(listWritings.fulfilled, (state, action) => {
         state.loading = false
-        state.items = action.payload
+        // The IPC list handler returns WritingBase entries without the `type` field.
+        // Annotate each item with the requested type (available as action.meta.arg)
+        const reqType = (action as any).meta?.arg
+        state.items = (action.payload || []).map((it: any) => ({ ...(it || {}), type: reqType }))
       })
       .addCase(listWritings.rejected, (state, action) => {
         state.loading = false
