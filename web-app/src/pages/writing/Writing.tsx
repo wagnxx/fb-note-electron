@@ -15,6 +15,7 @@ import { hasChapters, WRITING_TYPES } from '@/features/writing/utils/helpers'
 import { useSelector } from 'react-redux'
 import type { WritingType } from '@shared/types/writing'
 import { useTranslation } from 'react-i18next'
+import SettingsButton from './components/SettingsButton'
 
 const DISPLAY_TYPES = WRITING_TYPES.filter(item => item.value !== 'article')
 
@@ -126,6 +127,7 @@ const WritingPage: React.FC = () => {
   }
   return (
     <div className="flex flex-col h-full bg-[#f5f0e8] min-h-screen">
+      <SettingsButton />
       {/* Article type selector (top). No background, underline indicates selected. */}
       <div className="flex items-center overflow-x-auto gap-2 pt-3 pb-0 shrink-0">
         <div className="max-w-md w-full mx-auto px-4">

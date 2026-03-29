@@ -4,6 +4,7 @@ import { ipcMain } from 'electron'
 import { logger } from '@/utils/logger'
 import { getSupportPath } from '@/config/basic'
 import { IPC_ACTIONS } from '@shared/ipcActions'
+import { setupSettingsHandler } from './settings'
 import type {
   WritingItem,
   WritingType,
@@ -856,4 +857,10 @@ export function setupWritingHandler(): void {
   )
 
   logger.info('Writing IPC handlers registered')
+  // register settings handlers under writing module
+  try {
+    setupSettingsHandler()
+  } catch (e) {
+    logger.warn('[writing] failed to register settings handler', e)
+  }
 }
