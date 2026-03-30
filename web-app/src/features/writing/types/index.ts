@@ -47,7 +47,7 @@ export interface WritingState {
   loading: boolean
   error: string | null
   filters: WritingFilters
-  displayMode?: 'normal' | 'compact'
+  displayMode?: 'normal' | 'compact' | 'grid'
   activeTagFilter?: string | null
 }
 

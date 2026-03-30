@@ -60,7 +60,7 @@ export const useWriting = () => {
   )
 
   const setMode = useCallback(
-    (mode: 'normal' | 'compact') => {
+    (mode: 'normal' | 'compact' | 'grid') => {
       dispatch({ type: 'writing/setDisplayMode', payload: mode })
     },
     [dispatch],

@@ -71,10 +71,23 @@ const writingSlice = createSlice({
     setFilters: (state, action: PayloadAction<WritingFilters>) => {
       state.filters = action.payload
     },
-    setDisplayMode: (state, action: PayloadAction<'normal' | 'compact'>) => {
+    setDisplayMode: (state, action: PayloadAction<'normal' | 'compact' | 'grid'>) => {
+      // Debug: log when displayMode changes to help trace unexpected updates
+      try {
+        // eslint-disable-next-line no-console
+        console.debug('[writing] setDisplayMode ->', action.payload)
+      } catch (e) {
+        // ignore
+      }
       state.displayMode = action.payload
     },
     setActiveTagFilter: (state, action: PayloadAction<string | null>) => {
+      try {
+        // eslint-disable-next-line no-console
+        console.debug('[writing] setActiveTagFilter ->', action.payload, 'current displayMode:', state.displayMode)
+      } catch (e) {
+        // ignore
+      }
       state.activeTagFilter = action.payload
     },
     clearCurrentItem: state => {
