@@ -9,6 +9,7 @@ import { ArrowLeftOutlined, CopyOutlined, EditOutlined } from '@ant-design/icons
 import { useWriting } from '@/features/writing/hooks/useWriting'
 import parseScriptIntoSections from '@/features/writing/utils/parseScript'
 import stripMarkdown from '@/features/writing/utils/stripMarkdown'
+import countCharacters from '@/features/writing/utils/countCharacters'
 import { useNotification } from '@/hooks/useNotification'
 import type { WritingType } from '@shared/types/writing'
 import { useTranslation } from 'react-i18next'
@@ -49,7 +50,7 @@ const ArticleView: React.FC = () => {
 
   const fallbackContent = ((currentItem?.chapters as Array<{ content?: string }> | undefined) ?? [])[0]?.content ?? ''
   const displayContent = currentItem?.content || fallbackContent
-  const totalWordCount = displayContent.replace(/\s/g, '').length
+  const totalWordCount = countCharacters(displayContent)
   const scriptSections = useMemo(() => {
     if (type !== 'video_script') return []
     return parseScriptIntoSections(displayContent, { blankLineThreshold: 2 })
@@ -138,7 +139,7 @@ const ArticleView: React.FC = () => {
                 <div className="space-y-6">
                   {scriptSections.map((section, index) => {
                     const plain = stripMarkdown(section)
-                    const sectionWordCount = plain.replace(/\s/g, '').length
+                    const sectionWordCount = countCharacters(plain)
                     return (
                       <div
                         key={`${index}-${plain.slice(0, 12)}`}

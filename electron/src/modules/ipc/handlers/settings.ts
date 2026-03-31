@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { ipcMain, shell } from 'electron'
 import { logger } from '@/utils/logger'
-import { getSupportPath } from '@/config/basic'
+import { getSupportPath, getDistPath, isDev } from '@/config/basic'
 import { IPC_ACTIONS } from '@shared/ipcActions'
 
 const CONFIG_FILE = getSupportPath('app-settings.json')
@@ -48,6 +48,29 @@ async function copyDir(src: string, dest: string) {
   }
 }
 
+async function safeCountFiles(dir: string, limit = 2000): Promise<number> {
+  let count = 0
+  async function walk(p: string) {
+    try {
+      const entries = await fs.promises.readdir(p, { withFileTypes: true })
+      for (const e of entries) {
+        if (count > limit) return
+        const child = path.join(p, e.name)
+        if (e.isDirectory()) {
+          await walk(child)
+        } else if (e.isFile()) {
+          count += 1
+          if (count > limit) return
+        }
+      }
+    } catch {
+      // ignore errors while counting
+    }
+  }
+  await walk(dir)
+  return count
+}
+
 export function setupSettingsHandler() {
   ipcMain.handle(IPC_ACTIONS.GET_SETTINGS_DIR, async () => {
     try {
@@ -64,6 +87,14 @@ export function setupSettingsHandler() {
 
   ipcMain.handle(IPC_ACTIONS.SET_SETTINGS_DIR, async (_event, newDir: string) => {
     try {
+      // disallow choosing project root as storage (except default support dir)
+      const projectRoot = path.resolve(getDistPath(), isDev ? '..' : '../..')
+      const supportDir = path.resolve(getSupportPath())
+      const normalizedNew = path.resolve(newDir)
+      if (normalizedNew === projectRoot && normalizedNew !== supportDir) {
+        return { ok: false, error: 'Selected directory cannot be the project root' }
+      }
+
       ensureDir(newDir)
       const cfg = await readConfig()
       cfg.settingsDir = newDir
@@ -81,6 +112,13 @@ export function setupSettingsHandler() {
       try {
         const cfg = await readConfig()
         const oldDir = cfg.settingsDir || getSupportPath('writing')
+        // prevent migrating into project root
+        const projectRoot = path.resolve(getDistPath(), isDev ? '..' : '../..')
+        const supportDir = path.resolve(getSupportPath())
+        const normalizedNew = path.resolve(newDir)
+        if (normalizedNew === projectRoot && normalizedNew !== supportDir) {
+          return { ok: false, error: 'Selected directory cannot be the project root' }
+        }
         if (!fs.existsSync(oldDir)) {
           // nothing to migrate
           ensureDir(newDir)
@@ -111,6 +149,46 @@ export function setupSettingsHandler() {
     },
   )
 
+  // Validate a directory: exists, isDirectory, writable, fileCount, isEmpty
+  ipcMain.handle(IPC_ACTIONS.VALIDATE_DIR, async (_event, targetDir: string) => {
+    try {
+      if (!targetDir) return { exists: false, isDirectory: false, writable: false, fileCount: 0, isEmpty: true }
+      const exists = fs.existsSync(targetDir)
+      // disallow project root selection (except default support dir)
+      const projectRoot = path.resolve(getDistPath(), isDev ? '..' : '../..')
+      const supportDir = path.resolve(getSupportPath())
+      const normalizedTarget = path.resolve(targetDir)
+      if (normalizedTarget === projectRoot && normalizedTarget !== supportDir) {
+        return {
+          exists: true,
+          isDirectory: true,
+          writable: false,
+          fileCount: 0,
+          isEmpty: true,
+          error: 'forbidden_project_root',
+        }
+      }
+      if (!exists) return { exists: false, isDirectory: false, writable: true, fileCount: 0, isEmpty: true }
+      const stat = fs.statSync(targetDir)
+      const isDirectory = stat.isDirectory()
+      if (!isDirectory) return { exists: true, isDirectory: false, writable: false, fileCount: 0, isEmpty: false }
+
+      let writable = true
+      try {
+        fs.accessSync(targetDir, fs.constants.W_OK)
+      } catch (e) {
+        writable = false
+      }
+
+      const fileCount = await safeCountFiles(targetDir, 2000)
+      const isEmpty = fileCount === 0
+      return { exists: true, isDirectory: true, writable, fileCount, isEmpty }
+    } catch (err) {
+      logger.warn('[settings] VALIDATE_DIR failed', err)
+      return { exists: false, isDirectory: false, writable: false, fileCount: 0, isEmpty: true, error: String(err) }
+    }
+  })
+
   ipcMain.handle(IPC_ACTIONS.OPEN_SETTINGS_DIR, async () => {
     try {
       const cfg = await readConfig()
@@ -123,4 +201,28 @@ export function setupSettingsHandler() {
       return { ok: false, error: String(e) }
     }
   })
+}
+
+// Synchronous getter for other main-process modules to obtain the configured settings directory.
+export function getConfiguredSettingsDirSync(): string {
+  try {
+    const envPath = process.env.SETTINGS_DIR
+    if (envPath) return envPath
+
+    if (fs.existsSync(CONFIG_FILE)) {
+      try {
+        const raw = fs.readFileSync(CONFIG_FILE, 'utf-8')
+        const cfg = JSON.parse(raw || '{}')
+        if (cfg.settingsDir) return cfg.settingsDir
+      } catch {
+        // fallthrough to default
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  const dir = getSupportPath('writing')
+  ensureDir(dir)
+  return dir
 }

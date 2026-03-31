@@ -10,6 +10,7 @@ import { useWriting } from '@/features/writing/hooks/useWriting'
 import { useNotification } from '@/hooks/useNotification'
 import type { WritingVolume } from '@/features/writing/types'
 import { useTranslation } from 'react-i18next'
+import countCharacters from '@/features/writing/utils/countCharacters'
 
 const NovelView: React.FC = () => {
   const { t } = useTranslation()
@@ -29,9 +30,7 @@ const NovelView: React.FC = () => {
     if (id) fetchWriting('novel', id)
   }, [fetchWriting, id])
 
-  const currentItemWithHierarchy = currentItem as
-    | (typeof currentItem & { volumes?: WritingVolume[] })
-    | null
+  const currentItemWithHierarchy = currentItem as (typeof currentItem & { volumes?: WritingVolume[] }) | null
 
   const sortedVolumes = useMemo(
     () => [...(currentItemWithHierarchy?.volumes ?? [])].sort((a, b) => a.order - b.order),
@@ -39,9 +38,7 @@ const NovelView: React.FC = () => {
   )
 
   const toggleVolumeCollapse = (volumeId: string) => {
-    setCollapsedVolumeIds(prev =>
-      prev.includes(volumeId) ? prev.filter(id => id !== volumeId) : [...prev, volumeId],
-    )
+    setCollapsedVolumeIds(prev => (prev.includes(volumeId) ? prev.filter(id => id !== volumeId) : [...prev, volumeId]))
   }
 
   useEffect(() => {
@@ -51,7 +48,7 @@ const NovelView: React.FC = () => {
 
   // 总字数
   const totalWordCount = useMemo(
-    () => sortedVolumes.flatMap(v => v.chapters).reduce((sum, ch) => sum + ch.content.replace(/\s/g, '').length, 0),
+    () => sortedVolumes.flatMap(v => v.chapters).reduce((sum, ch) => sum + countCharacters(ch.content), 0),
     [sortedVolumes],
   )
 
@@ -80,10 +77,7 @@ const NovelView: React.FC = () => {
     [activeChapterId, activeVolume],
   )
 
-  const activeChapterWordCount = useMemo(
-    () => (activeChapter?.content ?? '').replace(/\s/g, '').length,
-    [activeChapter?.content],
-  )
+  const activeChapterWordCount = useMemo(() => countCharacters(activeChapter?.content), [activeChapter?.content])
 
   const handleCopyChapter = async (chapterId: string) => {
     const chapter = sortedVolumes.flatMap(v => v.chapters).find(ch => ch.id === chapterId)
@@ -134,7 +128,9 @@ const NovelView: React.FC = () => {
 
           {/* 标题 + 总字数 */}
           <div className="flex flex-col items-center">
-            <span className="text-base font-semibold text-gray-800">{currentItem?.title ?? t('writing.common.loading')}</span>
+            <span className="text-base font-semibold text-gray-800">
+              {currentItem?.title ?? t('writing.common.loading')}
+            </span>
             <span className="text-xs text-gray-400">
               {totalWordCount >= 10000
                 ? t('writing.common.wordCountWan', { value: (totalWordCount / 10000).toFixed(1) })
@@ -164,7 +160,9 @@ const NovelView: React.FC = () => {
         {currentItem?.tags && currentItem.tags.length > 0 && (
           <div className="flex items-center gap-1 px-4 py-1.5 shrink-0 border-b border-black/5 flex-wrap">
             {currentItem.tags.map(tag => (
-              <Tag key={tag} style={{ borderRadius: 999 }}>#{tag}</Tag>
+              <Tag key={tag} style={{ borderRadius: 999 }}>
+                #{tag}
+              </Tag>
             ))}
           </div>
         )}
@@ -178,7 +176,9 @@ const NovelView: React.FC = () => {
             <div className="w-56 shrink-0 border-r border-black/10 flex flex-col bg-[#ede8df] overflow-hidden">
               <div className="flex items-center justify-between px-3 py-2 border-b border-black/10">
                 <span className="text-xs font-medium text-gray-500">{t('writing.common.catalog')}</span>
-                <span className="text-xs text-gray-400">{t('writing.common.volumeCount', { count: sortedVolumes.length })}</span>
+                <span className="text-xs text-gray-400">
+                  {t('writing.common.volumeCount', { count: sortedVolumes.length })}
+                </span>
               </div>
 
               <div className="flex-1 overflow-y-auto py-1">
@@ -187,85 +187,98 @@ const NovelView: React.FC = () => {
                 ) : (
                   sortedVolumes.map(volume => {
                     const volumeWordCount = (volume.chapters ?? []).reduce(
-                      (sum, chapter) => sum + chapter.content.replace(/\s/g, '').length,
+                      (sum, chapter) => sum + countCharacters(chapter.content),
                       0,
                     )
                     const isCollapsed = collapsedVolumeIds.includes(volume.id)
                     const isVolumeActive = activeVolumeId === volume.id
 
                     return (
-                    <div key={volume.id}>
-                      {/* 卷标题 */}
-                      <div
-                        className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${
-                          isVolumeActive
-                            ? 'bg-black/10'
-                            : 'bg-transparent hover:bg-black/5'
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          className={`text-[10px] transition-colors ${
-                            isVolumeActive ? 'text-gray-600' : 'text-gray-400 hover:text-gray-600'
+                      <div key={volume.id}>
+                        {/* 卷标题 */}
+                        <div
+                          className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${
+                            isVolumeActive ? 'bg-black/10' : 'bg-transparent hover:bg-black/5'
                           }`}
-                          onClick={() => toggleVolumeCollapse(volume.id)}
-                          title={isCollapsed ? t('writing.actions.expandVolume') : t('writing.actions.collapseVolume')}
                         >
-                          {isCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
-                        </button>
-                        <button
-                          type="button"
-                          className="text-left flex-1 min-w-0"
-                          onClick={() => {
-                            setCollapsedVolumeIds(prev => prev.filter(id => id !== volume.id))
-                            setActiveVolumeId(volume.id)
-                            setActiveChapterId(volume.chapters?.[0]?.id ?? null)
-                          }}
-                        >
-                          <div
-                            className={`text-xs font-semibold truncate ${
-                              isVolumeActive ? 'text-gray-700' : 'text-gray-600'
+                          <button
+                            type="button"
+                            className={`text-[10px] transition-colors ${
+                              isVolumeActive ? 'text-gray-600' : 'text-gray-400 hover:text-gray-600'
                             }`}
+                            onClick={() => toggleVolumeCollapse(volume.id)}
+                            title={
+                              isCollapsed ? t('writing.actions.expandVolume') : t('writing.actions.collapseVolume')
+                            }
                           >
-                            {volume.title || t('writing.common.defaultVolumeTitle', { index: volume.order + 1 })}
-                          </div>
-                          <div className={`text-[10px] ${isVolumeActive ? 'text-gray-500' : 'text-gray-400'}`}>
-                            {t('writing.common.wordCount', { value: volumeWordCount })}
-                          </div>
-                        </button>
-                      </div>
-                      {/* 章节列表 */}
-                      {!isCollapsed && [...(volume.chapters ?? [])].sort((a, b) => a.order - b.order).map(chapter => {
-                        const chWc = chapter.content.replace(/\s/g, '').length
-                        const isActive = activeChapterId === chapter.id
-                        return (
-                          <div
-                            key={chapter.id}
-                            className={`flex items-center justify-between pl-5 pr-2 py-1.5 group cursor-pointer ${
-                              isActive ? 'text-[#e8673c]' : 'hover:bg-black/5 text-gray-600'
-                            }`}
-                            onClick={() => { setActiveVolumeId(volume.id); setActiveChapterId(chapter.id) }}
+                            {isCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
+                          </button>
+                          <button
+                            type="button"
+                            className="text-left flex-1 min-w-0"
+                            onClick={() => {
+                              setCollapsedVolumeIds(prev => prev.filter(id => id !== volume.id))
+                              setActiveVolumeId(volume.id)
+                              setActiveChapterId(volume.chapters?.[0]?.id ?? null)
+                            }}
                           >
-                            <div className="flex flex-col flex-1 min-w-0">
-                              <span className="text-xs truncate">
-                                {chapter.title || t('writing.common.defaultChapterTitle', { index: chapter.order + 1 })}
-                              </span>
-                              <span className="text-[10px] text-gray-400">{t('writing.common.wordCount', { value: chWc })}</span>
-                            </div>
-                            {/* 复制本章，hover 显示 */}
-                            <button
-                              type="button"
-                              title={t('writing.actions.copyCurrentChapter')}
-                              onClick={e => { e.stopPropagation(); handleCopyChapter(chapter.id) }}
-                              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-[#e8673c] transition-all shrink-0 ml-1"
+                            <div
+                              className={`text-xs font-semibold truncate ${
+                                isVolumeActive ? 'text-gray-700' : 'text-gray-600'
+                              }`}
                             >
-                              <CopyOutlined style={{ fontSize: 10 }} />
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )})
+                              {volume.title || t('writing.common.defaultVolumeTitle', { index: volume.order + 1 })}
+                            </div>
+                            <div className={`text-[10px] ${isVolumeActive ? 'text-gray-500' : 'text-gray-400'}`}>
+                              {t('writing.common.wordCount', { value: volumeWordCount })}
+                            </div>
+                          </button>
+                        </div>
+                        {/* 章节列表 */}
+                        {!isCollapsed &&
+                          [...(volume.chapters ?? [])]
+                            .sort((a, b) => a.order - b.order)
+                            .map(chapter => {
+                              const chWc = countCharacters(chapter.content)
+                              const isActive = activeChapterId === chapter.id
+                              return (
+                                <div
+                                  key={chapter.id}
+                                  className={`flex items-center justify-between pl-5 pr-2 py-1.5 group cursor-pointer ${
+                                    isActive ? 'text-[#e8673c]' : 'hover:bg-black/5 text-gray-600'
+                                  }`}
+                                  onClick={() => {
+                                    setActiveVolumeId(volume.id)
+                                    setActiveChapterId(chapter.id)
+                                  }}
+                                >
+                                  <div className="flex flex-col flex-1 min-w-0">
+                                    <span className="text-xs truncate">
+                                      {chapter.title ||
+                                        t('writing.common.defaultChapterTitle', { index: chapter.order + 1 })}
+                                    </span>
+                                    <span className="text-[10px] text-gray-400">
+                                      {t('writing.common.wordCount', { value: chWc })}
+                                    </span>
+                                  </div>
+                                  {/* 复制本章，hover 显示 */}
+                                  <button
+                                    type="button"
+                                    title={t('writing.actions.copyCurrentChapter')}
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      handleCopyChapter(chapter.id)
+                                    }}
+                                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-[#e8673c] transition-all shrink-0 ml-1"
+                                  >
+                                    <CopyOutlined style={{ fontSize: 10 }} />
+                                  </button>
+                                </div>
+                              )
+                            })}
+                      </div>
+                    )
+                  })
                 )}
               </div>
             </div>
@@ -278,7 +291,9 @@ const NovelView: React.FC = () => {
                     <h2 className="text-2xl font-semibold text-gray-800">
                       {activeChapter.title || t('writing.view.untitledChapter')}
                     </h2>
-                    <span className="text-sm text-gray-400">{t('writing.common.wordCount', { value: activeChapterWordCount })}</span>
+                    <span className="text-sm text-gray-400">
+                      {t('writing.common.wordCount', { value: activeChapterWordCount })}
+                    </span>
                   </div>
                   <p className="text-gray-700 leading-[1.9] text-[15px] whitespace-pre-wrap">
                     {activeChapter.content || t('writing.view.emptyCurrentChapter')}
@@ -296,4 +311,3 @@ const NovelView: React.FC = () => {
 }
 
 export default NovelView
-

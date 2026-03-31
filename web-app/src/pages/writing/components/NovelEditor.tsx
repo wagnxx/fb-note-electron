@@ -24,6 +24,7 @@ import { useNotification } from '@/hooks/useNotification'
 import { generateWritingTitle, validateWritingData } from '@/features/writing/utils/helpers'
 import type { WritingChapter, WritingFormData, WritingVolume } from '@/features/writing/types'
 import { useTranslation } from 'react-i18next'
+import countCharacters from '@/features/writing/utils/countCharacters'
 
 const { TextArea } = Input
 
@@ -76,7 +77,14 @@ const NovelEditor: React.FC = () => {
       id: generateVolumeId(),
       title: t('writing.common.defaultVolumeTitle', { index: order + 1 }),
       order,
-      chapters: [{ id: generateChapterId(), title: t('writing.common.defaultChapterTitle', { index: 1 }), content: '', order: 0 }],
+      chapters: [
+        {
+          id: generateChapterId(),
+          title: t('writing.common.defaultChapterTitle', { index: 1 }),
+          content: '',
+          order: 0,
+        },
+      ],
     }),
     [t],
   )
@@ -409,14 +417,14 @@ const NovelEditor: React.FC = () => {
   // 字数统计
   const wordCount = useMemo(() => {
     const text = activeChapter?.content ?? ''
-    return text.replace(/\s/g, '').length
+    return countCharacters(text)
   }, [activeChapter?.content])
 
   const totalWordCount = useMemo(
     () =>
       (formData.volumes ?? [])
         .flatMap(volume => volume.chapters)
-        .reduce((sum, chapter) => sum + chapter.content.replace(/\s/g, '').length, 0),
+        .reduce((sum, chapter) => sum + countCharacters(chapter.content), 0),
     [formData.volumes],
   )
   const canSave = totalWordCount > 0
@@ -527,11 +535,15 @@ const NovelEditor: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto py-1">
               {!formData.volumes || formData.volumes.length === 0 ? (
-                <Empty description={t('writing.editor.novel.emptyVolume')} imageStyle={{ height: 36 }} className="mt-6" />
+                <Empty
+                  description={t('writing.editor.novel.emptyVolume')}
+                  imageStyle={{ height: 36 }}
+                  className="mt-6"
+                />
               ) : (
                 formData.volumes.map(volume => {
                   const volumeWordCount = (volume.chapters ?? []).reduce(
-                    (sum, chapter) => sum + chapter.content.replace(/\s/g, '').length,
+                    (sum, chapter) => sum + countCharacters(chapter.content),
                     0,
                   )
                   const isCollapsed = collapsedVolumeIds.includes(volume.id)
@@ -560,7 +572,9 @@ const NovelEditor: React.FC = () => {
                           <div className="text-xs font-semibold text-gray-700 truncate">
                             {volume.title || t('writing.common.defaultVolumeTitle', { index: volume.order + 1 })}
                           </div>
-                          <div className="text-[10px] text-gray-400">{t('writing.common.wordCount', { value: volumeWordCount })}</div>
+                          <div className="text-[10px] text-gray-400">
+                            {t('writing.common.wordCount', { value: volumeWordCount })}
+                          </div>
                         </button>
                         <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Popconfirm
@@ -570,7 +584,11 @@ const NovelEditor: React.FC = () => {
                             cancelText={t('writing.actions.cancel')}
                             onConfirm={() => handleDeleteVolume(volume.id)}
                           >
-                            <button type="button" title={t('writing.actions.deleteVolume')} className="text-gray-400 hover:text-red-500 px-1">
+                            <button
+                              type="button"
+                              title={t('writing.actions.deleteVolume')}
+                              className="text-gray-400 hover:text-red-500 px-1"
+                            >
                               <DeleteOutlined style={{ fontSize: 10 }} />
                             </button>
                           </Popconfirm>
@@ -768,9 +786,7 @@ const ImportChaptersModal: React.FC<ImportChaptersModalProps> = ({
       styles={{ body: { maxHeight: '60vh', overflowY: 'auto' } }}
     >
       <div className="mb-3 flex items-center gap-2 text-sm text-gray-600">
-        <span>
-          {t('writing.editor.novel.parsedChaptersWithStartIndex', { count: chapters.length })}
-        </span>
+        <span>{t('writing.editor.novel.parsedChaptersWithStartIndex', { count: chapters.length })}</span>
         <InputNumber
           min={1}
           value={startIndex}
@@ -833,7 +849,9 @@ const SortableImportItem: React.FC<SortableImportItemProps> = ({ chapter, displa
       >
         <HolderOutlined />
       </span>
-      <span className="text-xs text-gray-400 w-14 shrink-0">{t('writing.common.importChapterIndex', { index: displayIndex })}</span>
+      <span className="text-xs text-gray-400 w-14 shrink-0">
+        {t('writing.common.importChapterIndex', { index: displayIndex })}
+      </span>
       <input
         className="flex-1 text-sm border border-black/10 rounded px-2 py-0.5 bg-transparent outline-none focus:border-[#e8673c]"
         value={chapter.title}
@@ -865,7 +883,7 @@ const SortableChapterItem: React.FC<SortableChapterItemProps> = ({ chapter, isAc
     zIndex: isDragging ? 10 : undefined,
   }
 
-  const chWc = chapter.content.replace(/\s/g, '').length
+  const chWc = countCharacters(chapter.content)
 
   return (
     <div
@@ -887,7 +905,9 @@ const SortableChapterItem: React.FC<SortableChapterItemProps> = ({ chapter, isAc
       </span>
 
       <div className="flex flex-col flex-1 min-w-0">
-        <span className="text-xs truncate">{chapter.title || t('writing.common.defaultChapterTitle', { index: chapter.order + 1 })}</span>
+        <span className="text-xs truncate">
+          {chapter.title || t('writing.common.defaultChapterTitle', { index: chapter.order + 1 })}
+        </span>
         <span className="text-[10px] text-gray-400">{t('writing.common.wordCount', { value: chWc })}</span>
       </div>
 

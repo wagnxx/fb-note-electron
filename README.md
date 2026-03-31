@@ -78,3 +78,16 @@ pnpm
 # 启动开发环境
 # 构建应用
 ```
+
+---
+
+## 🗂 本地配置：`app-settings.json`
+
+- **位置**：`electron/support/app-settings.json`。
+- **用途**：存储运行时的本地设置（目前仅 `settingsDir`，用于指定用户数据/写入目录）。
+- **优先级**：环境变量 `SETTINGS_DIR` > `electron/support/app-settings.json` 的 `settingsDir` 字段 > 应用内置默认（`support/writing` 目录）。
+- **注意事项**：
+  - 请勿在 `settingsDir` 中设置为项目根目录（除非你明确要使用 `support` 目录），应用在 UI 和主进程上会阻止将项目根作为存储目录。
+  - 该文件是纯 JSON；如果需要临时记录注释，请在仓库中使用伴随的 `electron/support/README.md` 或 `.example` 文件，而不要在 `app-settings.json` 中放置非标准注释，避免解析错误。
+
+更多说明请参阅：`electron/support/README.md`

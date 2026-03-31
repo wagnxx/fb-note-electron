@@ -4,7 +4,7 @@ import { ipcMain } from 'electron'
 import { logger } from '@/utils/logger'
 import { getSupportPath } from '@/config/basic'
 import { IPC_ACTIONS } from '@shared/ipcActions'
-import { setupSettingsHandler } from './settings'
+import { setupSettingsHandler, getConfiguredSettingsDirSync } from './settings'
 import type {
   WritingItem,
   WritingType,
@@ -33,7 +33,7 @@ type WritingItemMeta = Omit<WritingItem, 'content' | 'chapters' | 'volumes'> & {
 
 // 获取写作目录路径
 function getWritingDir(): string {
-  return getSupportPath('writing')
+  return getConfiguredSettingsDirSync()
 }
 
 // 获取特定类型的写作目录

@@ -3,6 +3,7 @@
  * Contributors: You, AI(Nova)
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import countCharacters from '@/features/writing/utils/countCharacters'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, Empty, Input, Spin, Tag } from 'antd'
 import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
@@ -154,11 +155,11 @@ const ChapteredEditor: React.FC = () => {
   // 字数统计
   const wordCount = useMemo(() => {
     const text = activeChapter?.content ?? ''
-    return text.replace(/\s/g, '').length
+    return countCharacters(text)
   }, [activeChapter?.content])
 
   const totalWordCount = useMemo(
-    () => (formData.chapters ?? []).reduce((sum, chapter) => sum + chapter.content.replace(/\s/g, '').length, 0),
+    () => (formData.chapters ?? []).reduce((sum, chapter) => sum + countCharacters(chapter.content), 0),
     [formData.chapters],
   )
   const canSave = totalWordCount > 0

@@ -12,6 +12,7 @@ import { generateWritingTitle, validateWritingData } from '@/features/writing/ut
 import type { WritingFormData } from '@/features/writing/types'
 import type { WritingType } from '@shared/types/writing'
 import { useTranslation } from 'react-i18next'
+import countCharacters from '@/features/writing/utils/countCharacters'
 
 const { TextArea } = Input
 
@@ -82,7 +83,7 @@ const ArticleEditor: React.FC = () => {
     navigate(`/tool/writing?type=${type}`)
   }
 
-  const wordCount = useMemo(() => formData.content.replace(/\s/g, '').length, [formData.content])
+  const wordCount = useMemo(() => countCharacters(formData.content), [formData.content])
   const canSave = wordCount > 0
 
   const typeConfig = {
@@ -192,7 +193,9 @@ const ArticleEditor: React.FC = () => {
             <label className="text-sm text-gray-500 mr-3">关联文章：</label>
             <RelatedArticleSelector
               value={formData.metadata?.relatedArticleId || null}
-              onChange={id => setFormData(prev => ({ ...prev, metadata: { ...(prev.metadata || {}), relatedArticleId: id } }))}
+              onChange={id =>
+                setFormData(prev => ({ ...prev, metadata: { ...(prev.metadata || {}), relatedArticleId: id } }))
+              }
               restrictType={null}
             />
           </div>
