@@ -1,20 +1,67 @@
-import React from 'react'
-import { Card, Col, Row, Tooltip, Typography } from 'antd'
+import React, { useEffect, useState } from 'react'
+import { Card, Col, Row, Spin, Tooltip, Typography } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import './GuidePage.css' // 引入自定义样式
 import { useNavigate } from 'react-router-dom'
-import { DEFAULT_LOCAL_USER_TYPE, LOCAL_USER_TYPES, LocalUserType } from '@/features/preferences/userType'
+import {
+  DEFAULT_LOCAL_USER_TYPE,
+  getLocalUserTypeConfig,
+  LOCAL_USER_TYPES,
+  LocalUserType,
+} from '@/features/preferences/userType'
 
 const { ipcRenderer, IPC_ACTIONS } = (window as any).electron || {}
 
+const SETTINGS_CHANNELS = {
+  GET_APP_SETTINGS: IPC_ACTIONS?.GET_APP_SETTINGS || 'GET_APP_SETTINGS',
+  PATCH_APP_SETTINGS: IPC_ACTIONS?.PATCH_APP_SETTINGS || 'PATCH_APP_SETTINGS',
+}
+
 const GuidePage: React.FC = () => {
   const navigate = useNavigate()
+  const [checkingPreference, setCheckingPreference] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+
+    const bootstrap = async () => {
+      if (!ipcRenderer) {
+        if (mounted) setCheckingPreference(false)
+        return
+      }
+
+      try {
+        const cfg = await ipcRenderer.invoke(SETTINGS_CHANNELS.GET_APP_SETTINGS)
+        const savedUserType = cfg?.userPreference?.userType as LocalUserType | undefined
+        const hasCompletedOnboarding = !!cfg?.userPreference?.hasCompletedOnboarding
+
+        if (savedUserType && hasCompletedOnboarding) {
+          const nextConfig = getLocalUserTypeConfig(savedUserType)
+          navigate(nextConfig.startPath, { replace: true })
+          return
+        }
+      } catch {
+        // ignore and continue to guide page
+      }
+
+      if (mounted) {
+        setCheckingPreference(false)
+      }
+    }
+
+    bootstrap()
+    return () => {
+      mounted = false
+    }
+  }, [navigate])
+
   const handleSelection = async (role: LocalUserType, startPath: string) => {
     try {
       if (ipcRenderer) {
-        await ipcRenderer.invoke(IPC_ACTIONS.PATCH_APP_SETTINGS, {
+        await ipcRenderer.invoke(SETTINGS_CHANNELS.PATCH_APP_SETTINGS, {
           userPreference: {
             userType: role || DEFAULT_LOCAL_USER_TYPE,
+            hasCompletedOnboarding: true,
             updatedAt: new Date().toISOString(),
           },
         })
@@ -32,6 +79,14 @@ const GuidePage: React.FC = () => {
     detail: item.description,
     onClick: () => handleSelection(item.key, item.startPath),
   }))
+
+  if (checkingPreference) {
+    return (
+      <div className="min-h-[calc(100vh-28px)] flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
 
   return (
     <div className="guide-page">

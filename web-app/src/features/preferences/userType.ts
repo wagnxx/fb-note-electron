@@ -33,3 +33,10 @@ export const LOCAL_USER_TYPES: Array<{
 ]
 
 export const DEFAULT_LOCAL_USER_TYPE: LocalUserType = 'toolUser'
+
+export const getLocalUserTypeConfig = (userType?: string | null) => {
+  return (
+    LOCAL_USER_TYPES.find(item => item.key === userType) ||
+    LOCAL_USER_TYPES.find(item => item.key === DEFAULT_LOCAL_USER_TYPE)!
+  )
+}

@@ -22,6 +22,9 @@ import { DEFAULT_LOCAL_USER_TYPE, LocalUserType } from '@/features/preferences/u
 
 const { Content, Sider } = Layout
 const { ipcRenderer, IPC_ACTIONS } = (window as any).electron || {}
+const SETTINGS_CHANNELS = {
+  GET_APP_SETTINGS: IPC_ACTIONS?.GET_APP_SETTINGS || 'GET_APP_SETTINGS',
+}
 
 type MenuItem = {
   key: string
@@ -40,6 +43,7 @@ const AuthLayout: React.FC = () => {
   // 新增 loading 状态
   const [isMenuLoaded, setIsMenuLoaded] = useState(false)
   const [localUserType, setLocalUserType] = useState<LocalUserType>(DEFAULT_LOCAL_USER_TYPE)
+  const [sidebarHovered, setSidebarHovered] = useState(false)
 
   useInitAuthEffect()
 
@@ -48,7 +52,7 @@ const AuthLayout: React.FC = () => {
     const loadLocalPreference = async () => {
       if (!ipcRenderer) return
       try {
-        const cfg = await ipcRenderer.invoke(IPC_ACTIONS.GET_APP_SETTINGS)
+        const cfg = await ipcRenderer.invoke(SETTINGS_CHANNELS.GET_APP_SETTINGS)
         if (!mounted) return
         setLocalUserType((cfg?.userPreference?.userType as LocalUserType) || DEFAULT_LOCAL_USER_TYPE)
       } catch {
@@ -84,11 +88,11 @@ const AuthLayout: React.FC = () => {
 
       dispatch(fetchMenuItems())
         .unwrap()
-        .then(res => {
+        .then(_res => {
           // console.log('fech menu success', res)
           // setIsMenuLoaded(true)
         })
-        .catch(err => {})
+        .catch(_err => {})
         .finally(() => {
           console.log('fetch menu finished.')
           setIsMenuLoaded(true)
@@ -181,7 +185,7 @@ const AuthLayout: React.FC = () => {
   const filterUnAuthValidMenus = useCallback(
     (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
       return routes.flatMap(route => {
-        const { requiresAuth, path, isDesktop, name, hidden, children } = route
+        const { path, isDesktop, name, hidden, children } = route
         const fullPath = `${parentPath.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
 
         if (hidden || (isDesktop && !isElectron())) {
@@ -224,26 +228,56 @@ const AuthLayout: React.FC = () => {
     return filterValidMenus(authRoutes)
   }, [isMenuLoaded, canCheckPermission, user, filterValidMenus, filterUnAuthValidMenus])
 
+  const effectiveCollapsed = sidebarCollapsed && !sidebarHovered
+
   return (
     <Layout>
-      <Sider width={220} trigger={null} collapsedWidth={56} collapsible collapsed={sidebarCollapsed}>
-        <div className="flex justify-center py-2">
+      <Sider
+        width={220}
+        trigger={null}
+        collapsedWidth={56}
+        collapsible
+        collapsed={effectiveCollapsed}
+        onMouseEnter={() => setSidebarHovered(true)}
+        onMouseLeave={() => setSidebarHovered(false)}
+      >
+        <div className={`py-2 border-b border-white/10 ${effectiveCollapsed ? 'px-2' : 'px-3'}`}>
           {isAuthenticated ? (
-            <>
-              <Button type="text" size="small" style={{ color: '#fff' }} onClick={() => navigate('/userProfile')}>
-                {user?.displayName || user?.email}
-              </Button>
-              <Button onClick={handleLogout} type="text" size="small" danger>
-                Logout
-              </Button>
-            </>
+            effectiveCollapsed ? (
+              <div className="flex justify-center">
+                <Button
+                  type="text"
+                  size="small"
+                  style={{ color: '#fff', paddingInline: 6 }}
+                  onClick={() => navigate('/userProfile')}
+                >
+                  {(user?.displayName || user?.email || 'U').slice(0, 1).toUpperCase()}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  type="text"
+                  size="small"
+                  style={{ color: '#fff', paddingInline: 0 }}
+                  onClick={() => navigate('/userProfile')}
+                >
+                  {user?.displayName || user?.email}
+                </Button>
+                <Button onClick={handleLogout} type="text" size="small" danger>
+                  Logout
+                </Button>
+              </div>
+            )
           ) : (
-            <Button onClick={handleLogin} type="primary" size="small">
-              Login
-            </Button>
+            <div className="flex justify-center">
+              <Button onClick={handleLogin} type="primary" size="small">
+                {effectiveCollapsed ? '→' : 'Login'}
+              </Button>
+            </div>
           )}
         </div>
-        {/* <Menu theme="dark" mode="inline" items={validMenuItems} /> */}
+
         <div className="h-[calc(100vh-28px)] flex flex-col">
           <Spin
             spinning={!isMenuLoaded && !!user}
@@ -253,7 +287,13 @@ const AuthLayout: React.FC = () => {
             {validMenuItems.length === 0 ? (
               <Empty description="No available menu" />
             ) : (
-              <Menu theme="dark" mode="inline" inlineCollapsed={sidebarCollapsed} items={validMenuItems} />
+              <Menu
+                theme="dark"
+                mode="inline"
+                inlineCollapsed={effectiveCollapsed}
+                items={validMenuItems}
+                style={{ borderInlineEnd: 'none' }}
+              />
             )}
           </Spin>
         </div>

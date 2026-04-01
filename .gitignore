@@ -1,3 +1,4 @@
+web-app/.env.development
 dist
 node_modules
 
@@ -28,3 +29,4 @@ electron/support/prisma/migrations/
 *.db
 
 test/
+electron/support/app-settings.json.bak

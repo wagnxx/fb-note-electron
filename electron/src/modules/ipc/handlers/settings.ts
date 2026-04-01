@@ -128,6 +128,17 @@ export function setupSettingsHandler() {
       const envPath = process.env.SETTINGS_DIR
       const dir = envPath || cfg.settingsDir || getSupportPath('writing')
       ensureDir(dir)
+
+      // keep config consistent so renderer can always read a concrete settingsDir value
+      if (!cfg.settingsDir && !envPath) {
+        try {
+          cfg.settingsDir = dir
+          await writeConfig(cfg)
+        } catch (persistErr) {
+          logger.warn('[settings] failed to persist default settingsDir', persistErr)
+        }
+      }
+
       return dir
     } catch (e) {
       logger.warn('[settings] GET_SETTINGS_DIR failed', e)
@@ -226,7 +237,7 @@ export function setupSettingsHandler() {
       let writable = true
       try {
         fs.accessSync(targetDir, fs.constants.W_OK)
-      } catch (e) {
+      } catch {
         writable = false
       }
 

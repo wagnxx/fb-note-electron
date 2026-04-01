@@ -9,7 +9,7 @@ interface SettingsState {
 
 const initialState: SettingsState = {
   sidbar: {
-    collapsed: false,
+    collapsed: true,
   },
 }
 

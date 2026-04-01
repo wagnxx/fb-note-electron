@@ -1,10 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Alert, Button, Card, Col, Input, Popconfirm, Radio, Row, Space, Typography, notification } from 'antd'
 import { ArrowLeftOutlined, CloseOutlined, CopyOutlined, FolderOpenOutlined } from '@ant-design/icons'
-import { DEFAULT_LOCAL_USER_TYPE, LOCAL_USER_TYPES, LocalUserType } from '@/features/preferences/userType'
+import {
+  DEFAULT_LOCAL_USER_TYPE,
+  getLocalUserTypeConfig,
+  LOCAL_USER_TYPES,
+  LocalUserType,
+} from '@/features/preferences/userType'
 import { useNavigate } from 'react-router-dom'
 
 const { ipcRenderer, IPC_ACTIONS } = (window as any).electron || {}
+
+const SETTINGS_CHANNELS = {
+  GET_SETTINGS_DIR: IPC_ACTIONS?.GET_SETTINGS_DIR || 'GET_SETTINGS_DIR',
+  GET_APP_SETTINGS: IPC_ACTIONS?.GET_APP_SETTINGS || 'GET_APP_SETTINGS',
+  PATCH_APP_SETTINGS: IPC_ACTIONS?.PATCH_APP_SETTINGS || 'PATCH_APP_SETTINGS',
+  SELECT_FILE: IPC_ACTIONS?.SELECT_FILE || 'SELECT_FILE',
+  VALIDATE_DIR: IPC_ACTIONS?.VALIDATE_DIR || 'VALIDATE_DIR',
+  MIGRATE_SETTINGS: IPC_ACTIONS?.MIGRATE_SETTINGS || 'MIGRATE_SETTINGS',
+  SET_SETTINGS_DIR: IPC_ACTIONS?.SET_SETTINGS_DIR || 'SET_SETTINGS_DIR',
+  OPEN_SETTINGS_DIR: IPC_ACTIONS?.OPEN_SETTINGS_DIR || 'OPEN_SETTINGS_DIR',
+}
 
 type DirInfo = {
   exists?: boolean
@@ -36,13 +52,13 @@ const SettingsPage: React.FC = () => {
     setSettingsLoading(true)
     try {
       const [dir, cfg] = await Promise.all([
-        ipcRenderer.invoke(IPC_ACTIONS.GET_SETTINGS_DIR),
-        ipcRenderer.invoke(IPC_ACTIONS.GET_APP_SETTINGS),
+        ipcRenderer.invoke(SETTINGS_CHANNELS.GET_SETTINGS_DIR),
+        ipcRenderer.invoke(SETTINGS_CHANNELS.GET_APP_SETTINGS),
       ])
-      setCurrentDir(dir || '')
+      setCurrentDir(dir || cfg?.settingsDir || '')
       setUserType((cfg?.userPreference?.userType as LocalUserType) || DEFAULT_LOCAL_USER_TYPE)
-    } catch {
-      // ignore
+    } catch (e) {
+      notification.error({ message: '读取设置失败', description: String(e) })
     } finally {
       setSettingsLoading(false)
     }
@@ -54,11 +70,11 @@ const SettingsPage: React.FC = () => {
 
   const chooseDir = async () => {
     if (!ipcRenderer) return
-    const res = await ipcRenderer.invoke(IPC_ACTIONS.SELECT_FILE, { type: 'directory' })
+    const res = await ipcRenderer.invoke(SETTINGS_CHANNELS.SELECT_FILE, { type: 'directory' })
     if (!res?.path) return
     setSelectedDir(res.path)
     try {
-      const info = await ipcRenderer.invoke(IPC_ACTIONS.VALIDATE_DIR, res.path)
+      const info = await ipcRenderer.invoke(SETTINGS_CHANNELS.VALIDATE_DIR, res.path)
       setDirInfo(info)
     } catch {
       setDirInfo(null)
@@ -69,7 +85,7 @@ const SettingsPage: React.FC = () => {
     if (!ipcRenderer || !canApplyDir) return
     setLoading(true)
     try {
-      const action = migrate ? IPC_ACTIONS.MIGRATE_SETTINGS : IPC_ACTIONS.SET_SETTINGS_DIR
+      const action = migrate ? SETTINGS_CHANNELS.MIGRATE_SETTINGS : SETTINGS_CHANNELS.SET_SETTINGS_DIR
       const args = migrate ? [selectedDir, { migrate: true }] : [selectedDir]
       const r = await ipcRenderer.invoke(action, ...args)
       if (r?.ok) {
@@ -89,14 +105,17 @@ const SettingsPage: React.FC = () => {
     if (!ipcRenderer) return
     setLoading(true)
     try {
-      const r = await ipcRenderer.invoke(IPC_ACTIONS.PATCH_APP_SETTINGS, {
+      const r = await ipcRenderer.invoke(SETTINGS_CHANNELS.PATCH_APP_SETTINGS, {
         userPreference: {
           userType,
+          hasCompletedOnboarding: true,
           updatedAt: new Date().toISOString(),
         },
       })
       if (r?.ok) {
         notification.success({ message: '用户偏好已保存' })
+        const nextConfig = getLocalUserTypeConfig(userType)
+        navigate(nextConfig.startPath)
       } else {
         notification.error({ message: '用户偏好保存失败', description: r?.error || 'unknown' })
       }
@@ -119,7 +138,7 @@ const SettingsPage: React.FC = () => {
 
   const openDir = async () => {
     if (!ipcRenderer) return
-    await ipcRenderer.invoke(IPC_ACTIONS.OPEN_SETTINGS_DIR)
+    await ipcRenderer.invoke(SETTINGS_CHANNELS.OPEN_SETTINGS_DIR)
   }
 
   return (
