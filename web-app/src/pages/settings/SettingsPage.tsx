@@ -2,9 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Alert, Button, Card, Col, Input, Popconfirm, Radio, Row, Space, Typography, notification } from 'antd'
 import { ArrowLeftOutlined, CloseOutlined, CopyOutlined, FolderOpenOutlined } from '@ant-design/icons'
 import {
+  DEFAULT_MENU_DISPLAY_MODE,
   DEFAULT_LOCAL_USER_TYPE,
   getLocalUserTypeConfig,
   LOCAL_USER_TYPES,
+  MENU_DISPLAY_MODES,
+  MenuDisplayMode,
   LocalUserType,
 } from '@/features/preferences/userType'
 import { useNavigate } from 'react-router-dom'
@@ -39,6 +42,7 @@ const SettingsPage: React.FC = () => {
   const [selectedDir, setSelectedDir] = useState('')
   const [dirInfo, setDirInfo] = useState<DirInfo | null>(null)
   const [userType, setUserType] = useState<LocalUserType>(DEFAULT_LOCAL_USER_TYPE)
+  const [menuDisplayMode, setMenuDisplayMode] = useState<MenuDisplayMode>(DEFAULT_MENU_DISPLAY_MODE)
 
   const canApplyDir = useMemo(() => {
     if (!selectedDir || selectedDir === currentDir) return false
@@ -57,6 +61,7 @@ const SettingsPage: React.FC = () => {
       ])
       setCurrentDir(dir || cfg?.settingsDir || '')
       setUserType((cfg?.userPreference?.userType as LocalUserType) || DEFAULT_LOCAL_USER_TYPE)
+      setMenuDisplayMode((cfg?.userPreference?.menuDisplayMode as MenuDisplayMode) || DEFAULT_MENU_DISPLAY_MODE)
     } catch (e) {
       notification.error({ message: '读取设置失败', description: String(e) })
     } finally {
@@ -108,6 +113,7 @@ const SettingsPage: React.FC = () => {
       const r = await ipcRenderer.invoke(SETTINGS_CHANNELS.PATCH_APP_SETTINGS, {
         userPreference: {
           userType,
+          menuDisplayMode,
           hasCompletedOnboarding: true,
           updatedAt: new Date().toISOString(),
         },
@@ -172,8 +178,21 @@ const SettingsPage: React.FC = () => {
               </Space>
             </Radio.Group>
             <div>
+              <Typography.Text strong>菜单展示模式</Typography.Text>
+              <Radio.Group value={menuDisplayMode} onChange={e => setMenuDisplayMode(e.target.value)}>
+                <Space direction="vertical">
+                  {MENU_DISPLAY_MODES.map(item => (
+                    <Radio key={item.key} value={item.key}>
+                      <span className="font-medium">{item.label}</span>
+                      <span className="text-gray-500 ml-2">{item.description}</span>
+                    </Radio>
+                  ))}
+                </Space>
+              </Radio.Group>
+            </div>
+            <div>
               <Button type="primary" onClick={saveUserType} loading={loading}>
-                保存用户类型
+                保存用户偏好
               </Button>
             </div>
           </Space>

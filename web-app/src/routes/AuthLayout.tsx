@@ -18,7 +18,12 @@ import {
 } from '@/features/rolePermission'
 import { useInitAuthEffect } from '@/hooks/useInitAuthEffect'
 import { isElectron } from '@/utils/utilsSystem'
-import { DEFAULT_LOCAL_USER_TYPE, LocalUserType } from '@/features/preferences/userType'
+import {
+  DEFAULT_LOCAL_USER_TYPE,
+  DEFAULT_MENU_DISPLAY_MODE,
+  LocalUserType,
+  MenuDisplayMode,
+} from '@/features/preferences/userType'
 
 const { Content, Sider } = Layout
 const { ipcRenderer, IPC_ACTIONS } = (window as any).electron || {}
@@ -40,10 +45,9 @@ const AuthLayout: React.FC = () => {
   const navigate = useNavigate()
   const sidebarCollapsed = useSelector(getSidbarCollapsed)
   const { showConfirmationDialog } = useNotification()
-  // 新增 loading 状态
   const [isMenuLoaded, setIsMenuLoaded] = useState(false)
   const [localUserType, setLocalUserType] = useState<LocalUserType>(DEFAULT_LOCAL_USER_TYPE)
-  const [sidebarHovered, setSidebarHovered] = useState(false)
+  const [menuDisplayMode, setMenuDisplayMode] = useState<MenuDisplayMode>(DEFAULT_MENU_DISPLAY_MODE)
 
   useInitAuthEffect()
 
@@ -55,6 +59,7 @@ const AuthLayout: React.FC = () => {
         const cfg = await ipcRenderer.invoke(SETTINGS_CHANNELS.GET_APP_SETTINGS)
         if (!mounted) return
         setLocalUserType((cfg?.userPreference?.userType as LocalUserType) || DEFAULT_LOCAL_USER_TYPE)
+        setMenuDisplayMode((cfg?.userPreference?.menuDisplayMode as MenuDisplayMode) || DEFAULT_MENU_DISPLAY_MODE)
       } catch {
         // ignore
       }
@@ -228,77 +233,78 @@ const AuthLayout: React.FC = () => {
     return filterValidMenus(authRoutes)
   }, [isMenuLoaded, canCheckPermission, user, filterValidMenus, filterUnAuthValidMenus])
 
-  const effectiveCollapsed = sidebarCollapsed && !sidebarHovered
+  const effectiveCollapsed = menuDisplayMode === 'inline' ? sidebarCollapsed : false
+  const showSider = menuDisplayMode !== 'horizontal'
+  const menuNode = (
+    <Menu
+      theme="dark"
+      mode={menuDisplayMode}
+      inlineCollapsed={menuDisplayMode === 'inline' ? effectiveCollapsed : undefined}
+      items={validMenuItems}
+      style={{ borderInlineEnd: 'none' }}
+    />
+  )
 
   return (
     <Layout>
-      <Sider
-        width={220}
-        trigger={null}
-        collapsedWidth={56}
-        collapsible
-        collapsed={effectiveCollapsed}
-        onMouseEnter={() => setSidebarHovered(true)}
-        onMouseLeave={() => setSidebarHovered(false)}
-      >
-        <div className={`py-2 border-b border-white/10 ${effectiveCollapsed ? 'px-2' : 'px-3'}`}>
-          {isAuthenticated ? (
-            effectiveCollapsed ? (
+      {showSider && (
+        <Sider width={240} trigger={null} collapsedWidth={0} collapsible collapsed={effectiveCollapsed}>
+          <div className={`py-2 border-b border-white/10 ${effectiveCollapsed ? 'px-2' : 'px-3'}`}>
+            {isAuthenticated ? (
+              effectiveCollapsed ? (
+                <div className="flex justify-center">
+                  <Button
+                    type="text"
+                    size="small"
+                    style={{ color: '#fff', paddingInline: 6 }}
+                    onClick={() => navigate('/userProfile')}
+                  >
+                    {(user?.displayName || user?.email || 'U').slice(0, 1).toUpperCase()}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-2">
+                  <Button
+                    type="text"
+                    size="small"
+                    style={{ color: '#fff', paddingInline: 0 }}
+                    onClick={() => navigate('/userProfile')}
+                  >
+                    {user?.displayName || user?.email}
+                  </Button>
+                  <Button onClick={handleLogout} type="text" size="small" danger>
+                    Logout
+                  </Button>
+                </div>
+              )
+            ) : (
               <div className="flex justify-center">
-                <Button
-                  type="text"
-                  size="small"
-                  style={{ color: '#fff', paddingInline: 6 }}
-                  onClick={() => navigate('/userProfile')}
-                >
-                  {(user?.displayName || user?.email || 'U').slice(0, 1).toUpperCase()}
+                <Button onClick={handleLogin} type="primary" size="small">
+                  {effectiveCollapsed ? '→' : 'Login'}
                 </Button>
               </div>
-            ) : (
-              <div className="flex items-center justify-between gap-2">
-                <Button
-                  type="text"
-                  size="small"
-                  style={{ color: '#fff', paddingInline: 0 }}
-                  onClick={() => navigate('/userProfile')}
-                >
-                  {user?.displayName || user?.email}
-                </Button>
-                <Button onClick={handleLogout} type="text" size="small" danger>
-                  Logout
-                </Button>
-              </div>
-            )
-          ) : (
-            <div className="flex justify-center">
-              <Button onClick={handleLogin} type="primary" size="small">
-                {effectiveCollapsed ? '→' : 'Login'}
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <div className="h-[calc(100vh-28px)] flex flex-col">
-          <Spin
-            spinning={!isMenuLoaded && !!user}
-            tip={<span style={{ textShadow: 'none' }}>Loading menu...</span>}
-            className="flex justify-center items-center flex-1 overflow-auto"
-          >
-            {validMenuItems.length === 0 ? (
-              <Empty description="No available menu" />
-            ) : (
-              <Menu
-                theme="dark"
-                mode="inline"
-                inlineCollapsed={effectiveCollapsed}
-                items={validMenuItems}
-                style={{ borderInlineEnd: 'none' }}
-              />
             )}
-          </Spin>
-        </div>
-      </Sider>
+          </div>
+
+          <div className="h-[calc(100vh-28px)] flex flex-col">
+            <Spin
+              spinning={!isMenuLoaded && !!user}
+              tip={<span style={{ textShadow: 'none' }}>Loading menu...</span>}
+              className="flex justify-center items-center flex-1 overflow-auto"
+            >
+              {validMenuItems.length === 0 ? <Empty description="No available menu" /> : menuNode}
+            </Spin>
+          </div>
+        </Sider>
+      )}
       <Content style={{ padding: '0px', height: 'calc(100vh - 28px)', overflow: 'auto' }}>
+        {!showSider && (
+          <div className="bg-[#001529] px-2 py-1 border-b border-black/10">
+            <Spin spinning={!isMenuLoaded && !!user} tip={<span style={{ textShadow: 'none' }}>Loading menu...</span>}>
+              {validMenuItems.length === 0 ? <Empty description="No available menu" /> : menuNode}
+            </Spin>
+          </div>
+        )}
         <Outlet />
       </Content>
     </Layout>

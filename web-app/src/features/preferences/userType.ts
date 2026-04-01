@@ -1,4 +1,5 @@
 export type LocalUserType = 'developer' | 'toolUser' | 'writer' | 'relay'
+export type MenuDisplayMode = 'inline' | 'vertical' | 'horizontal'
 
 export const LOCAL_USER_TYPES: Array<{
   key: LocalUserType
@@ -33,6 +34,13 @@ export const LOCAL_USER_TYPES: Array<{
 ]
 
 export const DEFAULT_LOCAL_USER_TYPE: LocalUserType = 'toolUser'
+export const DEFAULT_MENU_DISPLAY_MODE: MenuDisplayMode = 'inline'
+
+export const MENU_DISPLAY_MODES: Array<{ key: MenuDisplayMode; label: string; description: string }> = [
+  { key: 'inline', label: 'Inline', description: '经典侧栏树形菜单，适合层级较多的场景。' },
+  { key: 'vertical', label: 'Vertical', description: '垂直弹出菜单，适合更轻量的侧栏展示。' },
+  { key: 'horizontal', label: 'Horizontal', description: '顶部横向菜单，适合宽屏和主入口较少的场景。' },
+]
 
 export const getLocalUserTypeConfig = (userType?: string | null) => {
   return (
