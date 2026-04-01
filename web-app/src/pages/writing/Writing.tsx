@@ -31,6 +31,7 @@ const WritingPage: React.FC = () => {
 
   const [selectedType, setSelectedType] = useState<WritingType>(() => resolveWritingType(searchParams.get('type')))
   const [toolbarExpanded, setToolbarExpanded] = useState(false)
+  const [tagFilterMode, setTagFilterMode] = useState<'and' | 'or'>('and')
 
   // handlers to pass to child components
   const handleSelectType = (v: WritingType) => {
@@ -107,7 +108,7 @@ const WritingPage: React.FC = () => {
 
   const tagsForType = Array.from(new Set(items.filter(i => i.type === selectedType).flatMap(i => i.tags || [])))
 
-  // support multi-select tag filters locally (OR semantics). initialize from redux single activeTagFilter if present.
+  // support multi-select tag filters locally. initialize from redux single activeTagFilter if present.
   const [selectedTags, setSelectedTags] = useState<string[]>(() => (activeTagFilter ? [activeTagFilter] : []))
 
   useEffect(() => {
@@ -121,7 +122,13 @@ const WritingPage: React.FC = () => {
 
   const filteredItems = items
     .filter(it => it.type === selectedType)
-    .filter(it => (selectedTags.length ? selectedTags.every(tag => (it.tags || []).includes(tag)) : true))
+    .filter(it => {
+      if (!selectedTags.length) return true
+      const itemTags = it.tags || []
+      return tagFilterMode === 'and'
+        ? selectedTags.every(tag => itemTags.includes(tag))
+        : selectedTags.some(tag => itemTags.includes(tag))
+    })
   const formatDate = (d?: string) => {
     if (!d) return ''
     try {
@@ -141,7 +148,13 @@ const WritingPage: React.FC = () => {
             <div className="flex-1 overflow-auto">
               <div className="flex flex-col gap-4 max-w-4xl w-full mx-auto px-2 sm:px-0">
                 <div className="mb-2">
-                  <TagsBar tags={tagsForType} selectedTags={selectedTags} onToggle={handleToggleTag} />
+                  <TagsBar
+                    tags={tagsForType}
+                    selectedTags={selectedTags}
+                    filterMode={tagFilterMode}
+                    onChangeMode={setTagFilterMode}
+                    onToggle={handleToggleTag}
+                  />
                 </div>
 
                 <WritingList
