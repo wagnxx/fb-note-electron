@@ -1,6 +1,6 @@
 // sidbarCollapsed
 import React from 'react'
-import { HomeOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
+import { HomeOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SettingOutlined } from '@ant-design/icons'
 import { getSidbarCollapsed } from '@/features/settings/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 import { toggleSidebar } from '@/features/settings/settingsSlice'
@@ -25,6 +25,9 @@ const AppHeader = () => {
       </div>
       <div className="app-header__item" onClick={() => navigate('/')}>
         <HomeOutlined />
+      </div>
+      <div className="app-header__item" onClick={() => navigate('/settings')} title="Settings">
+        <SettingOutlined />
       </div>
       <div className="app-header__item">
         <LanguageSwitcher />

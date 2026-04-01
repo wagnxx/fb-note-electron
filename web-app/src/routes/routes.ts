@@ -11,6 +11,7 @@ import { routesTest } from './config/test'
 import { routesRole } from './config/role'
 import ChatRoomWeb from '@/pages/tools/chat/web'
 import RelayWebConnectPage from '@/pages/tools/relay/web'
+import SettingsPage from '@/pages/settings/SettingsPage'
 
 export interface RouteConfig {
   path: string
@@ -51,6 +52,12 @@ export const standaloneRoutes: RouteConfig[] = [
     component: UserProfile,
     // requiresAuth: true,
     hidden: true,
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: SettingsPage,
+    requiresAuth: false,
   },
   {
     path: 'tool/mindmap/local',

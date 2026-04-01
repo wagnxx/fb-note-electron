@@ -6,6 +6,8 @@ import { getSupportPath, getDistPath, isDev } from '@/config/basic'
 import { IPC_ACTIONS } from '@shared/ipcActions'
 
 const CONFIG_FILE = getSupportPath('app-settings.json')
+const CONFIG_BACKUP_FILE = `${CONFIG_FILE}.bak`
+const CONFIG_TMP_FILE = `${CONFIG_FILE}.tmp`
 
 function ensureDir(dirPath: string) {
   if (!fs.existsSync(dirPath)) {
@@ -26,12 +28,60 @@ async function readConfig(): Promise<any> {
 }
 
 async function writeConfig(cfg: any) {
+  await fs.promises.mkdir(path.dirname(CONFIG_FILE), { recursive: true })
+
+  const nextContent = JSON.stringify(cfg || {}, null, 2)
+  const hasOldConfig = fs.existsSync(CONFIG_FILE)
+
   try {
-    await fs.promises.mkdir(path.dirname(CONFIG_FILE), { recursive: true })
-    await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(cfg || {}, null, 2), 'utf-8')
+    if (hasOldConfig) {
+      await fs.promises.copyFile(CONFIG_FILE, CONFIG_BACKUP_FILE)
+    }
+
+    await fs.promises.writeFile(CONFIG_TMP_FILE, nextContent, 'utf-8')
+
+    try {
+      JSON.parse(await fs.promises.readFile(CONFIG_TMP_FILE, 'utf-8'))
+    } catch (parseErr) {
+      throw new Error(`tmp_config_invalid_json: ${String(parseErr)}`)
+    }
+
+    await fs.promises.rename(CONFIG_TMP_FILE, CONFIG_FILE)
   } catch (e) {
-    logger.warn('[settings] failed to write config', e)
+    logger.warn('[settings] failed to write config, trying rollback', e)
+    try {
+      if (fs.existsSync(CONFIG_TMP_FILE)) {
+        await fs.promises.rm(CONFIG_TMP_FILE, { force: true })
+      }
+      if (fs.existsSync(CONFIG_BACKUP_FILE)) {
+        await fs.promises.copyFile(CONFIG_BACKUP_FILE, CONFIG_FILE)
+      }
+    } catch (rollbackErr) {
+      logger.warn('[settings] rollback failed', rollbackErr)
+    }
+    throw e
   }
+}
+
+function mergeDeep<T extends Record<string, any>>(target: T, patch: Partial<T>): T {
+  const output: Record<string, any> = Array.isArray(target) ? [...target] : { ...(target || {}) }
+  for (const key of Object.keys(patch || {})) {
+    const patchValue: any = (patch as any)[key]
+    const currentValue: any = (output as any)[key]
+    if (
+      patchValue &&
+      typeof patchValue === 'object' &&
+      !Array.isArray(patchValue) &&
+      currentValue &&
+      typeof currentValue === 'object' &&
+      !Array.isArray(currentValue)
+    ) {
+      output[key] = mergeDeep(currentValue, patchValue)
+    } else {
+      output[key] = patchValue
+    }
+  }
+  return output as T
 }
 
 async function copyDir(src: string, dest: string) {
@@ -198,6 +248,28 @@ export function setupSettingsHandler() {
       return { ok: true }
     } catch (e) {
       logger.warn('[settings] OPEN_SETTINGS_DIR failed', e)
+      return { ok: false, error: String(e) }
+    }
+  })
+
+  ipcMain.handle(IPC_ACTIONS.GET_APP_SETTINGS, async () => {
+    try {
+      const cfg = await readConfig()
+      return cfg || {}
+    } catch (e) {
+      logger.warn('[settings] GET_APP_SETTINGS failed', e)
+      return {}
+    }
+  })
+
+  ipcMain.handle(IPC_ACTIONS.PATCH_APP_SETTINGS, async (_event, patch: Record<string, any>) => {
+    try {
+      const cfg = await readConfig()
+      const nextCfg = mergeDeep(cfg || {}, patch || {})
+      await writeConfig(nextCfg)
+      return { ok: true, settings: nextCfg }
+    } catch (e) {
+      logger.warn('[settings] PATCH_APP_SETTINGS failed', e)
       return { ok: false, error: String(e) }
     }
   })

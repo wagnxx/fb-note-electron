@@ -18,8 +18,10 @@ import {
 } from '@/features/rolePermission'
 import { useInitAuthEffect } from '@/hooks/useInitAuthEffect'
 import { isElectron } from '@/utils/utilsSystem'
+import { DEFAULT_LOCAL_USER_TYPE, LocalUserType } from '@/features/preferences/userType'
 
 const { Content, Sider } = Layout
+const { ipcRenderer, IPC_ACTIONS } = (window as any).electron || {}
 
 type MenuItem = {
   key: string
@@ -37,8 +39,43 @@ const AuthLayout: React.FC = () => {
   const { showConfirmationDialog } = useNotification()
   // 新增 loading 状态
   const [isMenuLoaded, setIsMenuLoaded] = useState(false)
+  const [localUserType, setLocalUserType] = useState<LocalUserType>(DEFAULT_LOCAL_USER_TYPE)
 
   useInitAuthEffect()
+
+  useEffect(() => {
+    let mounted = true
+    const loadLocalPreference = async () => {
+      if (!ipcRenderer) return
+      try {
+        const cfg = await ipcRenderer.invoke(IPC_ACTIONS.GET_APP_SETTINGS)
+        if (!mounted) return
+        setLocalUserType((cfg?.userPreference?.userType as LocalUserType) || DEFAULT_LOCAL_USER_TYPE)
+      } catch {
+        // ignore
+      }
+    }
+    loadLocalPreference()
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const matchLocalUserType = useCallback(
+    (fullPath: string) => {
+      if (localUserType === 'developer') return true
+      if (fullPath.startsWith('/settings') || fullPath.startsWith('/system')) return true
+      if (localUserType === 'writer') {
+        return fullPath.startsWith('/tool/writing') || fullPath === '/tool' || fullPath === '/'
+      }
+      if (localUserType === 'relay') {
+        return fullPath.startsWith('/tool/relay') || fullPath === '/tool' || fullPath === '/'
+      }
+      // toolUser
+      return fullPath.startsWith('/tool') || fullPath === '/'
+    },
+    [localUserType],
+  )
 
   useEffect(() => {
     if (user) {
@@ -117,29 +154,8 @@ const AuthLayout: React.FC = () => {
         if (!hasPermission || hidden || (requiresAuth && !isAuthenticated) || (isDesktop && !isElectron())) {
           return []
         }
-        // const { children, ...state } = route
 
-        const menuItem: MenuItem = {
-          key: fullPath,
-          label: <Link to={fullPath}>{name}</Link>,
-        }
-
-        if (children) {
-          menuItem.children = filterValidMenus(children, fullPath)
-        }
-
-        return menuItem.children?.length ? [menuItem] : [menuItem]
-      })
-    },
-    [computeRolePermissions, isAuthenticated],
-  )
-  const filterUnAuthValidMenus = useCallback(
-    (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
-      return routes.flatMap(route => {
-        const { requiresAuth, path, isDesktop, name, hidden, children } = route
-        const fullPath = `${parentPath.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
-
-        if (hidden || (isDesktop && !isElectron())) {
+        if (!matchLocalUserType(fullPath)) {
           return []
         }
         // const { children, ...state } = route
@@ -153,10 +169,47 @@ const AuthLayout: React.FC = () => {
           menuItem.children = filterValidMenus(children, fullPath)
         }
 
-        return menuItem.children?.length ? [menuItem] : [menuItem]
+        if (children && (!menuItem.children || menuItem.children.length === 0)) {
+          return []
+        }
+
+        return [menuItem]
       })
     },
-    [filterValidMenus],
+    [computeRolePermissions, isAuthenticated, matchLocalUserType],
+  )
+  const filterUnAuthValidMenus = useCallback(
+    (routes: RouteConfig[], parentPath = ''): MenuItem[] => {
+      return routes.flatMap(route => {
+        const { requiresAuth, path, isDesktop, name, hidden, children } = route
+        const fullPath = `${parentPath.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
+
+        if (hidden || (isDesktop && !isElectron())) {
+          return []
+        }
+
+        if (!matchLocalUserType(fullPath)) {
+          return []
+        }
+        // const { children, ...state } = route
+
+        const menuItem: MenuItem = {
+          key: fullPath,
+          label: <Link to={fullPath}>{name}</Link>,
+        }
+
+        if (children) {
+          menuItem.children = filterValidMenus(children, fullPath)
+        }
+
+        if (children && (!menuItem.children || menuItem.children.length === 0)) {
+          return []
+        }
+
+        return [menuItem]
+      })
+    },
+    [filterValidMenus, matchLocalUserType],
   )
 
   const validMenuItems = useMemo(() => {
@@ -173,7 +226,7 @@ const AuthLayout: React.FC = () => {
 
   return (
     <Layout>
-      <Sider width={200} trigger={null} collapsedWidth={0} collapsible collapsed={sidebarCollapsed}>
+      <Sider width={220} trigger={null} collapsedWidth={56} collapsible collapsed={sidebarCollapsed}>
         <div className="flex justify-center py-2">
           {isAuthenticated ? (
             <>
@@ -191,18 +244,19 @@ const AuthLayout: React.FC = () => {
           )}
         </div>
         {/* <Menu theme="dark" mode="inline" items={validMenuItems} /> */}
-        <Spin
-          spinning={!isMenuLoaded && !!user}
-          tip={<span style={{ textShadow: 'none' }}>Loading menu...</span>}
-          className="flex justify-center  items-center  "
-          style={{ height: '100vh' }}
-        >
-          {validMenuItems.length === 0 ? (
-            <Empty description="No available menu" /> // 没有有效菜单项时的提示
-          ) : (
-            <Menu theme="dark" mode="inline" items={validMenuItems} />
-          )}
-        </Spin>
+        <div className="h-[calc(100vh-28px)] flex flex-col">
+          <Spin
+            spinning={!isMenuLoaded && !!user}
+            tip={<span style={{ textShadow: 'none' }}>Loading menu...</span>}
+            className="flex justify-center items-center flex-1 overflow-auto"
+          >
+            {validMenuItems.length === 0 ? (
+              <Empty description="No available menu" />
+            ) : (
+              <Menu theme="dark" mode="inline" inlineCollapsed={sidebarCollapsed} items={validMenuItems} />
+            )}
+          </Spin>
+        </div>
       </Sider>
       <Content style={{ padding: '0px', height: 'calc(100vh - 28px)', overflow: 'auto' }}>
         <Outlet />

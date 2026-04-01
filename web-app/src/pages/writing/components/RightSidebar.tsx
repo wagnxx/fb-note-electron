@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { PlusOutlined, AppstoreOutlined, MenuOutlined, UnorderedListOutlined, SettingOutlined } from '@ant-design/icons'
-import SettingsDrawer from './SettingsDrawer'
+import { useNavigate } from 'react-router-dom'
 
 type Props = {
   items: any[]
@@ -23,7 +23,7 @@ const RightSidebar: React.FC<Props> = ({
   setModeRedux,
 }) => {
   const { t } = useTranslation()
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const navigate = useNavigate()
 
   return (
     <aside className="w-20 flex-shrink-0 bg-white/80 border-l border-gray-100 px-3 py-4 h-[50vh] self-start">
@@ -33,7 +33,7 @@ const RightSidebar: React.FC<Props> = ({
         {/* Toolbar: gear, floating create and compact layout buttons (sticky at top) */}
         <div className="w-full sticky top-6 flex flex-col items-center gap-3">
           <button
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => navigate('/settings')}
             className="w-10 h-10 bg-white rounded-md flex items-center justify-center shadow-sm"
             title={t('writing.toolbar.settings', { defaultValue: '设置' })}
             aria-label={t('writing.toolbar.settings', { defaultValue: '设置' })}
@@ -96,8 +96,6 @@ const RightSidebar: React.FC<Props> = ({
               <AppstoreOutlined />
             </button>
           </div>
-
-          <SettingsDrawer visible={settingsOpen} onClose={() => setSettingsOpen(false)} />
         </div>
 
         {/* thumbnails area (kept but without create button) */}
