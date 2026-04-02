@@ -248,7 +248,17 @@ const AuthLayout: React.FC = () => {
   return (
     <Layout>
       {showSider && (
-        <Sider width={240} trigger={null} collapsedWidth={0} collapsible collapsed={effectiveCollapsed}>
+        <Sider
+          width={240}
+          trigger={null}
+          collapsedWidth={0}
+          collapsible
+          collapsed={effectiveCollapsed}
+          style={{
+            height: 'calc(100vh - 28px)',
+            overflow: 'auto',
+          }}
+        >
           <div className={`py-2 border-b border-white/10 ${effectiveCollapsed ? 'px-2' : 'px-3'}`}>
             {isAuthenticated ? (
               effectiveCollapsed ? (

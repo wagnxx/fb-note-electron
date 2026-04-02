@@ -114,7 +114,7 @@ const NovelView: React.FC = () => {
 
   return (
     <Spin spinning={loading}>
-      <div className="flex flex-col h-screen bg-[#f5f0e8]">
+      <div className="flex flex-col h-[calc(100vh-28px)] bg-[#f5f0e8]">
         {/* 顶部导航栏 */}
         <div className="flex items-center justify-between px-4 py-2 bg-[#f5f0e8] border-b border-black/10 shrink-0">
           <button

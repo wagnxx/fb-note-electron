@@ -19,6 +19,7 @@ electron/support/*.db
 electron/support/preload.js
 electron/support/.DS_Store
 electron/support/writing
+electron/support/app-settings.json
 electron/support/prisma/migrations/
 
 *.error

@@ -430,8 +430,8 @@ const NovelEditor: React.FC = () => {
   const canSave = totalWordCount > 0
 
   return (
-    <Spin spinning={loading} className="h-full">
-      <div className="flex flex-col h-screen bg-[#f5f0e8]">
+    <Spin spinning={loading} className="spin-novel-editor ">
+      <div className="flex flex-col h-[calc(100vh-28px)] bg-[#f5f0e8]">
         {/* 顶部导航栏 */}
         <div className="flex items-center justify-between px-4 py-2 bg-[#f5f0e8] border-b border-black/10 shrink-0">
           <button
@@ -684,15 +684,26 @@ const NovelEditor: React.FC = () => {
                 </div>
 
                 {/* 正文编辑区 */}
-                <div className="flex-1 overflow-auto px-8 pb-8">
-                  <TextArea
-                    value={activeChapter.content}
-                    onChange={e => updateActiveNovelChapter('content', e.target.value)}
-                    placeholder={t('writing.editor.novel.contentPlaceholder')}
-                    autoSize={{ minRows: 20 }}
-                    variant="borderless"
-                    style={{ background: 'transparent', fontSize: 15, lineHeight: '1.9', padding: 0, resize: 'none' }}
-                  />
+                <div className="flex-1 min-h-0 px-8 pb-8">
+                  <div className="h-full overflow-hidden">
+                    <TextArea
+                      value={activeChapter.content}
+                      onChange={e => updateActiveNovelChapter('content', e.target.value)}
+                      placeholder={t('writing.editor.novel.contentPlaceholder')}
+                      variant="borderless"
+                      autoSize={false}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        background: 'transparent',
+                        fontSize: 15,
+                        lineHeight: '1.9',
+                        padding: 0,
+                        resize: 'none',
+                        overflowY: 'auto',
+                      }}
+                    />
+                  </div>
                 </div>
               </>
             ) : (
