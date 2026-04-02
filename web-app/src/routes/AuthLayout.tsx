@@ -73,7 +73,8 @@ const AuthLayout: React.FC = () => {
   const matchLocalUserType = useCallback(
     (fullPath: string) => {
       if (localUserType === 'developer') return true
-      if (fullPath.startsWith('/settings') || fullPath.startsWith('/system')) return true
+      // if (fullPath.startsWith('/settings') || fullPath.startsWith('/system')) return true
+      // if (fullPath.startsWith('/settings')) return true
       if (localUserType === 'writer') {
         return fullPath.startsWith('/tool/writing') || fullPath === '/tool' || fullPath === '/'
       }
