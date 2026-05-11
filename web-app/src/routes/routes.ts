@@ -7,7 +7,7 @@ import UserProfile from '@/pages/user/Profile'
 import { routesTool } from './config/tool'
 import { routesLearn } from './config/learn'
 import { routesSystem } from './config/system'
-import { routesTest } from './config/test'
+import { routesDev } from './config/dev'
 import { routesRole } from './config/role'
 import ChatRoomWeb from '@/pages/tools/chat/web'
 import RelayWebConnectPage from '@/pages/tools/relay/web'
@@ -28,7 +28,7 @@ export const authRoutes: RouteConfig[] = [
   routesSystem,
   routesLearn,
   routesTool,
-  routesTest,
+  routesDev,
   routesRole,
 
   // Note: 404 route has been moved to the root level routes configuration

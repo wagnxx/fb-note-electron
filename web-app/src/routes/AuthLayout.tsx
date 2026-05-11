@@ -240,7 +240,7 @@ const AuthLayout: React.FC = () => {
     <Menu
       theme="dark"
       mode={menuDisplayMode}
-      inlineCollapsed={menuDisplayMode === 'inline' ? effectiveCollapsed : undefined}
+      // inlineCollapsed={menuDisplayMode === 'inline' ? effectiveCollapsed : undefined}
       items={validMenuItems}
       style={{ borderInlineEnd: 'none' }}
     />

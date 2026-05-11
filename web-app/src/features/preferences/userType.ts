@@ -33,7 +33,7 @@ export const LOCAL_USER_TYPES: Array<{
   },
 ]
 
-export const DEFAULT_LOCAL_USER_TYPE: LocalUserType = 'toolUser'
+export const DEFAULT_LOCAL_USER_TYPE: LocalUserType = 'developer'
 export const DEFAULT_MENU_DISPLAY_MODE: MenuDisplayMode = 'inline'
 
 export const MENU_DISPLAY_MODES: Array<{ key: MenuDisplayMode; label: string; description: string }> = [
